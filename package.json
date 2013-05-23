@@ -1,0 +1,25 @@
+{
+  "name": "cozy-contacts",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.coffee",
+  "dependencies": {
+    "jugglingdb": "~0.2.0-25",
+    "jugglingdb-cozy-adapter": "~0.3.1",
+    "express": "~3.1.0",
+    "async": "~0.2.6"
+  },
+  "devDependencies": {
+    "chai": "~1.5.0",
+    "request-json": "=0.3.0",
+    "mocha": "~1.9.0",
+    "sinon": "~1.6.0"
+  },
+  "scripts": {
+    "test": "cake tests",
+    "start": "coffee server.coffee"
+  },
+  "repository": "https://github.com/mycozycloud/cozy-contacts",
+  "author": "Romain M. Foucault",
+  "readmeFilename": "README.md"
+}

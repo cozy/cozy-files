@@ -1,0 +1,53 @@
+#spinOverlay: span saving ...
+
+input#name(placeholder="Name", value="#{name}")
+
+if typeof(id) != 'undefined'
+  img.picture(src="contacts/#{id}/picture.png")
+else
+  img.picture(src="img/defaultpicture.png")
+
+a#close(href="#") &times;
+
+textarea(rows="3", placeholder="Take notes here")#notes #{notes}
+
+#commands
+  a.btn#save   Save
+  a.btn#delete Delete
+  .btn-group
+    a.btn.dropdown-toggle(data-toggle="dropdown", href="#") Add
+      span.caret
+    ul.dropdown-menu.pull-right
+      li: a.addbirthday(href="#") Birthday
+      li: a.addcompany(href="#") Company
+      li.divider
+      li: a.addphone(href="#") Phone
+      li: a.addemail(href="#") Email
+      li: a.addsmail(href="#") Address
+      li: a.addother(href="#") Other
+
+
+#abouts.zone
+  h2 About
+    a.btn.add.addabout: i.icon-plus
+  ul
+
+#phones.zone
+  h2 Phones
+    a.btn.add.addphone: i.icon-plus
+  ul
+
+#emails.zone
+  h2 Emails
+    a.btn.add.addemail: i.icon-plus
+  ul
+
+#smails.zone
+  h2 Postal
+    a.btn.add.addsmail: i.icon-plus
+  ul
+
+#others.zone
+  h2 Others
+    a.btn.add.addother: i.icon-plus
+  ul

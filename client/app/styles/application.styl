@@ -1,0 +1,219 @@
+@font-face
+    font-family: styled
+    src: url('/fonts/maven-pro-light-300.otf');
+
+@font-face
+    font-family: main
+    src: url('/fonts/signika-regular.ttf');
+
+bgcolor = #fcfcfc
+shadowcolor = #444
+basecolor = lightgrey
+highlightcolor = #fe8800
+buttoncolor = #34a6ff
+uploadcolor = #34a6ff
+
+
+body
+  height 100%
+  background-color bgcolor
+  font-family main
+
+h1, h2, h3, h4, #name
+  font-family styled
+
+
+
+#contacts-list
+  width 50%
+  height 100%
+  position absolute
+  left 0px
+  right 0px
+
+  .contact-thumb
+    display block
+    width 200px
+    float left
+    background-color buttoncolor
+    color white
+    margin 10px
+    padding 10px
+
+    img
+      float left
+      line-height 100%
+
+    h2
+      padding 0px
+      margin 0px
+      margin-left 70px
+      font-size 1.6em
+      overflow hidden
+      height 80px
+
+  .contact-thumb:hover
+    text-decoration none
+    background-color highlightcolor
+
+#help, #contact
+  width 50%
+  height 100%
+  position absolute
+  right 0px
+  top 0px
+  background-color basecolor
+  border-left 1px solid buttoncolor
+
+#help
+  #new
+    width 50%
+    display block
+    background-color buttoncolor
+    color white
+    font-size 2em
+    text-align center
+    margin 70px auto
+    padding 10px
+  #new:hover
+    text-decoration none
+    background-color highlightcolor
+
+#contact
+  #close
+    display block
+    position absolute
+    top 8px
+    right 8px
+    width 30px
+    height 30px
+    text-align center
+    font-size 30px
+    border-radius 30px
+    line-height 30px
+    background-color buttoncolor
+    color white
+
+  #close:hover
+    text-decoration none
+    background-color highlightcolor
+
+  img
+    display block
+    position absolute
+    top 8px
+    left 8px
+    border 3px solid buttoncolor
+
+  input, textarea
+    border-radius 0px
+    background-color transparent
+    display block
+    float left
+    box-shadow none
+    margin 0px
+    border 1px solid transparent
+
+  #name
+    display block
+    line-height 1em
+    width 100%
+    float none
+    font-size 2.5em
+    font-weight bold
+    margin 10px
+    margin-left 78px
+    margin-bottom 0px
+    padding-left 10px
+    border-bottom 1px solid buttoncolor
+
+  #name:focus
+    outline none
+
+  #notes
+    margin-left 88px
+    border-top 0px
+    width 50%
+  #notes:focus
+    border 1px solid buttoncolor
+    border-top 0px
+
+
+  #commands
+    text-align right
+    padding 10px
+    .btn
+      margin-left 10px
+
+    .dropdown-menu
+      text-align left
+
+  .zone
+    width 48%
+    margin 1%
+    float left
+    a.btn.add
+      display inline-block
+      margin-left 10px
+      opacity 0
+
+    ul
+      margin 0px
+      li
+        list-style-type none
+        .type:focus
+        .value:focus
+          border 1px solid buttoncolor
+
+        .type
+          width 25%
+          font-weight bold
+
+        .value
+          width 65%
+
+  .zone:hover
+    a.btn.add
+      transition 0.5s
+      opacity 1
+
+  #spinOverlay
+    position absolute
+    top 0px
+    left 0px
+    height 100%
+    width 100%
+    background-color black
+    color white
+    opacity 0.4
+    font-size 50px
+    line-height 180px
+    text-align center
+    display none
+
+
+.btn
+  background none
+  text-shadow none
+  background-color buttoncolor
+  border-radius 0px !important
+  border 0px
+  color white
+
+  .caret
+    border-top 4px solid white
+
+
+.btn:not(.disabled):hover
+  background-color highlightcolor
+  text-decoration none
+  color white
+
+.btn:not(.disabled):active
+.btn:not(.disabled):focus
+  background-color buttoncolor
+  color white
+  text-decoration none
+
+.dropdown-menu
+  border-radius 0px
