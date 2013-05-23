@@ -1,0 +1,216 @@
+@font-face {
+  font-family: styled;
+  src: url("/fonts/maven-pro-light-300.otf");
+}
+@font-face {
+  font-family: main;
+  src: url("/fonts/signika-regular.ttf");
+}
+body {
+  height: 100%;
+  background-color: #fcfcfc;
+  font-family: main;
+}
+h1,
+h2,
+h3,
+h4,
+#name {
+  font-family: styled;
+}
+#contacts-list {
+  width: 50%;
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  right: 0px;
+}
+#contacts-list .contact-thumb {
+  display: block;
+  width: 200px;
+  float: left;
+  background-color: #34a6ff;
+  color: #fff;
+  margin: 10px;
+  padding: 10px;
+}
+#contacts-list .contact-thumb img {
+  float: left;
+  line-height: 100%;
+}
+#contacts-list .contact-thumb h2 {
+  padding: 0px;
+  margin: 0px;
+  margin-left: 70px;
+  font-size: 1.6em;
+  overflow: hidden;
+  height: 80px;
+}
+#contacts-list .contact-thumb:hover {
+  text-decoration: none;
+  background-color: #fe8800;
+}
+#help,
+#contact {
+  width: 50%;
+  height: 100%;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  background-color: #d3d3d3;
+  border-left: 1px solid #34a6ff;
+}
+#help #new {
+  width: 50%;
+  display: block;
+  background-color: #34a6ff;
+  color: #fff;
+  font-size: 2em;
+  text-align: center;
+  margin: 70px auto;
+  padding: 10px;
+}
+#help #new:hover {
+  text-decoration: none;
+  background-color: #fe8800;
+}
+#contact #close {
+  display: block;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  font-size: 30px;
+  border-radius: 30px;
+  line-height: 30px;
+  background-color: #34a6ff;
+  color: #fff;
+}
+#contact #close:hover {
+  text-decoration: none;
+  background-color: #fe8800;
+}
+#contact img {
+  display: block;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  border: 3px solid #34a6ff;
+}
+#contact input,
+#contact textarea {
+  border-radius: 0px;
+  background-color: transparent;
+  display: block;
+  float: left;
+  box-shadow: none;
+  margin: 0px;
+  border: 1px solid transparent;
+}
+#contact #name {
+  display: block;
+  line-height: 1em;
+  width: 100%;
+  float: none;
+  font-size: 2.5em;
+  font-weight: bold;
+  margin: 10px;
+  margin-left: 78px;
+  margin-bottom: 0px;
+  padding-left: 10px;
+  border-bottom: 1px solid #34a6ff;
+}
+#contact #name:focus {
+  outline: none;
+}
+#contact #notes {
+  margin-left: 88px;
+  border-top: 0px;
+  width: 50%;
+}
+#contact #notes:focus {
+  border: 1px solid #34a6ff;
+  border-top: 0px;
+}
+#contact #commands {
+  text-align: right;
+  padding: 10px;
+}
+#contact #commands .btn {
+  margin-left: 10px;
+}
+#contact #commands .dropdown-menu {
+  text-align: left;
+}
+#contact .zone {
+  width: 48%;
+  margin: 1%;
+  float: left;
+}
+#contact .zone a.btn.add {
+  display: inline-block;
+  margin-left: 10px;
+  opacity: 0;
+}
+#contact .zone ul {
+  margin: 0px;
+}
+#contact .zone ul li {
+  list-style-type: none;
+}
+#contact .zone ul li .type:focus,
+#contact .zone ul li .value:focus {
+  border: 1px solid #34a6ff;
+}
+#contact .zone ul li .type {
+  width: 25%;
+  font-weight: bold;
+}
+#contact .zone ul li .value {
+  width: 65%;
+}
+#contact .zone:hover a.btn.add {
+  transition: 0.5s;
+  opacity: 1;
+}
+#contact #spinOverlay {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  color: #fff;
+  opacity: 0.4;
+  font-size: 50px;
+  line-height: 180px;
+  text-align: center;
+  display: none;
+}
+.btn {
+  background: none;
+  text-shadow: none;
+  background-color: #34a6ff;
+  border-radius: 0px !important;
+  border: 0px;
+  color: #fff;
+}
+.btn .caret {
+  border-top: 4px solid #fff;
+}
+.btn:not(.disabled):hover {
+  background-color: #fe8800;
+  text-decoration: none;
+  color: #fff;
+}
+.btn:not(.disabled):active,
+.btn:not(.disabled):focus {
+  background-color: #34a6ff;
+  color: #fff;
+  text-decoration: none;
+}
+.dropdown-menu {
+  border-radius: 0px;
+}
