@@ -2,10 +2,13 @@
 
 input#name(placeholder="Name", value="#{name}")
 
-if typeof(id) != 'undefined'
-  img.picture(src="contacts/#{id}/picture.png")
-else
-  img.picture(src="img/defaultpicture.png")
+div#picture
+  if typeof(id) != 'undefined'
+    img.picture(src="contacts/#{id}/picture.png")
+  else
+    img.picture(src="img/defaultpicture.png")
+  #uploadnotice Change
+  input#uploader(type="file")
 
 a#close(href="#") &times;
 

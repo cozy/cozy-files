@@ -21,6 +21,7 @@ module.exports = class ContactView extends ViewCollection
         'blur .value'       : @cleanup
         'keypress #name'    : @changeOccured
         'keypress #notes'   : @changeOccured
+        'change #uploader'  : 'photoChanged'
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
@@ -49,6 +50,8 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = false
         @namefield = @$('#name')
         @notesfield = @$('#notes')
+        @uploader = @$('#uploader')[0]
+        @picture  = @$('#picture .picture')
 
         super
 
@@ -100,3 +103,41 @@ module.exports = class ContactView extends ViewCollection
 
     onError: ->
         @spinner.hide()
+
+    photoChanged: () =>
+
+        file = @uploader.files[0]
+
+        unless file.type.match /image\/.*/
+            return alert 'This is not an image'
+
+        reader = new FileReader()
+        img = new Image()
+        reader.readAsDataURL file
+        reader.onloadend = =>
+            img.src = reader.result
+            img.onload = =>
+                ratiodim = if img.width > img.height then 'height' else 'width'
+                ratio = 64 / img[ratiodim]
+
+                # use canvas to resize the image
+                canvas = document.createElement 'canvas'
+                canvas.height = canvas.width = 64
+                ctx = canvas.getContext '2d'
+                ctx.drawImage img, 0, 0, ratio*img.width, ratio*img.height
+                dataUrl =  canvas.toDataURL 'image/jpeg'
+
+                @picture.attr 'src', dataUrl
+
+                #transform into a blob
+                binary = atob dataUrl.split(',')[1]
+                array = []
+                for i in [0..binary.length]
+                    array.push binary.charCodeAt i
+
+                blob = new Blob [new Uint8Array(array)], type: 'image/jpeg'
+
+                @model.picture = blob
+                @changeOccured()
+
+

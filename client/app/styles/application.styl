@@ -8,7 +8,7 @@
 
 bgcolor = #fcfcfc
 shadowcolor = #444
-basecolor = lightgrey
+basecolor = lightgrey + 40%
 highlightcolor = #fe8800
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
@@ -30,6 +30,23 @@ h1, h2, h3, h4, #name
   position absolute
   left 0px
   right 0px
+
+  #toolbar
+    background-color lightgrey
+    padding 2px
+
+    input
+      display block
+      width 95%
+      background-color lightgrey
+      border 1px solid transparent
+      border-radius 0px
+      box-shadow none
+      margin 0px
+
+    input:focus
+      box-shadow none
+      border 1px solid highlightcolor
 
   .contact-thumb
     display block
@@ -98,12 +115,48 @@ h1, h2, h3, h4, #name
     text-decoration none
     background-color highlightcolor
 
-  img
+  #picture
     display block
     position absolute
-    top 8px
-    left 8px
     border 3px solid buttoncolor
+    left 8px
+    top 8px
+    width 64px
+    height 64px
+    overflow hidden
+
+    img.picture
+      position absolute
+      display block
+      width 64px
+      height 64px
+
+    input#uploader
+      opacity 0.01
+      position absolute
+      left 0px
+      top -50px
+      border 0px
+      margin 0px
+      width 64px
+      height 114px
+
+    #uploadnotice
+      width 64px
+      height 20px
+      background-color buttoncolor
+      bottom -20px
+      position absolute
+      text-align center
+      color white
+
+  #picture:hover
+    input#uploader
+      cursor pointer
+    #uploadnotice
+      bottom 0px
+      transition 0.25s
+
 
   input, textarea
     border-radius 0px
@@ -117,7 +170,7 @@ h1, h2, h3, h4, #name
   #name
     display block
     line-height 1em
-    width 100%
+    width 90%
     float none
     font-size 2.5em
     font-weight bold
@@ -203,6 +256,9 @@ h1, h2, h3, h4, #name
   .caret
     border-top 4px solid white
 
+.btn.disabled
+  border 1px solid buttoncolor
+  background-color transparent
 
 .btn:not(.disabled):hover
   background-color highlightcolor

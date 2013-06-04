@@ -5,3 +5,4 @@ module.exports = db.define 'Contact',
     name          : String
     datapoints    : [Object]
     notes         : String
+    _attachments  : Object
