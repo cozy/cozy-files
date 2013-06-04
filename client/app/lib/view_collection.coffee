@@ -35,6 +35,7 @@ module.exports = class ViewCollection extends BaseView
         @listenTo @collection, "reset",   @onReset
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
+        @listenTo @collection, "sort",    @onReset
         @onReset @collection
 
     # if we have views before a render call, we detach them
