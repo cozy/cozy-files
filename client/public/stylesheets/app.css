@@ -25,6 +25,23 @@ h4,
   left: 0px;
   right: 0px;
 }
+#contacts-list #toolbar {
+  background-color: #d3d3d3;
+  padding: 2px;
+}
+#contacts-list #toolbar input {
+  display: block;
+  width: 95%;
+  background-color: #d3d3d3;
+  border: 1px solid transparent;
+  border-radius: 0px;
+  box-shadow: none;
+  margin: 0px;
+}
+#contacts-list #toolbar input:focus {
+  box-shadow: none;
+  border: 1px solid #fe8800;
+}
 #contacts-list .contact-thumb {
   display: block;
   width: 200px;
@@ -57,7 +74,7 @@ h4,
   position: absolute;
   right: 0px;
   top: 0px;
-  background-color: #d3d3d3;
+  background-color: #e5e5e5;
   border-left: 1px solid #34a6ff;
 }
 #help #new {
@@ -92,12 +109,47 @@ h4,
   text-decoration: none;
   background-color: #fe8800;
 }
-#contact img {
+#contact #picture {
   display: block;
   position: absolute;
-  top: 8px;
-  left: 8px;
   border: 3px solid #34a6ff;
+  left: 8px;
+  top: 8px;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+}
+#contact #picture img.picture {
+  position: absolute;
+  display: block;
+  width: 64px;
+  height: 64px;
+}
+#contact #picture input#uploader {
+  opacity: 0.01;
+  position: absolute;
+  left: 0px;
+  top: -50px;
+  border: 0px;
+  margin: 0px;
+  width: 64px;
+  height: 114px;
+}
+#contact #picture #uploadnotice {
+  width: 64px;
+  height: 20px;
+  background-color: #34a6ff;
+  bottom: -20px;
+  position: absolute;
+  text-align: center;
+  color: #fff;
+}
+#contact #picture:hover input#uploader {
+  cursor: pointer;
+}
+#contact #picture:hover #uploadnotice {
+  bottom: 0px;
+  transition: 0.25s;
 }
 #contact input,
 #contact textarea {
@@ -112,7 +164,7 @@ h4,
 #contact #name {
   display: block;
   line-height: 1em;
-  width: 100%;
+  width: 90%;
   float: none;
   font-size: 2.5em;
   font-weight: bold;
@@ -199,6 +251,10 @@ h4,
 }
 .btn .caret {
   border-top: 4px solid #fff;
+}
+.btn.disabled {
+  border: 1px solid #34a6ff;
+  background-color: transparent;
 }
 .btn:not(.disabled):hover {
   background-color: #fe8800;

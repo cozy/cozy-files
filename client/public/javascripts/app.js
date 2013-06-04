@@ -116,6 +116,17 @@ window.require.register("collections/contact", function(exports, require, module
 
     ContactCollection.prototype.url = 'contacts';
 
+    ContactCollection.prototype.comparator = 'name';
+
+    ContactCollection.prototype.initialize = function() {
+      var _this = this;
+
+      ContactCollection.__super__.initialize.apply(this, arguments);
+      return this.on('change:name', function() {
+        return _this.sort();
+      });
+    };
+
     return ContactCollection;
 
   })(Backbone.Collection);
@@ -156,6 +167,12 @@ window.require.register("collections/datapoint", function(exports, require, modu
         }
       });
       return this.remove(toDelete);
+    };
+
+    DataPointCollection.prototype.match = function(filter) {
+      return this.any(function(datapoint) {
+        return filter.test(datapoint.get('value'));
+      });
     };
 
     return DataPointCollection;
@@ -249,6 +266,7 @@ window.require.register("lib/view_collection", function(exports, require, module
       this.listenTo(this.collection, "reset", this.onReset);
       this.listenTo(this.collection, "add", this.addItem);
       this.listenTo(this.collection, "remove", this.removeItem);
+      this.listenTo(this.collection, "sort", this.onReset);
       return this.onReset(this.collection);
     };
 
@@ -315,6 +333,7 @@ window.require.register("lib/view_collection", function(exports, require, module
 });
 window.require.register("models/contact", function(exports, require, module) {
   var Contact, DataPointCollection,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -326,7 +345,7 @@ window.require.register("models/contact", function(exports, require, module) {
     Contact.prototype.urlRoot = 'contacts';
 
     function Contact() {
-      this.dataPoints = new DataPointCollection();
+      this.match = __bind(this.match, this);    this.dataPoints = new DataPointCollection();
       Contact.__super__.constructor.apply(this, arguments);
     }
 
@@ -345,9 +364,27 @@ window.require.register("models/contact", function(exports, require, module) {
       return attrs;
     };
 
-    Contact.prototype.save = function() {
-      this.dataPoints.prune();
-      return Contact.__super__.save.apply(this, arguments);
+    Contact.prototype.sync = function(method, model, options) {
+      var success,
+        _this = this;
+
+      if (this.picture) {
+        options.contentType = false;
+        options.data = new FormData();
+        options.data.append('picture', this.picture);
+        options.data.append('contact', JSON.stringify(this.toJSON()));
+        success = options.success;
+        options.success = function(resp) {
+          success(resp);
+          _this.trigger('change', _this, {});
+          return delete _this.picture;
+        };
+      }
+      return Contact.__super__.sync.call(this, method, model, options);
+    };
+
+    Contact.prototype.match = function(filter) {
+      return filter.test(this.get('name')) || filter.test(this.get('notes')) || this.dataPoints.match(filter);
     };
 
     Contact.prototype.toJSON = function() {
@@ -355,6 +392,7 @@ window.require.register("models/contact", function(exports, require, module) {
 
       json = Contact.__super__.toJSON.apply(this, arguments);
       json.datapoints = this.dataPoints.toJSON();
+      delete json.picture;
       return json;
     };
 
@@ -495,7 +533,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   var interp;
   buf.push('<div id="spinOverlay"><span>saving ...</span></div><input');
   buf.push(attrs({ 'id':('name'), 'placeholder':("Name"), 'value':("" + (name) + "") }, {"placeholder":true,"value":true}));
-  buf.push('/>');
+  buf.push('/><div id="picture">');
   if ( typeof(id) != 'undefined')
   {
   buf.push('<img');
@@ -506,7 +544,18 @@ window.require.register("templates/contact", function(exports, require, module) 
   {
   buf.push('<img src="img/defaultpicture.png" class="picture"/>');
   }
-  buf.push('<a id="close" href="#">&times;</a><textarea rows="3" placeholder="Take notes here" id="notes">' + escape((interp = notes) == null ? '' : interp) + '</textarea><div id="commands"><a id="save" class="btn">  Save</a><a id="delete" class="btn">Delete</a><div class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">Add<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a href="#" class="addbirthday">Birthday</a></li><li><a href="#" class="addcompany">Company</a></li><li class="divider"></li><li><a href="#" class="addphone">Phone</a></li><li><a href="#" class="addemail">Email</a></li><li><a href="#" class="addsmail">Address</a></li><li><a href="#" class="addother">Other</a></li></ul></div></div><div id="abouts" class="zone"><h2>About<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="phones" class="zone"><h2>Phones<a class="btn add addphone"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>Emails<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="smails" class="zone"><h2>Postal<a class="btn add addsmail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>Others<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div>');
+  buf.push('<div id="uploadnotice">Change</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea rows="3" placeholder="Take notes here" id="notes">' + escape((interp = notes) == null ? '' : interp) + '</textarea><div id="commands"><a id="save" class="btn">  Save</a><a id="delete" class="btn">Delete</a><div class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">Add<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a href="#" class="addbirthday">Birthday</a></li><li><a href="#" class="addcompany">Company</a></li><li class="divider"></li><li><a href="#" class="addphone">Phone</a></li><li><a href="#" class="addemail">Email</a></li><li><a href="#" class="addsmail">Address</a></li><li><a href="#" class="addother">Other</a></li></ul></div></div><div id="abouts" class="zone"><h2>About<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="phones" class="zone"><h2>Phones<a class="btn add addphone"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>Emails<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="smails" class="zone"><h2>Postal<a class="btn add addsmail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>Others<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div>');
+  }
+  return buf.join("");
+  };
+});
+window.require.register("templates/contactslist", function(exports, require, module) {
+  module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+  attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+  var buf = [];
+  with (locals || {}) {
+  var interp;
+  buf.push('<div id="toolbar"><input id="filterfield" type="text" placeholder="Search ..."/></div>');
   }
   return buf.join("");
   };
@@ -592,11 +641,13 @@ window.require.register("views/contact", function(exports, require, module) {
         'click #delete': this["delete"],
         'blur .value': this.cleanup,
         'keypress #name': this.changeOccured,
-        'keypress #notes': this.changeOccured
+        'keypress #notes': this.changeOccured,
+        'change #uploader': 'photoChanged'
       };
     };
 
     function ContactView(options) {
+      this.photoChanged = __bind(this.photoChanged, this);
       this.save = __bind(this.save, this);    options.collection = options.model.dataPoints;
       ContactView.__super__.constructor.apply(this, arguments);
     }
@@ -630,6 +681,8 @@ window.require.register("views/contact", function(exports, require, module) {
       this.needSaving = false;
       this.namefield = this.$('#name');
       this.notesfield = this.$('#notes');
+      this.uploader = this.$('#uploader')[0];
+      this.picture = this.$('#picture .picture');
       return ContactView.__super__.afterRender.apply(this, arguments);
     };
 
@@ -715,17 +768,57 @@ window.require.register("views/contact", function(exports, require, module) {
       return this.spinner.hide();
     };
 
+    ContactView.prototype.photoChanged = function() {
+      var file, img, reader,
+        _this = this;
+
+      file = this.uploader.files[0];
+      if (!file.type.match(/image\/.*/)) {
+        return alert('This is not an image');
+      }
+      reader = new FileReader();
+      img = new Image();
+      reader.readAsDataURL(file);
+      return reader.onloadend = function() {
+        img.src = reader.result;
+        return img.onload = function() {
+          var array, binary, blob, canvas, ctx, dataUrl, i, ratio, ratiodim, _i, _ref;
+
+          ratiodim = img.width > img.height ? 'height' : 'width';
+          ratio = 64 / img[ratiodim];
+          canvas = document.createElement('canvas');
+          canvas.height = canvas.width = 64;
+          ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, ratio * img.width, ratio * img.height);
+          dataUrl = canvas.toDataURL('image/jpeg');
+          _this.picture.attr('src', dataUrl);
+          binary = atob(dataUrl.split(',')[1]);
+          array = [];
+          for (i = _i = 0, _ref = binary.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+            array.push(binary.charCodeAt(i));
+          }
+          blob = new Blob([new Uint8Array(array)], {
+            type: 'image/jpeg'
+          });
+          _this.model.picture = blob;
+          return _this.changeOccured();
+        };
+      };
+    };
+
     return ContactView;
 
   })(ViewCollection);
   
 });
 window.require.register("views/contactslist", function(exports, require, module) {
-  var ContactsList, ViewCollection, _ref,
+  var App, ContactsList, ViewCollection, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   ViewCollection = require('lib/view_collection');
+
+  App = require('application');
 
   module.exports = ContactsList = (function(_super) {
     __extends(ContactsList, _super);
@@ -739,9 +832,42 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     ContactsList.prototype.itemView = require('views/contactslist_item');
 
+    ContactsList.prototype.template = require('templates/contactslist');
+
+    ContactsList.prototype.events = {
+      'keyup #filterfield': 'keyUpCallback'
+    };
+
     ContactsList.prototype.afterRender = function() {
       ContactsList.__super__.afterRender.apply(this, arguments);
-      return this.collection.fetch();
+      this.collection.fetch();
+      this.filterfield = this.$('#filterfield');
+      return this.filterfield.focus();
+    };
+
+    ContactsList.prototype.keyUpCallback = function(event) {
+      var firstmodel, id, match, view, _ref1;
+
+      if (event.keyCode === 27) {
+        this.filterfield.val('');
+        App.router.navigate("", true);
+      }
+      this.filtertxt = this.filterfield.val();
+      this.filtertxt = this.filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      this.filter = new RegExp(this.filtertxt, 'i');
+      firstmodel = null;
+      _ref1 = this.views;
+      for (id in _ref1) {
+        view = _ref1[id];
+        match = (this.filtertxt === '') || view.model.match(this.filter);
+        view.$el.toggle(match);
+        if (match && !firstmodel) {
+          firstmodel = view.model;
+        }
+      }
+      if (firstmodel && event.keyCode === 13) {
+        return App.router.navigate("contact/" + firstmodel.id, true);
+      }
     };
 
     return ContactsList;
