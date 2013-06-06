@@ -55,10 +55,10 @@ module.exports = (app) ->
             if file = req.files?['picture']
                 data = name: 'picture', type: file.type
                 req.contact.attachFile file.path, data, (err) ->
-                    return res.error 500, "Creation failed.", err if err
+                    return res.error 500, "Update failed.", err if err
 
                     fs.unlink file.path, (err) ->
-                        return res.error 500, "Creation failed.", err if err
+                        console.log "failed to purge #{file.path}"
 
                         res.send req.contact, 201
             else
@@ -78,3 +78,19 @@ module.exports = (app) ->
             stream.pipe res
         else
             res.sendfile path.resolve __dirname, '../assets/defaultpicture.png'
+
+    vCard: (req, res) ->
+        Contact.request 'all', (err, contacts) ->
+            return res.error 500, 'An error occured', err if err
+
+            out = ""
+            out += contact.toVCF() for contact in contacts
+
+            date = new Date()
+            date = "#{date.getYear()}-#{date.getMonth()}-#{date.getDate()}"
+            res.attachment "cozy-contacts-#{date}.vcf"
+            res.set 'Content-Type', 'text/x-vcard'
+            res.send out
+
+
+

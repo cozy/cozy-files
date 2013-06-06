@@ -13,6 +13,8 @@ highlightcolor = #fe8800
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
 
+html
+  height 100%
 
 body
   height 100%
@@ -33,7 +35,8 @@ h1, h2, h3, h4, #name
 
   #toolbar
     background-color lightgrey
-    padding 2px
+    padding 0px 2px
+    height 40px
 
     input
       display block
@@ -48,30 +51,38 @@ h1, h2, h3, h4, #name
       box-shadow none
       border 1px solid highlightcolor
 
-  .contact-thumb
-    display block
-    width 200px
-    float left
-    background-color buttoncolor
-    color white
-    margin 10px
-    padding 10px
+  #contacts
+    position absolute
+    top 40px
+    bottom 0px
+    left 0px
+    right 0px
+    overflow-y scroll
 
-    img
+    .contact-thumb
+      display block
+      width 200px
       float left
-      line-height 100%
+      background-color buttoncolor
+      color white
+      margin 10px
+      padding 10px
 
-    h2
-      padding 0px
-      margin 0px
-      margin-left 70px
-      font-size 1.6em
-      overflow hidden
-      height 80px
+      img
+        float left
+        line-height 100%
 
-  .contact-thumb:hover
-    text-decoration none
-    background-color highlightcolor
+      h2
+        padding 0px
+        margin 0px
+        margin-left 70px
+        font-size 1.6em
+        overflow hidden
+        height 80px
+
+    .contact-thumb:hover
+      text-decoration none
+      background-color highlightcolor
 
 #help, #contact
   width 50%
@@ -83,7 +94,7 @@ h1, h2, h3, h4, #name
   border-left 1px solid buttoncolor
 
 #help
-  #new
+  a
     width 50%
     display block
     background-color buttoncolor
@@ -92,7 +103,7 @@ h1, h2, h3, h4, #name
     text-align center
     margin 70px auto
     padding 10px
-  #new:hover
+  a:hover
     text-decoration none
     background-color highlightcolor
 
@@ -200,6 +211,8 @@ h1, h2, h3, h4, #name
 
     .dropdown-menu
       text-align left
+      a
+        cursor pointer
 
   .zone
     width 48%
@@ -273,3 +286,11 @@ h1, h2, h3, h4, #name
 
 .dropdown-menu
   border-radius 0px
+
+#importer
+  border-radius 0px
+  .btn.disabled
+    color #333333
+  .modal-header
+    background-color buttoncolor
+    color white

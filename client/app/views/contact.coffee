@@ -10,18 +10,21 @@ module.exports = class ContactView extends ViewCollection
 
     events: ->
         'click .addbirthday': @addClicked 'about', 'birthday'
-        'click .addcompany' : @addClicked 'about', 'company'
+        'click .addcompany' : @addClicked 'about', 'org'
+        'click .addtitle'   : @addClicked 'about', 'title'
         'click .addabout'   : @addClicked 'about'
-        'click .addphone'   : @addClicked 'phone'
+        'click .addtel'     : @addClicked 'tel'
         'click .addemail'   : @addClicked 'email'
-        'click .addsmail'   : @addClicked 'smail'
+        'click .addadr'     : @addClicked 'adr'
         'click .addother'   : @addClicked 'other'
-        'click #save'       : @save
-        'click #delete'     : @delete
-        'blur .value'       : @cleanup
-        'keypress #name'    : @changeOccured
-        'keypress #notes'   : @changeOccured
+        'click .addurl'     : @addClicked 'url'
+        'click #save'       : 'save'
+        'click #delete'     : 'delete'
+        'blur .value'       : 'cleanup'
+        'keypress #name'    : 'changeOccured'
+        'keypress #notes'   : 'changeOccured'
         'change #uploader'  : 'photoChanged'
+
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
@@ -41,7 +44,7 @@ module.exports = class ContactView extends ViewCollection
 
     afterRender: ->
         @zones = {}
-        for type in ['about', 'email', 'smail', 'phone', 'other']
+        for type in ['about', 'email', 'adr', 'tel', 'url', 'other']
             @zones[type] = @$('#' + type + 's ul')
 
         @hideEmptyZones()
@@ -72,27 +75,28 @@ module.exports = class ContactView extends ViewCollection
         @model.dataPoints.add point
         @zones[name].children().last().find('.type').focus()
 
-    cleanup: ->
-        @model.dataPoints.prune()
-        @hideEmptyZones()
-
     changeOccured: ->
         @saveButton.removeClass('disabled').text 'save'
         @needSaving = true
 
     modelChanged: ->
-        @namefield.val @model.get 'name'
-        @notesfield.val @model.get 'notes'
+        @namefield.val  @model.get 'fn'
+        @notesfield.val @model.get 'note'
 
     delete: ->
         @model.destroy()
 
+    cleanup: ->
+        @model.dataPoints.prune()
+        @hideEmptyZones()
+
     save: =>
         return unless @needSaving
+        @cleanup()
         @needSaving = false
         @model.save
-            name:  @namefield.val()
-            notes: @notesfield.val()
+            fn:  @namefield.val()
+            note: @notesfield.val()
 
     onRequest: ->
         @spinner.show()

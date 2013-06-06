@@ -8,8 +8,8 @@ module.exports = class DataPointView extends BaseView
     className: 'datapoint'
 
     events: ->
-        'blur .type': @store
-        'blur .value': @store
+        'blur .type'     : 'store'
+        'blur .value'    : 'store'
 
     getRenderData: ->
         _.extend @model.toJSON(), placeholder: @getPlaceHolder()
@@ -22,15 +22,16 @@ module.exports = class DataPointView extends BaseView
     getPossibleTypes: =>
         # TODO : replace me with something smart, like most often used
         switch @model.get 'name'
-            when 'about' then ['company', 'birthday', 'job']
+            when 'about' then ['org', 'birthday', 'title']
             when 'other' then ['skype', 'jabber', 'irc']
             else ['main', 'home', 'work', 'assistant']
 
     getPlaceHolder: ->
         switch @model.get 'name'
             when 'email' then 'john.smith@example.com'
-            when 'smail' then '42 main street ...'
-            when 'phone' then '+33 1 23 45 67 89'
+            when 'adr' then '42 main street ...'
+            when 'tel' then '+33 1 23 45 67 89'
+            when 'url' then 'http://example.com/john-smith'
             when 'about', 'other' then 'type here'
 
     store: ->

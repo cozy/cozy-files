@@ -4,11 +4,11 @@ sampleaddress = 'Box3;Suite215;14 Avenue de la République;Compiègne;Picardie;6
 module.exports =
 
   contact1:
-      name: "John Smith"
-      notes: "notes"
+      fn: "John Smith"
+      note: "notes"
       datapoints: [
-        {name: 'phone', type: 'home', value: '000'}
-        {name: 'phone', type: 'work', value: '111'}
+        {name: 'tel'  , type: 'home', value: '000'}
+        {name: 'tel'  , type: 'work', value: '111'}
         {name: 'email', type: 'home', value: 'jsmith@test.com'}
-        {name: 'smail', type: 'home', value: sampleaddress}
+        {name: 'adr'  , type: 'home', value: sampleaddress}
       ]

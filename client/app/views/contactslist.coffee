@@ -16,8 +16,12 @@ module.exports = class ContactsList extends ViewCollection
     afterRender: ->
         super
         @collection.fetch()
+        @list        = @$ '#contacts'
         @filterfield = @$ '#filterfield'
         @filterfield.focus()
+
+    appendView: (view) ->
+        @list.append view.$el
 
     keyUpCallback: (event) ->
 

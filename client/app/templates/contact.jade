@@ -1,6 +1,6 @@
 #spinOverlay: span saving ...
 
-input#name(placeholder="Name", value="#{name}")
+input#name(placeholder="Name", value="#{fn}")
 
 div#picture
   if typeof(id) != 'undefined'
@@ -12,7 +12,7 @@ div#picture
 
 a#close(href="#") &times;
 
-textarea(rows="3", placeholder="Take notes here")#notes #{notes}
+textarea(rows="3", placeholder="Take notes here")#notes #{note}
 
 #commands
   a.btn#save   Save
@@ -21,13 +21,15 @@ textarea(rows="3", placeholder="Take notes here")#notes #{notes}
     a.btn.dropdown-toggle(data-toggle="dropdown", href="#") Add
       span.caret
     ul.dropdown-menu.pull-right
-      li: a.addbirthday(href="#") Birthday
-      li: a.addcompany(href="#") Company
+      li: a.addbirthday Birthday
+      li: a.addcompany Company
+      li: a.addtitle Title
       li.divider
-      li: a.addphone(href="#") Phone
-      li: a.addemail(href="#") Email
-      li: a.addsmail(href="#") Address
-      li: a.addother(href="#") Other
+      li: a.addtel   Phone
+      li: a.addemail Email
+      li: a.addadr   Postal
+      li: a.addurl   Url
+      li: a.addother Other
 
 
 #abouts.zone
@@ -35,9 +37,9 @@ textarea(rows="3", placeholder="Take notes here")#notes #{notes}
     a.btn.add.addabout: i.icon-plus
   ul
 
-#phones.zone
+#tels.zone
   h2 Phones
-    a.btn.add.addphone: i.icon-plus
+    a.btn.add.addtel: i.icon-plus
   ul
 
 #emails.zone
@@ -45,9 +47,14 @@ textarea(rows="3", placeholder="Take notes here")#notes #{notes}
     a.btn.add.addemail: i.icon-plus
   ul
 
-#smails.zone
+#adrs.zone
   h2 Postal
-    a.btn.add.addsmail: i.icon-plus
+    a.btn.add.addadr: i.icon-plus
+  ul
+
+#urls.zone
+  h2 Links
+    a.btn.add.addurl: i.icon-plus
   ul
 
 #others.zone
