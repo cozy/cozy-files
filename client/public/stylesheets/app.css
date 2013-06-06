@@ -6,6 +6,9 @@
   font-family: main;
   src: url("/fonts/signika-regular.ttf");
 }
+html {
+  height: 100%;
+}
 body {
   height: 100%;
   background-color: #fcfcfc;
@@ -27,7 +30,8 @@ h4,
 }
 #contacts-list #toolbar {
   background-color: #d3d3d3;
-  padding: 2px;
+  padding: 0px 2px;
+  height: 40px;
 }
 #contacts-list #toolbar input {
   display: block;
@@ -42,7 +46,15 @@ h4,
   box-shadow: none;
   border: 1px solid #fe8800;
 }
-#contacts-list .contact-thumb {
+#contacts-list #contacts {
+  position: absolute;
+  top: 40px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  overflow-y: scroll;
+}
+#contacts-list #contacts .contact-thumb {
   display: block;
   width: 200px;
   float: left;
@@ -51,11 +63,11 @@ h4,
   margin: 10px;
   padding: 10px;
 }
-#contacts-list .contact-thumb img {
+#contacts-list #contacts .contact-thumb img {
   float: left;
   line-height: 100%;
 }
-#contacts-list .contact-thumb h2 {
+#contacts-list #contacts .contact-thumb h2 {
   padding: 0px;
   margin: 0px;
   margin-left: 70px;
@@ -63,7 +75,7 @@ h4,
   overflow: hidden;
   height: 80px;
 }
-#contacts-list .contact-thumb:hover {
+#contacts-list #contacts .contact-thumb:hover {
   text-decoration: none;
   background-color: #fe8800;
 }
@@ -77,7 +89,7 @@ h4,
   background-color: #e5e5e5;
   border-left: 1px solid #34a6ff;
 }
-#help #new {
+#help a {
   width: 50%;
   display: block;
   background-color: #34a6ff;
@@ -87,7 +99,7 @@ h4,
   margin: 70px auto;
   padding: 10px;
 }
-#help #new:hover {
+#help a:hover {
   text-decoration: none;
   background-color: #fe8800;
 }
@@ -196,6 +208,9 @@ h4,
 #contact #commands .dropdown-menu {
   text-align: left;
 }
+#contact #commands .dropdown-menu a {
+  cursor: pointer;
+}
 #contact .zone {
   width: 48%;
   margin: 1%;
@@ -269,4 +284,14 @@ h4,
 }
 .dropdown-menu {
   border-radius: 0px;
+}
+#importer {
+  border-radius: 0px;
+}
+#importer .btn.disabled {
+  color: #333;
+}
+#importer .modal-header {
+  background-color: #34a6ff;
+  color: #fff;
 }
