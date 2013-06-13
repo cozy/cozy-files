@@ -1,4 +1,5 @@
 Contact = require '../models/contact'
+async = require 'async'
 
 module.exports = (callback) ->
 
@@ -6,11 +7,11 @@ module.exports = (callback) ->
     Contact.rawRequest 'all', (err, contacts) ->
         return callback err if err
 
-        for contact in contacts
+        async.forEachSeries contacts, (contact, cb) ->
 
             contact = contact.value
 
-            return if contact.fn
+            return cb null if contact.fn
 
             console.log "converting #{contact.name}"
 
@@ -31,4 +32,5 @@ module.exports = (callback) ->
                 Contact.find contact._id, (err, contact) ->
                     return console.log(err.stack) if err
 
-                    contact.destroy callback
+                    contact.destroy cb
+        , callback
