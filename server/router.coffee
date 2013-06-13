@@ -6,6 +6,7 @@ module.exports = (app) ->
 
     # CRUD routes
     app.get   '/contacts/?',                                  contact.list
+    app.get   '/contacts.vcf',                                contact.vCard
     app.post  '/contacts/?',                                  contact.create
     app.get   '/contacts/:contactid/?',                       contact.read
     app.put   '/contacts/:contactid/?',                       contact.update

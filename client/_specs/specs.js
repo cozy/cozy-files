@@ -316,3 +316,58 @@ describe('lib/view_collection', function() {
   });
 });
 ;
+describe('vCard Import', function() {
+  var Contact, ContactView, aContactVCF, gContactVCF;
+
+  Contact = require('models/contact');
+  ContactView = require('views/contact');
+  gContactVCF = "BEGIN:VCARD\nVERSION:3.0\nFN:Test Contact\nN:Contact;Test;;;\nEMAIL;TYPE=INTERNET;TYPE=HOME:test@example.com\nEMAIL;TYPE=INTERNET;TYPE=WORK:test2@example.com\nTEL;TYPE=CELL:0600000000\nTEL;TYPE=WORK:0610000000\nADR;TYPE=HOME:;;1 Sample Adress;PARIS;;75001;FRANCE\nADR;TYPE=WORK:;;2 Sample Address;PARIS;;75002;FRANCE\nORG:MyCompany\nitem1.URL:http\\://test.example.com\nitem1.X-ABLabel:PROFILE\nitem2.EMAIL;TYPE=INTERNET:test3@example.com\nitem2.X-ABLabel:truc\nX-UNKNOWN:test\nTITLE:CEO\nEND:VCARD";
+  aContactVCF = "BEGIN:VCARD\nVERSION:3.0\nN:COISNE;Anthony;;;\nFN:Anthony COISNE\nEMAIL;type=INTERNET;type=WORK;type=pref:monemail@email.com\nTEL;type=WORK;type=pref:06 33 96 17 49\nitem1.ADR;type=HOME;type=pref:;;Rue machin truc;Lille;;62000;France\nitem1.X-ABADR:fr\nNOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>\nCATEGORIES:AD\nX-ABUID:D6B944A1-7E42-44B7-9478-F15988FF84D2\\:ABPerson\nEND:VCARD\nBEGIN:VCARD\nVERSION:3.0\nN:CHOSSON;Simon;;;\nFN:Simon CHOSSON\nEMAIL;type=INTERNET;type=HOME;type=pref:dsankukai@msn.com\nTEL;type=CELL;type=pref:06 27 33 20 73\nitem1.ADR;type=WORK;type=pref:;;43 rue blabla;Paris;;750000;France\nitem1.X-ABADR:fr\nNOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>\nCATEGORIES:AD\nX-ABUID:DDEE40FC-202E-4B01-8124-CB9B7C680601\\:ABPerson\nEND:VCARD";
+  it('should parse a Google Contacts vCard', function() {
+    var contact, dp, gContact;
+
+    gContact = Contact.fromVCF(gContactVCF);
+    expect(gContact.length).to.equal(1);
+    this.contact = contact = gContact.at(0);
+    expect(contact.attributes).to.have.property('fn', 'Test Contact');
+    expect(contact.dataPoints).to.have.length(10);
+    dp = contact.dataPoints.findWhere({
+      name: 'url',
+      type: 'profile',
+      value: 'http://test.example.com'
+    });
+    expect(dp).to.not.be.an('undefined');
+    dp = contact.dataPoints.findWhere({
+      name: 'email',
+      type: 'truc',
+      value: 'test3@example.com'
+    });
+    return expect(dp).to.not.be.an('undefined');
+  });
+  it('and the generated contact should not bug ContactView', function() {
+    return new ContactView({
+      model: this.contact
+    }).render();
+  });
+  it('should parse Apple Conctacs vCard', function() {
+    var aContact, contact, dp;
+
+    aContact = Contact.fromVCF(aContactVCF);
+    expect(aContact).to.have.length(2);
+    this.contact = contact = aContact.at(0);
+    expect(contact.attributes).to.have.property('fn', 'Anthony COISNE');
+    console.log(contact.dataPoints.toJSON());
+    expect(contact.dataPoints).to.have.length(3);
+    return dp = contact.dataPoints.findWhere({
+      name: 'adr',
+      type: 'home',
+      value: "Rue machin truc\nLille\n62000\nFrance"
+    });
+  });
+  return it('and the generated contact should not bug ContactView', function() {
+    return new ContactView({
+      model: this.contact
+    }).render();
+  });
+});
+;

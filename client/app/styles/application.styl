@@ -8,11 +8,13 @@
 
 bgcolor = #fcfcfc
 shadowcolor = #444
-basecolor = lightgrey
+basecolor = lightgrey + 40%
 highlightcolor = #fe8800
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
 
+html
+  height 100%
 
 body
   height 100%
@@ -31,30 +33,56 @@ h1, h2, h3, h4, #name
   left 0px
   right 0px
 
-  .contact-thumb
-    display block
-    width 200px
-    float left
-    background-color buttoncolor
-    color white
-    margin 10px
-    padding 10px
+  #toolbar
+    background-color lightgrey
+    padding 0px 2px
+    height 40px
 
-    img
-      float left
-      line-height 100%
-
-    h2
-      padding 0px
+    input
+      display block
+      width 95%
+      background-color lightgrey
+      border 1px solid transparent
+      border-radius 0px
+      box-shadow none
       margin 0px
-      margin-left 70px
-      font-size 1.6em
-      overflow hidden
-      height 80px
 
-  .contact-thumb:hover
-    text-decoration none
-    background-color highlightcolor
+    input:focus
+      box-shadow none
+      border 1px solid highlightcolor
+
+  #contacts
+    position absolute
+    top 40px
+    bottom 0px
+    left 0px
+    right 0px
+    overflow-y scroll
+
+    .contact-thumb
+      display block
+      width 200px
+      float left
+      background-color buttoncolor
+      color white
+      margin 10px
+      padding 10px
+
+      img
+        float left
+        line-height 100%
+
+      h2
+        padding 0px
+        margin 0px
+        margin-left 70px
+        font-size 1.6em
+        overflow hidden
+        height 80px
+
+    .contact-thumb:hover
+      text-decoration none
+      background-color highlightcolor
 
 #help, #contact
   width 50%
@@ -66,7 +94,7 @@ h1, h2, h3, h4, #name
   border-left 1px solid buttoncolor
 
 #help
-  #new
+  a
     width 50%
     display block
     background-color buttoncolor
@@ -75,7 +103,7 @@ h1, h2, h3, h4, #name
     text-align center
     margin 70px auto
     padding 10px
-  #new:hover
+  a:hover
     text-decoration none
     background-color highlightcolor
 
@@ -98,12 +126,48 @@ h1, h2, h3, h4, #name
     text-decoration none
     background-color highlightcolor
 
-  img
+  #picture
     display block
     position absolute
-    top 8px
-    left 8px
     border 3px solid buttoncolor
+    left 8px
+    top 8px
+    width 64px
+    height 64px
+    overflow hidden
+
+    img.picture
+      position absolute
+      display block
+      width 64px
+      height 64px
+
+    input#uploader
+      opacity 0.01
+      position absolute
+      left 0px
+      top -50px
+      border 0px
+      margin 0px
+      width 64px
+      height 114px
+
+    #uploadnotice
+      width 64px
+      height 20px
+      background-color buttoncolor
+      bottom -20px
+      position absolute
+      text-align center
+      color white
+
+  #picture:hover
+    input#uploader
+      cursor pointer
+    #uploadnotice
+      bottom 0px
+      transition 0.25s
+
 
   input, textarea
     border-radius 0px
@@ -117,7 +181,7 @@ h1, h2, h3, h4, #name
   #name
     display block
     line-height 1em
-    width 100%
+    width 90%
     float none
     font-size 2.5em
     font-weight bold
@@ -147,6 +211,8 @@ h1, h2, h3, h4, #name
 
     .dropdown-menu
       text-align left
+      a
+        cursor pointer
 
   .zone
     width 48%
@@ -203,6 +269,9 @@ h1, h2, h3, h4, #name
   .caret
     border-top 4px solid white
 
+.btn.disabled
+  border 1px solid buttoncolor
+  background-color transparent
 
 .btn:not(.disabled):hover
   background-color highlightcolor
@@ -217,3 +286,11 @@ h1, h2, h3, h4, #name
 
 .dropdown-menu
   border-radius 0px
+
+#importer
+  border-radius 0px
+  .btn.disabled
+    color #333333
+  .modal-header
+    background-color buttoncolor
+    color white
