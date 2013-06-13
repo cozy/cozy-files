@@ -5,7 +5,7 @@ module.exports = (app) ->
 
     # all environements
     app.use express.bodyParser
-        uploadDir: './uploads'
+        # uploadDir: './uploads'
         keepExtensions: true
 
     # extend express to DRY controllers

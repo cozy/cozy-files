@@ -13,3 +13,6 @@ module.exports = class DataPointCollection extends Backbone.Collection
                 toDelete.push datapoint
 
         @remove toDelete
+
+    match: (filter) ->
+        @any (datapoint) -> filter.test datapoint.get('value')

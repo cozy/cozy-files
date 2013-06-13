@@ -10,17 +10,21 @@ module.exports = class ContactView extends ViewCollection
 
     events: ->
         'click .addbirthday': @addClicked 'about', 'birthday'
-        'click .addcompany' : @addClicked 'about', 'company'
+        'click .addcompany' : @addClicked 'about', 'org'
+        'click .addtitle'   : @addClicked 'about', 'title'
         'click .addabout'   : @addClicked 'about'
-        'click .addphone'   : @addClicked 'phone'
+        'click .addtel'     : @addClicked 'tel'
         'click .addemail'   : @addClicked 'email'
-        'click .addsmail'   : @addClicked 'smail'
+        'click .addadr'     : @addClicked 'adr'
         'click .addother'   : @addClicked 'other'
-        'click #save'       : @save
-        'click #delete'     : @delete
-        'blur .value'       : @cleanup
-        'keypress #name'    : @changeOccured
-        'keypress #notes'   : @changeOccured
+        'click .addurl'     : @addClicked 'url'
+        'click #save'       : 'save'
+        'click #delete'     : 'delete'
+        'blur .value'       : 'cleanup'
+        'keypress #name'    : 'changeOccured'
+        'keypress #notes'   : 'changeOccured'
+        'change #uploader'  : 'photoChanged'
+
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
@@ -40,7 +44,7 @@ module.exports = class ContactView extends ViewCollection
 
     afterRender: ->
         @zones = {}
-        for type in ['about', 'email', 'smail', 'phone', 'other']
+        for type in ['about', 'email', 'adr', 'tel', 'url', 'other']
             @zones[type] = @$('#' + type + 's ul')
 
         @hideEmptyZones()
@@ -49,6 +53,8 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = false
         @namefield = @$('#name')
         @notesfield = @$('#notes')
+        @uploader = @$('#uploader')[0]
+        @picture  = @$('#picture .picture')
 
         super
 
@@ -69,27 +75,28 @@ module.exports = class ContactView extends ViewCollection
         @model.dataPoints.add point
         @zones[name].children().last().find('.type').focus()
 
-    cleanup: ->
-        @model.dataPoints.prune()
-        @hideEmptyZones()
-
     changeOccured: ->
         @saveButton.removeClass('disabled').text 'save'
         @needSaving = true
 
     modelChanged: ->
-        @namefield.val @model.get 'name'
-        @notesfield.val @model.get 'notes'
+        @namefield.val  @model.get 'fn'
+        @notesfield.val @model.get 'note'
 
     delete: ->
         @model.destroy()
 
+    cleanup: ->
+        @model.dataPoints.prune()
+        @hideEmptyZones()
+
     save: =>
         return unless @needSaving
+        @cleanup()
         @needSaving = false
         @model.save
-            name:  @namefield.val()
-            notes: @notesfield.val()
+            fn:  @namefield.val()
+            note: @notesfield.val()
 
     onRequest: ->
         @spinner.show()
@@ -100,3 +107,41 @@ module.exports = class ContactView extends ViewCollection
 
     onError: ->
         @spinner.hide()
+
+    photoChanged: () =>
+
+        file = @uploader.files[0]
+
+        unless file.type.match /image\/.*/
+            return alert 'This is not an image'
+
+        reader = new FileReader()
+        img = new Image()
+        reader.readAsDataURL file
+        reader.onloadend = =>
+            img.src = reader.result
+            img.onload = =>
+                ratiodim = if img.width > img.height then 'height' else 'width'
+                ratio = 64 / img[ratiodim]
+
+                # use canvas to resize the image
+                canvas = document.createElement 'canvas'
+                canvas.height = canvas.width = 64
+                ctx = canvas.getContext '2d'
+                ctx.drawImage img, 0, 0, ratio*img.width, ratio*img.height
+                dataUrl =  canvas.toDataURL 'image/jpeg'
+
+                @picture.attr 'src', dataUrl
+
+                #transform into a blob
+                binary = atob dataUrl.split(',')[1]
+                array = []
+                for i in [0..binary.length]
+                    array.push binary.charCodeAt i
+
+                blob = new Blob [new Uint8Array(array)], type: 'image/jpeg'
+
+                @model.picture = blob
+                @changeOccured()
+
+

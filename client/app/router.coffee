@@ -1,16 +1,27 @@
 app              = require 'application'
 ContactView      = require 'views/contact'
 HelpView         = require 'views/help'
+ImporterView     = require 'views/importer'
 Contact          = require 'models/contact'
 
 module.exports = class Router extends Backbone.Router
     routes:
         ''                    : 'help'
+        'import'              : 'import'
         'contact/new'         : 'newcontact'
         'contact/:id'         : 'showcontact'
 
+    initialize: ->
+        $('body').on 'keyup', (e) =>
+            @navigate "", true if event.keyCode is 27 #ESC
+
     help: ->
         @displayView new HelpView()
+
+    import: ->
+        @help()
+        @importer = new ImporterView()
+        $('body').append @importer.render().$el
 
     newcontact: ->
         contact = new Contact()
@@ -33,7 +44,7 @@ module.exports = class Router extends Backbone.Router
 
         else
             alert "this contact doesn't exist"
-            @navigate '', false
+            @navigate '', true
 
 
     # helpers
@@ -44,6 +55,9 @@ module.exports = class Router extends Backbone.Router
             app.contactview.save()
             app.contactview.once 'sync', => @displayView view
             return
+
+        @importer.close() if @importer
+        @importer = null
 
         app.contactview.remove() if app.contactview
         app.contactview = view

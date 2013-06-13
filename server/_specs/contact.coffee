@@ -21,7 +21,7 @@ describe 'Read operations', ->
             expect(@body).to.be.an 'array'
             expect(@body).to.have.length 1
             expect(@body[0].id).to.exist
-            expect(@body[0].name).to.equal fixtures.contact1.name
+            expect(@body[0].fn).to.equal fixtures.contact1.fn
             @id = @body[0].id
 
     describe 'Read - GET /contacts/:id', ->
@@ -30,8 +30,8 @@ describe 'Read operations', ->
             @client.get "contacts/#{@id}", done
 
         it 'should reply with one contact', ->
-            expect(@body.name).to.equal fixtures.contact1.name
-            expect(@body.notes).to.equal fixtures.contact1.notes
+            expect(@body.fn).to.equal fixtures.contact1.fn
+            expect(@body.note).to.equal fixtures.contact1.note
             expect(@body.id).to.exist
 
     describe 'Create - POST /albums', ->
@@ -43,31 +43,28 @@ describe 'Read operations', ->
             @client.post 'contacts', contact, done
 
         it 'should reply with the created contact', ->
-            expect(@body.name).to.equal contact.name
+            expect(@body.fn).to.equal contact.fn
             expect(@body.id).to.exist
             @id = @body.id
 
     describe 'Update - PUT /albums/:id', ->
 
         update =
-            notes: 'funny guy'
+            note: 'funny guy'
 
         it 'should allow requests', (done) ->
             @client.put "contacts/#{@id}", update, done
 
         it 'should reply with the updated album', ->
-            expect(@body.notes).to.equal update.notes
+            expect(@body.note).to.equal update.note
 
         it 'when I GET the album', (done) ->
             @client.get "contacts/#{@id}", done
 
         it 'then it is changed', ->
-            expect(@body.notes).to.equal update.notes
+            expect(@body.note).to.equal update.note
 
     describe 'Delete - DELETE /cotacts/:id', ->
-
-        update =
-            notes: 'funny guy'
 
         it 'should allow requests', (done) ->
             @client.del "contacts/#{@id}", done

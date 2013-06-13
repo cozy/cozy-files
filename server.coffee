@@ -8,7 +8,12 @@ configure(app)
 router(app)
 
 if not module.parent
-    init -> # ./init.coffee
+    init (err) -> # ./init.coffee
+        if err
+          console.log "Initialization failed, not starting"
+          console.log err.stack
+          return
+
         port = process.env.PORT or 9114
         host = process.env.HOST or "127.0.0.1"
 
