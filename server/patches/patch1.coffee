@@ -10,7 +10,7 @@ module.exports = (callback) ->
 
             contact = contact.value
 
-            return unless contact.name
+            return if contact.fn
 
             console.log "converting #{contact.name}"
 
