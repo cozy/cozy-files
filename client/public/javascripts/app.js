@@ -83,7 +83,6 @@ window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
       var ContactsCollection, ContactsList, Router;
-
       ContactsCollection = require('collections/contact');
       ContactsList = require('views/contactslist');
       Router = require('router');
@@ -120,7 +119,6 @@ window.require.register("collections/contact", function(exports, require, module
 
     ContactCollection.prototype.initialize = function() {
       var _this = this;
-
       ContactCollection.__super__.initialize.apply(this, arguments);
       return this.on('change:name', function() {
         return _this.sort();
@@ -156,11 +154,9 @@ window.require.register("collections/datapoint", function(exports, require, modu
     DataPointCollection.prototype.prune = function() {
       var toDelete,
         _this = this;
-
       toDelete = [];
       this.each(function(datapoint) {
         var value;
-
         value = datapoint.get('value');
         if ((value === null) || (value === '') || (value === ' ')) {
           return toDelete.push(datapoint);
@@ -201,7 +197,8 @@ window.require.register("lib/base_view", function(exports, require, module) {
     __extends(BaseView, _super);
 
     function BaseView() {
-      this.render = __bind(this.render, this);    _ref = BaseView.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref = BaseView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -215,7 +212,6 @@ window.require.register("lib/base_view", function(exports, require, module) {
 
     BaseView.prototype.render = function() {
       var data;
-
       data = _.extend({}, this.options, this.getRenderData());
       this.$el.html(this.template(data));
       this.afterRender();
@@ -242,7 +238,8 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     function ViewCollection() {
       this.removeItem = __bind(this.removeItem, this);
-      this.addItem = __bind(this.addItem, this);    _ref = ViewCollection.__super__.constructor.apply(this, arguments);
+      this.addItem = __bind(this.addItem, this);
+      _ref = ViewCollection.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -272,7 +269,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.render = function() {
       var id, view, _ref1;
-
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
@@ -283,7 +279,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.afterRender = function() {
       var id, view, _ref1;
-
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
@@ -299,7 +294,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.onReset = function(newcollection) {
       var id, view, _ref1;
-
       _ref1 = this.views;
       for (id in _ref1) {
         view = _ref1[id];
@@ -310,7 +304,6 @@ window.require.register("lib/view_collection", function(exports, require, module
 
     ViewCollection.prototype.addItem = function(model) {
       var options, view;
-
       options = _.extend({}, {
         model: model
       }, this.itemViewOptions(model));
@@ -348,7 +341,8 @@ window.require.register("models/contact", function(exports, require, module) {
 
     function Contact() {
       this.match = __bind(this.match, this);
-      this.addDP = __bind(this.addDP, this);    this.dataPoints = new DataPointCollection();
+      this.addDP = __bind(this.addDP, this);
+      this.dataPoints = new DataPointCollection();
       Contact.__super__.constructor.apply(this, arguments);
     }
 
@@ -370,7 +364,6 @@ window.require.register("models/contact", function(exports, require, module) {
     Contact.prototype.sync = function(method, model, options) {
       var success,
         _this = this;
-
       if (this.picture) {
         options.contentType = false;
         options.data = new FormData();
@@ -400,7 +393,6 @@ window.require.register("models/contact", function(exports, require, module) {
 
     Contact.prototype.toJSON = function() {
       var json;
-
       json = Contact.__super__.toJSON.apply(this, arguments);
       json.datapoints = this.dataPoints.toJSON();
       delete json.picture;
@@ -413,7 +405,6 @@ window.require.register("models/contact", function(exports, require, module) {
 
   Contact.fromVCF = function(vcf) {
     var ContactCollection, all, current, currentdp, currentidx, currentversion, imported, itemidx, key, line, part, pname, properties, property, pvalue, regexps, value, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
-
     regexps = {
       begin: /^BEGIN:VCARD$/i,
       end: /^END:VCARD$/i,
@@ -581,7 +572,6 @@ window.require.register("router", function(exports, require, module) {
 
     Router.prototype.initialize = function() {
       var _this = this;
-
       return $('body').on('keyup', function(e) {
         if (event.keyCode === 27) {
           return _this.navigate("", true);
@@ -602,7 +592,6 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.newcontact = function() {
       var contact,
         _this = this;
-
       contact = new Contact();
       contact.once('change:id', function() {
         app.contacts.add(contact);
@@ -615,7 +604,6 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.showcontact = function(id) {
       var contact,
         _this = this;
-
       if (app.contacts.length === 0) {
         app.contacts.once('sync', function() {
           return _this.showcontact(id);
@@ -634,7 +622,6 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.displayView = function(view) {
       var _ref1,
         _this = this;
-
       if (this.currentContact) {
         this.stopListening(this.currentContact);
       }
@@ -808,7 +795,8 @@ window.require.register("views/contact", function(exports, require, module) {
 
     function ContactView(options) {
       this.photoChanged = __bind(this.photoChanged, this);
-      this.save = __bind(this.save, this);    options.collection = options.model.dataPoints;
+      this.save = __bind(this.save, this);
+      options.collection = options.model.dataPoints;
       ContactView.__super__.constructor.apply(this, arguments);
     }
 
@@ -828,7 +816,6 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.afterRender = function() {
       var type, _i, _len, _ref;
-
       this.zones = {};
       _ref = ['about', 'email', 'adr', 'tel', 'url', 'other'];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -848,7 +835,6 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.hideEmptyZones = function() {
       var type, zone, _ref, _results;
-
       _ref = this.zones;
       _results = [];
       for (type in _ref) {
@@ -860,7 +846,6 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.appendView = function(dataPointView) {
       var type;
-
       if (!this.zones) {
         return;
       }
@@ -872,7 +857,6 @@ window.require.register("views/contact", function(exports, require, module) {
     ContactView.prototype.addClicked = function(name, type) {
       return function(event) {
         var point;
-
         event.preventDefault();
         point = new Datapoint({
           name: name
@@ -932,7 +916,6 @@ window.require.register("views/contact", function(exports, require, module) {
     ContactView.prototype.photoChanged = function() {
       var file, img, reader,
         _this = this;
-
       file = this.uploader.files[0];
       if (!file.type.match(/image\/.*/)) {
         return alert('This is not an image');
@@ -944,7 +927,6 @@ window.require.register("views/contact", function(exports, require, module) {
         img.src = reader.result;
         return img.onload = function() {
           var array, binary, blob, canvas, ctx, dataUrl, i, ratio, ratiodim, _i, _ref;
-
           ratiodim = img.width > img.height ? 'height' : 'width';
           ratio = 64 / img[ratiodim];
           canvas = document.createElement('canvas');
@@ -1013,7 +995,6 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     ContactsList.prototype.keyUpCallback = function(event) {
       var firstmodel, id, match, view, _ref1;
-
       if (event.keyCode === 27) {
         this.filterfield.val('');
         App.router.navigate("", true);
@@ -1093,7 +1074,8 @@ window.require.register("views/datapoint", function(exports, require, module) {
     __extends(DataPointView, _super);
 
     function DataPointView() {
-      this.getPossibleTypes = __bind(this.getPossibleTypes, this);    _ref = DataPointView.__super__.constructor.apply(this, arguments);
+      this.getPossibleTypes = __bind(this.getPossibleTypes, this);
+      _ref = DataPointView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -1190,7 +1172,8 @@ window.require.register("views/help", function(exports, require, module) {
 window.require.register("views/importer", function(exports, require, module) {
   var BaseView, Contact, ImporterView, app, _ref,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   BaseView = require('lib/base_view');
 
@@ -1229,11 +1212,11 @@ window.require.register("views/importer", function(exports, require, module) {
     };
 
     ImporterView.prototype.onupload = function() {
-      var file, reader,
+      var file, reader, validMimeTypes, _ref1,
         _this = this;
-
       file = this.upload.files[0];
-      if (file.type !== 'text/x-vcard') {
+      validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory', 'text/directory;profile=vcard'];
+      if (_ref1 = file.type.toLowerCase(), __indexOf.call(validMimeTypes, _ref1) < 0) {
         this.$('.control-group').addClass('error');
         this.$('.help-inline').text('is not a vCard');
         return;
@@ -1242,7 +1225,6 @@ window.require.register("views/importer", function(exports, require, module) {
       reader.readAsText(file);
       return reader.onloadend = function() {
         var txt;
-
         _this.toImport = Contact.fromVCF(reader.result);
         txt = "<p>Ready to import " + _this.toImport.length + " contacts :</p><ul>";
         _this.toImport.each(function(contact) {

@@ -22,7 +22,9 @@ module.exports = class ImporterView extends BaseView
 
     onupload: ->
         file = @upload.files[0]
-        if file.type isnt 'text/x-vcard'
+        validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory',
+                          'text/directory;profile=vcard']
+        if file.type.toLowerCase() not in validMimeTypes
             @$('.control-group').addClass 'error'
             @$('.help-inline').text 'is not a vCard'
             return
