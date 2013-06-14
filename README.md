@@ -2,6 +2,9 @@
 
 A cozy app to manage your contacts.
 
+[![Build
+Status](https://travis-ci.org/mycozycloud/cozy-contacts.png?branch=master)](https://travis-ci.org/mycozycloud/cozy-contacts)
+
 # Run
 
 Clone this repository, install dependencies and run server.
