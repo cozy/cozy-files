@@ -15,10 +15,13 @@ describe 'vCard Import', ->
         ADR;TYPE=HOME:;;1 Sample Adress;PARIS;;75001;FRANCE
         ADR;TYPE=WORK:;;2 Sample Address;PARIS;;75002;FRANCE
         ORG:MyCompany
+        BDAY:1989-02-02
         item1.URL:http\\://test.example.com
         item1.X-ABLabel:PROFILE
         item2.EMAIL;TYPE=INTERNET:test3@example.com
         item2.X-ABLabel:truc
+        item3.X-ABDATE:2013-03-14
+        item3.X-ABLabel:_$!<Anniversary>!$_
         X-UNKNOWN:test
         TITLE:CEO
         END:VCARD
@@ -27,25 +30,25 @@ describe 'vCard Import', ->
     aContactVCF = """
         BEGIN:VCARD
         VERSION:3.0
-        N:COISNE;Anthony;;;
-        FN:Anthony COISNE
+        N:LAVOINE;Marc;;;
+        FN:Marc LAVOINE
         EMAIL;type=INTERNET;type=WORK;type=pref:monemail@email.com
-        TEL;type=WORK;type=pref:06 33 96 17 49
+        TEL;type=WORK;type=pref:06 00 00 00 00
         item1.ADR;type=HOME;type=pref:;;Rue machin truc;Lille;;62000;France
         item1.X-ABADR:fr
-        NOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>
+        NOTE:<HTCData><Facebook>id\\:1553000000/friendof\\:1282000000</Facebook></HTCData>
         CATEGORIES:AD
         X-ABUID:D6B944A1-7E42-44B7-9478-F15988FF84D2\\:ABPerson
         END:VCARD
         BEGIN:VCARD
         VERSION:3.0
-        N:CHOSSON;Simon;;;
-        FN:Simon CHOSSON
-        EMAIL;type=INTERNET;type=HOME;type=pref:dsankukai@msn.com
-        TEL;type=CELL;type=pref:06 27 33 20 73
+        N:CRESSON;Siron;;;
+        FN:Siron CRESSON
+        EMAIL;type=INTERNET;type=HOME;type=pref:monemail@msn.com
+        TEL;type=CELL;type=pref:06 00 00 00 00
         item1.ADR;type=WORK;type=pref:;;43 rue blabla;Paris;;750000;France
         item1.X-ABADR:fr
-        NOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>
+        NOTE:<HTCData><Facebook>id\\:1553000000/friendof\\:1553000000</Facebook></HTCData>
         CATEGORIES:AD
         X-ABUID:DDEE40FC-202E-4B01-8124-CB9B7C680601\\:ABPerson
         END:VCARD
@@ -61,7 +64,7 @@ describe 'vCard Import', ->
         @contact = contact = gContact.at 0
 
         expect(contact.attributes).to.have.property 'fn', 'Test Contact'
-        expect(contact.dataPoints).to.have.length 10
+        expect(contact.dataPoints).to.have.length 11
 
         dp = contact.dataPoints.findWhere
             name: 'url'
@@ -88,7 +91,7 @@ describe 'vCard Import', ->
 
         @contact = contact = aContact.at 0
 
-        expect(contact.attributes).to.have.property 'fn', 'Anthony COISNE'
+        expect(contact.attributes).to.have.property 'fn', 'Marc LAVOINE'
 
         console.log contact.dataPoints.toJSON()
 
