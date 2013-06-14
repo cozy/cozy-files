@@ -16,7 +16,7 @@
     "sinon": "~1.6.0"
   },
   "scripts": {
-    "test": "cake tests",
+    "test": "mocha --reporter spec --compilers coffee:coffee-script --colors",
     "start": "coffee server.coffee"
   },
   "repository": "https://github.com/mycozycloud/cozy-contacts",
