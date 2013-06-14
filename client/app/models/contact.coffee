@@ -119,6 +119,8 @@ Contact.fromVCF = (vcf) ->
             key = key.toLowerCase()
 
             if key is 'x-ablabel' or key is 'x-abadr'
+                value = value.replace '_$!<', ''
+                value = value.replace '>!$_', ''
                 currentdp.set 'type', value.toLowerCase()
             else
                 for property in properties
@@ -128,6 +130,8 @@ Contact.fromVCF = (vcf) ->
                 if key is 'adr'
                     value = value.join("\n").replace /\n+/g, "\n"
 
+                if key is 'x-abdate'
+                    key = 'about'
 
                 currentdp.set 'name', key.toLowerCase()
                 currentdp.set 'value', value.replace "\\:", ":"
