@@ -1,6 +1,10 @@
 DataPoint = require 'models/datapoint'
 DataPointCollection = require 'collections/datapoint'
 
+ANDROID_RELATION_TYPES = ['custom', 'assistant', 'brother', 'child',
+            'domestic partner', 'father', 'friend', 'manager', 'mother',
+            'parent', 'partner', 'referred by', 'relative', 'sister', 'spouse']
+
 # A contact
 # Properties :
 # - dataPoints : a PhotoCollection of the photo in this album
@@ -55,6 +59,24 @@ module.exports = class Contact extends Backbone.Model
         return json
 
 
+
+AndroidToDP = (contact, raw) ->
+    parts = raw.split ';'
+    switch parts[0].replace 'vnd.android.cursor.item/', ''
+        when 'contact_event'
+            value = parts[1]
+            type = if parts[2] in ['0', '2'] then parts[3]
+            else if parts[2] is '1' then 'anniversary'
+            else 'birthday'
+            contact.addDP 'about', type, value
+        when 'relation'
+            console.log parts
+            value = parts[1]
+            type = ANDROID_RELATION_TYPES[+parts[2]]
+            console.log type
+            type = parts[3] if type is 'custom'
+            contact.addDP 'other', type, value
+
 Contact.fromVCF = (vcf) ->
 
     # inspired by https://github.com/mattt/vcard.js
@@ -63,6 +85,7 @@ Contact.fromVCF = (vcf) ->
         begin:       /^BEGIN:VCARD$/i
         end:         /^END:VCARD$/i
         simple:      /^(version|fn|title|org|note)\:(.+)$/i
+        android:     /^x-android-custom\:(.+)$/i
         composedkey: /^item(\d{1,2})\.([^\:]+):(.+)$/
         complex:     /^([^\:\;]+);([^\:]+)\:(.+)$/
         property:    /^(.+)=(.+)$/
@@ -99,6 +122,13 @@ Contact.fromVCF = (vcf) ->
                     current.addDP 'about', key, value
                 when 'fn', 'note'
                     current.set key, value
+                when 'bday'
+                    current.addDP 'about', 'birthday', value
+
+        else if regexps.android.test line
+                [all, value] = line.match regexps.android
+                console.log 'androd', value
+                AndroidToDP current, value
 
         else if regexps.composedkey.test line
             [all, itemidx, part, value] = line.match regexps.composedkey
@@ -133,6 +163,9 @@ Contact.fromVCF = (vcf) ->
                 if key is 'x-abdate'
                     key = 'about'
 
+                if key is 'x-abrelatednames'
+                    key = 'other'
+
                 currentdp.set 'name', key.toLowerCase()
                 currentdp.set 'value', value.replace "\\:", ":"
 
@@ -141,6 +174,8 @@ Contact.fromVCF = (vcf) ->
 
             current.dataPoints.add currentdp if currentdp
             currentdp = new DataPoint()
+
+            # console.log all, '-->', key, properties, value
 
             value = value.split(';')
             value = value[0] if value.length is 1
@@ -156,8 +191,16 @@ Contact.fromVCF = (vcf) ->
                 continue
 
             properties = properties.split ';'
+
+            # console.log "properties=", properties
+
             for property in properties
-                [all, pname, pvalue] = property.match regexps.property
+                match = property.match regexps.property
+                if match then [all, pname, pvalue] = match
+                else
+                    pname = 'type'
+                    pvalue = property
+
                 if pname is 'type' and pvalue is 'pref'
                     currentdp.set 'pref', 1
                 else

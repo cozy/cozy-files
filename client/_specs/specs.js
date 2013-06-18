@@ -317,57 +317,48 @@ describe('lib/view_collection', function() {
 });
 ;
 describe('vCard Import', function() {
-  var Contact, ContactView, aContactVCF, gContactVCF;
+  var Contact, ContactView, VCFS;
 
   Contact = require('models/contact');
   ContactView = require('views/contact');
-  gContactVCF = "BEGIN:VCARD\nVERSION:3.0\nFN:Test Contact\nN:Contact;Test;;;\nEMAIL;TYPE=INTERNET;TYPE=HOME:test@example.com\nEMAIL;TYPE=INTERNET;TYPE=WORK:test2@example.com\nTEL;TYPE=CELL:0600000000\nTEL;TYPE=WORK:0610000000\nADR;TYPE=HOME:;;1 Sample Adress;PARIS;;75001;FRANCE\nADR;TYPE=WORK:;;2 Sample Address;PARIS;;75002;FRANCE\nORG:MyCompany\nitem1.URL:http\\://test.example.com\nitem1.X-ABLabel:PROFILE\nitem2.EMAIL;TYPE=INTERNET:test3@example.com\nitem2.X-ABLabel:truc\nX-UNKNOWN:test\nTITLE:CEO\nEND:VCARD";
-  aContactVCF = "BEGIN:VCARD\nVERSION:3.0\nN:COISNE;Anthony;;;\nFN:Anthony COISNE\nEMAIL;type=INTERNET;type=WORK;type=pref:monemail@email.com\nTEL;type=WORK;type=pref:06 33 96 17 49\nitem1.ADR;type=HOME;type=pref:;;Rue machin truc;Lille;;62000;France\nitem1.X-ABADR:fr\nNOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>\nCATEGORIES:AD\nX-ABUID:D6B944A1-7E42-44B7-9478-F15988FF84D2\\:ABPerson\nEND:VCARD\nBEGIN:VCARD\nVERSION:3.0\nN:CHOSSON;Simon;;;\nFN:Simon CHOSSON\nEMAIL;type=INTERNET;type=HOME;type=pref:dsankukai@msn.com\nTEL;type=CELL;type=pref:06 27 33 20 73\nitem1.ADR;type=WORK;type=pref:;;43 rue blabla;Paris;;750000;France\nitem1.X-ABADR:fr\nNOTE:<HTCData><Facebook>id\\:1553766132/friendof\\:1282644634</Facebook></HTCData>\nCATEGORIES:AD\nX-ABUID:DDEE40FC-202E-4B01-8124-CB9B7C680601\\:ABPerson\nEND:VCARD";
-  it('should parse a Google Contacts vCard', function() {
-    var contact, dp, gContact;
+  VCFS = {
+    google: "BEGIN:VCARD\nVERSION:3.0\nN:Test;Cozy;;;\nFN:Cozy Test\nEMAIL;TYPE=INTERNET;TYPE=WORK:cozytest@cozycloud.cc\nEMAIL;TYPE=INTERNET;TYPE=HOME:cozytest2@cozycloud.cc\nTEL;TYPE=CELL:0600000000\nTEL;TYPE=WORK:0610000000\nADR;TYPE=HOME:;;1 Sample Adress;PARIS;;75001;FRANCE\nADR;TYPE=WORK:;;2 Sample Address;PARIS;;75002;FRANCE\nORG:Cozycloud\nTITLE:Testeur Fou\nBDAY:1989-02-02\nitem1.URL:http\\://test.example.com\nitem1.X-ABLabel:PROFILE\nitem2.EMAIL;TYPE=INTERNET:test3@example.com\nitem2.X-ABLabel:truc\nitem3.X-ABDATE:2013-01-01\nitem3.X-ABLabel:_$!<Anniversary>!$_\nitem4.X-ABRELATEDNAMES:Cozypouet\nitem4.X-ABLabel:_$!<Friend>!$_\nNOTE:Something\nTITLE:CEO\nEND:VCARD",
+    android: "BEGIN:VCARD\nVERSION:2.1\nN:Test;Cozy;;;\nFN:Cozy Test\nNOTE:Something\nX-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;Cozypseudo;1;;;;;;;;;;;;;\nTEL;CELL:060-000-0000\nEMAIL;WORK:cozytest@cozycloud.cc\nEMAIL;HOME:cozytest2@cozycloud.cc\nADR;HOME:;;1 Sample Adress 75001 Paris;;;;\nADR;HOME2:;;2 Sample Adress 75001 Paris;;;;\nORG:Cozycloud\nTITLE:Testeur Fou\nX-ANDROID-CUSTOM:vnd.android.cursor.item/contact_event;2013-01-01;0;Date Perso;;;;;;;;;;;;\nX-ANDROID-CUSTOM:vnd.android.cursor.item/contact_event;2013-01-01;1;;;;;;;;;;;;;\nBDAY:1989-02-02\nX-ANDROID-CUSTOM:vnd.android.cursor.item/relation;Cozypouet;6;;;;;;;;;;;;;\nEND:VCARD",
+    apple: "BEGIN:VCARD\nVERSION:3.0\nN:Test;Cozy;;;\nFN:Cozy Test\nORG:Cozycloud;\nTITLE:Testeur Fou\nEMAIL;type=INTERNET;type=WORK;type=pref:cozytest@cozycloud.cc\nEMAIL;type=INTERNET;type=HOME:cozytest2@cozycloud.cc\nTEL;type=CELL;type=pref:06 00 00 00 00\nTEL;type=CELL;type=WORK:06 00 00 00 00\nADR;type=HOME;type=pref:;;43 rue blabla;Paris;;750000;France\nitem1.ADR;type=WORK;type=pref:;;18 rue poulet;Paris;;75000;France\nitem1.X-ABADR:fr\nBDAY;value=date:1999-02-01\nX-AIM;type=HOME;type=pref:cozypseudo\nitem2.X-ABRELATEDNAMES;type=pref:Cozypouet\nitem2.X-ABLabel:_$!<Friend>!$_\nX-ABUID:7EC63789-9F24-4F95-AF74-A85483437BC8\:ABPerson\nNOTE:Something\nEND:VCARD"
+  };
+  return _.each(VCFS, function(vcf, vendor) {
+    it("should parse a " + vendor + " vCard", function() {
+      var contacts, dp;
 
-    gContact = Contact.fromVCF(gContactVCF);
-    expect(gContact.length).to.equal(1);
-    this.contact = contact = gContact.at(0);
-    expect(contact.attributes).to.have.property('fn', 'Test Contact');
-    expect(contact.dataPoints).to.have.length(10);
-    dp = contact.dataPoints.findWhere({
-      name: 'url',
-      type: 'profile',
-      value: 'http://test.example.com'
+      contacts = Contact.fromVCF(vcf);
+      expect(contacts.length).to.equal(1);
+      this.contact = contacts.at(0);
+      expect(this.contact.attributes).to.have.property('fn', 'Cozy Test');
+      dp = this.contact.dataPoints.findWhere({
+        name: 'email',
+        type: 'work',
+        value: 'cozytest@cozycloud.cc'
+      });
+      expect(dp).to.not.be.an('undefined');
+      dp = this.contact.dataPoints.findWhere({
+        name: 'other',
+        type: 'friend',
+        value: 'Cozypouet'
+      });
+      expect(dp).to.not.be.an('undefined');
+      dp = this.contact.dataPoints.findWhere({
+        name: 'about',
+        type: 'title',
+        value: 'Testeur Fou'
+      });
+      return expect(dp).to.not.be.an('undefined');
     });
-    expect(dp).to.not.be.an('undefined');
-    dp = contact.dataPoints.findWhere({
-      name: 'email',
-      type: 'truc',
-      value: 'test3@example.com'
+    return it('and the generated contact should not bug ContactView', function() {
+      new ContactView({
+        model: this.contact
+      }).render();
+      return this.contact = null;
     });
-    return expect(dp).to.not.be.an('undefined');
-  });
-  it('and the generated contact should not bug ContactView', function() {
-    return new ContactView({
-      model: this.contact
-    }).render();
-  });
-  it('should parse Apple Conctacs vCard', function() {
-    var aContact, contact, dp;
-
-    aContact = Contact.fromVCF(aContactVCF);
-    expect(aContact).to.have.length(2);
-    this.contact = contact = aContact.at(0);
-    expect(contact.attributes).to.have.property('fn', 'Anthony COISNE');
-    console.log(contact.dataPoints.toJSON());
-    expect(contact.dataPoints).to.have.length(3);
-    return dp = contact.dataPoints.findWhere({
-      name: 'adr',
-      type: 'home',
-      value: "Rue machin truc\nLille\n62000\nFrance"
-    });
-  });
-  return it('and the generated contact should not bug ContactView', function() {
-    return new ContactView({
-      model: this.contact
-    }).render();
   });
 });
 ;
