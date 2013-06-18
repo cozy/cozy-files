@@ -6,11 +6,11 @@ module.exports =
 
   startServer: (done) ->
       @app = require '../../server.coffee'
-      @app.init()
-
-      port = process.env.PORT or TESTPORT
-      host = process.env.HOST or "127.0.0.1"
-      @server = @app.listen port, host, done
+      init = require '../../init.coffee'
+      init =>
+          port = process.env.PORT or TESTPORT
+          host = process.env.HOST or "127.0.0.1"
+          @server = @app.listen port, host, done
 
   killServer: ->
       @server.close()
