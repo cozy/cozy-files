@@ -5,7 +5,7 @@
   "main": "server.coffee",
   "dependencies": {
     "jugglingdb": "~0.2.0-25",
-    "jugglingdb-cozy-adapter": "~0.3.2",
+    "jugglingdb-cozy-adapter": "~0.3.3",
     "express": "~3.1.0",
     "async": "~0.2.9"
   },
