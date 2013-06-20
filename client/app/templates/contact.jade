@@ -1,9 +1,33 @@
 #spinOverlay: span saving ...
 
+
+a.btn#save   Save
+
+.btn-group#more
+  a.btn.dropdown-toggle(data-toggle="dropdown", href="#") More &nbsp;
+    span.caret
+  ul.dropdown-menu.pull-right
+    li: a.addbirthday Add Birthday
+    li: a.addcompany  Add Company
+    li: a.addtitle    Add Title
+    li.divider
+    li: a.addtel      Add Phone
+    li: a.addemail    Add Email
+    li: a.addadr      Add Postal
+    li: a.addurl      Add Url
+    li: a.addother    Add Other
+    li.divider
+    li.delete: a#delete
+      i.icon-remove
+      | Delete the contact
+
+
+
+
 input#name(placeholder="Name", value="#{fn}")
 
 div#picture
-  if typeof(id) != 'undefined'
+  if hasPicture
     img.picture(src="contacts/#{id}/picture.png")
   else
     img.picture(src="img/defaultpicture.png")
@@ -14,50 +38,35 @@ a#close(href="#") &times;
 
 textarea(rows="3", placeholder="Take notes here")#notes #{note}
 
-#commands
-  a.btn#save   Save
-  a.btn#delete Delete
-  .btn-group
-    a.btn.dropdown-toggle(data-toggle="dropdown", href="#") Add
-      span.caret
-    ul.dropdown-menu.pull-right
-      li: a.addbirthday Birthday
-      li: a.addcompany Company
-      li: a.addtitle Title
-      li.divider
-      li: a.addtel   Phone
-      li: a.addemail Email
-      li: a.addadr   Postal
-      li: a.addurl   Url
-      li: a.addother Other
 
 
-#abouts.zone
-  h2 About
-    a.btn.add.addabout: i.icon-plus
-  ul
+#zones
+  #abouts.zone
+    h2 About
+      a.btn.add.addabout: i.icon-plus
+    ul
 
-#tels.zone
-  h2 Phones
-    a.btn.add.addtel: i.icon-plus
-  ul
+  #tels.zone
+    h2 Phones
+      a.btn.add.addtel: i.icon-plus
+    ul
 
-#emails.zone
-  h2 Emails
-    a.btn.add.addemail: i.icon-plus
-  ul
+  #emails.zone
+    h2 Emails
+      a.btn.add.addemail: i.icon-plus
+    ul
 
-#adrs.zone
-  h2 Postal
-    a.btn.add.addadr: i.icon-plus
-  ul
+  #adrs.zone
+    h2 Postal
+      a.btn.add.addadr: i.icon-plus
+    ul
 
-#urls.zone
-  h2 Links
-    a.btn.add.addurl: i.icon-plus
-  ul
+  #urls.zone
+    h2 Links
+      a.btn.add.addurl: i.icon-plus
+    ul
 
-#others.zone
-  h2 Others
-    a.btn.add.addother: i.icon-plus
-  ul
+  #others.zone
+    h2 Others
+      a.btn.add.addother: i.icon-plus
+    ul

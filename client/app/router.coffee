@@ -12,11 +12,13 @@ module.exports = class Router extends Backbone.Router
         'contact/:id'         : 'showcontact'
 
     initialize: ->
-        $('body').on 'keyup', (e) =>
+        $('body').on 'keyup', (event) =>
             @navigate "", true if event.keyCode is 27 #ESC
 
     help: ->
         @displayView new HelpView()
+        $('#filterfied').focus()
+        app.contactslist.activate null
 
     import: ->
         @help()
@@ -41,6 +43,7 @@ module.exports = class Router extends Backbone.Router
 
         if contact
             @displayViewFor contact
+            app.contactslist.activate contact
 
         else
             alert "this contact doesn't exist"
@@ -51,9 +54,9 @@ module.exports = class Router extends Backbone.Router
     displayView: (view) ->
         @stopListening @currentContact if @currentContact
 
-        if app.contactview?.needSaving
+        if app.contactview?.needSaving and confirm 'Save changes ?'
             app.contactview.save()
-            app.contactview.once 'sync', => @displayView view
+            app.contactview.model.once 'sync', => @displayView view
             return
 
         @importer.close() if @importer
@@ -61,8 +64,8 @@ module.exports = class Router extends Backbone.Router
 
         app.contactview.remove() if app.contactview
         app.contactview = view
-        app.contactview.render()
         app.contactview.$el.appendTo $('body')
+        app.contactview.render()
 
     displayViewFor: (contact) ->
         @currentContact = contact

@@ -7,8 +7,10 @@ module.exports =
 
         @contacts = new ContactsCollection()
         @contactslist = new ContactsList collection: @contacts
-        @contactslist.render()
         @contactslist.$el.appendTo $('body')
+        @contactslist.render()
+        @contacts.fetch()
+
         @router = new Router()
 
         Backbone.history.start()
