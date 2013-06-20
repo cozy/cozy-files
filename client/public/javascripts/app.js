@@ -91,8 +91,9 @@ window.require.register("application", function(exports, require, module) {
       this.contactslist = new ContactsList({
         collection: this.contacts
       });
-      this.contactslist.render();
       this.contactslist.$el.appendTo($('body'));
+      this.contactslist.render();
+      this.contacts.fetch();
       this.router = new Router();
       return Backbone.history.start();
     }
@@ -362,9 +363,15 @@ window.require.register("models/contact", function(exports, require, module) {
     };
 
     Contact.prototype.parse = function(attrs) {
+      var _ref;
+
       if (attrs.datapoints) {
         this.dataPoints.reset(attrs.datapoints);
         delete attrs.datapoints;
+      }
+      if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {
+        this.hasPicture = true;
+        delete attrs._attachments;
       }
       return attrs;
     };
@@ -381,11 +388,28 @@ window.require.register("models/contact", function(exports, require, module) {
         success = options.success;
         options.success = function(resp) {
           success(resp);
+          _this.hasPicture = true;
           _this.trigger('change', _this, {});
           return delete _this.picture;
         };
       }
       return Contact.__super__.sync.call(this, method, model, options);
+    };
+
+    Contact.prototype.getBest = function(name) {
+      var result;
+
+      result = null;
+      this.dataPoints.each(function(dp) {
+        if (dp.get('name') === name) {
+          if (dp.get('pref')) {
+            return result = dp.get('value');
+          } else {
+            return result != null ? result : result = dp.get('value');
+          }
+        }
+      });
+      return result;
     };
 
     Contact.prototype.addDP = function(name, type, value) {
@@ -627,7 +651,7 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.initialize = function() {
       var _this = this;
 
-      return $('body').on('keyup', function(e) {
+      return $('body').on('keyup', function(event) {
         if (event.keyCode === 27) {
           return _this.navigate("", true);
         }
@@ -635,7 +659,9 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.help = function() {
-      return this.displayView(new HelpView());
+      this.displayView(new HelpView());
+      $('#filterfied').focus();
+      return app.contactslist.activate(null);
     };
 
     Router.prototype["import"] = function() {
@@ -669,7 +695,8 @@ window.require.register("router", function(exports, require, module) {
       }
       contact = app.contacts.get(id);
       if (contact) {
-        return this.displayViewFor(contact);
+        this.displayViewFor(contact);
+        return app.contactslist.activate(contact);
       } else {
         alert("this contact doesn't exist");
         return this.navigate('', true);
@@ -683,9 +710,9 @@ window.require.register("router", function(exports, require, module) {
       if (this.currentContact) {
         this.stopListening(this.currentContact);
       }
-      if ((_ref1 = app.contactview) != null ? _ref1.needSaving : void 0) {
+      if (((_ref1 = app.contactview) != null ? _ref1.needSaving : void 0) && confirm('Save changes ?')) {
         app.contactview.save();
-        app.contactview.once('sync', function() {
+        app.contactview.model.once('sync', function() {
           return _this.displayView(view);
         });
         return;
@@ -698,8 +725,8 @@ window.require.register("router", function(exports, require, module) {
         app.contactview.remove();
       }
       app.contactview = view;
-      app.contactview.render();
-      return app.contactview.$el.appendTo($('body'));
+      app.contactview.$el.appendTo($('body'));
+      return app.contactview.render();
     };
 
     Router.prototype.displayViewFor = function(contact) {
@@ -723,10 +750,10 @@ window.require.register("templates/contact", function(exports, require, module) 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="spinOverlay"><span>saving ...</span></div><input');
+  buf.push('<div id="spinOverlay"><span>saving ...</span></div><a id="save" class="btn">  Save</a><div id="more" class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">More &nbsp;<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a class="addbirthday">Add Birthday</a></li><li><a class="addcompany"> Add Company</a></li><li><a class="addtitle">   Add Title</a></li><li class="divider"></li><li><a class="addtel">     Add Phone</a></li><li><a class="addemail">   Add Email</a></li><li><a class="addadr">     Add Postal</a></li><li><a class="addurl">     Add Url</a></li><li><a class="addother">   Add Other</a></li><li class="divider"></li><li class="delete"><a id="delete"><i class="icon-remove"></i>Delete the contact</a></li></ul></div><input');
   buf.push(attrs({ 'id':('name'), 'placeholder':("Name"), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
   buf.push('/><div id="picture">');
-  if ( typeof(id) != 'undefined')
+  if ( hasPicture)
   {
   buf.push('<img');
   buf.push(attrs({ 'src':("contacts/" + (id) + "/picture.png"), "class": ('picture') }, {"src":true}));
@@ -736,7 +763,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   {
   buf.push('<img src="img/defaultpicture.png" class="picture"/>');
   }
-  buf.push('<div id="uploadnotice">Change</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea rows="3" placeholder="Take notes here" id="notes">' + escape((interp = note) == null ? '' : interp) + '</textarea><div id="commands"><a id="save" class="btn">  Save</a><a id="delete" class="btn">Delete</a><div class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">Add<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a class="addbirthday">Birthday</a></li><li><a class="addcompany">Company</a></li><li><a class="addtitle">Title</a></li><li class="divider"></li><li><a class="addtel">  Phone</a></li><li><a class="addemail">Email</a></li><li><a class="addadr">  Postal</a></li><li><a class="addurl">  Url</a></li><li><a class="addother">Other</a></li></ul></div></div><div id="abouts" class="zone"><h2>About<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>Phones<a class="btn add addtel"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>Emails<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="adrs" class="zone"><h2>Postal<a class="btn add addadr"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="urls" class="zone"><h2>Links<a class="btn add addurl"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>Others<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div>');
+  buf.push('<div id="uploadnotice">Change</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea rows="3" placeholder="Take notes here" id="notes">' + escape((interp = note) == null ? '' : interp) + '</textarea><div id="zones"><div id="abouts" class="zone"><h2>About<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>Phones<a class="btn add addtel"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>Emails<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="adrs" class="zone"><h2>Postal<a class="btn add addadr"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="urls" class="zone"><h2>Links<a class="btn add addurl"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>Others<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div></div>');
   }
   return buf.join("");
   };
@@ -758,9 +785,17 @@ window.require.register("templates/contactslist_item", function(exports, require
   var buf = [];
   with (locals || {}) {
   var interp;
+  if ( hasPicture)
+  {
   buf.push('<img');
   buf.push(attrs({ 'src':("contacts/" + (id) + "/picture.png") }, {"src":true}));
-  buf.push('/><h2>' + escape((interp = fn) == null ? '' : interp) + '</h2>');
+  buf.push('/>');
+  }
+  else
+  {
+  buf.push('<img src="img/defaultpicture.png"/>');
+  }
+  buf.push('<h2>' + escape((interp = fn) == null ? '' : interp) + '</h2><span class="email">' + escape((interp = bestmail) == null ? '' : interp) + '</span><span class="tel">  ' + escape((interp = besttel) == null ? '' : interp) + '</span><div class="clearfix"></div>');
   }
   return buf.join("");
   };
@@ -796,7 +831,7 @@ window.require.register("templates/help", function(exports, require, module) {
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<a id="new" href="#contact/new">Create New Contact</a><a id="importvcf" href="#import">Import vCard</a><a id="exportvcf" href="contacts.vcf">Export vCard</a>');
+  buf.push('<a id="new" href="#contact/new"><i class="icon-plus icon-white"></i><span>New Contact</span></a><a id="importvcf" href="#import"><i class="icon-download icon-white"></i><span>Import vCard</span></a><a id="exportvcf" href="contacts.vcf"><i class="icon-upload icon-white"></i><span>Export vCard</span></a>');
   }
   return buf.join("");
   };
@@ -846,7 +881,9 @@ window.require.register("views/contact", function(exports, require, module) {
         'click #delete': 'delete',
         'blur .value': 'cleanup',
         'keypress #name': 'changeOccured',
+        'change #name': 'changeOccured',
         'keypress #notes': 'changeOccured',
+        'change #notes': 'changeOccured',
         'change #uploader': 'photoChanged'
       };
     };
@@ -868,7 +905,9 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype.getRenderData = function() {
-      return this.model.toJSON();
+      return _.extend({}, this.model.toJSON(), {
+        hasPicture: this.model.hasPicture || false
+      });
     };
 
     ContactView.prototype.afterRender = function() {
@@ -882,13 +921,19 @@ window.require.register("views/contact", function(exports, require, module) {
       }
       this.hideEmptyZones();
       this.spinner = this.$('#spinOverlay');
-      this.saveButton = this.$('#save').addClass('disabled').text('saved');
+      this.saveButton = this.$('#save').addClass('disabled').text('Saved');
       this.needSaving = false;
       this.namefield = this.$('#name');
       this.notesfield = this.$('#notes');
       this.uploader = this.$('#uploader')[0];
       this.picture = this.$('#picture .picture');
-      return ContactView.__super__.afterRender.apply(this, arguments);
+      ContactView.__super__.afterRender.apply(this, arguments);
+      return this.$el.niceScroll();
+    };
+
+    ContactView.prototype.remove = function() {
+      this.$el.getNiceScroll().remove();
+      return ContactView.__super__.remove.apply(this, arguments);
     };
 
     ContactView.prototype.hideEmptyZones = function() {
@@ -931,7 +976,7 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype.changeOccured = function() {
-      this.saveButton.removeClass('disabled').text('save');
+      this.saveButton.removeClass('disabled').text('Save');
       return this.needSaving = true;
     };
 
@@ -941,7 +986,9 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype["delete"] = function() {
-      return this.model.destroy();
+      if (this.model.isNew() || confirm('Are you sure ?')) {
+        return this.model.destroy();
+      }
     };
 
     ContactView.prototype.cleanup = function() {
@@ -967,7 +1014,7 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.onSuccess = function() {
       this.spinner.hide();
-      return this.saveButton.addClass('disabled').text('saved');
+      return this.saveButton.addClass('disabled').text('Saved');
     };
 
     ContactView.prototype.onError = function() {
@@ -1046,26 +1093,50 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     ContactsList.prototype.afterRender = function() {
       ContactsList.__super__.afterRender.apply(this, arguments);
-      this.collection.fetch();
       this.list = this.$('#contacts');
       this.filterfield = this.$('#filterfield');
-      return this.filterfield.focus();
+      this.filterfield.focus();
+      return this.list.niceScroll();
+    };
+
+    ContactsList.prototype.remove = function() {
+      ContactsList.__super__.remove.apply(this, arguments);
+      return this.list.getNiceScroll().remove();
     };
 
     ContactsList.prototype.appendView = function(view) {
       return this.list.append(view.$el);
     };
 
+    ContactsList.prototype.activate = function(model) {
+      var line, outofview, position;
+
+      this.$('.activated').removeClass('activated');
+      if (!model) {
+        return;
+      }
+      line = this.views[model.cid].$el;
+      line.addClass('activated');
+      position = line.position().top;
+      outofview = position < 0 || position > this.list.height();
+      if (outofview) {
+        return this.list.scrollTop(this.list.scrollTop() + position);
+      }
+    };
+
     ContactsList.prototype.keyUpCallback = function(event) {
-      var firstmodel, id, match, view, _ref1;
+      var filtertxt, firstmodel, id, match, view, _ref1;
 
       if (event.keyCode === 27) {
         this.filterfield.val('');
         App.router.navigate("", true);
       }
-      this.filtertxt = this.filterfield.val();
-      this.filtertxt = this.filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      this.filter = new RegExp(this.filtertxt, 'i');
+      filtertxt = this.filterfield.val();
+      if (!(filtertxt.length > 2 || filtertxt.length === 0)) {
+        return;
+      }
+      filtertxt = filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      this.filter = new RegExp(filtertxt, 'i');
       firstmodel = null;
       _ref1 = this.views;
       for (id in _ref1) {
@@ -1116,7 +1187,11 @@ window.require.register("views/contactslist_item", function(exports, require, mo
     };
 
     ContactsListItemView.prototype.getRenderData = function() {
-      return this.model.attributes;
+      return _.extend({}, this.model.attributes, {
+        hasPicture: this.model.hasPicture || false,
+        bestmail: this.model.getBest('email'),
+        besttel: this.model.getBest('tel')
+      });
     };
 
     ContactsListItemView.prototype.template = require('templates/contactslist_item');
@@ -1209,25 +1284,25 @@ window.require.register("views/datapoint", function(exports, require, module) {
   
 });
 window.require.register("views/help", function(exports, require, module) {
-  var BaseView, ContactsListItemView, _ref,
+  var BaseView, HelpView, _ref,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   BaseView = require('lib/base_view');
 
-  module.exports = ContactsListItemView = (function(_super) {
-    __extends(ContactsListItemView, _super);
+  module.exports = HelpView = (function(_super) {
+    __extends(HelpView, _super);
 
-    function ContactsListItemView() {
-      _ref = ContactsListItemView.__super__.constructor.apply(this, arguments);
+    function HelpView() {
+      _ref = HelpView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
-    ContactsListItemView.prototype.id = "help";
+    HelpView.prototype.id = "help";
 
-    ContactsListItemView.prototype.template = require('templates/help');
+    HelpView.prototype.template = require('templates/help');
 
-    return ContactsListItemView;
+    return HelpView;
 
   })(BaseView);
   
