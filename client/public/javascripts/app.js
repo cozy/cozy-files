@@ -84,6 +84,9 @@ window.require.register("application", function(exports, require, module) {
     initialize: function() {
       var ContactsCollection, ContactsList, Router;
 
+      this.polyglot = new Polyglot();
+      this.polyglot.extend(require('locales/en'));
+      window.t = this.polyglot.t.bind(this.polyglot);
       ContactsCollection = require('collections/contact');
       ContactsList = require('views/contactslist');
       Router = require('router');
@@ -330,6 +333,78 @@ window.require.register("lib/view_collection", function(exports, require, module
     return ViewCollection;
 
   })(BaseView);
+  
+});
+window.require.register("locales/en", function(exports, require, module) {
+  module.exports = {
+    "Saving ...": "Saving ...",
+    "Save": "Save",
+    "More": "More",
+    "Add Company": "Add Company",
+    "Add Title": "Add Title",
+    "Add Birthday": "Add Birthday",
+    "Add Phone": "Add Phone",
+    "Add Email": "Add Email",
+    "Add Postal": "Add Postal",
+    "Add Url": "Add Url",
+    "Add Other": "Add Other",
+    "Delete the contact": "Delete the contact",
+    "Name": "Name",
+    "Change": "Change",
+    "Take notes here": "Take notes here",
+    "About": "About",
+    "Phones": "Phones",
+    "Emails": "Emails",
+    "Postal": "Postal",
+    "Links": "Links",
+    "Others": "Others",
+    "Saved": "Saved",
+    "Search ...": "Search ...",
+    "New Contact": "New Contact",
+    "Export vCard": "Export vCard",
+    "Import vCard": "Import vCard",
+    "Choose a vCard file": "Choose a vCard file",
+    "is not a vCard": "is not a vCard",
+    "Cancel": "Cancel",
+    "Import": "Import",
+    "import.ready-msg": "Ready to import %{smart_count} contact |||| Ready to import %{smart_count} contacts"
+  };
+  
+});
+window.require.register("locales/fr", function(exports, require, module) {
+  module.exports = {
+    "Saving ...": "Enregistrement en cours",
+    "Save": "Enregistrer",
+    "More": "Plus",
+    "Add Company": "Ajouter Compagnie",
+    "Add Title": "Ajouter poste",
+    "Add Birthday": "Ajouter Anniversaire",
+    "Add Phone": "Ajouter téléphone",
+    "Add Email": "Ajouter Email",
+    "Add Postal": "Ajouter Adresse",
+    "Add Url": "Ajouter un Lien",
+    "Add Other": "Ajouter autre",
+    "Delete the contact": "Supprimer le contact",
+    "Name": "Nom",
+    "Change": "Changer",
+    "Take notes here": "Ecrivez ici",
+    "About": "A propos",
+    "Phones": "Téléphones",
+    "Emails": "Emails",
+    "Postal": "Addresses",
+    "Links": "Liens",
+    "Others": "Autres",
+    "Saved": "Enregistré",
+    "Search ...": "Recherche ...",
+    "New Contact": "Nouveau Contact",
+    "Export vCard": "Exporter vCard",
+    "Import vCard": "Importer vCard",
+    "Choose a vCard file": "Choisissez un fichier vCard",
+    "is not a vCard": "n'est pas un fichir vCard",
+    "Cancel": "Annuler",
+    "Import": "Importer",
+    "import.ready-msg": "Pret à importer %{smart_count} contact |||| Pret à importer %{smart_count} contacts"
+  };
   
 });
 window.require.register("models/contact", function(exports, require, module) {
@@ -750,8 +825,44 @@ window.require.register("templates/contact", function(exports, require, module) 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="spinOverlay"><span>saving ...</span></div><a id="save" class="btn">  Save</a><div id="more" class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">More &nbsp;<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a class="addbirthday">Add Birthday</a></li><li><a class="addcompany"> Add Company</a></li><li><a class="addtitle">   Add Title</a></li><li class="divider"></li><li><a class="addtel">     Add Phone</a></li><li><a class="addemail">   Add Email</a></li><li><a class="addadr">     Add Postal</a></li><li><a class="addurl">     Add Url</a></li><li><a class="addother">   Add Other</a></li><li class="divider"></li><li class="delete"><a id="delete"><i class="icon-remove"></i>Delete the contact</a></li></ul></div><input');
-  buf.push(attrs({ 'id':('name'), 'placeholder':("Name"), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
+  buf.push('<div id="spinOverlay"><span>');
+  var __val__ = t("Saving ...")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</span></div><a id="save" class="btn">');
+  var __val__ = t("Save")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a><div id="more" class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">');
+  var __val__ = t("More")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('&nbsp;<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a class="addbirthday">');
+  var __val__ = t("Add Birthday")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addcompany">');
+  var __val__ = t("Add Company")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addtitle">');
+  var __val__ = t("Add Title")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li class="divider"></li><li><a class="addtel">');
+  var __val__ = t("Add Phone")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addemail">');
+  var __val__ = t("Add Email")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addadr">');
+  var __val__ = t("Add Postal")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addurl">');
+  var __val__ = t("Add Url")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li><a class="addother">');
+  var __val__ = t("Add Other")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li><li class="divider"></li><li class="delete"><a id="delete"><i class="icon-remove"></i>');
+  var __val__ = t("Delete the contact")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></li></ul></div><input');
+  buf.push(attrs({ 'id':('name'), 'placeholder':(t("Name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
   buf.push('/><div id="picture">');
   if ( hasPicture)
   {
@@ -763,7 +874,30 @@ window.require.register("templates/contact", function(exports, require, module) 
   {
   buf.push('<img src="img/defaultpicture.png" class="picture"/>');
   }
-  buf.push('<div id="uploadnotice">Change</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea rows="3" placeholder="Take notes here" id="notes">' + escape((interp = note) == null ? '' : interp) + '</textarea><div id="zones"><div id="abouts" class="zone"><h2>About<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>Phones<a class="btn add addtel"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>Emails<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="adrs" class="zone"><h2>Postal<a class="btn add addadr"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="urls" class="zone"><h2>Links<a class="btn add addurl"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>Others<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div></div>');
+  buf.push('<div id="uploadnotice">');
+  var __val__ = t("Change")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea');
+  buf.push(attrs({ 'rows':("3"), 'placeholder':(t('Take notes here')), 'id':('notes') }, {"rows":true,"placeholder":true}));
+  buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea><div id="zones"><div id="abouts" class="zone"><h2>');
+  var __val__ = t("About")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>');
+  var __val__ = t("Phones")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addtel"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>');
+  var __val__ = t("Emails")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="adrs" class="zone"><h2>');
+  var __val__ = t("Postal")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addadr"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="urls" class="zone"><h2>');
+  var __val__ = t("Links")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addurl"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>');
+  var __val__ = t("Others")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div></div>');
   }
   return buf.join("");
   };
@@ -774,7 +908,9 @@ window.require.register("templates/contactslist", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="toolbar"><input id="filterfield" type="text" placeholder="Search ..."/></div><div id="contacts"></div>');
+  buf.push('<div id="toolbar"><input');
+  buf.push(attrs({ 'id':('filterfield'), 'type':("text"), 'placeholder':(t("Search ...")) }, {"type":true,"placeholder":true}));
+  buf.push('/></div><div id="contacts"></div>');
   }
   return buf.join("");
   };
@@ -831,7 +967,16 @@ window.require.register("templates/help", function(exports, require, module) {
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<a id="new" href="#contact/new"><i class="icon-plus icon-white"></i><span>New Contact</span></a><a id="importvcf" href="#import"><i class="icon-download icon-white"></i><span>Import vCard</span></a><a id="exportvcf" href="contacts.vcf"><i class="icon-upload icon-white"></i><span>Export vCard</span></a>');
+  buf.push('<a id="new" href="#contact/new"><i class="icon-plus icon-white"></i><span>');
+  var __val__ = t("New Contact")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</span></a><a id="importvcf" href="#import"><i class="icon-download icon-white"></i><span>');
+  var __val__ = t("Import vCard")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</span></a><a id="exportvcf" href="contacts.vcf"><i class="icon-upload icon-white"></i><span>');
+  var __val__ = t("Export vCard")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</span></a>');
   }
   return buf.join("");
   };
@@ -842,7 +987,19 @@ window.require.register("templates/importer", function(exports, require, module)
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div class="modal-header">Import vCard</div><div class="modal-body"><div class="control-group"><label for="vcfupload" class="control-label">Choose a vCard file</label><div class="controls"><input id="vcfupload" type="file"/><span class="help-inline"></span></div></div></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">Cancel</a><a id="confirm-btn" class="btn disabled btn-primary">Import</a></div>');
+  buf.push('<div class="modal-header">');
+  var __val__ = t("Import vCard")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</div><div class="modal-body"><div class="control-group"><label for="vcfupload" class="control-label">');
+  var __val__ = t("Choose a vCard file")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</label><div class="controls"><input id="vcfupload" type="file"/><span class="help-inline"></span></div></div></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
+  var __val__ = t("Cancel")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
+  var __val__ = t("Import")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></div>');
   }
   return buf.join("");
   };
@@ -921,7 +1078,7 @@ window.require.register("views/contact", function(exports, require, module) {
       }
       this.hideEmptyZones();
       this.spinner = this.$('#spinOverlay');
-      this.saveButton = this.$('#save').addClass('disabled').text('Saved');
+      this.saveButton = this.$('#save').addClass('disabled').text(t('Saved'));
       this.needSaving = false;
       this.namefield = this.$('#name');
       this.notesfield = this.$('#notes');
@@ -976,7 +1133,7 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype.changeOccured = function() {
-      this.saveButton.removeClass('disabled').text('Save');
+      this.saveButton.removeClass('disabled').text(t('Save'));
       return this.needSaving = true;
     };
 
@@ -986,7 +1143,7 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype["delete"] = function() {
-      if (this.model.isNew() || confirm('Are you sure ?')) {
+      if (this.model.isNew() || confirm(t('Are you sure ?'))) {
         return this.model.destroy();
       }
     };
@@ -1014,7 +1171,7 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.onSuccess = function() {
       this.spinner.hide();
-      return this.saveButton.addClass('disabled').text('Saved');
+      return this.saveButton.addClass('disabled').text(t('Saved'));
     };
 
     ContactView.prototype.onError = function() {
@@ -1027,7 +1184,7 @@ window.require.register("views/contact", function(exports, require, module) {
 
       file = this.uploader.files[0];
       if (!file.type.match(/image\/.*/)) {
-        return alert('This is not an image');
+        return alert(t('This is not an image'));
       }
       reader = new FileReader();
       img = new Image();
@@ -1267,7 +1424,7 @@ window.require.register("views/datapoint", function(exports, require, module) {
           return 'http://example.com/john-smith';
         case 'about':
         case 'other':
-          return 'type here';
+          return t('type here');
       }
     };
 
@@ -1357,7 +1514,7 @@ window.require.register("views/importer", function(exports, require, module) {
       validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory', 'text/directory;profile=vcard'];
       if (_ref1 = file.type.toLowerCase(), __indexOf.call(validMimeTypes, _ref1) < 0) {
         this.$('.control-group').addClass('error');
-        this.$('.help-inline').text('is not a vCard');
+        this.$('.help-inline').text(t('is not a vCard'));
         return;
       }
       reader = new FileReader();
@@ -1366,7 +1523,10 @@ window.require.register("views/importer", function(exports, require, module) {
         var txt;
 
         _this.toImport = Contact.fromVCF(reader.result);
-        txt = "<p>Ready to import " + _this.toImport.length + " contacts :</p><ul>";
+        txt = t('import.ready-msg', {
+          smart_count: _this.toImport
+        });
+        txt = "<p>" + txt + " :</p><ul>";
         _this.toImport.each(function(contact) {
           return txt += "<li>" + (contact.get('fn')) + "</li>";
         });
