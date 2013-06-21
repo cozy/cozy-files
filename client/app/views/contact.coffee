@@ -52,7 +52,7 @@ module.exports = class ContactView extends ViewCollection
 
         @hideEmptyZones()
         @spinner =    @$('#spinOverlay')
-        @saveButton = @$('#save').addClass('disabled').text 'Saved'
+        @saveButton = @$('#save').addClass('disabled').text t 'Saved'
         @needSaving = false
         @namefield = @$('#name')
         @notesfield = @$('#notes')
@@ -85,7 +85,7 @@ module.exports = class ContactView extends ViewCollection
         @zones[name].children().last().find('.type').focus()
 
     changeOccured: ->
-        @saveButton.removeClass('disabled').text 'Save'
+        @saveButton.removeClass('disabled').text t 'Save'
         @needSaving = true
 
     modelChanged: ->
@@ -93,7 +93,7 @@ module.exports = class ContactView extends ViewCollection
         @notesfield.val @model.get 'note'
 
     delete: ->
-        @model.destroy() if @model.isNew() or confirm 'Are you sure ?'
+        @model.destroy() if @model.isNew() or confirm t 'Are you sure ?'
 
     cleanup: ->
         @model.dataPoints.prune()
@@ -112,7 +112,7 @@ module.exports = class ContactView extends ViewCollection
 
     onSuccess: ->
         @spinner.hide()
-        @saveButton.addClass('disabled').text 'Saved'
+        @saveButton.addClass('disabled').text t 'Saved'
 
     onError: ->
         @spinner.hide()
@@ -122,7 +122,7 @@ module.exports = class ContactView extends ViewCollection
         file = @uploader.files[0]
 
         unless file.type.match /image\/.*/
-            return alert 'This is not an image'
+            return alert t 'This is not an image'
 
         reader = new FileReader()
         img = new Image()

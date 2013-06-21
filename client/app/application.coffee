@@ -1,6 +1,10 @@
 module.exports =
 
     initialize: ->
+        @polyglot = new Polyglot()
+        @polyglot.extend require('locales/en')
+        window.t = @polyglot.t.bind @polyglot
+
         ContactsCollection = require('collections/contact')
         ContactsList = require('views/contactslist')
         Router = require('router')

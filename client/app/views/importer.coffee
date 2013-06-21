@@ -26,14 +26,16 @@ module.exports = class ImporterView extends BaseView
                           'text/directory;profile=vcard']
         if file.type.toLowerCase() not in validMimeTypes
             @$('.control-group').addClass 'error'
-            @$('.help-inline').text 'is not a vCard'
+            @$('.help-inline').text t 'is not a vCard'
             return
 
         reader = new FileReader()
         reader.readAsText file
         reader.onloadend = =>
             @toImport = Contact.fromVCF reader.result
-            txt = "<p>Ready to import #{@toImport.length} contacts :</p><ul>"
+
+            txt = t 'import.ready-msg', smart_count: @toImport
+            txt = "<p>#{txt} :</p><ul>"
             @toImport.each (contact) ->
                 txt += "<li>#{contact.get 'fn'}</li>"
             txt += '</ul>'
