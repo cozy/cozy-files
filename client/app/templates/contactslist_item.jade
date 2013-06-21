@@ -1,2 +1,9 @@
-img(src="contacts/#{id}/picture.png")
+if hasPicture
+  img(src="contacts/#{id}/picture.png")
+else
+  img(src="img/defaultpicture.png")
+
 h2 #{fn}
+span.email #{bestmail}
+span.tel   #{besttel}
+.clearfix

@@ -15,13 +15,28 @@ module.exports = class ContactsList extends ViewCollection
 
     afterRender: ->
         super
-        @collection.fetch()
         @list        = @$ '#contacts'
         @filterfield = @$ '#filterfield'
         @filterfield.focus()
+        @list.niceScroll()
+
+    remove: ->
+        super
+        @list.getNiceScroll().remove()
 
     appendView: (view) ->
         @list.append view.$el
+
+    activate: (model) ->
+        @$('.activated').removeClass 'activated'
+        return unless model
+        line = @views[model.cid].$el
+        line.addClass 'activated'
+
+
+        position = line.position().top
+        outofview = position < 0 or position > @list.height()
+        @list.scrollTop @list.scrollTop() + position if outofview
 
     keyUpCallback: (event) ->
 
@@ -29,9 +44,12 @@ module.exports = class ContactsList extends ViewCollection
             @filterfield.val('')
             App.router.navigate "", true
 
-        @filtertxt = @filterfield.val()
-        @filtertxt = @filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
-        @filter    = new RegExp @filtertxt, 'i'
+        filtertxt = @filterfield.val()
+
+        return unless filtertxt.length > 2 or filtertxt.length is 0
+
+        filtertxt = filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+        @filter    = new RegExp filtertxt, 'i'
 
         firstmodel = null
 

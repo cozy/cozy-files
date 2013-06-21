@@ -22,7 +22,9 @@ module.exports = class ContactView extends ViewCollection
         'click #delete'     : 'delete'
         'blur .value'       : 'cleanup'
         'keypress #name'    : 'changeOccured'
+        'change #name'    : 'changeOccured'
         'keypress #notes'   : 'changeOccured'
+        'change #notes'   : 'changeOccured'
         'change #uploader'  : 'photoChanged'
 
 
@@ -40,7 +42,8 @@ module.exports = class ContactView extends ViewCollection
 
         @listenTo @collection, 'change' , @changeOccured
 
-    getRenderData: -> @model.toJSON()
+    getRenderData: ->
+        _.extend {}, @model.toJSON(), hasPicture: @model.hasPicture or false
 
     afterRender: ->
         @zones = {}
@@ -49,14 +52,20 @@ module.exports = class ContactView extends ViewCollection
 
         @hideEmptyZones()
         @spinner =    @$('#spinOverlay')
-        @saveButton = @$('#save').addClass('disabled').text 'saved'
+        @saveButton = @$('#save').addClass('disabled').text t 'Saved'
         @needSaving = false
         @namefield = @$('#name')
         @notesfield = @$('#notes')
         @uploader = @$('#uploader')[0]
         @picture  = @$('#picture .picture')
-
         super
+        @$el.niceScroll()
+
+    remove: ->
+        @$el.getNiceScroll().remove()
+        super
+
+
 
     hideEmptyZones: ->
         for type, zone of @zones
@@ -76,7 +85,7 @@ module.exports = class ContactView extends ViewCollection
         @zones[name].children().last().find('.type').focus()
 
     changeOccured: ->
-        @saveButton.removeClass('disabled').text 'save'
+        @saveButton.removeClass('disabled').text t 'Save'
         @needSaving = true
 
     modelChanged: ->
@@ -84,7 +93,7 @@ module.exports = class ContactView extends ViewCollection
         @notesfield.val @model.get 'note'
 
     delete: ->
-        @model.destroy()
+        @model.destroy() if @model.isNew() or confirm t 'Are you sure ?'
 
     cleanup: ->
         @model.dataPoints.prune()
@@ -103,7 +112,7 @@ module.exports = class ContactView extends ViewCollection
 
     onSuccess: ->
         @spinner.hide()
-        @saveButton.addClass('disabled').text 'saved'
+        @saveButton.addClass('disabled').text t 'Saved'
 
     onError: ->
         @spinner.hide()
@@ -113,7 +122,7 @@ module.exports = class ContactView extends ViewCollection
         file = @uploader.files[0]
 
         unless file.type.match /image\/.*/
-            return alert 'This is not an image'
+            return alert t 'This is not an image'
 
         reader = new FileReader()
         img = new Image()

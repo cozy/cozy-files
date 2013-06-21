@@ -3,8 +3,9 @@ fs = require 'fs'
 helpers = require './helpers'
 expect = require('chai').expect
 
-describe 'Read operations', ->
+describe 'Contacts', ->
 
+    before helpers.init
     before helpers.clearDb
     before helpers.createContact fixtures.contact1
 

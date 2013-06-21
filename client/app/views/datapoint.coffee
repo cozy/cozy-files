@@ -21,6 +21,7 @@ module.exports = class DataPointView extends BaseView
 
     getPossibleTypes: =>
         # TODO : replace me with something smart, like most often used
+        # TODO : i18n ...
         switch @model.get 'name'
             when 'about' then ['org', 'birthday', 'title']
             when 'other' then ['skype', 'jabber', 'irc']
@@ -32,7 +33,7 @@ module.exports = class DataPointView extends BaseView
             when 'adr' then '42 main street ...'
             when 'tel' then '+33 1 23 45 67 89'
             when 'url' then 'http://example.com/john-smith'
-            when 'about', 'other' then 'type here'
+            when 'about', 'other' then t 'type here'
 
     store: ->
         @model.set

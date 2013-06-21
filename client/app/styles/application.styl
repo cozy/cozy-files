@@ -28,20 +28,24 @@ h1, h2, h3, h4, #name
 
 #contacts-list
   width 50%
-  height 100%
   position absolute
   left 0px
+  top 0px
+  bottom 0px
   right 0px
 
   #toolbar
     background-color lightgrey
-    padding 0px 2px
     height 40px
+    box-sizing border-box
 
     input
       display block
-      width 95%
-      background-color lightgrey
+      box-sizing border-box
+      width 100%
+      height 100%
+      margin-right 2px
+      background-color transparent
       border 1px solid transparent
       border-radius 0px
       box-shadow none
@@ -57,20 +61,21 @@ h1, h2, h3, h4, #name
     bottom 0px
     left 0px
     right 0px
-    overflow-y scroll
 
     .contact-thumb
       display block
-      width 200px
-      float left
-      background-color buttoncolor
-      color white
-      margin 10px
-      padding 10px
+      width 100%
+      // height 70px
+      box-sizing border-box
+      background-color basecolor + 50%
+      color black
+      padding 3px
 
       img
         float left
         line-height 100%
+        height 64px
+        width 64px
 
       h2
         padding 0px
@@ -78,20 +83,36 @@ h1, h2, h3, h4, #name
         margin-left 70px
         font-size 1.6em
         overflow hidden
-        height 80px
+
+      span
+        display block
+        float left
+        margin-left 6px
+
+
+    .contact-thumb:nth-child(even)
+      background-color white
+
+    .contact-thumb.activated
+      background-color buttoncolor + 40%
 
     .contact-thumb:hover
       text-decoration none
       background-color highlightcolor
 
+    .contact-thumb:focus
+      text-decoration none
+
+
 #help, #contact
   width 50%
-  height 100%
   position absolute
   right 0px
   top 0px
+  bottom 0px
   background-color basecolor
-  border-left 1px solid buttoncolor
+  background-image url('../img/background-right.jpg')
+  box-shadow: 6px 0px 3px -2px basecolor inset
 
 #help
   a
@@ -103,16 +124,28 @@ h1, h2, h3, h4, #name
     text-align center
     margin 70px auto
     padding 10px
+
+    i
+      display none
+
   a:hover
-    text-decoration none
-    background-color highlightcolor
+        outline 0px
+        text-decoration none
+        background-color highlightcolor
+
+  a:active
+    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+    background: highlightcolor - 5%
 
 #contact
+
+  padding-top 50px
+
   #close
     display block
     position absolute
     top 8px
-    right 8px
+    left 8px
     width 30px
     height 30px
     text-align center
@@ -125,13 +158,17 @@ h1, h2, h3, h4, #name
   #close:hover
     text-decoration none
     background-color highlightcolor
+  #close:active
+    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+    background: highlightcolor - 5%
+
 
   #picture
     display block
     position absolute
     border 3px solid buttoncolor
     left 8px
-    top 8px
+    top 50px
     width 64px
     height 64px
     overflow hidden
@@ -144,10 +181,12 @@ h1, h2, h3, h4, #name
 
     input#uploader
       opacity 0.01
+      cursor pointer
       position absolute
       left 0px
-      top -50px
       border 0px
+      font-size 100px
+      bottom 0px
       margin 0px
       width 64px
       height 114px
@@ -179,69 +218,96 @@ h1, h2, h3, h4, #name
     border 1px solid transparent
 
   #name
+    position absolute
+    top 45px
+    left 78px
+    right 10px
     display block
     line-height 1em
-    width 90%
-    float none
-    font-size 2.5em
+    width auto
+    padding-left 15px
+    font-size 30px
     font-weight bold
-    margin 10px
-    margin-left 78px
     margin-bottom 0px
-    padding-left 10px
     border-bottom 1px solid buttoncolor
 
   #name:focus
     outline none
 
   #notes
-    margin-left 88px
-    border-top 0px
-    width 50%
+    display block
+    position absolute
+    padding-left 15px
+    width auto
+    top 78px
+    left 77px
+    right 10px
+    resize none
+    border 1px solid transparent
+    // border-bottom-right-radius 20px
   #notes:focus
     border 1px solid buttoncolor
-    border-top 0px
 
+  #save
+    border-radius 15px !important
+    position absolute
+    top 8px
+    left 46px
 
-  #commands
+  #more
+    position absolute
+    right 10px
+    top 8px
     text-align right
-    padding 10px
     .btn
-      margin-left 10px
+      border-radius 15px !important
+      border-bottom-right-radius 0px !important
 
     .dropdown-menu
       text-align left
       a
         cursor pointer
 
-  .zone
-    width 48%
-    margin 1%
-    float left
-    a.btn.add
-      display inline-block
-      margin-left 10px
-      opacity 0
+  #zones
+    position absolute
+    top 150px
+    left 0px
+    right 0px
+    bottom 0px
 
-    ul
-      margin 0px
-      li
-        list-style-type none
-        .type:focus
-        .value:focus
-          border 1px solid buttoncolor
+    .zone
+      width 48%
+      margin 1%
+      float left
+      a.btn.add
+        display inline-block
+        margin-left 10px
+        opacity 0
 
-        .type
-          width 25%
-          font-weight bold
+      h2
+        margin-left 5px
+        font-weight normal
+        border-bottom 1px solid lightgrey
 
-        .value
-          width 65%
+      ul
+        margin 0px
+        li
+          list-style-type none
+          .type:focus
+          .value:focus
+            border 1px solid buttoncolor
 
-  .zone:hover
-    a.btn.add
-      transition 0.5s
-      opacity 1
+          .type
+            width 25%
+            font-weight bold
+
+          .value
+            width 65%
+
+    .zone:hover
+      a.btn.add
+        transition 0.5s
+        opacity 1
 
   #spinOverlay
     position absolute
@@ -271,7 +337,7 @@ h1, h2, h3, h4, #name
 
 .btn.disabled
   border 1px solid buttoncolor
-  background-color transparent
+  background-color lightgrey
 
 .btn:not(.disabled):hover
   background-color highlightcolor
@@ -284,6 +350,10 @@ h1, h2, h3, h4, #name
   color white
   text-decoration none
 
+.btn:not(.disabled):active, .btn.pressed
+    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+    background: highlightcolor - 5%
+
 .dropdown-menu
   border-radius 0px
 
@@ -294,3 +364,47 @@ h1, h2, h3, h4, #name
   .modal-header
     background-color buttoncolor
     color white
+
+
+@media (max-width: 900px)
+
+    #contacts-list
+        width 100%
+        top 30px
+
+    #help, #contact
+        width 100%
+
+    #help
+        height 30px
+        padding 1px
+        overflow hidden
+
+        a
+          width 33.3%
+          height 30px
+          line-height 25px
+          margin 0px
+          border-right 1px solid white
+          font-size 1em
+          float none
+          display inline-block
+          box-sizing border-box
+          overflow hidden
+          text-align center
+          padding 5px
+
+          i
+            display inline-block
+
+        a:hover
+          outline 0px
+          text-decoration none
+          background-color highlightcolor
+
+        a:active
+          box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+          background: highlightcolor - 5%
+
+    #contact #zones .zone
+        width 98%

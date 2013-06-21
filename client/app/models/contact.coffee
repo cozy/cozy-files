@@ -25,6 +25,11 @@ module.exports = class Contact extends Backbone.Model
         if attrs.datapoints
             @dataPoints.reset attrs.datapoints
             delete attrs.datapoints
+
+        if attrs._attachments?.picture
+            @hasPicture = true
+            delete attrs._attachments
+
         return attrs
 
     sync: (method, model, options) ->
@@ -36,10 +41,21 @@ module.exports = class Contact extends Backbone.Model
             success = options.success
             options.success = (resp) =>
                 success resp
+                @hasPicture = true
                 @trigger 'change', this, {}
                 delete @picture
 
         super(method, model, options)
+
+    getBest: (name) ->
+        result = null
+        @dataPoints.each (dp) ->
+            if dp.get('name') is name
+                if dp.get('pref') then result = dp.get 'value'
+                else result ?= dp.get 'value'
+
+        return result
+
 
     addDP: (name, type, value)=>
         @dataPoints.add

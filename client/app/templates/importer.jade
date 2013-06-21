@@ -1,10 +1,10 @@
-.modal-header Import vCard
+.modal-header= t("Import vCard")
 .modal-body
     .control-group
-        label.control-label(for="vcfupload") Choose a vCard file
+        label.control-label(for="vcfupload")= t("Choose a vCard file")
         .controls
             input#vcfupload(type="file")
             span.help-inline
 .modal-footer
-    a#cancel-btn(href="#").btn Cancel
-    a#confirm-btn.btn.disabled.btn-primary Import
+    a#cancel-btn(href="#").btn= t("Cancel")
+    a#confirm-btn.btn.disabled.btn-primary= t("Import")
