@@ -773,7 +773,7 @@ window.require.register("router", function(exports, require, module) {
         this.displayViewFor(contact);
         return app.contactslist.activate(contact);
       } else {
-        alert("this contact doesn't exist");
+        alert(t("this contact doesn't exist"));
         return this.navigate('', true);
       }
     };
@@ -785,7 +785,7 @@ window.require.register("router", function(exports, require, module) {
       if (this.currentContact) {
         this.stopListening(this.currentContact);
       }
-      if (((_ref1 = app.contactview) != null ? _ref1.needSaving : void 0) && confirm('Save changes ?')) {
+      if (((_ref1 = app.contactview) != null ? _ref1.needSaving : void 0) && confirm(t('Save changes ?'))) {
         app.contactview.save();
         app.contactview.model.once('sync', function() {
           return _this.displayView(view);
