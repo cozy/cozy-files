@@ -32,10 +32,14 @@ h4,
 #contacts-list #toolbar {
   background-color: #d3d3d3;
   height: 40px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 #contacts-list #toolbar input {
   display: block;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
@@ -60,9 +64,11 @@ h4,
 #contacts-list #contacts .contact-thumb {
   display: block;
   width: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
   background-color: #f2f2f2;
-  color: #000;
+  color: #555;
   padding: 3px;
 }
 #contacts-list #contacts .contact-thumb img {
@@ -208,14 +214,29 @@ h4,
   margin: 0px;
   border: 1px solid transparent;
 }
-#contact #name {
+#contact input:hover,
+#contact textarea:hover {
+  border: 1px solid #34a6ff;
+}
+#contact input:focus,
+#contact textarea:focus {
+  border: 1px solid #34a6ff;
+  background-color: #fff;
+  outline: none;
+}
+#contact #wrap-name-notes {
   position: absolute;
-  top: 45px;
-  left: 78px;
+  top: 50px;
+  left: 77px;
   right: 10px;
+}
+#contact #name {
   display: block;
   line-height: 1em;
-  width: auto;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 100%;
   padding-left: 15px;
   font-size: 30px;
   font-weight: bold;
@@ -227,17 +248,19 @@ h4,
 }
 #contact #notes {
   display: block;
-  position: absolute;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 100%;
+  height: 70px;
   padding-left: 15px;
-  width: auto;
-  top: 78px;
-  left: 77px;
-  right: 10px;
   resize: none;
   border: 1px solid transparent;
+  border-top: 0px;
 }
 #contact #notes:focus {
   border: 1px solid #34a6ff;
+  border-top: 0px;
 }
 #contact #save {
   border-radius: 15px !important;
@@ -263,7 +286,7 @@ h4,
 }
 #contact #zones {
   position: absolute;
-  top: 150px;
+  top: 160px;
   left: 0px;
   right: 0px;
   bottom: 0px;
@@ -385,6 +408,8 @@ h4,
     font-size: 1em;
     float: none;
     display: inline-block;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
     box-sizing: border-box;
     overflow: hidden;
     text-align: center;

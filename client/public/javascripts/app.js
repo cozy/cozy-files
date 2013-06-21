@@ -860,9 +860,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push('</a></li><li class="divider"></li><li class="delete"><a id="delete"><i class="icon-remove"></i>');
   var __val__ = t("Delete the contact")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a></li></ul></div><input');
-  buf.push(attrs({ 'id':('name'), 'placeholder':(t("Name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
-  buf.push('/><div id="picture">');
+  buf.push('</a></li></ul></div><div id="picture">');
   if ( hasPicture)
   {
   buf.push('<img');
@@ -876,9 +874,11 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push('<div id="uploadnotice">');
   var __val__ = t("Change")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><textarea');
+  buf.push('</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><div id="wrap-name-notes"><input');
+  buf.push(attrs({ 'id':('name'), 'placeholder':(t("Name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
+  buf.push('/><textarea');
   buf.push(attrs({ 'rows':("3"), 'placeholder':(t('Take notes here')), 'id':('notes') }, {"rows":true,"placeholder":true}));
-  buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea><div id="zones"><div id="abouts" class="zone"><h2>');
+  buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="zones"><div id="abouts" class="zone"><h2>');
   var __val__ = t("About")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>');

@@ -26,7 +26,6 @@ a.btn#save=   t("Save")
 
 
 
-input#name(placeholder=t("Name"), value="#{fn}")
 
 div#picture
   if hasPicture
@@ -39,7 +38,9 @@ div#picture
 
 a#close(href="#") &times;
 
-textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+#wrap-name-notes
+  input#name(placeholder=t("Name"), value="#{fn}")
+  textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
 
 
 

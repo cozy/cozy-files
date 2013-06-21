@@ -6,12 +6,19 @@
     font-family: main
     src: url('/fonts/signika-regular.ttf');
 
+box-sizing(n)
+  -webkit-box-sizing n
+  -moz-box-sizing n
+  box-sizing n
+
+
 bgcolor = #fcfcfc
 shadowcolor = #444
 basecolor = lightgrey + 40%
 highlightcolor = #fe8800
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
+almostblack = #555555
 
 html
   height 100%
@@ -65,10 +72,9 @@ h1, h2, h3, h4, #name
     .contact-thumb
       display block
       width 100%
-      // height 70px
       box-sizing border-box
       background-color basecolor + 50%
-      color black
+      color almostblack
       padding 3px
 
       img
@@ -217,14 +223,25 @@ h1, h2, h3, h4, #name
     margin 0px
     border 1px solid transparent
 
-  #name
+  input:hover, textarea:hover
+    border 1px solid buttoncolor
+
+  input:focus, textarea:focus
+    border 1px solid buttoncolor
+    background-color white
+    outline none
+
+  #wrap-name-notes
     position absolute
-    top 45px
-    left 78px
+    top 50px
+    left 77px
     right 10px
+
+  #name
     display block
     line-height 1em
-    width auto
+    box-sizing border-box
+    width 100%
     padding-left 15px
     font-size 30px
     font-weight bold
@@ -236,17 +253,16 @@ h1, h2, h3, h4, #name
 
   #notes
     display block
-    position absolute
+    box-sizing border-box
+    width 100%
+    height 70px
     padding-left 15px
-    width auto
-    top 78px
-    left 77px
-    right 10px
     resize none
     border 1px solid transparent
-    // border-bottom-right-radius 20px
+    border-top 0px
   #notes:focus
     border 1px solid buttoncolor
+    border-top 0px
 
   #save
     border-radius 15px !important
@@ -270,7 +286,7 @@ h1, h2, h3, h4, #name
 
   #zones
     position absolute
-    top 150px
+    top 160px
     left 0px
     right 0px
     bottom 0px
