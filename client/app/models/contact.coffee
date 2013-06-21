@@ -86,10 +86,10 @@ AndroidToDP = (contact, raw) ->
             else 'birthday'
             contact.addDP 'about', type, value
         when 'relation'
-            console.log parts
+            # console.log parts
             value = parts[1]
             type = ANDROID_RELATION_TYPES[+parts[2]]
-            console.log type
+            # console.log type
             type = parts[3] if type is 'custom'
             contact.addDP 'other', type, value
 
@@ -143,7 +143,7 @@ Contact.fromVCF = (vcf) ->
 
         else if regexps.android.test line
                 [all, value] = line.match regexps.android
-                console.log 'androd', value
+                # console.log 'androd', value
                 AndroidToDP current, value
 
         else if regexps.composedkey.test line

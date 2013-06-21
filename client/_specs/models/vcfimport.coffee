@@ -3,6 +3,10 @@ describe 'vCard Import', ->
     Contact = require 'models/contact'
     ContactView = require 'views/contact'
 
+    before ->
+      polyglot = new Polyglot()
+      polyglot.extend require 'locales/en'
+      window.t = polyglot.t.bind polyglot
 
     VCFS =
         google: """
@@ -109,6 +113,10 @@ describe 'vCard Import', ->
             expect(dp).to.not.be.an 'undefined'
 
         it 'and the generated contact should not bug ContactView', ->
-
-            new ContactView(model : @contact).render()
-            @contact = null
+            view = new ContactView(model : @contact)
+            $('#sandbox').append view.$el
+            view.render()
+            setTimeout ->
+                view.remove()
+                @contact = null
+            , 50

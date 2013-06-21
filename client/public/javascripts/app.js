@@ -352,6 +352,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "Name": "Name",
     "Change": "Change",
     "Take notes here": "Take notes here",
+    "type here": "Type here",
     "About": "About",
     "Phones": "Phones",
     "Emails": "Emails",
@@ -388,6 +389,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "Name": "Nom",
     "Change": "Changer",
     "Take notes here": "Ecrivez ici",
+    "type here": "Ecrivez ici",
     "About": "A propos",
     "Phones": "Téléphones",
     "Emails": "Emails",
@@ -522,10 +524,8 @@ window.require.register("models/contact", function(exports, require, module) {
         type = (_ref = parts[2]) === '0' || _ref === '2' ? parts[3] : parts[2] === '1' ? 'anniversary' : 'birthday';
         return contact.addDP('about', type, value);
       case 'relation':
-        console.log(parts);
         value = parts[1];
         type = ANDROID_RELATION_TYPES[+parts[2]];
-        console.log(type);
         if (type === 'custom') {
           type = parts[3];
         }
@@ -585,7 +585,6 @@ window.require.register("models/contact", function(exports, require, module) {
         }
       } else if (regexps.android.test(line)) {
         _ref2 = line.match(regexps.android), all = _ref2[0], value = _ref2[1];
-        console.log('androd', value);
         AndroidToDP(current, value);
       } else if (regexps.composedkey.test(line)) {
         _ref3 = line.match(regexps.composedkey), all = _ref3[0], itemidx = _ref3[1], part = _ref3[2], value = _ref3[3];

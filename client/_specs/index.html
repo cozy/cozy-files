@@ -4,6 +4,9 @@
     <link rel="stylesheet" href="../../node_modules/mocha/mocha.css" />
   </head>
   <body>
+
+    <div id="sandbox" style="visibility:hidden;"></div>
+
     <div id="mocha"></div>
     <script src="../../node_modules/mocha/mocha.js"></script>
     <script src="../../node_modules/chai/chai.js"></script>
@@ -13,8 +16,8 @@
       mocha.reporter('html');
       expect = chai.expect;
     </script>
-    <script src="../../client/public/javascripts/app.js"></script>
     <script src="../../client/public/javascripts/vendor.js"></script>
+    <script src="../../client/public/javascripts/app.js"></script>
     <script src="../../client/_specs/specs.js"></script>
     <script>
       if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
