@@ -16,6 +16,7 @@ module.exports =
   "Name":               "Nom"
   "Change":             "Changer"
   "Take notes here":    "Ecrivez ici"
+  "type here":          "Ecrivez ici"
   "About":              "A propos"
   "Phones":             "Téléphones"
   "Emails":             "Emails"

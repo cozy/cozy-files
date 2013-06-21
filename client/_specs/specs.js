@@ -321,6 +321,13 @@ describe('vCard Import', function() {
 
   Contact = require('models/contact');
   ContactView = require('views/contact');
+  before(function() {
+    var polyglot;
+
+    polyglot = new Polyglot();
+    polyglot.extend(require('locales/en'));
+    return window.t = polyglot.t.bind(polyglot);
+  });
   VCFS = {
     google: "BEGIN:VCARD\nVERSION:3.0\nN:Test;Cozy;;;\nFN:Cozy Test\nEMAIL;TYPE=INTERNET;TYPE=WORK:cozytest@cozycloud.cc\nEMAIL;TYPE=INTERNET;TYPE=HOME:cozytest2@cozycloud.cc\nTEL;TYPE=CELL:0600000000\nTEL;TYPE=WORK:0610000000\nADR;TYPE=HOME:;;1 Sample Adress;PARIS;;75001;FRANCE\nADR;TYPE=WORK:;;2 Sample Address;PARIS;;75002;FRANCE\nORG:Cozycloud\nTITLE:Testeur Fou\nBDAY:1989-02-02\nitem1.URL:http\\://test.example.com\nitem1.X-ABLabel:PROFILE\nitem2.EMAIL;TYPE=INTERNET:test3@example.com\nitem2.X-ABLabel:truc\nitem3.X-ABDATE:2013-01-01\nitem3.X-ABLabel:_$!<Anniversary>!$_\nitem4.X-ABRELATEDNAMES:Cozypouet\nitem4.X-ABLabel:_$!<Friend>!$_\nNOTE:Something\nTITLE:CEO\nEND:VCARD",
     android: "BEGIN:VCARD\nVERSION:2.1\nN:Test;Cozy;;;\nFN:Cozy Test\nNOTE:Something\nX-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;Cozypseudo;1;;;;;;;;;;;;;\nTEL;CELL:060-000-0000\nEMAIL;WORK:cozytest@cozycloud.cc\nEMAIL;HOME:cozytest2@cozycloud.cc\nADR;HOME:;;1 Sample Adress 75001 Paris;;;;\nADR;HOME2:;;2 Sample Adress 75001 Paris;;;;\nORG:Cozycloud\nTITLE:Testeur Fou\nX-ANDROID-CUSTOM:vnd.android.cursor.item/contact_event;2013-01-01;0;Date Perso;;;;;;;;;;;;\nX-ANDROID-CUSTOM:vnd.android.cursor.item/contact_event;2013-01-01;1;;;;;;;;;;;;;\nBDAY:1989-02-02\nX-ANDROID-CUSTOM:vnd.android.cursor.item/relation;Cozypouet;6;;;;;;;;;;;;;\nEND:VCARD",
@@ -354,10 +361,17 @@ describe('vCard Import', function() {
       return expect(dp).to.not.be.an('undefined');
     });
     return it('and the generated contact should not bug ContactView', function() {
-      new ContactView({
+      var view;
+
+      view = new ContactView({
         model: this.contact
-      }).render();
-      return this.contact = null;
+      });
+      $('#sandbox').append(view.$el);
+      view.render();
+      return setTimeout(function() {
+        view.remove();
+        return this.contact = null;
+      }, 50);
     });
   });
 });

@@ -22,9 +22,9 @@ module.exports = class ContactView extends ViewCollection
         'click #delete'     : 'delete'
         'blur .value'       : 'cleanup'
         'keypress #name'    : 'changeOccured'
-        'change #name'    : 'changeOccured'
+        'change #name'      : 'changeOccured'
         'keypress #notes'   : 'changeOccured'
-        'change #notes'   : 'changeOccured'
+        'change #notes'     : 'changeOccured'
         'change #uploader'  : 'photoChanged'
 
 
@@ -64,8 +64,6 @@ module.exports = class ContactView extends ViewCollection
     remove: ->
         @$el.getNiceScroll().remove()
         super
-
-
 
     hideEmptyZones: ->
         for type, zone of @zones
