@@ -46,7 +46,7 @@ module.exports = class Router extends Backbone.Router
             app.contactslist.activate contact
 
         else
-            alert "this contact doesn't exist"
+            alert t "this contact doesn't exist"
             @navigate '', true
 
 
@@ -54,7 +54,7 @@ module.exports = class Router extends Backbone.Router
     displayView: (view) ->
         @stopListening @currentContact if @currentContact
 
-        if app.contactview?.needSaving and confirm 'Save changes ?'
+        if app.contactview?.needSaving and confirm t 'Save changes ?'
             app.contactview.save()
             app.contactview.model.once 'sync', => @displayView view
             return
