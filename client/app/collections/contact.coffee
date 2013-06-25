@@ -8,9 +8,9 @@ module.exports = class ContactCollection extends Backbone.Collection
     url: 'contacts'
 
     #sort by names
-    comparator: 'name'
+    comparator: 'fn'
 
     #auto resort when contact name change
     initialize: ->
         super
-        @on 'change:name', => @sort()
+        @on 'change:fn', => @sort()

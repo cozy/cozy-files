@@ -120,13 +120,13 @@ window.require.register("collections/contact", function(exports, require, module
 
     ContactCollection.prototype.url = 'contacts';
 
-    ContactCollection.prototype.comparator = 'name';
+    ContactCollection.prototype.comparator = 'fn';
 
     ContactCollection.prototype.initialize = function() {
       var _this = this;
 
       ContactCollection.__super__.initialize.apply(this, arguments);
-      return this.on('change:name', function() {
+      return this.on('change:fn', function() {
         return _this.sort();
       });
     };
