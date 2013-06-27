@@ -1,6 +1,7 @@
 module.exports = (app) ->
 
     shortcuts = require './helpers/shortcut'
+    i18n      = require 'cozy-i18n-helper'
     express   = require 'express'
 
     # all environements
@@ -10,6 +11,9 @@ module.exports = (app) ->
 
     # extend express to DRY controllers
     app.use shortcuts
+
+    # expose locale config to client
+    app.use i18n.middleware
 
     #test environement
     app.configure 'test', ->

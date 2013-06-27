@@ -82,10 +82,27 @@
 window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
-      var ContactsCollection, ContactsList, Router;
+      var _this = this;
+
+      return $.ajax('cozy-locale.json').done(function(data) {
+        return _this.locale = data.locale;
+      }).fail(function() {
+        return _this.locale = 'en';
+      }).always(function() {
+        return _this.initializeStep2();
+      });
+    },
+    initializeStep2: function() {
+      var ContactsCollection, ContactsList, Router, e, locales;
 
       this.polyglot = new Polyglot();
-      this.polyglot.extend(require('locales/en'));
+      try {
+        locales = require('locales/' + this.locale);
+      } catch (_error) {
+        e = _error;
+        locales = require('locales/en');
+      }
+      this.polyglot.extend(locales);
       window.t = this.polyglot.t.bind(this.polyglot);
       ContactsCollection = require('collections/contact');
       ContactsList = require('views/contactslist');

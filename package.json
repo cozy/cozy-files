@@ -6,6 +6,7 @@
   "dependencies": {
     "jugglingdb": "~0.2.0-25",
     "jugglingdb-cozy-adapter": "~0.3.3",
+    "cozy-i18n-helper": "~0.0.1",
     "express": "~3.1.0",
     "async": "~0.2.9"
   },
@@ -26,6 +27,9 @@
   "cozy-permissions": {
     "Contact": {
       "description": "Creates and edits your contacts."
+    },
+    "CozyInstance": {
+      "description": "Read language setting"
     }
   }
 }

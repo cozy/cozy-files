@@ -1,8 +1,21 @@
 module.exports =
 
     initialize: ->
+        $.ajax('cozy-locale.json')
+        .done( (data) => @locale = data.locale )
+        .fail(     () => @locale = 'en'        )
+        .always(   () => @initializeStep2()    )
+
+
+    initializeStep2: ->
+
         @polyglot = new Polyglot()
-        @polyglot.extend require('locales/en')
+        try
+            locales = require 'locales/'+ @locale
+        catch e
+            locales = require 'locales/en'
+
+        @polyglot.extend locales
         window.t = @polyglot.t.bind @polyglot
 
         ContactsCollection = require('collections/contact')
