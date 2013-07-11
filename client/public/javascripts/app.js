@@ -82,19 +82,10 @@
 window.require.register("application", function(exports, require, module) {
   module.exports = {
     initialize: function() {
-      var _this = this;
-
-      return $.ajax('cozy-locale.json').done(function(data) {
-        return _this.locale = data.locale;
-      }).fail(function() {
-        return _this.locale = 'en';
-      }).always(function() {
-        return _this.initializeStep2();
-      });
-    },
-    initializeStep2: function() {
       var ContactsCollection, ContactsList, Router, e, locales;
 
+      this.locale = window.locale;
+      delete window.locale;
       this.polyglot = new Polyglot();
       try {
         locales = require('locales/' + this.locale);
@@ -113,7 +104,12 @@ window.require.register("application", function(exports, require, module) {
       });
       this.contactslist.$el.appendTo($('body'));
       this.contactslist.render();
-      this.contacts.fetch();
+      if (window.initcontacts != null) {
+        this.contacts.reset(window.initcontacts);
+        delete window.initcontacts;
+      } else {
+        this.contacts.fetch();
+      }
       this.router = new Router();
       return Backbone.history.start();
     }
