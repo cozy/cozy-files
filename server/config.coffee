@@ -13,7 +13,7 @@ module.exports = (app) ->
     app.use shortcuts
 
     # expose locale config to client
-    app.use i18n.middleware
+    app.set 'views', __dirname + '/../client'
 
     #test environement
     app.configure 'test', ->

@@ -1,8 +1,22 @@
 Contact = require '../models/contact'
+i18n    = require 'cozy-i18n-helper'
 path    = require 'path'
 fs      = require 'fs'
 
 module.exports = (app) ->
+
+
+
+    index: (req, res) ->
+        Contact.request 'all', (err, contacts) ->
+            return res.error 500, 'An error occured', err if err
+
+            i18n.getLocale null, (err, locale) ->
+                console.log err if err
+
+                res.render 'index.jade', contacts: contacts, locale: locale
+
+
 
     fetch: (req, res, next, id) ->
         Contact.find id, (err, contact) ->
