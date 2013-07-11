@@ -13,9 +13,9 @@ module.exports = (app) ->
             next()
 
     list: (req, res) ->
-        Contact.request 'all', (err, albums) ->
+        Contact.request 'all', (err, contacts) ->
             return res.error 500, 'An error occured', err if err
-            res.send albums
+            res.send contacts
 
     create: (req, res) ->
 
