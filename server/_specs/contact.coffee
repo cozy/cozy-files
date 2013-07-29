@@ -35,7 +35,7 @@ describe 'Contacts', ->
             expect(@body.note).to.equal fixtures.contact1.note
             expect(@body.id).to.exist
 
-    describe 'Create - POST /albums', ->
+    describe 'Create - POST /contacts', ->
 
         contact =
             name: 'Jane Smith'
@@ -48,7 +48,7 @@ describe 'Contacts', ->
             expect(@body.id).to.exist
             @id = @body.id
 
-    describe 'Update - PUT /albums/:id', ->
+    describe 'Update - PUT /contacts/:id', ->
 
         update =
             note: 'funny guy'
@@ -65,7 +65,7 @@ describe 'Contacts', ->
         it 'then it is changed', ->
             expect(@body.note).to.equal update.note
 
-    describe 'Delete - DELETE /cotacts/:id', ->
+    describe 'Delete - DELETE /contacts/:id', ->
 
         it 'should allow requests', (done) ->
             @client.del "contacts/#{@id}", done
