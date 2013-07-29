@@ -11,7 +11,6 @@ html
   body
     script(src="javascripts/vendor.js")
     script(src="javascripts/app.js")
-    script!= 'window.locale = "' + locale + '";'
-    script!= 'window.initcontacts = ' + JSON.stringify(contacts) + ';'
+    script!= imports
     script.
       require('initialize');

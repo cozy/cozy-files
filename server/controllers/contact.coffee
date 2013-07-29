@@ -14,7 +14,12 @@ module.exports = (app) ->
             i18n.getLocale null, (err, locale) ->
                 console.log err if err
 
-                res.render 'index.jade', contacts: contacts, locale: locale
+                imports = """
+                    window.locale = "#{locale}";
+                    window.initcontacts = #{JSON.stringify(contacts)};
+                """
+
+                res.render 'index.jade', imports: imports
 
 
 
