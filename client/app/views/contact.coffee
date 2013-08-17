@@ -80,7 +80,9 @@ module.exports = class ContactView extends ViewCollection
         point = new Datapoint name: name
         point.set 'type', type if type?
         @model.dataPoints.add point
-        @zones[name].children().last().find('.type').focus()
+        typeField = @zones[name].children().last().find('.type')
+        typeField.focus()
+        typeField.select()
 
     changeOccured: ->
         @saveButton.removeClass('disabled').text t 'Save'

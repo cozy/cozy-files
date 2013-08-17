@@ -1134,7 +1134,7 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.addClicked = function(name, type) {
       return function(event) {
-        var point;
+        var point, typeField;
 
         event.preventDefault();
         point = new Datapoint({
@@ -1144,7 +1144,9 @@ window.require.register("views/contact", function(exports, require, module) {
           point.set('type', type);
         }
         this.model.dataPoints.add(point);
-        return this.zones[name].children().last().find('.type').focus();
+        typeField = this.zones[name].children().last().find('.type');
+        typeField.focus();
+        return typeField.select();
       };
     };
 
@@ -1446,8 +1448,8 @@ window.require.register("views/datapoint", function(exports, require, module) {
 
     DataPointView.prototype.store = function() {
       return this.model.set({
-        type: this.typefield.val(),
-        value: this.valuefield.val()
+        value: this.valuefield.val(),
+        type: this.typefield.val()
       });
     };
 

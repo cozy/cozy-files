@@ -37,5 +37,5 @@ module.exports = class DataPointView extends BaseView
 
     store: ->
         @model.set
-            type: @typefield.val()
             value: @valuefield.val()
+            type: @typefield.val()
