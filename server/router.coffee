@@ -2,6 +2,7 @@ module.exports = (app) ->
     contact = require('./controllers/contact')(app)
 
     app.get   '/',                                            contact.index
+    app.get   '/widget',                                      contact.widget
 
     # fetch on params
     app.param 'contactid',                                    contact.fetch
