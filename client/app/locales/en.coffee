@@ -24,6 +24,8 @@ module.exports =
   "Links":              "Links"
   "Others":             "Others"
   "Saved":              "Saved"
+  "Save changes ?":     "Save changes ?"
+  "This is not an image": "This is not an image"
 
 # ContactList
   "Search ...":         "Search ..."

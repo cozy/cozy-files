@@ -4,16 +4,19 @@ module.exports = (app) ->
     i18n      = require 'cozy-i18n-helper'
     express   = require 'express'
 
+    # static middleware
+    app.use express.static __dirname + '/../client/public',
+        maxAge: 86400000
+
     # all environements
     app.use express.bodyParser
-        # uploadDir: './uploads'
         keepExtensions: true
 
     # extend express to DRY controllers
     app.use shortcuts
 
     # expose locale config to client
-    app.use i18n.middleware
+    app.set 'views', __dirname + '/../client'
 
     #test environement
     app.configure 'test', ->
@@ -32,6 +35,3 @@ module.exports = (app) ->
             dumpExceptions: true
             showStack: true
 
-    # static middleware
-    app.use express.static __dirname + '/../client/public',
-        maxAge: 86400000

@@ -1,13 +1,9 @@
 module.exports =
 
     initialize: ->
-        $.ajax('cozy-locale.json')
-        .done( (data) => @locale = data.locale )
-        .fail(     () => @locale = 'en'        )
-        .always(   () => @initializeStep2()    )
 
-
-    initializeStep2: ->
+        @locale = window.locale
+        delete window.locale
 
         @polyglot = new Polyglot()
         try
@@ -26,7 +22,12 @@ module.exports =
         @contactslist = new ContactsList collection: @contacts
         @contactslist.$el.appendTo $('body')
         @contactslist.render()
-        @contacts.fetch()
+
+        if window.initcontacts?
+            @contacts.reset window.initcontacts
+            delete window.initcontacts
+        else
+            @contacts.fetch()
 
         @router = new Router()
 

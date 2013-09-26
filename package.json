@@ -5,10 +5,11 @@
   "main": "server.coffee",
   "dependencies": {
     "jugglingdb": "~0.2.0-25",
-    "jugglingdb-cozy-adapter": "~0.3.3",
+    "jugglingdb-cozy-adapter": "~0.3.5",
     "cozy-i18n-helper": "~0.0.1",
     "express": "~3.1.0",
-    "async": "~0.2.9"
+    "async": "~0.2.9",
+    "jade": "~0.32.0"
   },
   "devDependencies": {
     "chai": "~1.5.0",
@@ -31,5 +32,6 @@
     "CozyInstance": {
       "description": "Read language setting"
     }
-  }
+  },
+  "cozy-widget": "/apps/contacts/widget"
 }

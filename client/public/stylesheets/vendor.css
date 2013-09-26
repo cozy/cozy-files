@@ -6156,6 +6156,7 @@ a.badge:focus {
 .affix {
   position: fixed;
 }
+
 /*!
  * Bootstrap Responsive v2.3.1
  *
@@ -7265,3 +7266,6 @@ a.badge:focus {
     overflow: visible !important;
   }
 }
+
+
+/*@ sourceMappingURL=vendor.css.map*/
