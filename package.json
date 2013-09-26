@@ -32,5 +32,6 @@
     "CozyInstance": {
       "description": "Read language setting"
     }
-  }
+  },
+  "cozy-widget": "/apps/contacts/widget"
 }
