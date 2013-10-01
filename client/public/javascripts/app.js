@@ -1688,7 +1688,7 @@ $(function() {
   });
   this.contactslist.$el.appendTo($('body'));
   gotoapp = $("<a id=\"gotoapp\" href=\"/apps/contacts/\">\n    <i class=\"icon-resize-full icon-white\"></i>\n</a>").click(function(e) {
-    homeGoTo('contacts');
+    homeGoTo('contacts/#');
     e.preventDefault();
     return false;
   });
