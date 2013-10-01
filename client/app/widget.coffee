@@ -1,8 +1,6 @@
 $ ->
 
-
     homeGoTo = (url) ->
-        console.log "HOME GO TO CALLED"
         intent =
             action: 'goto'
             params: url
@@ -23,9 +21,7 @@ $ ->
 
     class Router extends Backbone.Router
         routes: 'contact/:id' : 'goto'
-        goto: (id) ->
-            console.log "goto called"
-            homeGoTo 'contacts/contact/' + id
+        goto: (id) -> homeGoTo 'contacts/contact/' + id
 
     ContactsCollection = require('collections/contact')
     ContactsList = require('views/contactslist')
@@ -33,19 +29,19 @@ $ ->
     @contactslist = new ContactsList collection: @contacts
     @contactslist.$el.appendTo $('body')
     @contactslist.render()
-    @contacts.reset window.initcontacts
+    @contacts.reset window.initcontacts, parse: true
     @contactslist.$el.appendTo $('body')
 
     gotoapp = $("""
         <a id="gotoapp" href="/apps/contacts/">
-            <i class="icon-share-alt"></i>
+            <i class="icon-resize-full icon-white"></i>
         </a>
     """).click (e) ->
         homeGoTo 'contacts'
         e.preventDefault()
         false
 
-    $('body').append gotoapp
+    @contactslist.$el.append gotoapp
 
     router = new Router()
     Backbone.history.start()

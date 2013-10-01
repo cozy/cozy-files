@@ -44,6 +44,7 @@ h1, h2, h3, h4, #name
   #toolbar
     background-color lightgrey
     height 40px
+    position relative
     box-sizing border-box
 
     input
@@ -61,6 +62,12 @@ h1, h2, h3, h4, #name
     input:focus
       box-shadow none
       border 1px solid highlightcolor
+
+    #filterClean
+      position absolute
+      top 10px
+      right 5px
+
 
   #contacts
     position absolute
@@ -386,32 +393,34 @@ h1, h2, h3, h4, #name
 
     #contacts-list
         width 100%
-        top 30px
+        top 42px
 
     #help, #contact
         width 100%
 
     #help
-        height 30px
+        height 40px
         padding 1px
         overflow hidden
 
         a
-          width 33.3%
-          height 30px
-          line-height 25px
+          width 33.333%
+          height 40px
+          line-height 40px
           margin 0px
-          border-right 1px solid white
           font-size 1em
           float none
           display inline-block
           box-sizing border-box
+          -moz-box-sizing border-box
           overflow hidden
           text-align center
-          padding 5px
+          padding 0px
+          border-right 1px solid white
+          border-left 1px solid white
 
-          i
-            display inline-block
+          // i
+          //   display inline-block
 
         a:hover
           outline 0px
