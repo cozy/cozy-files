@@ -116,7 +116,9 @@ module.exports = {
     this.contactslist.$el.appendTo($('body'));
     this.contactslist.render();
     if (window.initcontacts != null) {
-      this.contacts.reset(window.initcontacts);
+      this.contacts.reset(window.initcontacts, {
+        parse: true
+      });
       delete window.initcontacts;
     } else {
       this.contacts.fetch();
@@ -949,7 +951,7 @@ with (locals || {}) {
 var interp;
 buf.push('<div id="toolbar"><input');
 buf.push(attrs({ 'id':('filterfield'), 'type':("text"), 'placeholder':(t("Search ...")) }, {"type":true,"placeholder":true}));
-buf.push('/></div><div id="contacts"></div>');
+buf.push('/><a id="filterClean" href=""><i class="icon-remove"></i></a></div><div id="contacts"></div>');
 }
 return buf.join("");
 };
@@ -971,7 +973,7 @@ else
 {
 buf.push('<img src="img/defaultpicture.png"/>');
 }
-buf.push('<h2>' + escape((interp = fn) == null ? '' : interp) + '</h2><span class="email">' + escape((interp = bestmail) == null ? '' : interp) + '</span><span class="tel">  ' + escape((interp = besttel) == null ? '' : interp) + '</span><div class="clearfix"></div>');
+buf.push('<h2>' + escape((interp = fn) == null ? '' : interp) + '</h2><div class="infos"><span class="email">' + escape((interp = bestmail) == null ? '' : interp) + '</span><span class="tel">  ' + escape((interp = besttel) == null ? '' : interp) + '</span></div><div class="clearfix"></div>');
 }
 return buf.join("");
 };
@@ -1292,7 +1294,8 @@ module.exports = ContactsList = (function(_super) {
   ContactsList.prototype.template = require('templates/contactslist');
 
   ContactsList.prototype.events = {
-    'keyup #filterfield': 'keyUpCallback'
+    'keyup #filterfield': 'keyUpCallback',
+    'click #filterClean': 'cleanFilter'
   };
 
   ContactsList.prototype.afterRender = function() {
@@ -1326,6 +1329,20 @@ module.exports = ContactsList = (function(_super) {
     if (outofview) {
       return this.list.scrollTop(this.list.scrollTop() + position);
     }
+  };
+
+  ContactsList.prototype.cleanFilter = function(event) {
+    var id, view, _ref1, _results;
+
+    event.preventDefault();
+    this.filterfield.val('');
+    _ref1 = this.views;
+    _results = [];
+    for (id in _ref1) {
+      view = _ref1[id];
+      _results.push(view.$el.show());
+    }
+    return _results;
   };
 
   ContactsList.prototype.keyUpCallback = function(event) {
@@ -1622,7 +1639,6 @@ $(function() {
   homeGoTo = function(url) {
     var intent;
 
-    console.log("HOME GO TO CALLED");
     intent = {
       action: 'goto',
       params: url
@@ -1653,7 +1669,6 @@ $(function() {
     };
 
     Router.prototype.goto = function(id) {
-      console.log("goto called");
       return homeGoTo('contacts/contact/' + id);
     };
 
@@ -1668,14 +1683,16 @@ $(function() {
   });
   this.contactslist.$el.appendTo($('body'));
   this.contactslist.render();
-  this.contacts.reset(window.initcontacts);
+  this.contacts.reset(window.initcontacts, {
+    parse: true
+  });
   this.contactslist.$el.appendTo($('body'));
-  gotoapp = $("<a id=\"gotoapp\" href=\"/apps/contacts/\">\n    <i class=\"icon-share-alt\"></i>\n</a>").click(function(e) {
+  gotoapp = $("<a id=\"gotoapp\" href=\"/apps/contacts/\">\n    <i class=\"icon-resize-full icon-white\"></i>\n</a>").click(function(e) {
     homeGoTo('contacts');
     e.preventDefault();
     return false;
   });
-  $('body').append(gotoapp);
+  this.contactslist.$el.append(gotoapp);
   router = new Router();
   return Backbone.history.start();
 });

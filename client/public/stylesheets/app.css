@@ -32,6 +32,7 @@ h4,
 #contacts-list #toolbar {
   background-color: #d3d3d3;
   height: 40px;
+  position: relative;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -53,6 +54,11 @@ h4,
 #contacts-list #toolbar input:focus {
   box-shadow: none;
   border: 1px solid #fe8800;
+}
+#contacts-list #toolbar #filterClean {
+  position: absolute;
+  top: 10px;
+  right: 5px;
 }
 #contacts-list #contacts {
   position: absolute;
@@ -388,35 +394,34 @@ h4,
 @media (max-width: 900px) {
   #contacts-list {
     width: 100%;
-    top: 30px;
+    top: 42px;
   }
   #help,
   #contact {
     width: 100%;
   }
   #help {
-    height: 30px;
+    height: 40px;
     padding: 1px;
     overflow: hidden;
   }
   #help a {
-    width: 33.3%;
-    height: 30px;
-    line-height: 25px;
+    width: 33.333%;
+    height: 40px;
+    line-height: 40px;
     margin: 0px;
-    border-right: 1px solid #fff;
     font-size: 1em;
     float: none;
     display: inline-block;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    -moz-box-sizing: border-box;
     overflow: hidden;
     text-align: center;
-    padding: 5px;
-  }
-  #help a i {
-    display: inline-block;
+    padding: 0px;
+    border-right: 1px solid #fff;
+    border-left: 1px solid #fff;
   }
   #help a:hover {
     outline: 0px;
