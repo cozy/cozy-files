@@ -24,7 +24,7 @@ module.exports =
         @contactslist.render()
 
         if window.initcontacts?
-            @contacts.reset window.initcontacts
+            @contacts.reset window.initcontacts, parse: true
             delete window.initcontacts
         else
             @contacts.fetch()

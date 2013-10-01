@@ -12,6 +12,7 @@ module.exports = class ContactsList extends ViewCollection
 
     events:
         'keyup #filterfield': 'keyUpCallback'
+        'click #filterClean': 'cleanFilter'
 
     afterRender: ->
         super
@@ -37,6 +38,11 @@ module.exports = class ContactsList extends ViewCollection
         position = line.position().top
         outofview = position < 0 or position > @list.height()
         @list.scrollTop @list.scrollTop() + position if outofview
+
+    cleanFilter: (event) ->
+        event.preventDefault()
+        @filterfield.val('')
+        view.$el.show() for id, view of @views
 
     keyUpCallback: (event) ->
 
