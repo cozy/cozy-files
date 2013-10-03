@@ -21,3 +21,5 @@ before_install:
     - curl http://localhost:9101/
     - coffee commands.coffee test-install contacts
     - cd ..
+    - export NAME=contacts
+    - export TOKEN=apptoken
