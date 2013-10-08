@@ -18,30 +18,43 @@ findFolder = function(id, callback) {
 };
 
 module.exports.create = function(req, res) {
-  return Folder.create(req.body, function(err, folder) {
-    if (err) {
-      return res.send({
-        error: true,
-        msg: "Server error while creating file."
-      }, 500);
-    } else {
-      return res.send(folder, 200);
+  return Folder.all(function(err, folders) {
+    var conflict, folder, _i, _len;
+
+    conflict = false;
+    for (_i = 0, _len = folders.length; _i < _len; _i++) {
+      folder = folders[_i];
+      if (folder.slug === req.body.slug) {
+        conflict = true;
+        res.send({
+          error: true,
+          msg: "This folder already exists"
+        }, 400);
+      }
+    }
+    if (!conflict) {
+      return Folder.create(req.body, function(err, newFolder) {
+        if (err) {
+          return res.send({
+            error: true,
+            msg: "Server error while creating file."
+          }, 500);
+        } else {
+          return res.send(newFolder, 200);
+        }
+      });
     }
   });
 };
 
 module.exports.find = function(req, res) {
   return findFolder(req.params.id, function(err, folder) {
-    var newName;
-
     if (err) {
       return res.send({
         error: true,
         msg: err
       }, 404);
     } else {
-      newName = folder.name.split('/');
-      folder.name = newName[newName.length - 2];
       return res.send(folder, 200);
     }
   });

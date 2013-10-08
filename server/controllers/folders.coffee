@@ -14,19 +14,24 @@ findFolder = (id, callback) ->
 ## Actions ##
 
 module.exports.create = (req, res) ->
-    Folder.create req.body, (err, folder) ->
-        if err
-            res.send error: true, msg: "Server error while creating file.", 500
-        else      
-            res.send folder, 200
+    Folder.all (err, folders) ->
+        conflict = false
+        for folder in folders
+            if folder.slug is req.body.slug
+                conflict = true
+                res.send error:true, msg: "This folder already exists", 400
+        if not conflict
+            Folder.create req.body, (err, newFolder) ->
+                if err
+                    res.send error: true, msg: "Server error while creating file.", 500
+                else    
+                    res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
         if err
             res.send error: true, msg: err, 404
-        else
-            newName = folder.name.split('/')
-            folder.name = newName[newName.length-2]    
+        else   
             res.send folder, 200
 
 module.exports.findFoldersRoot = (req, res) ->
@@ -86,7 +91,7 @@ module.exports.findFolders = (req, res) ->
                             result.push folder
                     res.send result, 200
 
-# TODO
+
 module.exports.destroy = (req, res) ->
     findFolder req.params.id, (err, currentFolder) ->
         if err
