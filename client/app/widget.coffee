@@ -37,7 +37,7 @@ $ ->
             <i class="icon-resize-full icon-white"></i>
         </a>
     """).click (e) ->
-        homeGoTo 'contacts'
+        homeGoTo 'contacts/#'
         e.preventDefault()
         false
 
