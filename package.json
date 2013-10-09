@@ -29,6 +29,14 @@
     "File":
     {
       "description": "Store files in your cozy"
+    },
+    "Folder":
+    {
+      "description": "Store folders in your cozy"
+    },
+    "Remote":
+    {
+      "description": "Manage your remote devices"
     }
   }
 
