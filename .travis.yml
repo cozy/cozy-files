@@ -6,14 +6,17 @@ services:
 env:
     global:
         - NODE_ENV=test
-before_install:
+before_install:    
     - git clone git://github.com/mycozycloud/cozy-data-system.git
-    - cd cozy-data-system 
+    - cd cozy-data-system
+    - npm install forever coffee-script -g
     - npm install
     - pwd
-    - start-stop-daemon --start --chdir /home/travis/build/poupotte/cozy-files/cozy-data-system/ --exec /home/travis/build/poupotte/cozy-files/cozy-data-system/server.coffee -b
-    - ps aux | grep coffee
-    - sleep 3
+    - forever start -o forever-ds.log server.js
+    - ps aux | grep server.js
+    - sudo netstat -plunt
+    - sleep 5
+    - cat forever-ds.log
     - curl http://localhost:9101/
     - cd ..
     - export NAME=files
