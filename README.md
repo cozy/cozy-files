@@ -9,11 +9,11 @@ Status](https://travis-ci.org/poupotte/cozy-files.png?branch=master)
 
 Clone this repository, install dependencies and run server.
 
-git clone https://github.com/poupotte/cozy-files.git
-cd cozy-files
-npm install
-cd client/ && npm install && cd ..
-npm start
+    git clone https://github.com/poupotte/cozy-files.git
+    cd cozy-files
+    npm install
+    cd client/ && npm install && cd ..
+    npm start
 
 # About Cozy
 
