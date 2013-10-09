@@ -5,7 +5,7 @@ client = new Client "http://localhost:8888/"
 helpers = require './helpers'
 
 
-describe "Alarms management", ->
+describe "Folders management", ->
 
 
     before (done) -> 

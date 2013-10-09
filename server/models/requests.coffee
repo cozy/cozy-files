@@ -8,3 +8,6 @@ module.exports =
     folder:
         all: (doc) -> emit doc.slug, doc
         byFolder: (doc) -> emit doc.path, doc
+
+    remote:
+        all: (doc) -> emit doc.login, doc

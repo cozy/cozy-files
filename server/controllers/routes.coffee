@@ -1,5 +1,6 @@
 files = require './files'
 folders = require './folders'
+remotes = require './remotes'
 
 module.exports =
     'files':
@@ -23,3 +24,10 @@ module.exports =
         get: folders.findFiles
     'folders/:id/folders':
         get: folders.findFolders
+    'remotes':
+        post: remotes.create
+    'remotes/:id':
+        put: remotes.update
+        delete: remotes.destroy
+    'remotes/:id/token':
+        put: remotes.updateToken

@@ -19,5 +19,10 @@ module.exports = {
     byFolder: function(doc) {
       return emit(doc.path, doc);
     }
+  },
+  remote: {
+    all: function(doc) {
+      return emit(doc.login, doc);
+    }
   }
 };
