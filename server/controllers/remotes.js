@@ -36,14 +36,31 @@ module.exports.create = function(req, res) {
   } else {
     remote.login = randomString(8);
   }
-  return Remote.create(remote, function(err, newRemote) {
-    if (err) {
-      return res.send({
-        error: true,
-        msg: "Server error while creating file."
-      }, 500);
-    } else {
-      return res.send(newRemote, 200);
+  return Remote.all(function(err, remotes) {
+    var conflict, rem, _i, _len;
+
+    conflict = false;
+    for (_i = 0, _len = remotes.length; _i < _len; _i++) {
+      rem = remotes[_i];
+      if (rem.login === remote.login) {
+        conflict = true;
+        res.send({
+          error: true,
+          msg: "This folder already exists"
+        }, 400);
+      }
+    }
+    if (!conflict) {
+      return Remote.create(remote, function(err, newRemote) {
+        if (err) {
+          return res.send({
+            error: true,
+            msg: "Server error while creating file."
+          }, 500);
+        } else {
+          return res.send(newRemote, 200);
+        }
+      });
     }
   });
 };

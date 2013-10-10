@@ -27,11 +27,18 @@ module.exports.create = (req, res) ->
         remote.login = req.body.login
     else
         remote.login = randomString 8
-    Remote.create remote, (err, newRemote) ->
-        if err
-            res.send error: true, msg: "Server error while creating file.", 500
-        else    
-            res.send newRemote, 200
+    Remote.all (err, remotes) ->
+        conflict = false
+        for rem in remotes
+            if rem.login is remote.login
+                conflict = true
+                res.send error:true, msg: "This folder already exists", 400
+        if not conflict
+            Remote.create remote, (err, newRemote) ->
+                if err
+                    res.send error: true, msg: "Server error while creating file.", 500
+                else    
+                    res.send newRemote, 200
 
 # PUT remotes/:id
 module.exports.update = (req, res) ->
