@@ -26,11 +26,15 @@ module.exports = (callback) ->
 
             # create new contact, delete old
             Contact.create data, (err) ->
-                return console.log(err.stack) if err
+                if err
+                    console.log err.stack
+                    return cb err
 
                 # raw destroy because we don't have the model
                 Contact.find contact._id, (err, contact) ->
-                    return console.log(err.stack) if err
+                    if err
+                        console.log err.stack
+                        return cb err
 
                     contact.destroy cb
         , callback

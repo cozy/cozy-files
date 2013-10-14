@@ -1,22 +1,18 @@
-express = require 'express'
-init = require './init'
-router = require './server/router'
-configure = require './server/config'
-
-module.exports = app = express()
-configure(app)
-router(app)
+start = (port, callback) ->
+    require('americano').start
+            name: 'Contacts'
+            port: port
+    , (app, server) ->
+        patch1 = require './server/patches/patch1'
+        patch1 (err) -> callback? err, app, server
 
 if not module.parent
-    init (err) -> # ./init.coffee
+    port = process.env.PORT or 9114
+    start port, (err) ->
         if err
             console.log "Initialization failed, not starting"
             console.log err.stack
-            return
+            process.exit 1
 
-        port = process.env.PORT or 9114
-        host = process.env.HOST or "127.0.0.1"
-
-        app.listen port, host, ->
-            console.log "Server listening on %s:%d within %s environment",
-                host, port, app.get('env')
+else
+    module.exports = start
