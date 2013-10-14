@@ -5,11 +5,10 @@ expect = require('chai').expect
 
 describe 'Contacts', ->
 
-    before helpers.init
+    before helpers.startServer
     before helpers.clearDb
     before helpers.createContact fixtures.contact1
 
-    before helpers.startServer
     before helpers.makeTestClient
     after  helpers.killServer
 
