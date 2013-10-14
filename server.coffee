@@ -3,6 +3,7 @@ start = (port, callback) ->
             name: 'Contacts'
             port: port
     , (app, server) ->
+        app.set 'views', './client/'
         patch1 = require './server/patches/patch1'
         patch1 (err) -> callback? err, app, server
 

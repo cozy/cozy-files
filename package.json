@@ -4,7 +4,7 @@
   "description": "A cozy application to manage your contacts.",
   "main": "server.coffee",
   "dependencies": {
-    "cozy-i18n-helper": "~0.0.1",
+    "cozy-i18n-helper": "0.0.4",
     "express": "~3.1.0",
     "async": "~0.2.9",
     "jade": "~0.32.0",
