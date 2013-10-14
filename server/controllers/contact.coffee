@@ -3,9 +3,7 @@ i18n    = require 'cozy-i18n-helper'
 path    = require 'path'
 fs      = require 'fs'
 
-module.exports = (app) ->
-
-
+module.exports =
 
     index: (req, res) ->
         Contact.request 'all', (err, contacts) ->
@@ -34,8 +32,6 @@ module.exports = (app) ->
                 """
 
                 res.render 'widget.jade', imports: imports
-
-
 
 
     fetch: (req, res, next, id) ->
