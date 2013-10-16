@@ -1,10 +1,12 @@
 TESTPORT = process.env.PORT or 8013
 Contact = require '../server/models/contact'
+Logs = require '../server/models/phone_communication_log'
 Client = require('request-json').JsonClient
 
 module.exports =
 
     startServer: (done) ->
+        @timeout 6000
         start = require '../server.coffee'
         start TESTPORT, (err, app, server) =>
             @server = server
@@ -14,12 +16,13 @@ module.exports =
         @server.close()
 
     clearDb: (done) ->
-        Contact.requestDestroy "all", done
+        Contact.requestDestroy "all", ->
+            Logs.requestDestroy "all", done
 
     createContact: (data) -> (done) ->
         baseContact = new Contact(data)
-        Contact.create baseContact, (err, album) =>
-            @album = album
+        Contact.create baseContact, (err, contact) =>
+            @contact = contact
             done err
 
     makeTestClient: (done) ->

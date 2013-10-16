@@ -12,6 +12,17 @@ describe 'Contacts', ->
     before helpers.makeTestClient
     after  helpers.killServer
 
+    describe 'Index - GET /', ->
+
+        it 'should allow requests', (done) ->
+            # getLocale is very long, this need to be fixed
+            @timeout 5000
+            @client.get '/', done
+
+        it 'should reply with the index.html file', ->
+            expect(@err).to.not.exist
+            expect(@body).to.have.string 'window.locale = '
+
     describe 'List - GET /contacts', ->
 
         it 'should allow requests', (done) ->
