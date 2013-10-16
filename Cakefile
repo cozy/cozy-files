@@ -57,3 +57,16 @@ runTests = (fileList) ->
         if err
             console.log "Running mocha caught exception: \n" + err
         console.log stdout
+
+task 'convert', 'convert from coffee to JS', ->
+    files = walk "server", []
+    console.log "Convert to JS..."
+    command = "coffee -cb server.coffee #{files.join ' '} "
+    exec command, (err, stdout, stderr) ->
+        console.log stdout
+        if err
+            console.log "Running convertion caught exception: \n" + err
+            process.exit 1
+        else
+            console.log "Convertion succeeded."
+            process.exit 0
