@@ -1,7 +1,10 @@
 contact = require './contact'
+callLog = require './call_log'
 
 module.exports =
 
+    '':
+        get: contact.index
 
     'widget':
         get: contact.widget
@@ -24,5 +27,8 @@ module.exports =
     'contacts/:contactid/picture.png':
         get: contact.picture
 
-    '':
-        get: contact.index
+    'contacts/:contactid/calls':
+        get: callLog.byContact
+
+    'calls':
+        post: callLog.merge

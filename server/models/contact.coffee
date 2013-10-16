@@ -7,6 +7,10 @@ module.exports = Contact = americano.getModel 'Contact',
     note          : String
     _attachments  : Object
 
+Contact::phoneNumbers = ->
+    model = @toJSON()
+    return (dp.value for i, dp of model.datapoints when dp.name is 'tel')
+
 Contact::toVCF = ->
 
     model = @toJSON()
