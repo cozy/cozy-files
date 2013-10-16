@@ -42,6 +42,36 @@ h1, h2, h3, h4, #name
   right 0px
 
   #toolbar
+    height 40px
+    padding 1px
+    overflow hidden
+
+    a
+      width 33.333%
+      height 40px
+      font-size 1em
+      line-height 40px
+      margin 0px
+      padding 0px
+      display inline-block
+      box-sizing border-box
+      -moz-box-sizing border-box
+      text-align center
+      border-right 1px solid white
+      border-left 1px solid white
+      color white
+      background-color buttoncolor
+
+    a:hover
+      outline 0px
+      text-decoration none
+      background-color highlightcolor
+
+    a:active
+      box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+      background: highlightcolor - 5%
+
+  #searchbar
     background-color lightgrey
     height 40px
     position relative
@@ -71,7 +101,7 @@ h1, h2, h3, h4, #name
 
   #contacts
     position absolute
-    top 40px
+    top 83px
     bottom 0px
     left 0px
     right 0px
@@ -117,7 +147,7 @@ h1, h2, h3, h4, #name
       text-decoration none
 
 
-#help, #contact
+#contact, #doc
   width 50%
   position absolute
   right 0px
@@ -127,35 +157,18 @@ h1, h2, h3, h4, #name
   background-image url('../img/background-right.jpg')
   box-shadow: 6px 0px 3px -2px basecolor inset
 
-#help
-  a
-    width 50%
-    display block
-    background-color buttoncolor
-    color white
-    font-size 2em
-    text-align center
-    margin 70px auto
-    padding 10px
-
-    i
-      display none
-
-  a:hover
-        outline 0px
-        text-decoration none
-        background-color highlightcolor
-
-  a:active
-    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
-    background: highlightcolor - 5%
+#doc
+  padding-left 20px
+  padding-top 50px
+  box-sizing border-box
+  -moz-box-sizing border-box
 
 #contact
 
   padding-top 50px
 
   #close
-    display block
+    display none
     position absolute
     top 8px
     left 8px
@@ -391,45 +404,14 @@ h1, h2, h3, h4, #name
 
 @media (max-width: 900px)
 
-    #contacts-list
+    #doc
+        display none
+
+    #contacts-list, #doc, #contact
         width 100%
-        top 42px
 
-    #help, #contact
-        width 100%
-
-    #help
-        height 40px
-        padding 1px
-        overflow hidden
-
-        a
-          width 33.333%
-          height 40px
-          line-height 40px
-          margin 0px
-          font-size 1em
-          float none
-          display inline-block
-          box-sizing border-box
-          -moz-box-sizing border-box
-          overflow hidden
-          text-align center
-          padding 0px
-          border-right 1px solid white
-          border-left 1px solid white
-
-          // i
-          //   display inline-block
-
-        a:hover
-          outline 0px
-          text-decoration none
-          background-color highlightcolor
-
-        a:active
-          box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
-          background: highlightcolor - 5%
-
-    #contact #zones .zone
+    #contact
+      #zones .zone
         width 98%
+      #close
+        display block

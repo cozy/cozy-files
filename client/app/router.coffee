@@ -1,13 +1,15 @@
 app              = require 'application'
 ContactView      = require 'views/contact'
-HelpView         = require 'views/help'
+DocView          = require 'views/doc'
 ImporterView     = require 'views/importer'
+CallImporterView     = require 'views/callimporter'
 Contact          = require 'models/contact'
 
 module.exports = class Router extends Backbone.Router
     routes:
         ''                    : 'help'
         'import'              : 'import'
+        'callimport'          : 'callimport'
         'contact/new'         : 'newcontact'
         'contact/:id'         : 'showcontact'
 
@@ -16,13 +18,18 @@ module.exports = class Router extends Backbone.Router
             @navigate "", true if event.keyCode is 27 #ESC
 
     help: ->
-        @displayView new HelpView()
+        @displayView new DocView()
         $('#filterfied').focus()
         app.contactslist.activate null
 
     import: ->
         @help()
         @importer = new ImporterView()
+        $('body').append @importer.render().$el
+
+    callimport: ->
+        @help()
+        @importer = new CallImporterView()
         $('body').append @importer.render().$el
 
     newcontact: ->

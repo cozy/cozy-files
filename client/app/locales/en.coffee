@@ -29,15 +29,24 @@ module.exports =
 
 # ContactList
   "Search ...":         "Search ..."
-
-# helpView
   "New Contact":        "New Contact"
   "Export vCard":       "Export vCard"
-  "Import vCard":       "Import vCard"
+  "import vcard":       "Import vCard"
 
-  "Choose a vCard file":"Choose a vCard file"
-  "is not a vCard":     "is not a vCard"
-  "Cancel":             "Cancel"
-  "Import":             "Import"
+# importer
+  "choose vcard file":  "Choose a vCard file"
+  "is not a vcard":     "is not a vCard"
+  "cancel":             "Cancel"
+  "import":             "Import"
 
   "import.ready-msg":   "Ready to import %{smart_count} contact |||| Ready to import %{smart_count} contacts"
+  "import call log help": "If you are a FING and Orange user, do not use this"
+  "import android calls": "If you use an android phone, use the following application : "
+  "import ios calls": "If you use an iOS phone, follow this tutorial : "
+  "choose log file": "Then upload your generated log file"
+
+# doc
+  "click left to display": "Click a contact in the left panel to display it"
+  "carddav info": "To sync your contacts with your mobile, install the cozy-webdav application"
+  "call log info": "Click here to import your mobile's call log : "
+  "import call log": "Import call Log"

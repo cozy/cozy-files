@@ -1,0 +1,27 @@
+.modal-header= t("import call log")
+#import-file.modal-body
+    p= t('import call log help')
+    ul
+        li= t('import android calls')
+            a(href="https://play.google.com/store/apps/details?id=com.dukemdev",
+                target="_blank") Call Log Export
+        li= t('import ios calls')
+            a(href="http://support.digidna.net/entries/22585757-Export-iPhone-Call-History-to-PC-or-Mac",
+                target="_blank") Export iPhone Call History
+    .control-group
+        label.control-label(for="vcfupload")= t("choose log file")
+        .controls
+            input#csvupload(type="file", accept="text/csv;text/plain")
+            span.help-inline
+#import-config.modal-body
+    p= t('ready to import')
+    table.table.stripped-table
+        thead
+            th= t('log direction')
+            th= t('log number')
+            th= t('log date')
+        tbody
+
+.modal-footer
+    a#cancel-btn(href="#").btn= t("cancel")
+    a#confirm-btn.btn.disabled.btn-primary= t("import")

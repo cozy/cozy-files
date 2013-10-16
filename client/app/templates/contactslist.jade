@@ -1,4 +1,17 @@
 #toolbar
+    a#new(href="#contact/new")
+      i.icon-plus.icon-white
+      span= t("New Contact")
+
+    a#importvcf(href="#import")
+      i.icon-download.icon-white
+      span= t("Import vCard")
+
+    a#exportvcf(href="contacts.vcf")
+      i.icon-upload.icon-white
+      span= t("Export vCard")
+
+#searchbar
     input#filterfield(type="text", placeholder=t("Search ..."))
     a#filterClean(href="")
         i.icon-remove
