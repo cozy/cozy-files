@@ -25,7 +25,7 @@ module.exports.create = (req, res) ->
         if err
             res.send error: true, msg: "Server error while creating file.", 500
         else
-            newfile.attachFile file.path, {"name": file.name}, (err) ->
+            newfile.attachFile file.path, {"name": "thumb"}, (err) ->
                 if err
                     console.log "[Error]: " + err
                 fs.unlink file.path, (err) ->
@@ -46,10 +46,9 @@ module.exports.getAttachment = (req, res) ->
         if err
             res.send error: true, msg: err, 404
         else
-            name = req.params.name
             res.setHeader 'Content-Disposition' , "inline"
             res.setHeader 'content-type' , "mime/type"
-            stream = file.getFile name, (err, resp, body) =>
+            stream = file.getFile "thumb", (err, resp, body) =>
                 if err
                     res.send error: true, msg: err, 500
             
