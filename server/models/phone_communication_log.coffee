@@ -1,6 +1,7 @@
 americano = require 'americano-cozy'
 async = require 'async'
 
+# This is the FING communication log doctype
 PhoneCommunicationLog = americano.getModel 'PhoneCommunicationLog',
     origin              : type: String, default: 'cozy-contacts'
     direction           : String
@@ -11,39 +12,10 @@ PhoneCommunicationLog = americano.getModel 'PhoneCommunicationLog',
     type                : String
     snippet             : String
 
-PhoneCommunicationLog.normalizeNumber = (number) ->
-    number.replace '+', ''
-
-PhoneCommunicationLog.prepareItem = (log) ->
-    duration = log.duration.split ':'
-    chipCount = duration[0]*3600 + duration[1]*60 + duration[2]
-    timestamp = new Date(log.timestamp).toISOString()
-    direction = log.direction
-    number = PhoneCommunicationLog.normalizeNumber log.number
-    snippet = "#{timestamp} : VOICE #{direction} #{number}"
-
-    return out =
-        direction: direction
-        timestamp: timestamp
-        correspondantNumber : number
-        chipCount: chipCount
-        chipType: 's'
-        type: 'VOICE'
-        snippet: snippet
 
 PhoneCommunicationLog.byNumber = (number, callback) ->
     options = key : PhoneCommunicationLog.normalizeNumber number
     PhoneCommunicationLog.request 'byNumber', options, callback
-
-PhoneCommunicationLog.bySnippet = (callback) ->
-    PhoneCommunicationLog.rawRequest 'bySnippet', (err, items) ->
-        return callback err if err
-        out = {}
-        out[item.key] = item.value for item in items
-        callback null, out
-
-
-# DEDUPLICATION
 
 # for realtime
 PhoneCommunicationLog.deduplicate = (event, id) ->

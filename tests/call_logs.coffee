@@ -50,11 +50,9 @@ describe 'Call Logs', ->
 
         it 'raw logs creation', (done) ->
 
-            createLog = (data, callback) ->
-                data.origin = 'Orange'
+            async.eachSeries fixtures.logsOrange, (data, callback) ->
                 PhoneCommunicationLog.create data, callback
-
-            async.eachSeries fixtures.logsOrange, createLog, done
+            , done
 
         it 'wait for dedup to happen', (done) ->
             @timeout 5000

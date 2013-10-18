@@ -27,8 +27,9 @@ module.exports =
     'contacts/:contactid/picture.png':
         get: contact.picture
 
-    'contacts/:contactid/calls':
-        get: callLog.byContact
+    'contacts/:contactid/logs':
+        get:  callLog.byContact
+        post: callLog.create
 
-    'calls':
+    'logs':
         post: callLog.merge

@@ -5,6 +5,7 @@ module.exports = Contact = americano.getModel 'Contact',
     fn            : String
     datapoints    : [Object]
     note          : String
+    tags          : (x) -> x # DAMN IT JUGGLING
     _attachments  : Object
 
 Contact::phoneNumbers = ->
