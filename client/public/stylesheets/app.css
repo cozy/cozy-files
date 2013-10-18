@@ -22,7 +22,7 @@ h4,
   font-family: styled;
 }
 #contacts-list {
-  width: 50%;
+  width: 450px;
   position: absolute;
   left: 0px;
   top: 0px;
@@ -30,39 +30,68 @@ h4,
   right: 0px;
 }
 #contacts-list #toolbar {
-  background-color: #d3d3d3;
   height: 40px;
-  position: relative;
+  padding: 1px;
+  overflow: hidden;
+  padding: 10px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-}
-#contacts-list #toolbar input {
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  margin-right: 2px;
-  background-color: transparent;
-  border: 1px solid transparent;
-  border-radius: 0px;
-  box-shadow: none;
-  margin: 0px;
 }
 #contacts-list #toolbar input:focus {
   box-shadow: none;
   border: 1px solid #fe8800;
 }
+#contacts-list #toolbar .input-append.input-prepend {
+  float: left;
+  width: 65.95744680851064%;
+}
+#contacts-list #toolbar .add-on {
+  background-color: #d3d3d3;
+  border-top-left-radius: 100%;
+  border-bottom-left-radius: 100%;
+  border: 0px;
+  height: 22px;
+}
+#contacts-list #toolbar .add-on i {
+  margin-top: 2px;
+}
 #contacts-list #toolbar #filterClean {
-  position: absolute;
-  top: 10px;
-  right: 5px;
+  display: inline-block;
+  position: relative;
+  height: 26px;
+  line-height: 13px;
+  text-align: center;
+  width: 26px;
+  background-color: #f00;
+  padding: 0px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  vertical-align: middle;
+  margin: 0px 0px 0px -28px;
+  border: 0px;
+  border-radius: 13px;
+  z-index: 2;
+}
+#contacts-list #toolbar #new,
+#contacts-list #toolbar #gohelp {
+  background-color: #34a6ff;
+  display: inline-block;
+  float: left;
+  margin-left: 2.127659574468085%;
+  width: 14.893617021276595%;
+  text-align: center;
+  line-height: 26px;
+}
+#contacts-list #toolbar #new i,
+#contacts-list #toolbar #gohelp i {
+  margin-top: 2px;
 }
 #contacts-list #contacts {
   position: absolute;
-  top: 40px;
+  top: 50px;
   bottom: 0px;
   left: 0px;
   right: 0px;
@@ -108,10 +137,11 @@ h4,
 #contacts-list #contacts .contact-thumb:focus {
   text-decoration: none;
 }
-#help,
-#contact {
-  width: 50%;
+#contact,
+#doc {
   position: absolute;
+  z-index: 3;
+  left: 450px;
   right: 0px;
   top: 0px;
   bottom: 0px;
@@ -119,33 +149,19 @@ h4,
   background-image: url("../img/background-right.jpg");
   box-shadow: 6px 0px 3px -2px #e5e5e5 inset;
 }
-#help a {
-  width: 50%;
-  display: block;
-  background-color: #34a6ff;
-  color: #fff;
-  font-size: 2em;
-  text-align: center;
-  margin: 70px auto;
-  padding: 10px;
-}
-#help a i {
-  display: none;
-}
-#help a:hover {
-  outline: 0px;
-  text-decoration: none;
-  background-color: #fe8800;
-}
-#help a:active {
-  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 0 0;
-  background: #f18100;
+#doc {
+  padding-left: 20px;
+  padding-top: 50px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 #contact {
   padding-top: 50px;
 }
 #contact #close {
-  display: block;
+  display: none;
   position: absolute;
   top: 8px;
   left: 8px;
@@ -171,7 +187,7 @@ h4,
   position: absolute;
   border: 3px solid #34a6ff;
   left: 8px;
-  top: 50px;
+  top: 20px;
   width: 64px;
   height: 64px;
   overflow: hidden;
@@ -214,8 +230,7 @@ h4,
 #contact textarea {
   border-radius: 0px;
   background-color: transparent;
-  display: block;
-  float: left;
+  display: inline-block;
   box-shadow: none;
   margin: 0px;
   border: 1px solid transparent;
@@ -230,11 +245,38 @@ h4,
   background-color: #fff;
   outline: none;
 }
+#contact #delete {
+  display: block;
+  position: absolute;
+  right: 10px;
+  top: 20px;
+  padding: 0px 5px;
+  color: #fff;
+  text-decoration: none;
+  background-color: #f00;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+}
 #contact #wrap-name-notes {
   position: absolute;
-  top: 50px;
+  top: 20px;
   left: 77px;
   right: 10px;
+}
+#contact #tags {
+  display: none;
+}
+#contact ul.tagit {
+  border: 0px;
+}
+#contact ul.tagit input:hover {
+  border: 0px;
+}
+#contact ul.tagit input:focus {
+  border: 0px;
+  background-color: transparent;
+  outline: none;
 }
 #contact #name {
   display: block;
@@ -258,54 +300,52 @@ h4,
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
-  height: 70px;
   padding-left: 15px;
   resize: none;
   border: 1px solid transparent;
-  border-top: 0px;
 }
 #contact #notes:focus {
   border: 1px solid #34a6ff;
-  border-top: 0px;
 }
-#contact #save {
-  border-radius: 15px !important;
+#contact #save-info {
   position: absolute;
-  top: 8px;
-  left: 46px;
-}
-#contact #more {
-  position: absolute;
-  right: 10px;
-  top: 8px;
-  text-align: right;
-}
-#contact #more .btn {
-  border-radius: 15px !important;
-  border-bottom-right-radius: 0px !important;
-}
-#contact #more .dropdown-menu {
-  text-align: left;
-}
-#contact #more .dropdown-menu a {
-  cursor: pointer;
+  top: 20px;
+  right: 100px;
+  height: 30px;
+  line-height: 30px;
+  padding: 0px 5px;
+  background-color: #f9edbe;
 }
 #contact #zones {
   position: absolute;
-  top: 160px;
+  top: 120px;
   left: 0px;
   right: 0px;
   bottom: 0px;
 }
+#contact #zones #notes-zone {
+  float: right;
+}
 #contact #zones .zone {
   width: 48%;
-  margin: 1%;
-  float: left;
+  margin: 0% 1%;
+  padding: 0px;
 }
 #contact #zones .zone a.btn.add {
-  display: inline-block;
-  margin-left: 10px;
+  display: block;
+  width: 100%;
+  height: 30px;
+  background-color: #f2f2f2;
+  background-image: none;
+  border: 0px;
+  padding: 0px;
+  margin: 5px 0px 0px 0px;
+  border-radius: 0px;
+  line-height: 30px;
   opacity: 0;
+}
+#contact #zones .zone a.btn.add:hover {
+  background-color: #dcdcdc;
 }
 #contact #zones .zone h2 {
   margin-left: 5px;
@@ -347,37 +387,6 @@ h4,
   text-align: center;
   display: none;
 }
-.btn {
-  background: none;
-  text-shadow: none;
-  background-color: #34a6ff;
-  border-radius: 0px !important;
-  border: 0px;
-  color: #fff;
-}
-.btn .caret {
-  border-top: 4px solid #fff;
-}
-.btn.disabled {
-  border: 1px solid #34a6ff;
-  background-color: #d3d3d3;
-}
-.btn:not(.disabled):hover {
-  background-color: #fe8800;
-  text-decoration: none;
-  color: #fff;
-}
-.btn:not(.disabled):active,
-.btn:not(.disabled):focus {
-  background-color: #34a6ff;
-  color: #fff;
-  text-decoration: none;
-}
-.btn:not(.disabled):active,
-.btn.pressed {
-  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 0 0;
-  background: #f18100;
-}
 .dropdown-menu {
   border-radius: 0px;
 }
@@ -391,49 +400,27 @@ h4,
   background-color: #34a6ff;
   color: #fff;
 }
+a {
+  cursor: pointer;
+}
 @media (max-width: 900px) {
-  #contacts-list {
-    width: 100%;
-    top: 42px;
+  #doc {
+    display: none;
   }
-  #help,
+  #contacts-list,
+  #doc,
   #contact {
     width: 100%;
-  }
-  #help {
-    height: 40px;
-    padding: 1px;
-    overflow: hidden;
-  }
-  #help a {
-    width: 33.333%;
-    height: 40px;
-    line-height: 40px;
-    margin: 0px;
-    font-size: 1em;
-    float: none;
-    display: inline-block;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    overflow: hidden;
-    text-align: center;
-    padding: 0px;
-    border-right: 1px solid #fff;
-    border-left: 1px solid #fff;
-  }
-  #help a:hover {
-    outline: 0px;
-    text-decoration: none;
-    background-color: #fe8800;
-  }
-  #help a:active {
-    box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 0 0;
-    background: #f18100;
+    left: 0px;
   }
   #contact #zones .zone {
     width: 98%;
+  }
+  #contact #close {
+    display: block;
+  }
+  #contact #picture {
+    top: 53px;
   }
 }
 

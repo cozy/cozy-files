@@ -264,6 +264,766 @@ module.exports = BaseView = (function(_super) {
 
 });
 
+;require.register("lib/call_log_reader", function(exports, require, module) {
+var isAndroidCallLogExport, isIOSCallLogExport, parseDuration;
+
+isAndroidCallLogExport = function(firstline) {
+  return firstline === 'date,type,number,name,number type,duration';
+};
+
+isIOSCallLogExport = function(firstline) {
+  return firstline.split("\t").length === 5;
+};
+
+parseDuration = function(duration) {
+  var hours, minutes, parts, seconds, _;
+
+  hours = minutes = seconds = 0;
+  if ((parts = duration.split(':')).length === 3) {
+    hours = parts[0], minutes = parts[1], seconds = parts[2];
+  } else {
+    switch ((parts = duration.split(' ')).length) {
+      case 2:
+        seconds = parts[0], _ = parts[1];
+        break;
+      case 4:
+        minutes = parts[0], _ = parts[1], seconds = parts[2], _ = parts[3];
+        break;
+      case 6:
+        hours = parts[0], _ = parts[1], minutes = parts[2], _ = parts[3], seconds = parts[4], _ = parts[5];
+    }
+  }
+  return duration = hours * 3600 + minutes * 60 + seconds;
+};
+
+module.exports.parse = function(log) {
+  var lines;
+
+  lines = log.split(/\r?\n/);
+  if (isAndroidCallLogExport(lines[0])) {
+    lines.shift();
+    lines.pop();
+    return lines.map(function(line) {
+      var direction, duration, number, timestamp, _, _ref;
+
+      _ref = line.split(','), timestamp = _ref[0], direction = _ref[1], number = _ref[2], _ = _ref[3], _ = _ref[4], duration = _ref[5];
+      console.log(timestamp, Date.create(timestamp));
+      return {
+        timestamp: Date.create(timestamp).toISOString(),
+        direction: direction,
+        remote: {
+          tel: number
+        },
+        content: {
+          duration: parseDuration(duration)
+        }
+      };
+    });
+  } else if (isIOSCallLogExport(lines[0])) {
+    return lines.map(function(line) {
+      var direction, duration, number, timestamp, _, _ref;
+
+      _ref = line.split("\t"), direction = _ref[0], timestamp = _ref[1], duration = _ref[2], number = _ref[3], _ = _ref[4];
+      return {
+        timestamp: Date.create(timestamp).toISOString(),
+        direction: direction,
+        remote: {
+          tel: number
+        },
+        content: {
+          duration: parseDuration(duration)
+        }
+      };
+    });
+  } else {
+    throw new Error("Format not parsable");
+  }
+};
+
+});
+
+;require.register("lib/phone_number", function(exports, require, module) {
+var PhoneNumber, db;
+
+module.exports = PhoneNumber = (function() {
+  function PhoneNumber(value, contexte) {}
+
+  return PhoneNumber;
+
+})();
+
+PhoneNumber.countryCodes = db = {};
+
+db["0"] = "Reserved";
+
+db["1"] = "American Samoa";
+
+db["1"] = "Anguilla";
+
+db["1"] = "Antigua and Barbuda";
+
+db["1"] = "Bahamas (Commonwealth of the)";
+
+db["1"] = "Barbados";
+
+db["1"] = "Bermuda";
+
+db["1"] = "British Virgin Islands";
+
+db["1"] = "Canada";
+
+db["1"] = "Cayman Islands";
+
+db["1"] = "Dominica (Commonwealth of)";
+
+db["1"] = "Dominican Republic";
+
+db["1"] = "Grenada";
+
+db["1"] = "Guam";
+
+db["1"] = "Jamaica";
+
+db["1"] = "Montserrat";
+
+db["1"] = "Northern Mariana Islands (Commonwealth of the)";
+
+db["1"] = "Puerto Rico";
+
+db["1"] = "Saint Kitts and Nevis";
+
+db["1"] = "Saint Lucia";
+
+db["1"] = "Saint Vincent and the Grenadines";
+
+db["1"] = "Trinidad and Tobago";
+
+db["1"] = "Turks and Caicos Islands";
+
+db["1"] = "United States of America";
+
+db["1"] = "United States Virgin Islands";
+
+db["20"] = "Egypt (Arab Republic of)";
+
+db["210"] = "Spare code";
+
+db["211"] = "Spare code";
+
+db["212"] = "Morocco (Kingdom of)";
+
+db["213"] = "Algeria (People's Democratic Republic of)";
+
+db["214"] = "Spare code";
+
+db["215"] = "Spare code";
+
+db["216"] = "Tunisia";
+
+db["217"] = "Spare code";
+
+db["218"] = "Libya (Socialist People's Libyan Arab Jamahiriya)";
+
+db["219"] = "Spare code";
+
+db["220"] = "Gambia (Republic of the)";
+
+db["221"] = "Senegal (Republic of)";
+
+db["222"] = "Mauritania (Islamic Republic of)";
+
+db["223"] = "Mali (Republic of)";
+
+db["224"] = "Guinea (Republic of)";
+
+db["225"] = "Côte d'Ivoire (Republic of)";
+
+db["226"] = "Burkina Faso";
+
+db["227"] = "Niger (Republic of the)";
+
+db["228"] = "Togolese Republic";
+
+db["229"] = "Benin (Republic of)";
+
+db["230"] = "Mauritius (Republic of)";
+
+db["231"] = "Liberia (Republic of)";
+
+db["232"] = "Sierra Leone";
+
+db["233"] = "Ghana";
+
+db["234"] = "Nigeria (Federal Republic of)";
+
+db["235"] = "Chad (Republic of)";
+
+db["236"] = "Central African Republic";
+
+db["237"] = "Cameroon (Republic of)";
+
+db["238"] = "Cape Verde (Republic of)";
+
+db["239"] = "Sao Tome and Principe (Democratic Republic of)";
+
+db["240"] = "Equatorial Guinea (Republic of)";
+
+db["241"] = "Gabonese Republic";
+
+db["242"] = "Congo (Republic of the)";
+
+db["243"] = "Democratic Republic of the Congo";
+
+db["244"] = "Angola (Republic of)";
+
+db["245"] = "Guinea-Bissau (Republic of)";
+
+db["246"] = "Diego Garcia";
+
+db["247"] = "Ascension";
+
+db["248"] = "Seychelles (Republic of)";
+
+db["249"] = "Sudan (Republic of the)";
+
+db["250"] = "Rwanda (Republic of)";
+
+db["251"] = "Ethiopia (Federal Democratic Republic of)";
+
+db["252"] = "Somali Democratic Republic";
+
+db["253"] = "Djibouti (Republic of)";
+
+db["254"] = "Kenya (Republic of)";
+
+db["255"] = "Tanzania (United Republic of)";
+
+db["256"] = "Uganda (Republic of)";
+
+db["257"] = "Burundi (Republic of)";
+
+db["258"] = "Mozambique (Republic of)";
+
+db["259"] = "Spare code";
+
+db["260"] = "Zambia (Republic of)";
+
+db["261"] = "Madagascar (Republic of)";
+
+db["262"] = "French Departments and Territories in the Indian Ocean j";
+
+db["263"] = "Zimbabwe (Republic of)";
+
+db["264"] = "Namibia (Republic of)";
+
+db["265"] = "Malawi";
+
+db["266"] = "Lesotho (Kingdom of)";
+
+db["267"] = "Botswana (Republic of)";
+
+db["268"] = "Swaziland (Kingdom of)";
+
+db["269"] = "Comoros (Union of the)";
+
+db["269"] = "Mayotte";
+
+db["27"] = "South Africa (Republic of)";
+
+db["280"] = "Spare code";
+
+db["281"] = "Spare code";
+
+db["282"] = "Spare code";
+
+db["283"] = "Spare code";
+
+db["284"] = "Spare code";
+
+db["285"] = "Spare code";
+
+db["286"] = "Spare code";
+
+db["287"] = "Spare code";
+
+db["288"] = "Spare code";
+
+db["289"] = "Spare code";
+
+db["290"] = "Saint Helena";
+
+db["290"] = "Tristan da Cunha";
+
+db["291"] = "Eritrea";
+
+db["292"] = "Spare code";
+
+db["293"] = "Spare code";
+
+db["294"] = "Spare code";
+
+db["295"] = "Spare code";
+
+db["296"] = "Spare code";
+
+db["297"] = "Aruba";
+
+db["298"] = "Faroe Islands";
+
+db["299"] = "Greenland (Denmark)";
+
+db["30"] = "Greece";
+
+db["31"] = "Netherlands (Kingdom of the)";
+
+db["32"] = "Belgium";
+
+db["33"] = "France";
+
+db["34"] = "Spain";
+
+db["350"] = "Gibraltar";
+
+db["351"] = "Portugal";
+
+db["352"] = "Luxembourg";
+
+db["353"] = "Ireland";
+
+db["354"] = "Iceland";
+
+db["355"] = "Albania (Republic of)";
+
+db["356"] = "Malta";
+
+db["357"] = "Cyprus (Republic of)";
+
+db["358"] = "Finland";
+
+db["359"] = "Bulgaria (Republic of)";
+
+db["36"] = "Hungary (Republic of)";
+
+db["370"] = "Lithuania (Republic of)";
+
+db["371"] = "Latvia (Republic of)";
+
+db["372"] = "Estonia (Republic of)";
+
+db["373"] = "Moldova (Republic of)";
+
+db["374"] = "Armenia (Republic of)";
+
+db["375"] = "Belarus (Republic of)";
+
+db["376"] = "Andorra (Principality of)";
+
+db["377"] = "Monaco (Principality of)";
+
+db["378"] = "San Marino (Republic of)";
+
+db["379"] = "Vatican City State f";
+
+db["380"] = "Ukraine";
+
+db["381"] = "Serbia (Republic of)";
+
+db["382"] = "Montenegro (Republic of)";
+
+db["383"] = "Spare code";
+
+db["384"] = "Spare code";
+
+db["385"] = "Croatia (Republic of)";
+
+db["386"] = "Slovenia (Republic of)";
+
+db["387"] = "Bosnia and Herzegovina";
+
+db["388"] = "Group of countries, shared code";
+
+db["389"] = "The Former Yugoslav Republic of Macedonia";
+
+db["39"] = "Italy";
+
+db["39"] = "Vatican City State";
+
+db["40"] = "Romania";
+
+db["41"] = "Switzerland (Confederation of)";
+
+db["420"] = "Czech Republic";
+
+db["421"] = "Slovak Republic";
+
+db["422"] = "Spare code";
+
+db["423"] = "Liechtenstein (Principality of)";
+
+db["424"] = "Spare code";
+
+db["425"] = "Spare code";
+
+db["426"] = "Spare code";
+
+db["427"] = "Spare code";
+
+db["428"] = "Spare code";
+
+db["429"] = "Spare code";
+
+db["43"] = "Austria";
+
+db["44"] = "United Kingdom of Great Britain and Northern Ireland";
+
+db["45"] = "Denmark";
+
+db["46"] = "Sweden";
+
+db["47"] = "Norway";
+
+db["48"] = "Poland (Republic of)";
+
+db["49"] = "Germany (Federal Republic of)";
+
+db["500"] = "Falkland Islands (Malvinas)";
+
+db["501"] = "Belize";
+
+db["502"] = "Guatemala (Republic of)";
+
+db["503"] = "El Salvador (Republic of)";
+
+db["504"] = "Honduras (Republic of)";
+
+db["505"] = "Nicaragua";
+
+db["506"] = "Costa Rica";
+
+db["507"] = "Panama (Republic of)";
+
+db["508"] = "Saint Pierre and Miquelon (Collectivité territoriale de la République française)";
+
+db["509"] = "Haiti (Republic of)";
+
+db["51"] = "Peru";
+
+db["52"] = "Mexico";
+
+db["53"] = "Cuba";
+
+db["54"] = "Argentine Republic";
+
+db["55"] = "Brazil (Federative Republic of)";
+
+db["56"] = "Chile";
+
+db["57"] = "Colombia (Republic of)";
+
+db["58"] = "Venezuela (Bolivarian Republic of)";
+
+db["590"] = "Guadeloupe (French Department of)";
+
+db["591"] = "Bolivia (Republic of)";
+
+db["592"] = "Guyana";
+
+db["593"] = "Ecuador";
+
+db["594"] = "French Guiana (French Department of)";
+
+db["595"] = "Paraguay (Republic of)";
+
+db["596"] = "Martinique (French Department of)";
+
+db["597"] = "Suriname (Republic of)";
+
+db["598"] = "Uruguay (Eastern Republic of)";
+
+db["599"] = "Netherlands Antilles";
+
+db["60"] = "Malaysia";
+
+db["61"] = "Australia i";
+
+db["62"] = "Indonesia (Republic of)";
+
+db["63"] = "Philippines (Republic of the)";
+
+db["64"] = "New Zealand";
+
+db["65"] = "Singapore (Republic of)";
+
+db["66"] = "Thailand";
+
+db["670"] = "Democratic Republic of Timor-Leste";
+
+db["671"] = "Spare code";
+
+db["672"] = "Australian External Territories g";
+
+db["673"] = "Brunei Darussalam";
+
+db["674"] = "Nauru (Republic of)";
+
+db["675"] = "Papua New Guinea";
+
+db["676"] = "Tonga (Kingdom of)";
+
+db["677"] = "Solomon Islands";
+
+db["678"] = "Vanuatu (Republic of)";
+
+db["679"] = "Fiji (Republic of)";
+
+db["680"] = "Palau (Republic of)";
+
+db["681"] = "Wallis and Futuna (Territoire français d'outre-mer)";
+
+db["682"] = "Cook Islands";
+
+db["683"] = "Niue";
+
+db["684"] = "Spare code";
+
+db["685"] = "Samoa (Independent State of)";
+
+db["686"] = "Kiribati (Republic of)";
+
+db["687"] = "New Caledonia (Territoire français d'outre-mer)";
+
+db["688"] = "Tuvalu";
+
+db["689"] = "French Polynesia (Territoire français d'outre-mer)";
+
+db["690"] = "Tokelau";
+
+db["691"] = "Micronesia (Federated States of)";
+
+db["692"] = "Marshall Islands (Republic of the)";
+
+db["693"] = "Spare code";
+
+db["694"] = "Spare code";
+
+db["695"] = "Spare code";
+
+db["696"] = "Spare code";
+
+db["697"] = "Spare code";
+
+db["698"] = "Spare code";
+
+db["699"] = "Spare code";
+
+db["7"] = "Kazakhstan (Republic of)";
+
+db["7"] = "Russian Federation";
+
+db["800"] = "International Freephone Service";
+
+db["801"] = "Spare code";
+
+db["802"] = "Spare code";
+
+db["803"] = "Spare code";
+
+db["804"] = "Spare code";
+
+db["805"] = "Spare code";
+
+db["806"] = "Spare code";
+
+db["807"] = "Spare code";
+
+db["808"] = "International Shared Cost Service (ISCS)";
+
+db["809"] = "Spare code";
+
+db["81"] = "Japan";
+
+db["82"] = "Korea (Republic of)";
+
+db["830"] = "Spare code";
+
+db["831"] = "Spare code";
+
+db["832"] = "Spare code";
+
+db["833"] = "Spare code";
+
+db["834"] = "Spare code";
+
+db["835"] = "Spare code";
+
+db["836"] = "Spare code";
+
+db["837"] = "Spare code";
+
+db["838"] = "Spare code";
+
+db["839"] = "Spare code";
+
+db["84"] = "Viet Nam (Socialist Republic of)";
+
+db["850"] = "Democratic People's Republic of Korea";
+
+db["851"] = "Spare code";
+
+db["852"] = "Hong Kong, China";
+
+db["853"] = "Macao, China";
+
+db["854"] = "Spare code";
+
+db["855"] = "Cambodia (Kingdom of)";
+
+db["856"] = "Lao People's Democratic Republic";
+
+db["857"] = "Spare code";
+
+db["858"] = "Spare code";
+
+db["859"] = "Spare code";
+
+db["86"] = "China (People's Republic of)";
+
+db["870"] = "Inmarsat SNAC";
+
+db["871"] = "Spare code";
+
+db["872"] = "Spare code";
+
+db["873"] = "Spare code";
+
+db["874"] = "Spare code";
+
+db["875"] = "Reserved - Maritime Mobile Service Applications";
+
+db["876"] = "Reserved - Maritime Mobile Service Applications";
+
+db["877"] = "Reserved - Maritime Mobile Service Applications";
+
+db["878"] = "Universal Personal Telecommunication Service (UPT) e";
+
+db["879"] = "Reserved for national non-commercial purposes";
+
+db["880"] = "Bangladesh (People's Republic of)";
+
+db["881"] = "Global Mobile Satellite System (GMSS), shared code n";
+
+db["882"] = "International Networks, shared code o";
+
+db["883"] = "International Networks, shared code p, q";
+
+db["884"] = "Spare code";
+
+db["885"] = "Spare code";
+
+db["886"] = "Taiwan, China";
+
+db["887"] = "Spare code";
+
+db["888"] = "Telecommunications for Disaster Relief (TDR) k";
+
+db["889"] = "Spare code";
+
+db["890"] = "Spare code";
+
+db["891"] = "Spare code";
+
+db["892"] = "Spare code";
+
+db["893"] = "Spare code";
+
+db["894"] = "Spare code";
+
+db["895"] = "Spare code";
+
+db["896"] = "Spare code";
+
+db["897"] = "Spare code";
+
+db["898"] = "Spare code";
+
+db["899"] = "Spare code";
+
+db["90"] = "Turkey";
+
+db["91"] = "India (Republic of)";
+
+db["92"] = "Pakistan (Islamic Republic of)";
+
+db["93"] = "Afghanistan";
+
+db["94"] = "Sri Lanka (Democratic Socialist Republic of)";
+
+db["95"] = "Myanmar (Union of)";
+
+db["960"] = "Maldives (Republic of)";
+
+db["961"] = "Lebanon";
+
+db["962"] = "Jordan (Hashemite Kingdom of)";
+
+db["963"] = "Syrian Arab Republic";
+
+db["964"] = "Iraq (Republic of)";
+
+db["965"] = "Kuwait (State of)";
+
+db["966"] = "Saudi Arabia (Kingdom of)";
+
+db["967"] = "Yemen (Republic of)";
+
+db["968"] = "Oman (Sultanate of)";
+
+db["969"] = "Reserved - reservation currently under investigation";
+
+db["970"] = "Reserved l";
+
+db["971"] = "United Arab Emirates h";
+
+db["972"] = "Israel (State of)";
+
+db["973"] = "Bahrain (Kingdom of)";
+
+db["974"] = "Qatar (State of)";
+
+db["975"] = "Bhutan (Kingdom of)";
+
+db["976"] = "Mongolia";
+
+db["977"] = "Nepal (Federal Democratic Republic of)";
+
+db["978"] = "Spare code";
+
+db["979"] = "International Premium Rate Service (IPRS)";
+
+db["98"] = "Iran (Islamic Republic of)";
+
+db["990"] = "Spare code";
+
+db["991"] = "Trial of a proposed new international telecommunication public";
+
+db["992"] = "Tajikistan (Republic of)";
+
+db["993"] = "Turkmenistan";
+
+db["994"] = "Azerbaijani Republic";
+
+db["995"] = "Georgia";
+
+db["996"] = "Kyrgyz Republic";
+
+db["997"] = "Spare code";
+
+db["998"] = "Uzbekistan (Republic of)";
+
+db["999"] = "Reserved for future global service";
+
+});
+
 ;require.register("lib/view_collection", function(exports, require, module) {
 var BaseView, ViewCollection, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -369,40 +1129,57 @@ module.exports = ViewCollection = (function(_super) {
 
 ;require.register("locales/en", function(exports, require, module) {
 module.exports = {
-  "Saving ...": "Saving ...",
-  "Save": "Save",
-  "More": "More",
-  "Add Company": "Add Company",
-  "Add Title": "Add Title",
-  "Add Birthday": "Add Birthday",
-  "Add Phone": "Add Phone",
-  "Add Email": "Add Email",
-  "Add Postal": "Add Postal",
-  "Add Url": "Add Url",
-  "Add Other": "Add Other",
+  "saving": "Saving ...",
+  "saved": "Saved",
+  "delete": "Delete",
+  "delete the contact": "Delete the contact",
+  "add contact": "Create a new contact",
+  "go to settings": "Settings",
+  "company": "Company",
+  "title": "Title",
+  "birthday": "Birthday",
+  "phone": "Phone",
+  "email": "Email",
+  "postal": "Postal",
+  "url": "Url",
+  "other": "Other",
+  "delete": "Delete",
+  "add": "Add",
   "Delete the contact": "Delete the contact",
   "Name": "Name",
   "Change": "Change",
   "Take notes here": "Take notes here",
   "type here": "Type here",
-  "About": "About",
-  "Phones": "Phones",
-  "Emails": "Emails",
-  "Postal": "Postal",
-  "Links": "Links",
-  "Others": "Others",
+  "zbout": "About",
+  "phones": "Phones",
+  "emails": "Emails",
+  "postal": "Postal",
+  "links": "Links",
+  "others": "Others",
   "Saved": "Saved",
   "Save changes ?": "Save changes ?",
   "This is not an image": "This is not an image",
-  "Search ...": "Search ...",
+  "search placeholder": "Search ...",
   "New Contact": "New Contact",
   "Export vCard": "Export vCard",
-  "Import vCard": "Import vCard",
-  "Choose a vCard file": "Choose a vCard file",
-  "is not a vCard": "is not a vCard",
-  "Cancel": "Cancel",
-  "Import": "Import",
-  "import.ready-msg": "Ready to import %{smart_count} contact |||| Ready to import %{smart_count} contacts"
+  "import vcard": "Import vCard",
+  "choose vcard file": "Choose a vCard file",
+  "is not a vcard": "is not a vCard",
+  "cancel": "Cancel",
+  "import": "Import",
+  "import.ready-msg": "Ready to import %{smart_count} contact |||| Ready to import %{smart_count} contacts",
+  "import call log help": "If you are a FING and Orange user, do not use this",
+  "import android calls": "If you use an android phone, use the following application : ",
+  "import ios calls": "If you use an iOS phone, follow this tutorial : ",
+  "choose log file": "Then upload your generated log file",
+  "click left to display": "Click a contact in the left panel to display it",
+  "carddav info": "To sync your contacts with your mobile, install the cozy-webdav application",
+  "call log info": "Click here to import your mobile's call log :",
+  "import call log": "Import call Log",
+  "vcard import info": "Click here to import a vCard file :",
+  "import vcard": "Import vCard file",
+  "vcard export info": "Click here to export all your contacts as a vCard file :",
+  "export all vcard": "Export vCard file"
 };
 
 });
@@ -473,7 +1250,8 @@ module.exports = Contact = (function(_super) {
   Contact.prototype.defaults = function() {
     return {
       fn: '',
-      note: ''
+      note: '',
+      tags: []
     };
   };
 
@@ -733,7 +1511,7 @@ module.exports = DataPoint = (function(_super) {
 });
 
 ;require.register("router", function(exports, require, module) {
-var Contact, ContactView, HelpView, ImporterView, Router, app, _ref,
+var CallImporterView, Contact, ContactView, DocView, ImporterView, Router, app, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -741,9 +1519,11 @@ app = require('application');
 
 ContactView = require('views/contact');
 
-HelpView = require('views/help');
+DocView = require('views/doc');
 
 ImporterView = require('views/importer');
+
+CallImporterView = require('views/callimporter');
 
 Contact = require('models/contact');
 
@@ -757,7 +1537,9 @@ module.exports = Router = (function(_super) {
 
   Router.prototype.routes = {
     '': 'help',
+    'settings': 'help',
     'import': 'import',
+    'callimport': 'callimport',
     'contact/new': 'newcontact',
     'contact/:id': 'showcontact'
   };
@@ -773,7 +1555,7 @@ module.exports = Router = (function(_super) {
   };
 
   Router.prototype.help = function() {
-    this.displayView(new HelpView());
+    this.displayView(new DocView());
     $('#filterfied').focus();
     return app.contactslist.activate(null);
   };
@@ -784,11 +1566,27 @@ module.exports = Router = (function(_super) {
     return $('body').append(this.importer.render().$el);
   };
 
+  Router.prototype.callimport = function() {
+    this.help();
+    this.importer = new CallImporterView();
+    return $('body').append(this.importer.render().$el);
+  };
+
   Router.prototype.newcontact = function() {
     var contact,
       _this = this;
 
     contact = new Contact();
+    contact.dataPoints.add({
+      name: 'tel',
+      type: 'main',
+      value: ''
+    });
+    contact.dataPoints.add({
+      name: 'email',
+      type: 'main',
+      value: ''
+    });
     contact.once('change:id', function() {
       app.contacts.add(contact);
       return _this.navigate("contact/" + contact.id, false);
@@ -859,49 +1657,58 @@ module.exports = Router = (function(_super) {
 
 });
 
+;require.register("templates/callimporter", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div class="modal-header">');
+var __val__ = t("import call log")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</div><div id="import-file" class="modal-body"><p>');
+var __val__ = t('import call log help')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><ul><li>');
+var __val__ = t('import android calls')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a href="https://play.google.com/store/apps/details?id=com.dukemdev" target="_blank">Call Log Export</a></li><li>');
+var __val__ = t('import ios calls')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a href="http://support.digidna.net/entries/22585757-Export-iPhone-Call-History-to-PC-or-Mac" target="_blank">Export iPhone Call History</a></li></ul><div class="control-group"><label for="vcfupload" class="control-label">');
+var __val__ = t("choose log file")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</label><div class="controls"><input id="csvupload" type="file" accept="text/csv;text/plain"/><span class="help-inline"></span></div></div></div><div id="import-config" class="modal-body"><p>');
+var __val__ = t('ready to import')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><table class="table stripped-table"><thead><th>');
+var __val__ = t('log direction')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</th><th>');
+var __val__ = t('log number')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</th><th>');
+var __val__ = t('log date')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</th></thead><tbody></tbody></table></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
+var __val__ = t("cancel")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
+var __val__ = t("import")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></div>');
+}
+return buf.join("");
+};
+});
+
 ;require.register("templates/contact", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="spinOverlay"><span>');
-var __val__ = t("Saving ...")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span></div><a id="save" class="btn">');
-var __val__ = t("Save")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a><div id="more" class="btn-group"><a data-toggle="dropdown" href="#" class="btn dropdown-toggle">');
-var __val__ = t("More")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('&nbsp;<span class="caret"></span></a><ul class="dropdown-menu pull-right"><li><a class="addbirthday">');
-var __val__ = t("Add Birthday")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addcompany">');
-var __val__ = t("Add Company")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addtitle">');
-var __val__ = t("Add Title")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li class="divider"></li><li><a class="addtel">');
-var __val__ = t("Add Phone")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addemail">');
-var __val__ = t("Add Email")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addadr">');
-var __val__ = t("Add Postal")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addurl">');
-var __val__ = t("Add Url")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a class="addother">');
-var __val__ = t("Add Other")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li class="divider"></li><li class="delete"><a id="delete"><i class="icon-remove"></i>');
-var __val__ = t("Delete the contact")
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li></ul></div><div id="picture">');
+buf.push('<a id="close" href="#">&lt;</a><div id="picture">');
 if ( hasPicture)
 {
 buf.push('<img');
@@ -915,29 +1722,90 @@ buf.push('<img src="img/defaultpicture.png" class="picture"/>');
 buf.push('<div id="uploadnotice">');
 var __val__ = t("Change")
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</div><input id="uploader" type="file"/></div><a id="close" href="#">&times;</a><div id="wrap-name-notes"><input');
+buf.push('</div><input id="uploader" type="file"/></div><div id="wrap-name-notes"><input');
 buf.push(attrs({ 'id':('name'), 'placeholder':(t("Name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
-buf.push('/><textarea');
+buf.push('/><input');
+buf.push(attrs({ 'id':('tags'), 'value':(tags.join(',')), "class": ('tagit') }, {"value":true}));
+buf.push('/></div><span id="save-info">');
+var __val__ = t('changes saved') + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a id="undo">');
+var __val__ = t('undo')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></span><a');
+buf.push(attrs({ 'id':('delete'), 'title':(t("delete the contact")) }, {"title":true}));
+buf.push('>');
+var __val__ = t('delete')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><div id="zones"><div id="notes-zone" class="zone"><h2>');
+var __val__ = t('notes')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h2><textarea');
 buf.push(attrs({ 'rows':("3"), 'placeholder':(t('Take notes here')), 'id':('notes') }, {"rows":true,"placeholder":true}));
-buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="zones"><div id="abouts" class="zone"><h2>');
-var __val__ = t("About")
+buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="abouts" class="zone"><h2>');
+var __val__ = t("about")
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addabout"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="tels" class="zone"><h2>');
-var __val__ = t("Phones")
+buf.push('</h2><ul></ul><a class="btn add addabout">');
+var __val__ = t('add')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addtel"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="emails" class="zone"><h2>');
-var __val__ = t("Emails")
+buf.push('</a></div><div id="tels" class="zone"><h2>');
+var __val__ = t("phones")
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addemail"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="adrs" class="zone"><h2>');
-var __val__ = t("Postal")
+buf.push('</h2><ul></ul><a class="btn add addtel">');
+var __val__ = t('add')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addadr"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="urls" class="zone"><h2>');
-var __val__ = t("Links")
+buf.push('</a></div><div id="emails" class="zone"><h2>');
+var __val__ = t("emails")
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addurl"><i class="icon-plus"></i></a></h2><ul></ul></div><div id="others" class="zone"><h2>');
-var __val__ = t("Others")
+buf.push('</h2><ul></ul><a class="btn add addemail">');
+var __val__ = t('add')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a class="btn add addother"><i class="icon-plus"></i></a></h2><ul></ul></div></div>');
+buf.push('</a></div><div id="adrs" class="zone"><h2>');
+var __val__ = t("postal")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h2><ul></ul><a class="btn add addadr">');
+var __val__ = t('add')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></div><div id="urls" class="zone"><h2>');
+var __val__ = t("links")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h2><ul></ul><a class="btn add addurl">');
+var __val__ = t('add')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></div><div id="others" class="zone"><h2>');
+var __val__ = t("others")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h2><ul></ul><a class="btn add addother">');
+var __val__ = t('add')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></div><div id="adder" class="zone"><h2>');
+var __val__ = ("add")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h2><a class="addbirthday">');
+var __val__ = t("birthday") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addcompany">');
+var __val__ = t("company") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addtitle">');
+var __val__ = t("title") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addtel">');
+var __val__ = t("phone") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addemail">');
+var __val__ = t("email") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addadr">');
+var __val__ = t("postal") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addurl">');
+var __val__ = t("url") + ', '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addother">');
+var __val__ = t("other")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></div></div>');
 }
 return buf.join("");
 };
@@ -949,9 +1817,13 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="toolbar"><input');
-buf.push(attrs({ 'id':('filterfield'), 'type':("text"), 'placeholder':(t("Search ...")) }, {"type":true,"placeholder":true}));
-buf.push('/><a id="filterClean" href=""><i class="icon-remove"></i></a></div><div id="contacts"></div>');
+buf.push('<form id="toolbar" class="form-search"><div class="input-append input-prepend"><span class="add-on"><i class="icon-search icon-white"></i></span><input');
+buf.push(attrs({ 'id':('filterfield'), 'type':("text"), 'placeholder':(t("search placeholder")), "class": ('search-query') + ' ' + ('input-large') }, {"type":true,"placeholder":true}));
+buf.push('/><a id="filterClean"><i class="icon-remove icon-white"></i></a></div><a');
+buf.push(attrs({ 'id':('new'), 'href':("#contact/new"), 'title':(t("add contact")) }, {"href":true,"title":true}));
+buf.push('><i class="icon-plus icon-white"></i></a><a');
+buf.push(attrs({ 'id':('gohelp'), 'href':("#settings"), 'title':(t("go to settings")) }, {"href":true,"title":true}));
+buf.push('><i class="icon-cog icon-white"></i></a></form><div id="contacts"></div>');
 }
 return buf.join("");
 };
@@ -1005,22 +1877,48 @@ return buf.join("");
 };
 });
 
-;require.register("templates/help", function(exports, require, module) {
+;require.register("templates/doc", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<a id="new" href="#contact/new"><i class="icon-plus icon-white"></i><span>');
-var __val__ = t("New Contact")
+buf.push('<h2>');
+var __val__ = t('Settings')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span></a><a id="importvcf" href="#import"><i class="icon-download icon-white"></i><span>');
-var __val__ = t("Import vCard")
+buf.push('</h2><h3>');
+var __val__ = t('Help')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span></a><a id="exportvcf" href="contacts.vcf"><i class="icon-upload icon-white"></i><span>');
-var __val__ = t("Export vCard")
+buf.push('</h3><p>');
+var __val__ = t("click left to display")
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span></a>');
+buf.push('</p><p>');
+var __val__ = t("carddav info")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><h3>');
+var __val__ = t('Import / export')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</h3><p>');
+var __val__ = t("call log info") + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a href="#callimport">');
+var __val__ = t('import call log')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></p><p>');
+var __val__ = t('vcard export info') + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a');
+buf.push(attrs({ 'href':("contacts.vcf"), 'download':("contacts.vcf"), 'title':(t("export vcard")) }, {"href":true,"download":true,"title":true}));
+buf.push('>');
+var __val__ = t('export all vcard')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></p><p>');
+var __val__ = t("vcard import info") + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('<a href="#import">');
+var __val__ = t('import vcard')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></p>');
 }
 return buf.join("");
 };
@@ -1033,16 +1931,16 @@ var buf = [];
 with (locals || {}) {
 var interp;
 buf.push('<div class="modal-header">');
-var __val__ = t("Import vCard")
+var __val__ = t("import vcard")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</div><div class="modal-body"><div class="control-group"><label for="vcfupload" class="control-label">');
-var __val__ = t("Choose a vCard file")
+var __val__ = t("choose vcard file")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</label><div class="controls"><input id="vcfupload" type="file"/><span class="help-inline"></span></div></div></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
-var __val__ = t("Cancel")
+var __val__ = t("cancel")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
-var __val__ = t("Import")
+var __val__ = t("import")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a></div>');
 }
@@ -1050,13 +1948,117 @@ return buf.join("");
 };
 });
 
+;require.register("views/callimporter", function(exports, require, module) {
+var BaseView, CallImporterView, CallLogReader, app, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('lib/base_view');
+
+CallLogReader = require('lib/call_log_reader');
+
+app = require('application');
+
+module.exports = CallImporterView = (function(_super) {
+  __extends(CallImporterView, _super);
+
+  function CallImporterView() {
+    _ref = CallImporterView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  CallImporterView.prototype.template = require('templates/callimporter');
+
+  CallImporterView.prototype.id = 'callimporter';
+
+  CallImporterView.prototype.tagName = 'div';
+
+  CallImporterView.prototype.className = 'modal fade';
+
+  CallImporterView.prototype.events = function() {
+    return {
+      'change #csvupload': 'onUpload',
+      'click  #confirm-btn': 'doImport'
+    };
+  };
+
+  CallImporterView.prototype.afterRender = function() {
+    this.$el.modal('show');
+    this.upload = this.$('#csvupload')[0];
+    this.file_step = this.$('#import-file');
+    this.parse_step = this.$('#import-config').hide();
+    return this.confirmBtn = this.$('#confirm-btn');
+  };
+
+  CallImporterView.prototype.onUpload = function() {
+    var file, reader,
+      _this = this;
+
+    file = this.upload.files[0];
+    reader = new FileReader();
+    reader.readAsText(file);
+    reader.onloadend = function() {
+      var error;
+
+      try {
+        _this.toImport = CallLogReader.parse(reader.result);
+        return _this.onLogFileParsed();
+      } catch (_error) {
+        error = _error;
+        console.log(error.stack);
+        _this.$('.control-group').addClass('error');
+        return _this.$('.help-inline').text(t('failed to parse'));
+      }
+    };
+    return reader.onerror = function() {
+      return console.log("ERROR READING", reader.result, reader.error);
+    };
+  };
+
+  CallImporterView.prototype.onLogFileParsed = function() {
+    var html, log, _i, _len, _ref1;
+
+    this.file_step.remove();
+    this.parse_step.show();
+    _ref1 = this.toImport;
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      log = _ref1[_i];
+      html = '<tr>';
+      html += "<td> " + log.direction + " </td>";
+      html += "<td> " + log.remote.tel + " </td>";
+      html += "<td> " + (Date.create(log.timestamp).format()) + " </td>";
+      html += '</tr>';
+      this.$('tbody').append($(html));
+    }
+    return this.confirmBtn.removeClass('disabled');
+  };
+
+  CallImporterView.prototype.doImport = function() {
+    alert('@TODO');
+    this.close();
+    return require('application').router.navigate('');
+  };
+
+  CallImporterView.prototype.close = function() {
+    this.$el.modal('hide');
+    return this.remove();
+  };
+
+  return CallImporterView;
+
+})(BaseView);
+
+});
+
 ;require.register("views/contact", function(exports, require, module) {
-var ContactView, Datapoint, ViewCollection,
+var ContactView, Datapoint, TagsView, ViewCollection,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ViewCollection = require('lib/view_collection');
+
+TagsView = require('views/contact_tags');
 
 Datapoint = require('models/datapoint');
 
@@ -1080,27 +2082,33 @@ module.exports = ContactView = (function(_super) {
       'click .addadr': this.addClicked('adr'),
       'click .addother': this.addClicked('other'),
       'click .addurl': this.addClicked('url'),
-      'click #save': 'save',
+      'click #undo': 'undo',
       'click #delete': 'delete',
-      'blur .value': 'cleanup',
+      'keyup .type': 'onKeyUp',
+      'keyup .value': 'onKeyUp',
+      'keyup #notes': 'resizeNote',
+      'change #uploader': 'photoChanged',
+      'keypress .type': 'changeOccured',
       'keypress #name': 'changeOccured',
       'change #name': 'changeOccured',
       'keypress #notes': 'changeOccured',
-      'change #notes': 'changeOccured',
-      'change #uploader': 'photoChanged'
+      'change #notes': 'changeOccured'
     };
   };
 
   function ContactView(options) {
     this.photoChanged = __bind(this.photoChanged, this);
-    this.save = __bind(this.save, this);    options.collection = options.model.dataPoints;
+    this.modelChanged = __bind(this.modelChanged, this);
+    this.undo = __bind(this.undo, this);
+    this.save = __bind(this.save, this);
+    this.changeOccured = __bind(this.changeOccured, this);    options.collection = options.model.dataPoints;
+    this.saveLater = _.debounce(this.save, 1000);
     ContactView.__super__.constructor.apply(this, arguments);
   }
 
   ContactView.prototype.initialize = function() {
     ContactView.__super__.initialize.apply(this, arguments);
     this.listenTo(this.model, 'change', this.modelChanged);
-    this.listenTo(this.model, 'destroy', this.modelDestroyed);
     this.listenTo(this.model, 'request', this.onRequest);
     this.listenTo(this.model, 'error', this.onError);
     this.listenTo(this.model, 'sync', this.onSuccess);
@@ -1124,14 +2132,21 @@ module.exports = ContactView = (function(_super) {
     }
     this.hideEmptyZones();
     this.spinner = this.$('#spinOverlay');
-    this.saveButton = this.$('#save').addClass('disabled').text(t('Saved'));
+    this.savedInfo = this.$('#save-info').hide();
     this.needSaving = false;
     this.namefield = this.$('#name');
     this.notesfield = this.$('#notes');
     this.uploader = this.$('#uploader')[0];
     this.picture = this.$('#picture .picture');
+    this.tags = new TagsView({
+      el: this.$('#tags'),
+      model: this.model,
+      contactView: this
+    });
     ContactView.__super__.afterRender.apply(this, arguments);
-    return this.$el.niceScroll();
+    this.$el.niceScroll();
+    this.resizeNote();
+    return this.currentState = this.model.toJSON();
   };
 
   ContactView.prototype.remove = function() {
@@ -1181,13 +2196,18 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype.changeOccured = function() {
-    this.saveButton.removeClass('disabled').text(t('Save'));
-    return this.needSaving = true;
-  };
-
-  ContactView.prototype.modelChanged = function() {
-    this.namefield.val(this.model.get('fn'));
-    return this.notesfield.val(this.model.get('note'));
+    this.model.set({
+      fn: this.namefield.val(),
+      note: this.notesfield.val()
+    });
+    console.log(this.currentState, this.model.toJSON());
+    if (_.isEqual(this.currentState, this.model.toJSON())) {
+      return;
+    }
+    console.log("ACUAL CHANGE");
+    this.needSaving = true;
+    this.savedInfo.hide();
+    return this.saveLater();
   };
 
   ContactView.prototype["delete"] = function() {
@@ -1196,34 +2216,93 @@ module.exports = ContactView = (function(_super) {
     }
   };
 
-  ContactView.prototype.cleanup = function() {
-    this.model.dataPoints.prune();
-    return this.hideEmptyZones();
-  };
-
   ContactView.prototype.save = function() {
     if (!this.needSaving) {
       return;
     }
-    this.cleanup();
     this.needSaving = false;
-    return this.model.save({
-      fn: this.namefield.val(),
-      note: this.notesfield.val()
+    this.savedInfo.show().text('saving changes');
+    return this.model.save();
+  };
+
+  ContactView.prototype.undo = function() {
+    if (!this.lastState) {
+      return;
+    }
+    this.model.set(this.lastState, {
+      parse: true
     });
+    this.model.save(null, {
+      undo: true
+    });
+    return this.resizeNote();
+  };
+
+  ContactView.prototype.onKeyUp = function(event) {
+    var name, point, typeField, zone;
+
+    if ((event.which || event.keyCode) !== 13) {
+      return true;
+    }
+    zone = $(event.target).parents('.zone')[0].id;
+    name = zone.substring(0, zone.length - 1);
+    point = new Datapoint({
+      name: name
+    });
+    this.model.dataPoints.add(point);
+    typeField = this.zones[name].children().last().find('.type');
+    typeField.focus();
+    typeField.select();
+    return false;
+  };
+
+  ContactView.prototype.resizeNote = function(event) {
+    var loc, notes, rows;
+
+    notes = this.notesfield.val();
+    rows = loc = 0;
+    while (loc = notes.indexOf("\n", loc) + 1) {
+      rows++;
+    }
+    return this.notesfield.prop('rows', rows + 2);
   };
 
   ContactView.prototype.onRequest = function() {
     return this.spinner.show();
   };
 
-  ContactView.prototype.onSuccess = function() {
+  ContactView.prototype.onSuccess = function(model, result, options) {
+    var undo,
+      _this = this;
+
     this.spinner.hide();
-    return this.saveButton.addClass('disabled').text(t('Saved'));
+    if (options.undo) {
+      this.savedInfo.text(t('undone') + ' ');
+      setTimeout(function() {
+        return _this.savedInfo.fadeOut();
+      }, 1000);
+    } else {
+      this.savedInfo.text(t('changes saved') + ' ');
+      undo = $("<a id='undo'>" + (t('undo')) + "</a>");
+      this.savedInfo.append(undo);
+      this.lastState = this.currentState;
+    }
+    return this.currentState = this.model.toJSON();
   };
 
   ContactView.prototype.onError = function() {
     return this.spinner.hide();
+  };
+
+  ContactView.prototype.modelChanged = function() {
+    var _ref;
+
+    this.notesfield.val(this.model.get('note'));
+    this.namefield.val(this.model.get('fn'));
+    if ((_ref = this.tags) != null) {
+      _ref.refresh();
+    }
+    return this.resizeNote();
   };
 
   ContactView.prototype.photoChanged = function() {
@@ -1270,6 +2349,68 @@ module.exports = ContactView = (function(_super) {
 
 });
 
+;require.register("views/contact_tags", function(exports, require, module) {
+var BaseView, TagsView, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('lib/base_view');
+
+module.exports = TagsView = (function(_super) {
+  __extends(TagsView, _super);
+
+  function TagsView() {
+    this.refresh = __bind(this.refresh, this);
+    this.tagRemoved = __bind(this.tagRemoved, this);
+    this.tagAdded = __bind(this.tagAdded, this);    _ref = TagsView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  TagsView.prototype.initialize = function() {
+    this.$el.tagit({
+      availableTags: ['test', 'toast'],
+      placeholderText: t('add tags'),
+      afterTagAdded: this.tagAdded,
+      afterTagRemoved: this.tagRemoved
+    });
+    this.myOperation = false;
+    return this;
+  };
+
+  TagsView.prototype.tagAdded = function(e, ui) {
+    if (!(this.myOperation || ui.duringInitialization)) {
+      this.model.set('tags', this.$el.tagit('assignedTags'));
+      return this.options.contactView.changeOccured();
+    }
+  };
+
+  TagsView.prototype.tagRemoved = function(er, ui) {
+    if (!(this.myOperation || ui.duringInitialization)) {
+      this.model.set('tags', this.$el.tagit('assignedTags'));
+      return this.options.contactView.changeOccured();
+    }
+  };
+
+  TagsView.prototype.refresh = function() {
+    var tag, _i, _len, _ref1;
+
+    this.myOperation = true;
+    this.$el.tagit('removeAll');
+    _ref1 = this.model.get('tags');
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      tag = _ref1[_i];
+      this.$el.tagit('createTag', tag);
+    }
+    return this.myOperation = false;
+  };
+
+  return TagsView;
+
+})(BaseView);
+
+});
+
 ;require.register("views/contactslist", function(exports, require, module) {
 var App, ContactsList, ViewCollection, _ref,
   __hasProp = {}.hasOwnProperty,
@@ -1302,6 +2443,8 @@ module.exports = ContactsList = (function(_super) {
     ContactsList.__super__.afterRender.apply(this, arguments);
     this.list = this.$('#contacts');
     this.filterfield = this.$('#filterfield');
+    this.filterClean = this.$('#filterClean');
+    this.filterClean.hide();
     this.filterfield.focus();
     return this.list.niceScroll();
   };
@@ -1336,6 +2479,7 @@ module.exports = ContactsList = (function(_super) {
 
     event.preventDefault();
     this.filterfield.val('');
+    this.filterClean.hide();
     _ref1 = this.views;
     _results = [];
     for (id in _ref1) {
@@ -1350,19 +2494,22 @@ module.exports = ContactsList = (function(_super) {
 
     if (event.keyCode === 27) {
       this.filterfield.val('');
+      this.filterClean.hide();
       App.router.navigate("", true);
     }
     filtertxt = this.filterfield.val();
-    if (!(filtertxt.length > 2 || filtertxt.length === 0)) {
+    this.filterClean.show();
+    if (!(filtertxt.length > 1 || filtertxt.length === 0)) {
       return;
     }
+    this.filterClean.toggle(filtertxt.length !== 0);
     filtertxt = filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     this.filter = new RegExp(filtertxt, 'i');
     firstmodel = null;
     _ref1 = this.views;
     for (id in _ref1) {
       view = _ref1[id];
-      match = (this.filtertxt === '') || view.model.match(this.filter);
+      match = (filtertxt === '0') || view.model.match(this.filter);
       view.$el.toggle(match);
       if (match && !firstmodel) {
         firstmodel = view.model;
@@ -1449,7 +2596,9 @@ module.exports = DataPointView = (function(_super) {
   DataPointView.prototype.events = function() {
     return {
       'blur .type': 'store',
-      'blur .value': 'store'
+      'blur .value': 'store',
+      'keyup .type': 'onKeyup',
+      'keyup .value': 'onKeyup'
     };
   };
 
@@ -1494,6 +2643,29 @@ module.exports = DataPointView = (function(_super) {
     }
   };
 
+  DataPointView.prototype.onKeyup = function(event) {
+    var backspace, empty, prev;
+
+    empty = $(event.target).val().length === 0;
+    backspace = (event.which || event.keyCode) === 8;
+    if (!backspace) {
+      this.secondBack = false;
+      return true;
+    }
+    if (!empty) {
+      return true;
+    }
+    if (this.secondBack) {
+      prev = this.$el.prev('li').find('.value');
+      this.remove();
+      if (prev) {
+        return prev.focus().select();
+      }
+    } else {
+      return this.secondBack = true;
+    }
+  };
+
   DataPointView.prototype.store = function() {
     return this.model.set({
       value: this.valuefield.val(),
@@ -1507,26 +2679,26 @@ module.exports = DataPointView = (function(_super) {
 
 });
 
-;require.register("views/help", function(exports, require, module) {
-var BaseView, HelpView, _ref,
+;require.register("views/doc", function(exports, require, module) {
+var BaseView, DocView, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 BaseView = require('lib/base_view');
 
-module.exports = HelpView = (function(_super) {
-  __extends(HelpView, _super);
+module.exports = DocView = (function(_super) {
+  __extends(DocView, _super);
 
-  function HelpView() {
-    _ref = HelpView.__super__.constructor.apply(this, arguments);
+  function DocView() {
+    _ref = DocView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
 
-  HelpView.prototype.id = "help";
+  DocView.prototype.id = 'doc';
 
-  HelpView.prototype.template = require('templates/help');
+  DocView.prototype.template = require('templates/doc');
 
-  return HelpView;
+  return DocView;
 
 })(BaseView);
 
@@ -1634,7 +2806,7 @@ var __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 $(function() {
-  var ContactsCollection, ContactsList, Router, e, gotoapp, homeGoTo, locales, router, _ref;
+  var ContactsCollection, ContactsList, Router, e, homeGoTo, locales, router, _ref;
 
   homeGoTo = function(url) {
     var intent;
@@ -1665,11 +2837,15 @@ $(function() {
     }
 
     Router.prototype.routes = {
-      'contact/:id': 'goto'
+      '': function() {},
+      '*redirect': 'redirect'
     };
 
-    Router.prototype.goto = function(id) {
-      return homeGoTo('contacts/contact/' + id);
+    Router.prototype.redirect = function(path) {
+      this.navigate('#', {
+        trigger: true
+      });
+      return homeGoTo('contacts/' + path);
     };
 
     return Router;
@@ -1686,13 +2862,7 @@ $(function() {
   this.contacts.reset(window.initcontacts, {
     parse: true
   });
-  this.contactslist.$el.appendTo($('body'));
-  gotoapp = $("<a id=\"gotoapp\" href=\"/apps/contacts/\">\n    <i class=\"icon-resize-full icon-white\"></i>\n</a>").click(function(e) {
-    homeGoTo('contacts/#');
-    e.preventDefault();
-    return false;
-  });
-  this.contactslist.$el.append(gotoapp);
+  delete window.initcontacts;
   router = new Router();
   return Backbone.history.start();
 });

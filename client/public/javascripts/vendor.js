@@ -14944,6 +14944,3905 @@ exports.rethrow = function rethrow(err, filename, lineno){
 
 })({});
 
+;/*! jQuery UI - v1.10.3 - 2013-10-18
+* http://jqueryui.com
+* Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.position.js, jquery.ui.autocomplete.js, jquery.ui.menu.js, jquery.ui.effect.js, jquery.ui.effect-blind.js, jquery.ui.effect-highlight.js
+* Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
+
+(function( $, undefined ) {
+
+var uuid = 0,
+	runiqueId = /^ui-id-\d+$/;
+
+// $.ui might exist from components with no dependencies, e.g., $.ui.position
+$.ui = $.ui || {};
+
+$.extend( $.ui, {
+	version: "1.10.3",
+
+	keyCode: {
+		BACKSPACE: 8,
+		COMMA: 188,
+		DELETE: 46,
+		DOWN: 40,
+		END: 35,
+		ENTER: 13,
+		ESCAPE: 27,
+		HOME: 36,
+		LEFT: 37,
+		NUMPAD_ADD: 107,
+		NUMPAD_DECIMAL: 110,
+		NUMPAD_DIVIDE: 111,
+		NUMPAD_ENTER: 108,
+		NUMPAD_MULTIPLY: 106,
+		NUMPAD_SUBTRACT: 109,
+		PAGE_DOWN: 34,
+		PAGE_UP: 33,
+		PERIOD: 190,
+		RIGHT: 39,
+		SPACE: 32,
+		TAB: 9,
+		UP: 38
+	}
+});
+
+// plugins
+$.fn.extend({
+	focus: (function( orig ) {
+		return function( delay, fn ) {
+			return typeof delay === "number" ?
+				this.each(function() {
+					var elem = this;
+					setTimeout(function() {
+						$( elem ).focus();
+						if ( fn ) {
+							fn.call( elem );
+						}
+					}, delay );
+				}) :
+				orig.apply( this, arguments );
+		};
+	})( $.fn.focus ),
+
+	scrollParent: function() {
+		var scrollParent;
+		if (($.ui.ie && (/(static|relative)/).test(this.css("position"))) || (/absolute/).test(this.css("position"))) {
+			scrollParent = this.parents().filter(function() {
+				return (/(relative|absolute|fixed)/).test($.css(this,"position")) && (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		} else {
+			scrollParent = this.parents().filter(function() {
+				return (/(auto|scroll)/).test($.css(this,"overflow")+$.css(this,"overflow-y")+$.css(this,"overflow-x"));
+			}).eq(0);
+		}
+
+		return (/fixed/).test(this.css("position")) || !scrollParent.length ? $(document) : scrollParent;
+	},
+
+	zIndex: function( zIndex ) {
+		if ( zIndex !== undefined ) {
+			return this.css( "zIndex", zIndex );
+		}
+
+		if ( this.length ) {
+			var elem = $( this[ 0 ] ), position, value;
+			while ( elem.length && elem[ 0 ] !== document ) {
+				// Ignore z-index if position is set to a value where z-index is ignored by the browser
+				// This makes behavior of this function consistent across browsers
+				// WebKit always returns auto if the element is positioned
+				position = elem.css( "position" );
+				if ( position === "absolute" || position === "relative" || position === "fixed" ) {
+					// IE returns 0 when zIndex is not specified
+					// other browsers return a string
+					// we ignore the case of nested elements with an explicit value of 0
+					// <div style="z-index: -10;"><div style="z-index: 0;"></div></div>
+					value = parseInt( elem.css( "zIndex" ), 10 );
+					if ( !isNaN( value ) && value !== 0 ) {
+						return value;
+					}
+				}
+				elem = elem.parent();
+			}
+		}
+
+		return 0;
+	},
+
+	uniqueId: function() {
+		return this.each(function() {
+			if ( !this.id ) {
+				this.id = "ui-id-" + (++uuid);
+			}
+		});
+	},
+
+	removeUniqueId: function() {
+		return this.each(function() {
+			if ( runiqueId.test( this.id ) ) {
+				$( this ).removeAttr( "id" );
+			}
+		});
+	}
+});
+
+// selectors
+function focusable( element, isTabIndexNotNaN ) {
+	var map, mapName, img,
+		nodeName = element.nodeName.toLowerCase();
+	if ( "area" === nodeName ) {
+		map = element.parentNode;
+		mapName = map.name;
+		if ( !element.href || !mapName || map.nodeName.toLowerCase() !== "map" ) {
+			return false;
+		}
+		img = $( "img[usemap=#" + mapName + "]" )[0];
+		return !!img && visible( img );
+	}
+	return ( /input|select|textarea|button|object/.test( nodeName ) ?
+		!element.disabled :
+		"a" === nodeName ?
+			element.href || isTabIndexNotNaN :
+			isTabIndexNotNaN) &&
+		// the element and all of its ancestors must be visible
+		visible( element );
+}
+
+function visible( element ) {
+	return $.expr.filters.visible( element ) &&
+		!$( element ).parents().addBack().filter(function() {
+			return $.css( this, "visibility" ) === "hidden";
+		}).length;
+}
+
+$.extend( $.expr[ ":" ], {
+	data: $.expr.createPseudo ?
+		$.expr.createPseudo(function( dataName ) {
+			return function( elem ) {
+				return !!$.data( elem, dataName );
+			};
+		}) :
+		// support: jQuery <1.8
+		function( elem, i, match ) {
+			return !!$.data( elem, match[ 3 ] );
+		},
+
+	focusable: function( element ) {
+		return focusable( element, !isNaN( $.attr( element, "tabindex" ) ) );
+	},
+
+	tabbable: function( element ) {
+		var tabIndex = $.attr( element, "tabindex" ),
+			isTabIndexNaN = isNaN( tabIndex );
+		return ( isTabIndexNaN || tabIndex >= 0 ) && focusable( element, !isTabIndexNaN );
+	}
+});
+
+// support: jQuery <1.8
+if ( !$( "<a>" ).outerWidth( 1 ).jquery ) {
+	$.each( [ "Width", "Height" ], function( i, name ) {
+		var side = name === "Width" ? [ "Left", "Right" ] : [ "Top", "Bottom" ],
+			type = name.toLowerCase(),
+			orig = {
+				innerWidth: $.fn.innerWidth,
+				innerHeight: $.fn.innerHeight,
+				outerWidth: $.fn.outerWidth,
+				outerHeight: $.fn.outerHeight
+			};
+
+		function reduce( elem, size, border, margin ) {
+			$.each( side, function() {
+				size -= parseFloat( $.css( elem, "padding" + this ) ) || 0;
+				if ( border ) {
+					size -= parseFloat( $.css( elem, "border" + this + "Width" ) ) || 0;
+				}
+				if ( margin ) {
+					size -= parseFloat( $.css( elem, "margin" + this ) ) || 0;
+				}
+			});
+			return size;
+		}
+
+		$.fn[ "inner" + name ] = function( size ) {
+			if ( size === undefined ) {
+				return orig[ "inner" + name ].call( this );
+			}
+
+			return this.each(function() {
+				$( this ).css( type, reduce( this, size ) + "px" );
+			});
+		};
+
+		$.fn[ "outer" + name] = function( size, margin ) {
+			if ( typeof size !== "number" ) {
+				return orig[ "outer" + name ].call( this, size );
+			}
+
+			return this.each(function() {
+				$( this).css( type, reduce( this, size, true, margin ) + "px" );
+			});
+		};
+	});
+}
+
+// support: jQuery <1.8
+if ( !$.fn.addBack ) {
+	$.fn.addBack = function( selector ) {
+		return this.add( selector == null ?
+			this.prevObject : this.prevObject.filter( selector )
+		);
+	};
+}
+
+// support: jQuery 1.6.1, 1.6.2 (http://bugs.jquery.com/ticket/9413)
+if ( $( "<a>" ).data( "a-b", "a" ).removeData( "a-b" ).data( "a-b" ) ) {
+	$.fn.removeData = (function( removeData ) {
+		return function( key ) {
+			if ( arguments.length ) {
+				return removeData.call( this, $.camelCase( key ) );
+			} else {
+				return removeData.call( this );
+			}
+		};
+	})( $.fn.removeData );
+}
+
+
+
+
+
+// deprecated
+$.ui.ie = !!/msie [\w.]+/.exec( navigator.userAgent.toLowerCase() );
+
+$.support.selectstart = "onselectstart" in document.createElement( "div" );
+$.fn.extend({
+	disableSelection: function() {
+		return this.bind( ( $.support.selectstart ? "selectstart" : "mousedown" ) +
+			".ui-disableSelection", function( event ) {
+				event.preventDefault();
+			});
+	},
+
+	enableSelection: function() {
+		return this.unbind( ".ui-disableSelection" );
+	}
+});
+
+$.extend( $.ui, {
+	// $.ui.plugin is deprecated. Use $.widget() extensions instead.
+	plugin: {
+		add: function( module, option, set ) {
+			var i,
+				proto = $.ui[ module ].prototype;
+			for ( i in set ) {
+				proto.plugins[ i ] = proto.plugins[ i ] || [];
+				proto.plugins[ i ].push( [ option, set[ i ] ] );
+			}
+		},
+		call: function( instance, name, args ) {
+			var i,
+				set = instance.plugins[ name ];
+			if ( !set || !instance.element[ 0 ].parentNode || instance.element[ 0 ].parentNode.nodeType === 11 ) {
+				return;
+			}
+
+			for ( i = 0; i < set.length; i++ ) {
+				if ( instance.options[ set[ i ][ 0 ] ] ) {
+					set[ i ][ 1 ].apply( instance.element, args );
+				}
+			}
+		}
+	},
+
+	// only used by resizable
+	hasScroll: function( el, a ) {
+
+		//If overflow is hidden, the element might have extra content, but the user wants to hide it
+		if ( $( el ).css( "overflow" ) === "hidden") {
+			return false;
+		}
+
+		var scroll = ( a && a === "left" ) ? "scrollLeft" : "scrollTop",
+			has = false;
+
+		if ( el[ scroll ] > 0 ) {
+			return true;
+		}
+
+		// TODO: determine which cases actually cause this to happen
+		// if the element doesn't have the scroll set, see if it's possible to
+		// set the scroll
+		el[ scroll ] = 1;
+		has = ( el[ scroll ] > 0 );
+		el[ scroll ] = 0;
+		return has;
+	}
+});
+
+})( jQuery );
+(function( $, undefined ) {
+
+var uuid = 0,
+	slice = Array.prototype.slice,
+	_cleanData = $.cleanData;
+$.cleanData = function( elems ) {
+	for ( var i = 0, elem; (elem = elems[i]) != null; i++ ) {
+		try {
+			$( elem ).triggerHandler( "remove" );
+		// http://bugs.jquery.com/ticket/8235
+		} catch( e ) {}
+	}
+	_cleanData( elems );
+};
+
+$.widget = function( name, base, prototype ) {
+	var fullName, existingConstructor, constructor, basePrototype,
+		// proxiedPrototype allows the provided prototype to remain unmodified
+		// so that it can be used as a mixin for multiple widgets (#8876)
+		proxiedPrototype = {},
+		namespace = name.split( "." )[ 0 ];
+
+	name = name.split( "." )[ 1 ];
+	fullName = namespace + "-" + name;
+
+	if ( !prototype ) {
+		prototype = base;
+		base = $.Widget;
+	}
+
+	// create selector for plugin
+	$.expr[ ":" ][ fullName.toLowerCase() ] = function( elem ) {
+		return !!$.data( elem, fullName );
+	};
+
+	$[ namespace ] = $[ namespace ] || {};
+	existingConstructor = $[ namespace ][ name ];
+	constructor = $[ namespace ][ name ] = function( options, element ) {
+		// allow instantiation without "new" keyword
+		if ( !this._createWidget ) {
+			return new constructor( options, element );
+		}
+
+		// allow instantiation without initializing for simple inheritance
+		// must use "new" keyword (the code above always passes args)
+		if ( arguments.length ) {
+			this._createWidget( options, element );
+		}
+	};
+	// extend with the existing constructor to carry over any static properties
+	$.extend( constructor, existingConstructor, {
+		version: prototype.version,
+		// copy the object used to create the prototype in case we need to
+		// redefine the widget later
+		_proto: $.extend( {}, prototype ),
+		// track widgets that inherit from this widget in case this widget is
+		// redefined after a widget inherits from it
+		_childConstructors: []
+	});
+
+	basePrototype = new base();
+	// we need to make the options hash a property directly on the new instance
+	// otherwise we'll modify the options hash on the prototype that we're
+	// inheriting from
+	basePrototype.options = $.widget.extend( {}, basePrototype.options );
+	$.each( prototype, function( prop, value ) {
+		if ( !$.isFunction( value ) ) {
+			proxiedPrototype[ prop ] = value;
+			return;
+		}
+		proxiedPrototype[ prop ] = (function() {
+			var _super = function() {
+					return base.prototype[ prop ].apply( this, arguments );
+				},
+				_superApply = function( args ) {
+					return base.prototype[ prop ].apply( this, args );
+				};
+			return function() {
+				var __super = this._super,
+					__superApply = this._superApply,
+					returnValue;
+
+				this._super = _super;
+				this._superApply = _superApply;
+
+				returnValue = value.apply( this, arguments );
+
+				this._super = __super;
+				this._superApply = __superApply;
+
+				return returnValue;
+			};
+		})();
+	});
+	constructor.prototype = $.widget.extend( basePrototype, {
+		// TODO: remove support for widgetEventPrefix
+		// always use the name + a colon as the prefix, e.g., draggable:start
+		// don't prefix for widgets that aren't DOM-based
+		widgetEventPrefix: existingConstructor ? basePrototype.widgetEventPrefix : name
+	}, proxiedPrototype, {
+		constructor: constructor,
+		namespace: namespace,
+		widgetName: name,
+		widgetFullName: fullName
+	});
+
+	// If this widget is being redefined then we need to find all widgets that
+	// are inheriting from it and redefine all of them so that they inherit from
+	// the new version of this widget. We're essentially trying to replace one
+	// level in the prototype chain.
+	if ( existingConstructor ) {
+		$.each( existingConstructor._childConstructors, function( i, child ) {
+			var childPrototype = child.prototype;
+
+			// redefine the child widget using the same prototype that was
+			// originally used, but inherit from the new version of the base
+			$.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto );
+		});
+		// remove the list of existing child constructors from the old constructor
+		// so the old child constructors can be garbage collected
+		delete existingConstructor._childConstructors;
+	} else {
+		base._childConstructors.push( constructor );
+	}
+
+	$.widget.bridge( name, constructor );
+};
+
+$.widget.extend = function( target ) {
+	var input = slice.call( arguments, 1 ),
+		inputIndex = 0,
+		inputLength = input.length,
+		key,
+		value;
+	for ( ; inputIndex < inputLength; inputIndex++ ) {
+		for ( key in input[ inputIndex ] ) {
+			value = input[ inputIndex ][ key ];
+			if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
+				// Clone objects
+				if ( $.isPlainObject( value ) ) {
+					target[ key ] = $.isPlainObject( target[ key ] ) ?
+						$.widget.extend( {}, target[ key ], value ) :
+						// Don't extend strings, arrays, etc. with objects
+						$.widget.extend( {}, value );
+				// Copy everything else by reference
+				} else {
+					target[ key ] = value;
+				}
+			}
+		}
+	}
+	return target;
+};
+
+$.widget.bridge = function( name, object ) {
+	var fullName = object.prototype.widgetFullName || name;
+	$.fn[ name ] = function( options ) {
+		var isMethodCall = typeof options === "string",
+			args = slice.call( arguments, 1 ),
+			returnValue = this;
+
+		// allow multiple hashes to be passed on init
+		options = !isMethodCall && args.length ?
+			$.widget.extend.apply( null, [ options ].concat(args) ) :
+			options;
+
+		if ( isMethodCall ) {
+			this.each(function() {
+				var methodValue,
+					instance = $.data( this, fullName );
+				if ( !instance ) {
+					return $.error( "cannot call methods on " + name + " prior to initialization; " +
+						"attempted to call method '" + options + "'" );
+				}
+				if ( !$.isFunction( instance[options] ) || options.charAt( 0 ) === "_" ) {
+					return $.error( "no such method '" + options + "' for " + name + " widget instance" );
+				}
+				methodValue = instance[ options ].apply( instance, args );
+				if ( methodValue !== instance && methodValue !== undefined ) {
+					returnValue = methodValue && methodValue.jquery ?
+						returnValue.pushStack( methodValue.get() ) :
+						methodValue;
+					return false;
+				}
+			});
+		} else {
+			this.each(function() {
+				var instance = $.data( this, fullName );
+				if ( instance ) {
+					instance.option( options || {} )._init();
+				} else {
+					$.data( this, fullName, new object( options, this ) );
+				}
+			});
+		}
+
+		return returnValue;
+	};
+};
+
+$.Widget = function( /* options, element */ ) {};
+$.Widget._childConstructors = [];
+
+$.Widget.prototype = {
+	widgetName: "widget",
+	widgetEventPrefix: "",
+	defaultElement: "<div>",
+	options: {
+		disabled: false,
+
+		// callbacks
+		create: null
+	},
+	_createWidget: function( options, element ) {
+		element = $( element || this.defaultElement || this )[ 0 ];
+		this.element = $( element );
+		this.uuid = uuid++;
+		this.eventNamespace = "." + this.widgetName + this.uuid;
+		this.options = $.widget.extend( {},
+			this.options,
+			this._getCreateOptions(),
+			options );
+
+		this.bindings = $();
+		this.hoverable = $();
+		this.focusable = $();
+
+		if ( element !== this ) {
+			$.data( element, this.widgetFullName, this );
+			this._on( true, this.element, {
+				remove: function( event ) {
+					if ( event.target === element ) {
+						this.destroy();
+					}
+				}
+			});
+			this.document = $( element.style ?
+				// element within the document
+				element.ownerDocument :
+				// element is window or document
+				element.document || element );
+			this.window = $( this.document[0].defaultView || this.document[0].parentWindow );
+		}
+
+		this._create();
+		this._trigger( "create", null, this._getCreateEventData() );
+		this._init();
+	},
+	_getCreateOptions: $.noop,
+	_getCreateEventData: $.noop,
+	_create: $.noop,
+	_init: $.noop,
+
+	destroy: function() {
+		this._destroy();
+		// we can probably remove the unbind calls in 2.0
+		// all event bindings should go through this._on()
+		this.element
+			.unbind( this.eventNamespace )
+			// 1.9 BC for #7810
+			// TODO remove dual storage
+			.removeData( this.widgetName )
+			.removeData( this.widgetFullName )
+			// support: jquery <1.6.3
+			// http://bugs.jquery.com/ticket/9413
+			.removeData( $.camelCase( this.widgetFullName ) );
+		this.widget()
+			.unbind( this.eventNamespace )
+			.removeAttr( "aria-disabled" )
+			.removeClass(
+				this.widgetFullName + "-disabled " +
+				"ui-state-disabled" );
+
+		// clean up events and states
+		this.bindings.unbind( this.eventNamespace );
+		this.hoverable.removeClass( "ui-state-hover" );
+		this.focusable.removeClass( "ui-state-focus" );
+	},
+	_destroy: $.noop,
+
+	widget: function() {
+		return this.element;
+	},
+
+	option: function( key, value ) {
+		var options = key,
+			parts,
+			curOption,
+			i;
+
+		if ( arguments.length === 0 ) {
+			// don't return a reference to the internal hash
+			return $.widget.extend( {}, this.options );
+		}
+
+		if ( typeof key === "string" ) {
+			// handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
+			options = {};
+			parts = key.split( "." );
+			key = parts.shift();
+			if ( parts.length ) {
+				curOption = options[ key ] = $.widget.extend( {}, this.options[ key ] );
+				for ( i = 0; i < parts.length - 1; i++ ) {
+					curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
+					curOption = curOption[ parts[ i ] ];
+				}
+				key = parts.pop();
+				if ( value === undefined ) {
+					return curOption[ key ] === undefined ? null : curOption[ key ];
+				}
+				curOption[ key ] = value;
+			} else {
+				if ( value === undefined ) {
+					return this.options[ key ] === undefined ? null : this.options[ key ];
+				}
+				options[ key ] = value;
+			}
+		}
+
+		this._setOptions( options );
+
+		return this;
+	},
+	_setOptions: function( options ) {
+		var key;
+
+		for ( key in options ) {
+			this._setOption( key, options[ key ] );
+		}
+
+		return this;
+	},
+	_setOption: function( key, value ) {
+		this.options[ key ] = value;
+
+		if ( key === "disabled" ) {
+			this.widget()
+				.toggleClass( this.widgetFullName + "-disabled ui-state-disabled", !!value )
+				.attr( "aria-disabled", value );
+			this.hoverable.removeClass( "ui-state-hover" );
+			this.focusable.removeClass( "ui-state-focus" );
+		}
+
+		return this;
+	},
+
+	enable: function() {
+		return this._setOption( "disabled", false );
+	},
+	disable: function() {
+		return this._setOption( "disabled", true );
+	},
+
+	_on: function( suppressDisabledCheck, element, handlers ) {
+		var delegateElement,
+			instance = this;
+
+		// no suppressDisabledCheck flag, shuffle arguments
+		if ( typeof suppressDisabledCheck !== "boolean" ) {
+			handlers = element;
+			element = suppressDisabledCheck;
+			suppressDisabledCheck = false;
+		}
+
+		// no element argument, shuffle and use this.element
+		if ( !handlers ) {
+			handlers = element;
+			element = this.element;
+			delegateElement = this.widget();
+		} else {
+			// accept selectors, DOM elements
+			element = delegateElement = $( element );
+			this.bindings = this.bindings.add( element );
+		}
+
+		$.each( handlers, function( event, handler ) {
+			function handlerProxy() {
+				// allow widgets to customize the disabled handling
+				// - disabled as an array instead of boolean
+				// - disabled class as method for disabling individual parts
+				if ( !suppressDisabledCheck &&
+						( instance.options.disabled === true ||
+							$( this ).hasClass( "ui-state-disabled" ) ) ) {
+					return;
+				}
+				return ( typeof handler === "string" ? instance[ handler ] : handler )
+					.apply( instance, arguments );
+			}
+
+			// copy the guid so direct unbinding works
+			if ( typeof handler !== "string" ) {
+				handlerProxy.guid = handler.guid =
+					handler.guid || handlerProxy.guid || $.guid++;
+			}
+
+			var match = event.match( /^(\w+)\s*(.*)$/ ),
+				eventName = match[1] + instance.eventNamespace,
+				selector = match[2];
+			if ( selector ) {
+				delegateElement.delegate( selector, eventName, handlerProxy );
+			} else {
+				element.bind( eventName, handlerProxy );
+			}
+		});
+	},
+
+	_off: function( element, eventName ) {
+		eventName = (eventName || "").split( " " ).join( this.eventNamespace + " " ) + this.eventNamespace;
+		element.unbind( eventName ).undelegate( eventName );
+	},
+
+	_delay: function( handler, delay ) {
+		function handlerProxy() {
+			return ( typeof handler === "string" ? instance[ handler ] : handler )
+				.apply( instance, arguments );
+		}
+		var instance = this;
+		return setTimeout( handlerProxy, delay || 0 );
+	},
+
+	_hoverable: function( element ) {
+		this.hoverable = this.hoverable.add( element );
+		this._on( element, {
+			mouseenter: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-hover" );
+			},
+			mouseleave: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-hover" );
+			}
+		});
+	},
+
+	_focusable: function( element ) {
+		this.focusable = this.focusable.add( element );
+		this._on( element, {
+			focusin: function( event ) {
+				$( event.currentTarget ).addClass( "ui-state-focus" );
+			},
+			focusout: function( event ) {
+				$( event.currentTarget ).removeClass( "ui-state-focus" );
+			}
+		});
+	},
+
+	_trigger: function( type, event, data ) {
+		var prop, orig,
+			callback = this.options[ type ];
+
+		data = data || {};
+		event = $.Event( event );
+		event.type = ( type === this.widgetEventPrefix ?
+			type :
+			this.widgetEventPrefix + type ).toLowerCase();
+		// the original event may come from any element
+		// so we need to reset the target on the new event
+		event.target = this.element[ 0 ];
+
+		// copy original event properties over to the new event
+		orig = event.originalEvent;
+		if ( orig ) {
+			for ( prop in orig ) {
+				if ( !( prop in event ) ) {
+					event[ prop ] = orig[ prop ];
+				}
+			}
+		}
+
+		this.element.trigger( event, data );
+		return !( $.isFunction( callback ) &&
+			callback.apply( this.element[0], [ event ].concat( data ) ) === false ||
+			event.isDefaultPrevented() );
+	}
+};
+
+$.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
+	$.Widget.prototype[ "_" + method ] = function( element, options, callback ) {
+		if ( typeof options === "string" ) {
+			options = { effect: options };
+		}
+		var hasOptions,
+			effectName = !options ?
+				method :
+				options === true || typeof options === "number" ?
+					defaultEffect :
+					options.effect || defaultEffect;
+		options = options || {};
+		if ( typeof options === "number" ) {
+			options = { duration: options };
+		}
+		hasOptions = !$.isEmptyObject( options );
+		options.complete = callback;
+		if ( options.delay ) {
+			element.delay( options.delay );
+		}
+		if ( hasOptions && $.effects && $.effects.effect[ effectName ] ) {
+			element[ method ]( options );
+		} else if ( effectName !== method && element[ effectName ] ) {
+			element[ effectName ]( options.duration, options.easing, callback );
+		} else {
+			element.queue(function( next ) {
+				$( this )[ method ]();
+				if ( callback ) {
+					callback.call( element[ 0 ] );
+				}
+				next();
+			});
+		}
+	};
+});
+
+})( jQuery );
+(function( $, undefined ) {
+
+$.ui = $.ui || {};
+
+var cachedScrollbarWidth,
+	max = Math.max,
+	abs = Math.abs,
+	round = Math.round,
+	rhorizontal = /left|center|right/,
+	rvertical = /top|center|bottom/,
+	roffset = /[\+\-]\d+(\.[\d]+)?%?/,
+	rposition = /^\w+/,
+	rpercent = /%$/,
+	_position = $.fn.position;
+
+function getOffsets( offsets, width, height ) {
+	return [
+		parseFloat( offsets[ 0 ] ) * ( rpercent.test( offsets[ 0 ] ) ? width / 100 : 1 ),
+		parseFloat( offsets[ 1 ] ) * ( rpercent.test( offsets[ 1 ] ) ? height / 100 : 1 )
+	];
+}
+
+function parseCss( element, property ) {
+	return parseInt( $.css( element, property ), 10 ) || 0;
+}
+
+function getDimensions( elem ) {
+	var raw = elem[0];
+	if ( raw.nodeType === 9 ) {
+		return {
+			width: elem.width(),
+			height: elem.height(),
+			offset: { top: 0, left: 0 }
+		};
+	}
+	if ( $.isWindow( raw ) ) {
+		return {
+			width: elem.width(),
+			height: elem.height(),
+			offset: { top: elem.scrollTop(), left: elem.scrollLeft() }
+		};
+	}
+	if ( raw.preventDefault ) {
+		return {
+			width: 0,
+			height: 0,
+			offset: { top: raw.pageY, left: raw.pageX }
+		};
+	}
+	return {
+		width: elem.outerWidth(),
+		height: elem.outerHeight(),
+		offset: elem.offset()
+	};
+}
+
+$.position = {
+	scrollbarWidth: function() {
+		if ( cachedScrollbarWidth !== undefined ) {
+			return cachedScrollbarWidth;
+		}
+		var w1, w2,
+			div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
+			innerDiv = div.children()[0];
+
+		$( "body" ).append( div );
+		w1 = innerDiv.offsetWidth;
+		div.css( "overflow", "scroll" );
+
+		w2 = innerDiv.offsetWidth;
+
+		if ( w1 === w2 ) {
+			w2 = div[0].clientWidth;
+		}
+
+		div.remove();
+
+		return (cachedScrollbarWidth = w1 - w2);
+	},
+	getScrollInfo: function( within ) {
+		var overflowX = within.isWindow ? "" : within.element.css( "overflow-x" ),
+			overflowY = within.isWindow ? "" : within.element.css( "overflow-y" ),
+			hasOverflowX = overflowX === "scroll" ||
+				( overflowX === "auto" && within.width < within.element[0].scrollWidth ),
+			hasOverflowY = overflowY === "scroll" ||
+				( overflowY === "auto" && within.height < within.element[0].scrollHeight );
+		return {
+			width: hasOverflowY ? $.position.scrollbarWidth() : 0,
+			height: hasOverflowX ? $.position.scrollbarWidth() : 0
+		};
+	},
+	getWithinInfo: function( element ) {
+		var withinElement = $( element || window ),
+			isWindow = $.isWindow( withinElement[0] );
+		return {
+			element: withinElement,
+			isWindow: isWindow,
+			offset: withinElement.offset() || { left: 0, top: 0 },
+			scrollLeft: withinElement.scrollLeft(),
+			scrollTop: withinElement.scrollTop(),
+			width: isWindow ? withinElement.width() : withinElement.outerWidth(),
+			height: isWindow ? withinElement.height() : withinElement.outerHeight()
+		};
+	}
+};
+
+$.fn.position = function( options ) {
+	if ( !options || !options.of ) {
+		return _position.apply( this, arguments );
+	}
+
+	// make a copy, we don't want to modify arguments
+	options = $.extend( {}, options );
+
+	var atOffset, targetWidth, targetHeight, targetOffset, basePosition, dimensions,
+		target = $( options.of ),
+		within = $.position.getWithinInfo( options.within ),
+		scrollInfo = $.position.getScrollInfo( within ),
+		collision = ( options.collision || "flip" ).split( " " ),
+		offsets = {};
+
+	dimensions = getDimensions( target );
+	if ( target[0].preventDefault ) {
+		// force left top to allow flipping
+		options.at = "left top";
+	}
+	targetWidth = dimensions.width;
+	targetHeight = dimensions.height;
+	targetOffset = dimensions.offset;
+	// clone to reuse original targetOffset later
+	basePosition = $.extend( {}, targetOffset );
+
+	// force my and at to have valid horizontal and vertical positions
+	// if a value is missing or invalid, it will be converted to center
+	$.each( [ "my", "at" ], function() {
+		var pos = ( options[ this ] || "" ).split( " " ),
+			horizontalOffset,
+			verticalOffset;
+
+		if ( pos.length === 1) {
+			pos = rhorizontal.test( pos[ 0 ] ) ?
+				pos.concat( [ "center" ] ) :
+				rvertical.test( pos[ 0 ] ) ?
+					[ "center" ].concat( pos ) :
+					[ "center", "center" ];
+		}
+		pos[ 0 ] = rhorizontal.test( pos[ 0 ] ) ? pos[ 0 ] : "center";
+		pos[ 1 ] = rvertical.test( pos[ 1 ] ) ? pos[ 1 ] : "center";
+
+		// calculate offsets
+		horizontalOffset = roffset.exec( pos[ 0 ] );
+		verticalOffset = roffset.exec( pos[ 1 ] );
+		offsets[ this ] = [
+			horizontalOffset ? horizontalOffset[ 0 ] : 0,
+			verticalOffset ? verticalOffset[ 0 ] : 0
+		];
+
+		// reduce to just the positions without the offsets
+		options[ this ] = [
+			rposition.exec( pos[ 0 ] )[ 0 ],
+			rposition.exec( pos[ 1 ] )[ 0 ]
+		];
+	});
+
+	// normalize collision option
+	if ( collision.length === 1 ) {
+		collision[ 1 ] = collision[ 0 ];
+	}
+
+	if ( options.at[ 0 ] === "right" ) {
+		basePosition.left += targetWidth;
+	} else if ( options.at[ 0 ] === "center" ) {
+		basePosition.left += targetWidth / 2;
+	}
+
+	if ( options.at[ 1 ] === "bottom" ) {
+		basePosition.top += targetHeight;
+	} else if ( options.at[ 1 ] === "center" ) {
+		basePosition.top += targetHeight / 2;
+	}
+
+	atOffset = getOffsets( offsets.at, targetWidth, targetHeight );
+	basePosition.left += atOffset[ 0 ];
+	basePosition.top += atOffset[ 1 ];
+
+	return this.each(function() {
+		var collisionPosition, using,
+			elem = $( this ),
+			elemWidth = elem.outerWidth(),
+			elemHeight = elem.outerHeight(),
+			marginLeft = parseCss( this, "marginLeft" ),
+			marginTop = parseCss( this, "marginTop" ),
+			collisionWidth = elemWidth + marginLeft + parseCss( this, "marginRight" ) + scrollInfo.width,
+			collisionHeight = elemHeight + marginTop + parseCss( this, "marginBottom" ) + scrollInfo.height,
+			position = $.extend( {}, basePosition ),
+			myOffset = getOffsets( offsets.my, elem.outerWidth(), elem.outerHeight() );
+
+		if ( options.my[ 0 ] === "right" ) {
+			position.left -= elemWidth;
+		} else if ( options.my[ 0 ] === "center" ) {
+			position.left -= elemWidth / 2;
+		}
+
+		if ( options.my[ 1 ] === "bottom" ) {
+			position.top -= elemHeight;
+		} else if ( options.my[ 1 ] === "center" ) {
+			position.top -= elemHeight / 2;
+		}
+
+		position.left += myOffset[ 0 ];
+		position.top += myOffset[ 1 ];
+
+		// if the browser doesn't support fractions, then round for consistent results
+		if ( !$.support.offsetFractions ) {
+			position.left = round( position.left );
+			position.top = round( position.top );
+		}
+
+		collisionPosition = {
+			marginLeft: marginLeft,
+			marginTop: marginTop
+		};
+
+		$.each( [ "left", "top" ], function( i, dir ) {
+			if ( $.ui.position[ collision[ i ] ] ) {
+				$.ui.position[ collision[ i ] ][ dir ]( position, {
+					targetWidth: targetWidth,
+					targetHeight: targetHeight,
+					elemWidth: elemWidth,
+					elemHeight: elemHeight,
+					collisionPosition: collisionPosition,
+					collisionWidth: collisionWidth,
+					collisionHeight: collisionHeight,
+					offset: [ atOffset[ 0 ] + myOffset[ 0 ], atOffset [ 1 ] + myOffset[ 1 ] ],
+					my: options.my,
+					at: options.at,
+					within: within,
+					elem : elem
+				});
+			}
+		});
+
+		if ( options.using ) {
+			// adds feedback as second argument to using callback, if present
+			using = function( props ) {
+				var left = targetOffset.left - position.left,
+					right = left + targetWidth - elemWidth,
+					top = targetOffset.top - position.top,
+					bottom = top + targetHeight - elemHeight,
+					feedback = {
+						target: {
+							element: target,
+							left: targetOffset.left,
+							top: targetOffset.top,
+							width: targetWidth,
+							height: targetHeight
+						},
+						element: {
+							element: elem,
+							left: position.left,
+							top: position.top,
+							width: elemWidth,
+							height: elemHeight
+						},
+						horizontal: right < 0 ? "left" : left > 0 ? "right" : "center",
+						vertical: bottom < 0 ? "top" : top > 0 ? "bottom" : "middle"
+					};
+				if ( targetWidth < elemWidth && abs( left + right ) < targetWidth ) {
+					feedback.horizontal = "center";
+				}
+				if ( targetHeight < elemHeight && abs( top + bottom ) < targetHeight ) {
+					feedback.vertical = "middle";
+				}
+				if ( max( abs( left ), abs( right ) ) > max( abs( top ), abs( bottom ) ) ) {
+					feedback.important = "horizontal";
+				} else {
+					feedback.important = "vertical";
+				}
+				options.using.call( this, props, feedback );
+			};
+		}
+
+		elem.offset( $.extend( position, { using: using } ) );
+	});
+};
+
+$.ui.position = {
+	fit: {
+		left: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.isWindow ? within.scrollLeft : within.offset.left,
+				outerWidth = within.width,
+				collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+				overLeft = withinOffset - collisionPosLeft,
+				overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
+				newOverRight;
+
+			// element is wider than within
+			if ( data.collisionWidth > outerWidth ) {
+				// element is initially over the left side of within
+				if ( overLeft > 0 && overRight <= 0 ) {
+					newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
+					position.left += overLeft - newOverRight;
+				// element is initially over right side of within
+				} else if ( overRight > 0 && overLeft <= 0 ) {
+					position.left = withinOffset;
+				// element is initially over both left and right sides of within
+				} else {
+					if ( overLeft > overRight ) {
+						position.left = withinOffset + outerWidth - data.collisionWidth;
+					} else {
+						position.left = withinOffset;
+					}
+				}
+			// too far left -> align with left edge
+			} else if ( overLeft > 0 ) {
+				position.left += overLeft;
+			// too far right -> align with right edge
+			} else if ( overRight > 0 ) {
+				position.left -= overRight;
+			// adjust based on position and margin
+			} else {
+				position.left = max( position.left - collisionPosLeft, position.left );
+			}
+		},
+		top: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.isWindow ? within.scrollTop : within.offset.top,
+				outerHeight = data.within.height,
+				collisionPosTop = position.top - data.collisionPosition.marginTop,
+				overTop = withinOffset - collisionPosTop,
+				overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
+				newOverBottom;
+
+			// element is taller than within
+			if ( data.collisionHeight > outerHeight ) {
+				// element is initially over the top of within
+				if ( overTop > 0 && overBottom <= 0 ) {
+					newOverBottom = position.top + overTop + data.collisionHeight - outerHeight - withinOffset;
+					position.top += overTop - newOverBottom;
+				// element is initially over bottom of within
+				} else if ( overBottom > 0 && overTop <= 0 ) {
+					position.top = withinOffset;
+				// element is initially over both top and bottom of within
+				} else {
+					if ( overTop > overBottom ) {
+						position.top = withinOffset + outerHeight - data.collisionHeight;
+					} else {
+						position.top = withinOffset;
+					}
+				}
+			// too far up -> align with top
+			} else if ( overTop > 0 ) {
+				position.top += overTop;
+			// too far down -> align with bottom edge
+			} else if ( overBottom > 0 ) {
+				position.top -= overBottom;
+			// adjust based on position and margin
+			} else {
+				position.top = max( position.top - collisionPosTop, position.top );
+			}
+		}
+	},
+	flip: {
+		left: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.offset.left + within.scrollLeft,
+				outerWidth = within.width,
+				offsetLeft = within.isWindow ? within.scrollLeft : within.offset.left,
+				collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+				overLeft = collisionPosLeft - offsetLeft,
+				overRight = collisionPosLeft + data.collisionWidth - outerWidth - offsetLeft,
+				myOffset = data.my[ 0 ] === "left" ?
+					-data.elemWidth :
+					data.my[ 0 ] === "right" ?
+						data.elemWidth :
+						0,
+				atOffset = data.at[ 0 ] === "left" ?
+					data.targetWidth :
+					data.at[ 0 ] === "right" ?
+						-data.targetWidth :
+						0,
+				offset = -2 * data.offset[ 0 ],
+				newOverRight,
+				newOverLeft;
+
+			if ( overLeft < 0 ) {
+				newOverRight = position.left + myOffset + atOffset + offset + data.collisionWidth - outerWidth - withinOffset;
+				if ( newOverRight < 0 || newOverRight < abs( overLeft ) ) {
+					position.left += myOffset + atOffset + offset;
+				}
+			}
+			else if ( overRight > 0 ) {
+				newOverLeft = position.left - data.collisionPosition.marginLeft + myOffset + atOffset + offset - offsetLeft;
+				if ( newOverLeft > 0 || abs( newOverLeft ) < overRight ) {
+					position.left += myOffset + atOffset + offset;
+				}
+			}
+		},
+		top: function( position, data ) {
+			var within = data.within,
+				withinOffset = within.offset.top + within.scrollTop,
+				outerHeight = within.height,
+				offsetTop = within.isWindow ? within.scrollTop : within.offset.top,
+				collisionPosTop = position.top - data.collisionPosition.marginTop,
+				overTop = collisionPosTop - offsetTop,
+				overBottom = collisionPosTop + data.collisionHeight - outerHeight - offsetTop,
+				top = data.my[ 1 ] === "top",
+				myOffset = top ?
+					-data.elemHeight :
+					data.my[ 1 ] === "bottom" ?
+						data.elemHeight :
+						0,
+				atOffset = data.at[ 1 ] === "top" ?
+					data.targetHeight :
+					data.at[ 1 ] === "bottom" ?
+						-data.targetHeight :
+						0,
+				offset = -2 * data.offset[ 1 ],
+				newOverTop,
+				newOverBottom;
+			if ( overTop < 0 ) {
+				newOverBottom = position.top + myOffset + atOffset + offset + data.collisionHeight - outerHeight - withinOffset;
+				if ( ( position.top + myOffset + atOffset + offset) > overTop && ( newOverBottom < 0 || newOverBottom < abs( overTop ) ) ) {
+					position.top += myOffset + atOffset + offset;
+				}
+			}
+			else if ( overBottom > 0 ) {
+				newOverTop = position.top -  data.collisionPosition.marginTop + myOffset + atOffset + offset - offsetTop;
+				if ( ( position.top + myOffset + atOffset + offset) > overBottom && ( newOverTop > 0 || abs( newOverTop ) < overBottom ) ) {
+					position.top += myOffset + atOffset + offset;
+				}
+			}
+		}
+	},
+	flipfit: {
+		left: function() {
+			$.ui.position.flip.left.apply( this, arguments );
+			$.ui.position.fit.left.apply( this, arguments );
+		},
+		top: function() {
+			$.ui.position.flip.top.apply( this, arguments );
+			$.ui.position.fit.top.apply( this, arguments );
+		}
+	}
+};
+
+// fraction support test
+(function () {
+	var testElement, testElementParent, testElementStyle, offsetLeft, i,
+		body = document.getElementsByTagName( "body" )[ 0 ],
+		div = document.createElement( "div" );
+
+	//Create a "fake body" for testing based on method used in jQuery.support
+	testElement = document.createElement( body ? "div" : "body" );
+	testElementStyle = {
+		visibility: "hidden",
+		width: 0,
+		height: 0,
+		border: 0,
+		margin: 0,
+		background: "none"
+	};
+	if ( body ) {
+		$.extend( testElementStyle, {
+			position: "absolute",
+			left: "-1000px",
+			top: "-1000px"
+		});
+	}
+	for ( i in testElementStyle ) {
+		testElement.style[ i ] = testElementStyle[ i ];
+	}
+	testElement.appendChild( div );
+	testElementParent = body || document.documentElement;
+	testElementParent.insertBefore( testElement, testElementParent.firstChild );
+
+	div.style.cssText = "position: absolute; left: 10.7432222px;";
+
+	offsetLeft = $( div ).offset().left;
+	$.support.offsetFractions = offsetLeft > 10 && offsetLeft < 11;
+
+	testElement.innerHTML = "";
+	testElementParent.removeChild( testElement );
+})();
+
+}( jQuery ) );
+(function( $, undefined ) {
+
+// used to prevent race conditions with remote data sources
+var requestIndex = 0;
+
+$.widget( "ui.autocomplete", {
+	version: "1.10.3",
+	defaultElement: "<input>",
+	options: {
+		appendTo: null,
+		autoFocus: false,
+		delay: 300,
+		minLength: 1,
+		position: {
+			my: "left top",
+			at: "left bottom",
+			collision: "none"
+		},
+		source: null,
+
+		// callbacks
+		change: null,
+		close: null,
+		focus: null,
+		open: null,
+		response: null,
+		search: null,
+		select: null
+	},
+
+	pending: 0,
+
+	_create: function() {
+		// Some browsers only repeat keydown events, not keypress events,
+		// so we use the suppressKeyPress flag to determine if we've already
+		// handled the keydown event. #7269
+		// Unfortunately the code for & in keypress is the same as the up arrow,
+		// so we use the suppressKeyPressRepeat flag to avoid handling keypress
+		// events when we know the keydown event was used to modify the
+		// search term. #7799
+		var suppressKeyPress, suppressKeyPressRepeat, suppressInput,
+			nodeName = this.element[0].nodeName.toLowerCase(),
+			isTextarea = nodeName === "textarea",
+			isInput = nodeName === "input";
+
+		this.isMultiLine =
+			// Textareas are always multi-line
+			isTextarea ? true :
+			// Inputs are always single-line, even if inside a contentEditable element
+			// IE also treats inputs as contentEditable
+			isInput ? false :
+			// All other element types are determined by whether or not they're contentEditable
+			this.element.prop( "isContentEditable" );
+
+		this.valueMethod = this.element[ isTextarea || isInput ? "val" : "text" ];
+		this.isNewMenu = true;
+
+		this.element
+			.addClass( "ui-autocomplete-input" )
+			.attr( "autocomplete", "off" );
+
+		this._on( this.element, {
+			keydown: function( event ) {
+				/*jshint maxcomplexity:15*/
+				if ( this.element.prop( "readOnly" ) ) {
+					suppressKeyPress = true;
+					suppressInput = true;
+					suppressKeyPressRepeat = true;
+					return;
+				}
+
+				suppressKeyPress = false;
+				suppressInput = false;
+				suppressKeyPressRepeat = false;
+				var keyCode = $.ui.keyCode;
+				switch( event.keyCode ) {
+				case keyCode.PAGE_UP:
+					suppressKeyPress = true;
+					this._move( "previousPage", event );
+					break;
+				case keyCode.PAGE_DOWN:
+					suppressKeyPress = true;
+					this._move( "nextPage", event );
+					break;
+				case keyCode.UP:
+					suppressKeyPress = true;
+					this._keyEvent( "previous", event );
+					break;
+				case keyCode.DOWN:
+					suppressKeyPress = true;
+					this._keyEvent( "next", event );
+					break;
+				case keyCode.ENTER:
+				case keyCode.NUMPAD_ENTER:
+					// when menu is open and has focus
+					if ( this.menu.active ) {
+						// #6055 - Opera still allows the keypress to occur
+						// which causes forms to submit
+						suppressKeyPress = true;
+						event.preventDefault();
+						this.menu.select( event );
+					}
+					break;
+				case keyCode.TAB:
+					if ( this.menu.active ) {
+						this.menu.select( event );
+					}
+					break;
+				case keyCode.ESCAPE:
+					if ( this.menu.element.is( ":visible" ) ) {
+						this._value( this.term );
+						this.close( event );
+						// Different browsers have different default behavior for escape
+						// Single press can mean undo or clear
+						// Double press in IE means clear the whole form
+						event.preventDefault();
+					}
+					break;
+				default:
+					suppressKeyPressRepeat = true;
+					// search timeout should be triggered before the input value is changed
+					this._searchTimeout( event );
+					break;
+				}
+			},
+			keypress: function( event ) {
+				if ( suppressKeyPress ) {
+					suppressKeyPress = false;
+					if ( !this.isMultiLine || this.menu.element.is( ":visible" ) ) {
+						event.preventDefault();
+					}
+					return;
+				}
+				if ( suppressKeyPressRepeat ) {
+					return;
+				}
+
+				// replicate some key handlers to allow them to repeat in Firefox and Opera
+				var keyCode = $.ui.keyCode;
+				switch( event.keyCode ) {
+				case keyCode.PAGE_UP:
+					this._move( "previousPage", event );
+					break;
+				case keyCode.PAGE_DOWN:
+					this._move( "nextPage", event );
+					break;
+				case keyCode.UP:
+					this._keyEvent( "previous", event );
+					break;
+				case keyCode.DOWN:
+					this._keyEvent( "next", event );
+					break;
+				}
+			},
+			input: function( event ) {
+				if ( suppressInput ) {
+					suppressInput = false;
+					event.preventDefault();
+					return;
+				}
+				this._searchTimeout( event );
+			},
+			focus: function() {
+				this.selectedItem = null;
+				this.previous = this._value();
+			},
+			blur: function( event ) {
+				if ( this.cancelBlur ) {
+					delete this.cancelBlur;
+					return;
+				}
+
+				clearTimeout( this.searching );
+				this.close( event );
+				this._change( event );
+			}
+		});
+
+		this._initSource();
+		this.menu = $( "<ul>" )
+			.addClass( "ui-autocomplete ui-front" )
+			.appendTo( this._appendTo() )
+			.menu({
+				// disable ARIA support, the live region takes care of that
+				role: null
+			})
+			.hide()
+			.data( "ui-menu" );
+
+		this._on( this.menu.element, {
+			mousedown: function( event ) {
+				// prevent moving focus out of the text field
+				event.preventDefault();
+
+				// IE doesn't prevent moving focus even with event.preventDefault()
+				// so we set a flag to know when we should ignore the blur event
+				this.cancelBlur = true;
+				this._delay(function() {
+					delete this.cancelBlur;
+				});
+
+				// clicking on the scrollbar causes focus to shift to the body
+				// but we can't detect a mouseup or a click immediately afterward
+				// so we have to track the next mousedown and close the menu if
+				// the user clicks somewhere outside of the autocomplete
+				var menuElement = this.menu.element[ 0 ];
+				if ( !$( event.target ).closest( ".ui-menu-item" ).length ) {
+					this._delay(function() {
+						var that = this;
+						this.document.one( "mousedown", function( event ) {
+							if ( event.target !== that.element[ 0 ] &&
+									event.target !== menuElement &&
+									!$.contains( menuElement, event.target ) ) {
+								that.close();
+							}
+						});
+					});
+				}
+			},
+			menufocus: function( event, ui ) {
+				// support: Firefox
+				// Prevent accidental activation of menu items in Firefox (#7024 #9118)
+				if ( this.isNewMenu ) {
+					this.isNewMenu = false;
+					if ( event.originalEvent && /^mouse/.test( event.originalEvent.type ) ) {
+						this.menu.blur();
+
+						this.document.one( "mousemove", function() {
+							$( event.target ).trigger( event.originalEvent );
+						});
+
+						return;
+					}
+				}
+
+				var item = ui.item.data( "ui-autocomplete-item" );
+				if ( false !== this._trigger( "focus", event, { item: item } ) ) {
+					// use value to match what will end up in the input, if it was a key event
+					if ( event.originalEvent && /^key/.test( event.originalEvent.type ) ) {
+						this._value( item.value );
+					}
+				} else {
+					// Normally the input is populated with the item's value as the
+					// menu is navigated, causing screen readers to notice a change and
+					// announce the item. Since the focus event was canceled, this doesn't
+					// happen, so we update the live region so that screen readers can
+					// still notice the change and announce it.
+					this.liveRegion.text( item.value );
+				}
+			},
+			menuselect: function( event, ui ) {
+				var item = ui.item.data( "ui-autocomplete-item" ),
+					previous = this.previous;
+
+				// only trigger when focus was lost (click on menu)
+				if ( this.element[0] !== this.document[0].activeElement ) {
+					this.element.focus();
+					this.previous = previous;
+					// #6109 - IE triggers two focus events and the second
+					// is asynchronous, so we need to reset the previous
+					// term synchronously and asynchronously :-(
+					this._delay(function() {
+						this.previous = previous;
+						this.selectedItem = item;
+					});
+				}
+
+				if ( false !== this._trigger( "select", event, { item: item } ) ) {
+					this._value( item.value );
+				}
+				// reset the term after the select event
+				// this allows custom select handling to work properly
+				this.term = this._value();
+
+				this.close( event );
+				this.selectedItem = item;
+			}
+		});
+
+		this.liveRegion = $( "<span>", {
+				role: "status",
+				"aria-live": "polite"
+			})
+			.addClass( "ui-helper-hidden-accessible" )
+			.insertBefore( this.element );
+
+		// turning off autocomplete prevents the browser from remembering the
+		// value when navigating through history, so we re-enable autocomplete
+		// if the page is unloaded before the widget is destroyed. #7790
+		this._on( this.window, {
+			beforeunload: function() {
+				this.element.removeAttr( "autocomplete" );
+			}
+		});
+	},
+
+	_destroy: function() {
+		clearTimeout( this.searching );
+		this.element
+			.removeClass( "ui-autocomplete-input" )
+			.removeAttr( "autocomplete" );
+		this.menu.element.remove();
+		this.liveRegion.remove();
+	},
+
+	_setOption: function( key, value ) {
+		this._super( key, value );
+		if ( key === "source" ) {
+			this._initSource();
+		}
+		if ( key === "appendTo" ) {
+			this.menu.element.appendTo( this._appendTo() );
+		}
+		if ( key === "disabled" && value && this.xhr ) {
+			this.xhr.abort();
+		}
+	},
+
+	_appendTo: function() {
+		var element = this.options.appendTo;
+
+		if ( element ) {
+			element = element.jquery || element.nodeType ?
+				$( element ) :
+				this.document.find( element ).eq( 0 );
+		}
+
+		if ( !element ) {
+			element = this.element.closest( ".ui-front" );
+		}
+
+		if ( !element.length ) {
+			element = this.document[0].body;
+		}
+
+		return element;
+	},
+
+	_initSource: function() {
+		var array, url,
+			that = this;
+		if ( $.isArray(this.options.source) ) {
+			array = this.options.source;
+			this.source = function( request, response ) {
+				response( $.ui.autocomplete.filter( array, request.term ) );
+			};
+		} else if ( typeof this.options.source === "string" ) {
+			url = this.options.source;
+			this.source = function( request, response ) {
+				if ( that.xhr ) {
+					that.xhr.abort();
+				}
+				that.xhr = $.ajax({
+					url: url,
+					data: request,
+					dataType: "json",
+					success: function( data ) {
+						response( data );
+					},
+					error: function() {
+						response( [] );
+					}
+				});
+			};
+		} else {
+			this.source = this.options.source;
+		}
+	},
+
+	_searchTimeout: function( event ) {
+		clearTimeout( this.searching );
+		this.searching = this._delay(function() {
+			// only search if the value has changed
+			if ( this.term !== this._value() ) {
+				this.selectedItem = null;
+				this.search( null, event );
+			}
+		}, this.options.delay );
+	},
+
+	search: function( value, event ) {
+		value = value != null ? value : this._value();
+
+		// always save the actual value, not the one passed as an argument
+		this.term = this._value();
+
+		if ( value.length < this.options.minLength ) {
+			return this.close( event );
+		}
+
+		if ( this._trigger( "search", event ) === false ) {
+			return;
+		}
+
+		return this._search( value );
+	},
+
+	_search: function( value ) {
+		this.pending++;
+		this.element.addClass( "ui-autocomplete-loading" );
+		this.cancelSearch = false;
+
+		this.source( { term: value }, this._response() );
+	},
+
+	_response: function() {
+		var that = this,
+			index = ++requestIndex;
+
+		return function( content ) {
+			if ( index === requestIndex ) {
+				that.__response( content );
+			}
+
+			that.pending--;
+			if ( !that.pending ) {
+				that.element.removeClass( "ui-autocomplete-loading" );
+			}
+		};
+	},
+
+	__response: function( content ) {
+		if ( content ) {
+			content = this._normalize( content );
+		}
+		this._trigger( "response", null, { content: content } );
+		if ( !this.options.disabled && content && content.length && !this.cancelSearch ) {
+			this._suggest( content );
+			this._trigger( "open" );
+		} else {
+			// use ._close() instead of .close() so we don't cancel future searches
+			this._close();
+		}
+	},
+
+	close: function( event ) {
+		this.cancelSearch = true;
+		this._close( event );
+	},
+
+	_close: function( event ) {
+		if ( this.menu.element.is( ":visible" ) ) {
+			this.menu.element.hide();
+			this.menu.blur();
+			this.isNewMenu = true;
+			this._trigger( "close", event );
+		}
+	},
+
+	_change: function( event ) {
+		if ( this.previous !== this._value() ) {
+			this._trigger( "change", event, { item: this.selectedItem } );
+		}
+	},
+
+	_normalize: function( items ) {
+		// assume all items have the right format when the first item is complete
+		if ( items.length && items[0].label && items[0].value ) {
+			return items;
+		}
+		return $.map( items, function( item ) {
+			if ( typeof item === "string" ) {
+				return {
+					label: item,
+					value: item
+				};
+			}
+			return $.extend({
+				label: item.label || item.value,
+				value: item.value || item.label
+			}, item );
+		});
+	},
+
+	_suggest: function( items ) {
+		var ul = this.menu.element.empty();
+		this._renderMenu( ul, items );
+		this.isNewMenu = true;
+		this.menu.refresh();
+
+		// size and position menu
+		ul.show();
+		this._resizeMenu();
+		ul.position( $.extend({
+			of: this.element
+		}, this.options.position ));
+
+		if ( this.options.autoFocus ) {
+			this.menu.next();
+		}
+	},
+
+	_resizeMenu: function() {
+		var ul = this.menu.element;
+		ul.outerWidth( Math.max(
+			// Firefox wraps long text (possibly a rounding bug)
+			// so we add 1px to avoid the wrapping (#7513)
+			ul.width( "" ).outerWidth() + 1,
+			this.element.outerWidth()
+		) );
+	},
+
+	_renderMenu: function( ul, items ) {
+		var that = this;
+		$.each( items, function( index, item ) {
+			that._renderItemData( ul, item );
+		});
+	},
+
+	_renderItemData: function( ul, item ) {
+		return this._renderItem( ul, item ).data( "ui-autocomplete-item", item );
+	},
+
+	_renderItem: function( ul, item ) {
+		return $( "<li>" )
+			.append( $( "<a>" ).text( item.label ) )
+			.appendTo( ul );
+	},
+
+	_move: function( direction, event ) {
+		if ( !this.menu.element.is( ":visible" ) ) {
+			this.search( null, event );
+			return;
+		}
+		if ( this.menu.isFirstItem() && /^previous/.test( direction ) ||
+				this.menu.isLastItem() && /^next/.test( direction ) ) {
+			this._value( this.term );
+			this.menu.blur();
+			return;
+		}
+		this.menu[ direction ]( event );
+	},
+
+	widget: function() {
+		return this.menu.element;
+	},
+
+	_value: function() {
+		return this.valueMethod.apply( this.element, arguments );
+	},
+
+	_keyEvent: function( keyEvent, event ) {
+		if ( !this.isMultiLine || this.menu.element.is( ":visible" ) ) {
+			this._move( keyEvent, event );
+
+			// prevents moving cursor to beginning/end of the text field in some browsers
+			event.preventDefault();
+		}
+	}
+});
+
+$.extend( $.ui.autocomplete, {
+	escapeRegex: function( value ) {
+		return value.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+	},
+	filter: function(array, term) {
+		var matcher = new RegExp( $.ui.autocomplete.escapeRegex(term), "i" );
+		return $.grep( array, function(value) {
+			return matcher.test( value.label || value.value || value );
+		});
+	}
+});
+
+
+// live region extension, adding a `messages` option
+// NOTE: This is an experimental API. We are still investigating
+// a full solution for string manipulation and internationalization.
+$.widget( "ui.autocomplete", $.ui.autocomplete, {
+	options: {
+		messages: {
+			noResults: "No search results.",
+			results: function( amount ) {
+				return amount + ( amount > 1 ? " results are" : " result is" ) +
+					" available, use up and down arrow keys to navigate.";
+			}
+		}
+	},
+
+	__response: function( content ) {
+		var message;
+		this._superApply( arguments );
+		if ( this.options.disabled || this.cancelSearch ) {
+			return;
+		}
+		if ( content && content.length ) {
+			message = this.options.messages.results( content.length );
+		} else {
+			message = this.options.messages.noResults;
+		}
+		this.liveRegion.text( message );
+	}
+});
+
+}( jQuery ));
+(function( $, undefined ) {
+
+$.widget( "ui.menu", {
+	version: "1.10.3",
+	defaultElement: "<ul>",
+	delay: 300,
+	options: {
+		icons: {
+			submenu: "ui-icon-carat-1-e"
+		},
+		menus: "ul",
+		position: {
+			my: "left top",
+			at: "right top"
+		},
+		role: "menu",
+
+		// callbacks
+		blur: null,
+		focus: null,
+		select: null
+	},
+
+	_create: function() {
+		this.activeMenu = this.element;
+		// flag used to prevent firing of the click handler
+		// as the event bubbles up through nested menus
+		this.mouseHandled = false;
+		this.element
+			.uniqueId()
+			.addClass( "ui-menu ui-widget ui-widget-content ui-corner-all" )
+			.toggleClass( "ui-menu-icons", !!this.element.find( ".ui-icon" ).length )
+			.attr({
+				role: this.options.role,
+				tabIndex: 0
+			})
+			// need to catch all clicks on disabled menu
+			// not possible through _on
+			.bind( "click" + this.eventNamespace, $.proxy(function( event ) {
+				if ( this.options.disabled ) {
+					event.preventDefault();
+				}
+			}, this ));
+
+		if ( this.options.disabled ) {
+			this.element
+				.addClass( "ui-state-disabled" )
+				.attr( "aria-disabled", "true" );
+		}
+
+		this._on({
+			// Prevent focus from sticking to links inside menu after clicking
+			// them (focus should always stay on UL during navigation).
+			"mousedown .ui-menu-item > a": function( event ) {
+				event.preventDefault();
+			},
+			"click .ui-state-disabled > a": function( event ) {
+				event.preventDefault();
+			},
+			"click .ui-menu-item:has(a)": function( event ) {
+				var target = $( event.target ).closest( ".ui-menu-item" );
+				if ( !this.mouseHandled && target.not( ".ui-state-disabled" ).length ) {
+					this.mouseHandled = true;
+
+					this.select( event );
+					// Open submenu on click
+					if ( target.has( ".ui-menu" ).length ) {
+						this.expand( event );
+					} else if ( !this.element.is( ":focus" ) ) {
+						// Redirect focus to the menu
+						this.element.trigger( "focus", [ true ] );
+
+						// If the active item is on the top level, let it stay active.
+						// Otherwise, blur the active item since it is no longer visible.
+						if ( this.active && this.active.parents( ".ui-menu" ).length === 1 ) {
+							clearTimeout( this.timer );
+						}
+					}
+				}
+			},
+			"mouseenter .ui-menu-item": function( event ) {
+				var target = $( event.currentTarget );
+				// Remove ui-state-active class from siblings of the newly focused menu item
+				// to avoid a jump caused by adjacent elements both having a class with a border
+				target.siblings().children( ".ui-state-active" ).removeClass( "ui-state-active" );
+				this.focus( event, target );
+			},
+			mouseleave: "collapseAll",
+			"mouseleave .ui-menu": "collapseAll",
+			focus: function( event, keepActiveItem ) {
+				// If there's already an active item, keep it active
+				// If not, activate the first item
+				var item = this.active || this.element.children( ".ui-menu-item" ).eq( 0 );
+
+				if ( !keepActiveItem ) {
+					this.focus( event, item );
+				}
+			},
+			blur: function( event ) {
+				this._delay(function() {
+					if ( !$.contains( this.element[0], this.document[0].activeElement ) ) {
+						this.collapseAll( event );
+					}
+				});
+			},
+			keydown: "_keydown"
+		});
+
+		this.refresh();
+
+		// Clicks outside of a menu collapse any open menus
+		this._on( this.document, {
+			click: function( event ) {
+				if ( !$( event.target ).closest( ".ui-menu" ).length ) {
+					this.collapseAll( event );
+				}
+
+				// Reset the mouseHandled flag
+				this.mouseHandled = false;
+			}
+		});
+	},
+
+	_destroy: function() {
+		// Destroy (sub)menus
+		this.element
+			.removeAttr( "aria-activedescendant" )
+			.find( ".ui-menu" ).addBack()
+				.removeClass( "ui-menu ui-widget ui-widget-content ui-corner-all ui-menu-icons" )
+				.removeAttr( "role" )
+				.removeAttr( "tabIndex" )
+				.removeAttr( "aria-labelledby" )
+				.removeAttr( "aria-expanded" )
+				.removeAttr( "aria-hidden" )
+				.removeAttr( "aria-disabled" )
+				.removeUniqueId()
+				.show();
+
+		// Destroy menu items
+		this.element.find( ".ui-menu-item" )
+			.removeClass( "ui-menu-item" )
+			.removeAttr( "role" )
+			.removeAttr( "aria-disabled" )
+			.children( "a" )
+				.removeUniqueId()
+				.removeClass( "ui-corner-all ui-state-hover" )
+				.removeAttr( "tabIndex" )
+				.removeAttr( "role" )
+				.removeAttr( "aria-haspopup" )
+				.children().each( function() {
+					var elem = $( this );
+					if ( elem.data( "ui-menu-submenu-carat" ) ) {
+						elem.remove();
+					}
+				});
+
+		// Destroy menu dividers
+		this.element.find( ".ui-menu-divider" ).removeClass( "ui-menu-divider ui-widget-content" );
+	},
+
+	_keydown: function( event ) {
+		/*jshint maxcomplexity:20*/
+		var match, prev, character, skip, regex,
+			preventDefault = true;
+
+		function escape( value ) {
+			return value.replace( /[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&" );
+		}
+
+		switch ( event.keyCode ) {
+		case $.ui.keyCode.PAGE_UP:
+			this.previousPage( event );
+			break;
+		case $.ui.keyCode.PAGE_DOWN:
+			this.nextPage( event );
+			break;
+		case $.ui.keyCode.HOME:
+			this._move( "first", "first", event );
+			break;
+		case $.ui.keyCode.END:
+			this._move( "last", "last", event );
+			break;
+		case $.ui.keyCode.UP:
+			this.previous( event );
+			break;
+		case $.ui.keyCode.DOWN:
+			this.next( event );
+			break;
+		case $.ui.keyCode.LEFT:
+			this.collapse( event );
+			break;
+		case $.ui.keyCode.RIGHT:
+			if ( this.active && !this.active.is( ".ui-state-disabled" ) ) {
+				this.expand( event );
+			}
+			break;
+		case $.ui.keyCode.ENTER:
+		case $.ui.keyCode.SPACE:
+			this._activate( event );
+			break;
+		case $.ui.keyCode.ESCAPE:
+			this.collapse( event );
+			break;
+		default:
+			preventDefault = false;
+			prev = this.previousFilter || "";
+			character = String.fromCharCode( event.keyCode );
+			skip = false;
+
+			clearTimeout( this.filterTimer );
+
+			if ( character === prev ) {
+				skip = true;
+			} else {
+				character = prev + character;
+			}
+
+			regex = new RegExp( "^" + escape( character ), "i" );
+			match = this.activeMenu.children( ".ui-menu-item" ).filter(function() {
+				return regex.test( $( this ).children( "a" ).text() );
+			});
+			match = skip && match.index( this.active.next() ) !== -1 ?
+				this.active.nextAll( ".ui-menu-item" ) :
+				match;
+
+			// If no matches on the current filter, reset to the last character pressed
+			// to move down the menu to the first item that starts with that character
+			if ( !match.length ) {
+				character = String.fromCharCode( event.keyCode );
+				regex = new RegExp( "^" + escape( character ), "i" );
+				match = this.activeMenu.children( ".ui-menu-item" ).filter(function() {
+					return regex.test( $( this ).children( "a" ).text() );
+				});
+			}
+
+			if ( match.length ) {
+				this.focus( event, match );
+				if ( match.length > 1 ) {
+					this.previousFilter = character;
+					this.filterTimer = this._delay(function() {
+						delete this.previousFilter;
+					}, 1000 );
+				} else {
+					delete this.previousFilter;
+				}
+			} else {
+				delete this.previousFilter;
+			}
+		}
+
+		if ( preventDefault ) {
+			event.preventDefault();
+		}
+	},
+
+	_activate: function( event ) {
+		if ( !this.active.is( ".ui-state-disabled" ) ) {
+			if ( this.active.children( "a[aria-haspopup='true']" ).length ) {
+				this.expand( event );
+			} else {
+				this.select( event );
+			}
+		}
+	},
+
+	refresh: function() {
+		var menus,
+			icon = this.options.icons.submenu,
+			submenus = this.element.find( this.options.menus );
+
+		// Initialize nested menus
+		submenus.filter( ":not(.ui-menu)" )
+			.addClass( "ui-menu ui-widget ui-widget-content ui-corner-all" )
+			.hide()
+			.attr({
+				role: this.options.role,
+				"aria-hidden": "true",
+				"aria-expanded": "false"
+			})
+			.each(function() {
+				var menu = $( this ),
+					item = menu.prev( "a" ),
+					submenuCarat = $( "<span>" )
+						.addClass( "ui-menu-icon ui-icon " + icon )
+						.data( "ui-menu-submenu-carat", true );
+
+				item
+					.attr( "aria-haspopup", "true" )
+					.prepend( submenuCarat );
+				menu.attr( "aria-labelledby", item.attr( "id" ) );
+			});
+
+		menus = submenus.add( this.element );
+
+		// Don't refresh list items that are already adapted
+		menus.children( ":not(.ui-menu-item):has(a)" )
+			.addClass( "ui-menu-item" )
+			.attr( "role", "presentation" )
+			.children( "a" )
+				.uniqueId()
+				.addClass( "ui-corner-all" )
+				.attr({
+					tabIndex: -1,
+					role: this._itemRole()
+				});
+
+		// Initialize unlinked menu-items containing spaces and/or dashes only as dividers
+		menus.children( ":not(.ui-menu-item)" ).each(function() {
+			var item = $( this );
+			// hyphen, em dash, en dash
+			if ( !/[^\-\u2014\u2013\s]/.test( item.text() ) ) {
+				item.addClass( "ui-widget-content ui-menu-divider" );
+			}
+		});
+
+		// Add aria-disabled attribute to any disabled menu item
+		menus.children( ".ui-state-disabled" ).attr( "aria-disabled", "true" );
+
+		// If the active item has been removed, blur the menu
+		if ( this.active && !$.contains( this.element[ 0 ], this.active[ 0 ] ) ) {
+			this.blur();
+		}
+	},
+
+	_itemRole: function() {
+		return {
+			menu: "menuitem",
+			listbox: "option"
+		}[ this.options.role ];
+	},
+
+	_setOption: function( key, value ) {
+		if ( key === "icons" ) {
+			this.element.find( ".ui-menu-icon" )
+				.removeClass( this.options.icons.submenu )
+				.addClass( value.submenu );
+		}
+		this._super( key, value );
+	},
+
+	focus: function( event, item ) {
+		var nested, focused;
+		this.blur( event, event && event.type === "focus" );
+
+		this._scrollIntoView( item );
+
+		this.active = item.first();
+		focused = this.active.children( "a" ).addClass( "ui-state-focus" );
+		// Only update aria-activedescendant if there's a role
+		// otherwise we assume focus is managed elsewhere
+		if ( this.options.role ) {
+			this.element.attr( "aria-activedescendant", focused.attr( "id" ) );
+		}
+
+		// Highlight active parent menu item, if any
+		this.active
+			.parent()
+			.closest( ".ui-menu-item" )
+			.children( "a:first" )
+			.addClass( "ui-state-active" );
+
+		if ( event && event.type === "keydown" ) {
+			this._close();
+		} else {
+			this.timer = this._delay(function() {
+				this._close();
+			}, this.delay );
+		}
+
+		nested = item.children( ".ui-menu" );
+		if ( nested.length && ( /^mouse/.test( event.type ) ) ) {
+			this._startOpening(nested);
+		}
+		this.activeMenu = item.parent();
+
+		this._trigger( "focus", event, { item: item } );
+	},
+
+	_scrollIntoView: function( item ) {
+		var borderTop, paddingTop, offset, scroll, elementHeight, itemHeight;
+		if ( this._hasScroll() ) {
+			borderTop = parseFloat( $.css( this.activeMenu[0], "borderTopWidth" ) ) || 0;
+			paddingTop = parseFloat( $.css( this.activeMenu[0], "paddingTop" ) ) || 0;
+			offset = item.offset().top - this.activeMenu.offset().top - borderTop - paddingTop;
+			scroll = this.activeMenu.scrollTop();
+			elementHeight = this.activeMenu.height();
+			itemHeight = item.height();
+
+			if ( offset < 0 ) {
+				this.activeMenu.scrollTop( scroll + offset );
+			} else if ( offset + itemHeight > elementHeight ) {
+				this.activeMenu.scrollTop( scroll + offset - elementHeight + itemHeight );
+			}
+		}
+	},
+
+	blur: function( event, fromFocus ) {
+		if ( !fromFocus ) {
+			clearTimeout( this.timer );
+		}
+
+		if ( !this.active ) {
+			return;
+		}
+
+		this.active.children( "a" ).removeClass( "ui-state-focus" );
+		this.active = null;
+
+		this._trigger( "blur", event, { item: this.active } );
+	},
+
+	_startOpening: function( submenu ) {
+		clearTimeout( this.timer );
+
+		// Don't open if already open fixes a Firefox bug that caused a .5 pixel
+		// shift in the submenu position when mousing over the carat icon
+		if ( submenu.attr( "aria-hidden" ) !== "true" ) {
+			return;
+		}
+
+		this.timer = this._delay(function() {
+			this._close();
+			this._open( submenu );
+		}, this.delay );
+	},
+
+	_open: function( submenu ) {
+		var position = $.extend({
+			of: this.active
+		}, this.options.position );
+
+		clearTimeout( this.timer );
+		this.element.find( ".ui-menu" ).not( submenu.parents( ".ui-menu" ) )
+			.hide()
+			.attr( "aria-hidden", "true" );
+
+		submenu
+			.show()
+			.removeAttr( "aria-hidden" )
+			.attr( "aria-expanded", "true" )
+			.position( position );
+	},
+
+	collapseAll: function( event, all ) {
+		clearTimeout( this.timer );
+		this.timer = this._delay(function() {
+			// If we were passed an event, look for the submenu that contains the event
+			var currentMenu = all ? this.element :
+				$( event && event.target ).closest( this.element.find( ".ui-menu" ) );
+
+			// If we found no valid submenu ancestor, use the main menu to close all sub menus anyway
+			if ( !currentMenu.length ) {
+				currentMenu = this.element;
+			}
+
+			this._close( currentMenu );
+
+			this.blur( event );
+			this.activeMenu = currentMenu;
+		}, this.delay );
+	},
+
+	// With no arguments, closes the currently active menu - if nothing is active
+	// it closes all menus.  If passed an argument, it will search for menus BELOW
+	_close: function( startMenu ) {
+		if ( !startMenu ) {
+			startMenu = this.active ? this.active.parent() : this.element;
+		}
+
+		startMenu
+			.find( ".ui-menu" )
+				.hide()
+				.attr( "aria-hidden", "true" )
+				.attr( "aria-expanded", "false" )
+			.end()
+			.find( "a.ui-state-active" )
+				.removeClass( "ui-state-active" );
+	},
+
+	collapse: function( event ) {
+		var newItem = this.active &&
+			this.active.parent().closest( ".ui-menu-item", this.element );
+		if ( newItem && newItem.length ) {
+			this._close();
+			this.focus( event, newItem );
+		}
+	},
+
+	expand: function( event ) {
+		var newItem = this.active &&
+			this.active
+				.children( ".ui-menu " )
+				.children( ".ui-menu-item" )
+				.first();
+
+		if ( newItem && newItem.length ) {
+			this._open( newItem.parent() );
+
+			// Delay so Firefox will not hide activedescendant change in expanding submenu from AT
+			this._delay(function() {
+				this.focus( event, newItem );
+			});
+		}
+	},
+
+	next: function( event ) {
+		this._move( "next", "first", event );
+	},
+
+	previous: function( event ) {
+		this._move( "prev", "last", event );
+	},
+
+	isFirstItem: function() {
+		return this.active && !this.active.prevAll( ".ui-menu-item" ).length;
+	},
+
+	isLastItem: function() {
+		return this.active && !this.active.nextAll( ".ui-menu-item" ).length;
+	},
+
+	_move: function( direction, filter, event ) {
+		var next;
+		if ( this.active ) {
+			if ( direction === "first" || direction === "last" ) {
+				next = this.active
+					[ direction === "first" ? "prevAll" : "nextAll" ]( ".ui-menu-item" )
+					.eq( -1 );
+			} else {
+				next = this.active
+					[ direction + "All" ]( ".ui-menu-item" )
+					.eq( 0 );
+			}
+		}
+		if ( !next || !next.length || !this.active ) {
+			next = this.activeMenu.children( ".ui-menu-item" )[ filter ]();
+		}
+
+		this.focus( event, next );
+	},
+
+	nextPage: function( event ) {
+		var item, base, height;
+
+		if ( !this.active ) {
+			this.next( event );
+			return;
+		}
+		if ( this.isLastItem() ) {
+			return;
+		}
+		if ( this._hasScroll() ) {
+			base = this.active.offset().top;
+			height = this.element.height();
+			this.active.nextAll( ".ui-menu-item" ).each(function() {
+				item = $( this );
+				return item.offset().top - base - height < 0;
+			});
+
+			this.focus( event, item );
+		} else {
+			this.focus( event, this.activeMenu.children( ".ui-menu-item" )
+				[ !this.active ? "first" : "last" ]() );
+		}
+	},
+
+	previousPage: function( event ) {
+		var item, base, height;
+		if ( !this.active ) {
+			this.next( event );
+			return;
+		}
+		if ( this.isFirstItem() ) {
+			return;
+		}
+		if ( this._hasScroll() ) {
+			base = this.active.offset().top;
+			height = this.element.height();
+			this.active.prevAll( ".ui-menu-item" ).each(function() {
+				item = $( this );
+				return item.offset().top - base + height > 0;
+			});
+
+			this.focus( event, item );
+		} else {
+			this.focus( event, this.activeMenu.children( ".ui-menu-item" ).first() );
+		}
+	},
+
+	_hasScroll: function() {
+		return this.element.outerHeight() < this.element.prop( "scrollHeight" );
+	},
+
+	select: function( event ) {
+		// TODO: It should never be possible to not have an active item at this
+		// point, but the tests don't trigger mouseenter before click.
+		this.active = this.active || $( event.target ).closest( ".ui-menu-item" );
+		var ui = { item: this.active };
+		if ( !this.active.has( ".ui-menu" ).length ) {
+			this.collapseAll( event, true );
+		}
+		this._trigger( "select", event, ui );
+	}
+});
+
+}( jQuery ));
+(function($, undefined) {
+
+var dataSpace = "ui-effects-";
+
+$.effects = {
+	effect: {}
+};
+
+/*!
+ * jQuery Color Animations v2.1.2
+ * https://github.com/jquery/jquery-color
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * Date: Wed Jan 16 08:47:09 2013 -0600
+ */
+(function( jQuery, undefined ) {
+
+	var stepHooks = "backgroundColor borderBottomColor borderLeftColor borderRightColor borderTopColor color columnRuleColor outlineColor textDecorationColor textEmphasisColor",
+
+	// plusequals test for += 100 -= 100
+	rplusequals = /^([\-+])=\s*(\d+\.?\d*)/,
+	// a set of RE's that can match strings and generate color tuples.
+	stringParsers = [{
+			re: /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d?(?:\.\d+)?)\s*)?\)/,
+			parse: function( execResult ) {
+				return [
+					execResult[ 1 ],
+					execResult[ 2 ],
+					execResult[ 3 ],
+					execResult[ 4 ]
+				];
+			}
+		}, {
+			re: /rgba?\(\s*(\d+(?:\.\d+)?)\%\s*,\s*(\d+(?:\.\d+)?)\%\s*,\s*(\d+(?:\.\d+)?)\%\s*(?:,\s*(\d?(?:\.\d+)?)\s*)?\)/,
+			parse: function( execResult ) {
+				return [
+					execResult[ 1 ] * 2.55,
+					execResult[ 2 ] * 2.55,
+					execResult[ 3 ] * 2.55,
+					execResult[ 4 ]
+				];
+			}
+		}, {
+			// this regex ignores A-F because it's compared against an already lowercased string
+			re: /#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})/,
+			parse: function( execResult ) {
+				return [
+					parseInt( execResult[ 1 ], 16 ),
+					parseInt( execResult[ 2 ], 16 ),
+					parseInt( execResult[ 3 ], 16 )
+				];
+			}
+		}, {
+			// this regex ignores A-F because it's compared against an already lowercased string
+			re: /#([a-f0-9])([a-f0-9])([a-f0-9])/,
+			parse: function( execResult ) {
+				return [
+					parseInt( execResult[ 1 ] + execResult[ 1 ], 16 ),
+					parseInt( execResult[ 2 ] + execResult[ 2 ], 16 ),
+					parseInt( execResult[ 3 ] + execResult[ 3 ], 16 )
+				];
+			}
+		}, {
+			re: /hsla?\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\%\s*,\s*(\d+(?:\.\d+)?)\%\s*(?:,\s*(\d?(?:\.\d+)?)\s*)?\)/,
+			space: "hsla",
+			parse: function( execResult ) {
+				return [
+					execResult[ 1 ],
+					execResult[ 2 ] / 100,
+					execResult[ 3 ] / 100,
+					execResult[ 4 ]
+				];
+			}
+		}],
+
+	// jQuery.Color( )
+	color = jQuery.Color = function( color, green, blue, alpha ) {
+		return new jQuery.Color.fn.parse( color, green, blue, alpha );
+	},
+	spaces = {
+		rgba: {
+			props: {
+				red: {
+					idx: 0,
+					type: "byte"
+				},
+				green: {
+					idx: 1,
+					type: "byte"
+				},
+				blue: {
+					idx: 2,
+					type: "byte"
+				}
+			}
+		},
+
+		hsla: {
+			props: {
+				hue: {
+					idx: 0,
+					type: "degrees"
+				},
+				saturation: {
+					idx: 1,
+					type: "percent"
+				},
+				lightness: {
+					idx: 2,
+					type: "percent"
+				}
+			}
+		}
+	},
+	propTypes = {
+		"byte": {
+			floor: true,
+			max: 255
+		},
+		"percent": {
+			max: 1
+		},
+		"degrees": {
+			mod: 360,
+			floor: true
+		}
+	},
+	support = color.support = {},
+
+	// element for support tests
+	supportElem = jQuery( "<p>" )[ 0 ],
+
+	// colors = jQuery.Color.names
+	colors,
+
+	// local aliases of functions called often
+	each = jQuery.each;
+
+// determine rgba support immediately
+supportElem.style.cssText = "background-color:rgba(1,1,1,.5)";
+support.rgba = supportElem.style.backgroundColor.indexOf( "rgba" ) > -1;
+
+// define cache name and alpha properties
+// for rgba and hsla spaces
+each( spaces, function( spaceName, space ) {
+	space.cache = "_" + spaceName;
+	space.props.alpha = {
+		idx: 3,
+		type: "percent",
+		def: 1
+	};
+});
+
+function clamp( value, prop, allowEmpty ) {
+	var type = propTypes[ prop.type ] || {};
+
+	if ( value == null ) {
+		return (allowEmpty || !prop.def) ? null : prop.def;
+	}
+
+	// ~~ is an short way of doing floor for positive numbers
+	value = type.floor ? ~~value : parseFloat( value );
+
+	// IE will pass in empty strings as value for alpha,
+	// which will hit this case
+	if ( isNaN( value ) ) {
+		return prop.def;
+	}
+
+	if ( type.mod ) {
+		// we add mod before modding to make sure that negatives values
+		// get converted properly: -10 -> 350
+		return (value + type.mod) % type.mod;
+	}
+
+	// for now all property types without mod have min and max
+	return 0 > value ? 0 : type.max < value ? type.max : value;
+}
+
+function stringParse( string ) {
+	var inst = color(),
+		rgba = inst._rgba = [];
+
+	string = string.toLowerCase();
+
+	each( stringParsers, function( i, parser ) {
+		var parsed,
+			match = parser.re.exec( string ),
+			values = match && parser.parse( match ),
+			spaceName = parser.space || "rgba";
+
+		if ( values ) {
+			parsed = inst[ spaceName ]( values );
+
+			// if this was an rgba parse the assignment might happen twice
+			// oh well....
+			inst[ spaces[ spaceName ].cache ] = parsed[ spaces[ spaceName ].cache ];
+			rgba = inst._rgba = parsed._rgba;
+
+			// exit each( stringParsers ) here because we matched
+			return false;
+		}
+	});
+
+	// Found a stringParser that handled it
+	if ( rgba.length ) {
+
+		// if this came from a parsed string, force "transparent" when alpha is 0
+		// chrome, (and maybe others) return "transparent" as rgba(0,0,0,0)
+		if ( rgba.join() === "0,0,0,0" ) {
+			jQuery.extend( rgba, colors.transparent );
+		}
+		return inst;
+	}
+
+	// named colors
+	return colors[ string ];
+}
+
+color.fn = jQuery.extend( color.prototype, {
+	parse: function( red, green, blue, alpha ) {
+		if ( red === undefined ) {
+			this._rgba = [ null, null, null, null ];
+			return this;
+		}
+		if ( red.jquery || red.nodeType ) {
+			red = jQuery( red ).css( green );
+			green = undefined;
+		}
+
+		var inst = this,
+			type = jQuery.type( red ),
+			rgba = this._rgba = [];
+
+		// more than 1 argument specified - assume ( red, green, blue, alpha )
+		if ( green !== undefined ) {
+			red = [ red, green, blue, alpha ];
+			type = "array";
+		}
+
+		if ( type === "string" ) {
+			return this.parse( stringParse( red ) || colors._default );
+		}
+
+		if ( type === "array" ) {
+			each( spaces.rgba.props, function( key, prop ) {
+				rgba[ prop.idx ] = clamp( red[ prop.idx ], prop );
+			});
+			return this;
+		}
+
+		if ( type === "object" ) {
+			if ( red instanceof color ) {
+				each( spaces, function( spaceName, space ) {
+					if ( red[ space.cache ] ) {
+						inst[ space.cache ] = red[ space.cache ].slice();
+					}
+				});
+			} else {
+				each( spaces, function( spaceName, space ) {
+					var cache = space.cache;
+					each( space.props, function( key, prop ) {
+
+						// if the cache doesn't exist, and we know how to convert
+						if ( !inst[ cache ] && space.to ) {
+
+							// if the value was null, we don't need to copy it
+							// if the key was alpha, we don't need to copy it either
+							if ( key === "alpha" || red[ key ] == null ) {
+								return;
+							}
+							inst[ cache ] = space.to( inst._rgba );
+						}
+
+						// this is the only case where we allow nulls for ALL properties.
+						// call clamp with alwaysAllowEmpty
+						inst[ cache ][ prop.idx ] = clamp( red[ key ], prop, true );
+					});
+
+					// everything defined but alpha?
+					if ( inst[ cache ] && jQuery.inArray( null, inst[ cache ].slice( 0, 3 ) ) < 0 ) {
+						// use the default of 1
+						inst[ cache ][ 3 ] = 1;
+						if ( space.from ) {
+							inst._rgba = space.from( inst[ cache ] );
+						}
+					}
+				});
+			}
+			return this;
+		}
+	},
+	is: function( compare ) {
+		var is = color( compare ),
+			same = true,
+			inst = this;
+
+		each( spaces, function( _, space ) {
+			var localCache,
+				isCache = is[ space.cache ];
+			if (isCache) {
+				localCache = inst[ space.cache ] || space.to && space.to( inst._rgba ) || [];
+				each( space.props, function( _, prop ) {
+					if ( isCache[ prop.idx ] != null ) {
+						same = ( isCache[ prop.idx ] === localCache[ prop.idx ] );
+						return same;
+					}
+				});
+			}
+			return same;
+		});
+		return same;
+	},
+	_space: function() {
+		var used = [],
+			inst = this;
+		each( spaces, function( spaceName, space ) {
+			if ( inst[ space.cache ] ) {
+				used.push( spaceName );
+			}
+		});
+		return used.pop();
+	},
+	transition: function( other, distance ) {
+		var end = color( other ),
+			spaceName = end._space(),
+			space = spaces[ spaceName ],
+			startColor = this.alpha() === 0 ? color( "transparent" ) : this,
+			start = startColor[ space.cache ] || space.to( startColor._rgba ),
+			result = start.slice();
+
+		end = end[ space.cache ];
+		each( space.props, function( key, prop ) {
+			var index = prop.idx,
+				startValue = start[ index ],
+				endValue = end[ index ],
+				type = propTypes[ prop.type ] || {};
+
+			// if null, don't override start value
+			if ( endValue === null ) {
+				return;
+			}
+			// if null - use end
+			if ( startValue === null ) {
+				result[ index ] = endValue;
+			} else {
+				if ( type.mod ) {
+					if ( endValue - startValue > type.mod / 2 ) {
+						startValue += type.mod;
+					} else if ( startValue - endValue > type.mod / 2 ) {
+						startValue -= type.mod;
+					}
+				}
+				result[ index ] = clamp( ( endValue - startValue ) * distance + startValue, prop );
+			}
+		});
+		return this[ spaceName ]( result );
+	},
+	blend: function( opaque ) {
+		// if we are already opaque - return ourself
+		if ( this._rgba[ 3 ] === 1 ) {
+			return this;
+		}
+
+		var rgb = this._rgba.slice(),
+			a = rgb.pop(),
+			blend = color( opaque )._rgba;
+
+		return color( jQuery.map( rgb, function( v, i ) {
+			return ( 1 - a ) * blend[ i ] + a * v;
+		}));
+	},
+	toRgbaString: function() {
+		var prefix = "rgba(",
+			rgba = jQuery.map( this._rgba, function( v, i ) {
+				return v == null ? ( i > 2 ? 1 : 0 ) : v;
+			});
+
+		if ( rgba[ 3 ] === 1 ) {
+			rgba.pop();
+			prefix = "rgb(";
+		}
+
+		return prefix + rgba.join() + ")";
+	},
+	toHslaString: function() {
+		var prefix = "hsla(",
+			hsla = jQuery.map( this.hsla(), function( v, i ) {
+				if ( v == null ) {
+					v = i > 2 ? 1 : 0;
+				}
+
+				// catch 1 and 2
+				if ( i && i < 3 ) {
+					v = Math.round( v * 100 ) + "%";
+				}
+				return v;
+			});
+
+		if ( hsla[ 3 ] === 1 ) {
+			hsla.pop();
+			prefix = "hsl(";
+		}
+		return prefix + hsla.join() + ")";
+	},
+	toHexString: function( includeAlpha ) {
+		var rgba = this._rgba.slice(),
+			alpha = rgba.pop();
+
+		if ( includeAlpha ) {
+			rgba.push( ~~( alpha * 255 ) );
+		}
+
+		return "#" + jQuery.map( rgba, function( v ) {
+
+			// default to 0 when nulls exist
+			v = ( v || 0 ).toString( 16 );
+			return v.length === 1 ? "0" + v : v;
+		}).join("");
+	},
+	toString: function() {
+		return this._rgba[ 3 ] === 0 ? "transparent" : this.toRgbaString();
+	}
+});
+color.fn.parse.prototype = color.fn;
+
+// hsla conversions adapted from:
+// https://code.google.com/p/maashaack/source/browse/packages/graphics/trunk/src/graphics/colors/HUE2RGB.as?r=5021
+
+function hue2rgb( p, q, h ) {
+	h = ( h + 1 ) % 1;
+	if ( h * 6 < 1 ) {
+		return p + (q - p) * h * 6;
+	}
+	if ( h * 2 < 1) {
+		return q;
+	}
+	if ( h * 3 < 2 ) {
+		return p + (q - p) * ((2/3) - h) * 6;
+	}
+	return p;
+}
+
+spaces.hsla.to = function ( rgba ) {
+	if ( rgba[ 0 ] == null || rgba[ 1 ] == null || rgba[ 2 ] == null ) {
+		return [ null, null, null, rgba[ 3 ] ];
+	}
+	var r = rgba[ 0 ] / 255,
+		g = rgba[ 1 ] / 255,
+		b = rgba[ 2 ] / 255,
+		a = rgba[ 3 ],
+		max = Math.max( r, g, b ),
+		min = Math.min( r, g, b ),
+		diff = max - min,
+		add = max + min,
+		l = add * 0.5,
+		h, s;
+
+	if ( min === max ) {
+		h = 0;
+	} else if ( r === max ) {
+		h = ( 60 * ( g - b ) / diff ) + 360;
+	} else if ( g === max ) {
+		h = ( 60 * ( b - r ) / diff ) + 120;
+	} else {
+		h = ( 60 * ( r - g ) / diff ) + 240;
+	}
+
+	// chroma (diff) == 0 means greyscale which, by definition, saturation = 0%
+	// otherwise, saturation is based on the ratio of chroma (diff) to lightness (add)
+	if ( diff === 0 ) {
+		s = 0;
+	} else if ( l <= 0.5 ) {
+		s = diff / add;
+	} else {
+		s = diff / ( 2 - add );
+	}
+	return [ Math.round(h) % 360, s, l, a == null ? 1 : a ];
+};
+
+spaces.hsla.from = function ( hsla ) {
+	if ( hsla[ 0 ] == null || hsla[ 1 ] == null || hsla[ 2 ] == null ) {
+		return [ null, null, null, hsla[ 3 ] ];
+	}
+	var h = hsla[ 0 ] / 360,
+		s = hsla[ 1 ],
+		l = hsla[ 2 ],
+		a = hsla[ 3 ],
+		q = l <= 0.5 ? l * ( 1 + s ) : l + s - l * s,
+		p = 2 * l - q;
+
+	return [
+		Math.round( hue2rgb( p, q, h + ( 1 / 3 ) ) * 255 ),
+		Math.round( hue2rgb( p, q, h ) * 255 ),
+		Math.round( hue2rgb( p, q, h - ( 1 / 3 ) ) * 255 ),
+		a
+	];
+};
+
+
+each( spaces, function( spaceName, space ) {
+	var props = space.props,
+		cache = space.cache,
+		to = space.to,
+		from = space.from;
+
+	// makes rgba() and hsla()
+	color.fn[ spaceName ] = function( value ) {
+
+		// generate a cache for this space if it doesn't exist
+		if ( to && !this[ cache ] ) {
+			this[ cache ] = to( this._rgba );
+		}
+		if ( value === undefined ) {
+			return this[ cache ].slice();
+		}
+
+		var ret,
+			type = jQuery.type( value ),
+			arr = ( type === "array" || type === "object" ) ? value : arguments,
+			local = this[ cache ].slice();
+
+		each( props, function( key, prop ) {
+			var val = arr[ type === "object" ? key : prop.idx ];
+			if ( val == null ) {
+				val = local[ prop.idx ];
+			}
+			local[ prop.idx ] = clamp( val, prop );
+		});
+
+		if ( from ) {
+			ret = color( from( local ) );
+			ret[ cache ] = local;
+			return ret;
+		} else {
+			return color( local );
+		}
+	};
+
+	// makes red() green() blue() alpha() hue() saturation() lightness()
+	each( props, function( key, prop ) {
+		// alpha is included in more than one space
+		if ( color.fn[ key ] ) {
+			return;
+		}
+		color.fn[ key ] = function( value ) {
+			var vtype = jQuery.type( value ),
+				fn = ( key === "alpha" ? ( this._hsla ? "hsla" : "rgba" ) : spaceName ),
+				local = this[ fn ](),
+				cur = local[ prop.idx ],
+				match;
+
+			if ( vtype === "undefined" ) {
+				return cur;
+			}
+
+			if ( vtype === "function" ) {
+				value = value.call( this, cur );
+				vtype = jQuery.type( value );
+			}
+			if ( value == null && prop.empty ) {
+				return this;
+			}
+			if ( vtype === "string" ) {
+				match = rplusequals.exec( value );
+				if ( match ) {
+					value = cur + parseFloat( match[ 2 ] ) * ( match[ 1 ] === "+" ? 1 : -1 );
+				}
+			}
+			local[ prop.idx ] = value;
+			return this[ fn ]( local );
+		};
+	});
+});
+
+// add cssHook and .fx.step function for each named hook.
+// accept a space separated string of properties
+color.hook = function( hook ) {
+	var hooks = hook.split( " " );
+	each( hooks, function( i, hook ) {
+		jQuery.cssHooks[ hook ] = {
+			set: function( elem, value ) {
+				var parsed, curElem,
+					backgroundColor = "";
+
+				if ( value !== "transparent" && ( jQuery.type( value ) !== "string" || ( parsed = stringParse( value ) ) ) ) {
+					value = color( parsed || value );
+					if ( !support.rgba && value._rgba[ 3 ] !== 1 ) {
+						curElem = hook === "backgroundColor" ? elem.parentNode : elem;
+						while (
+							(backgroundColor === "" || backgroundColor === "transparent") &&
+							curElem && curElem.style
+						) {
+							try {
+								backgroundColor = jQuery.css( curElem, "backgroundColor" );
+								curElem = curElem.parentNode;
+							} catch ( e ) {
+							}
+						}
+
+						value = value.blend( backgroundColor && backgroundColor !== "transparent" ?
+							backgroundColor :
+							"_default" );
+					}
+
+					value = value.toRgbaString();
+				}
+				try {
+					elem.style[ hook ] = value;
+				} catch( e ) {
+					// wrapped to prevent IE from throwing errors on "invalid" values like 'auto' or 'inherit'
+				}
+			}
+		};
+		jQuery.fx.step[ hook ] = function( fx ) {
+			if ( !fx.colorInit ) {
+				fx.start = color( fx.elem, hook );
+				fx.end = color( fx.end );
+				fx.colorInit = true;
+			}
+			jQuery.cssHooks[ hook ].set( fx.elem, fx.start.transition( fx.end, fx.pos ) );
+		};
+	});
+
+};
+
+color.hook( stepHooks );
+
+jQuery.cssHooks.borderColor = {
+	expand: function( value ) {
+		var expanded = {};
+
+		each( [ "Top", "Right", "Bottom", "Left" ], function( i, part ) {
+			expanded[ "border" + part + "Color" ] = value;
+		});
+		return expanded;
+	}
+};
+
+// Basic color names only.
+// Usage of any of the other color names requires adding yourself or including
+// jquery.color.svg-names.js.
+colors = jQuery.Color.names = {
+	// 4.1. Basic color keywords
+	aqua: "#00ffff",
+	black: "#000000",
+	blue: "#0000ff",
+	fuchsia: "#ff00ff",
+	gray: "#808080",
+	green: "#008000",
+	lime: "#00ff00",
+	maroon: "#800000",
+	navy: "#000080",
+	olive: "#808000",
+	purple: "#800080",
+	red: "#ff0000",
+	silver: "#c0c0c0",
+	teal: "#008080",
+	white: "#ffffff",
+	yellow: "#ffff00",
+
+	// 4.2.3. "transparent" color keyword
+	transparent: [ null, null, null, 0 ],
+
+	_default: "#ffffff"
+};
+
+})( jQuery );
+
+
+/******************************************************************************/
+/****************************** CLASS ANIMATIONS ******************************/
+/******************************************************************************/
+(function() {
+
+var classAnimationActions = [ "add", "remove", "toggle" ],
+	shorthandStyles = {
+		border: 1,
+		borderBottom: 1,
+		borderColor: 1,
+		borderLeft: 1,
+		borderRight: 1,
+		borderTop: 1,
+		borderWidth: 1,
+		margin: 1,
+		padding: 1
+	};
+
+$.each([ "borderLeftStyle", "borderRightStyle", "borderBottomStyle", "borderTopStyle" ], function( _, prop ) {
+	$.fx.step[ prop ] = function( fx ) {
+		if ( fx.end !== "none" && !fx.setAttr || fx.pos === 1 && !fx.setAttr ) {
+			jQuery.style( fx.elem, prop, fx.end );
+			fx.setAttr = true;
+		}
+	};
+});
+
+function getElementStyles( elem ) {
+	var key, len,
+		style = elem.ownerDocument.defaultView ?
+			elem.ownerDocument.defaultView.getComputedStyle( elem, null ) :
+			elem.currentStyle,
+		styles = {};
+
+	if ( style && style.length && style[ 0 ] && style[ style[ 0 ] ] ) {
+		len = style.length;
+		while ( len-- ) {
+			key = style[ len ];
+			if ( typeof style[ key ] === "string" ) {
+				styles[ $.camelCase( key ) ] = style[ key ];
+			}
+		}
+	// support: Opera, IE <9
+	} else {
+		for ( key in style ) {
+			if ( typeof style[ key ] === "string" ) {
+				styles[ key ] = style[ key ];
+			}
+		}
+	}
+
+	return styles;
+}
+
+
+function styleDifference( oldStyle, newStyle ) {
+	var diff = {},
+		name, value;
+
+	for ( name in newStyle ) {
+		value = newStyle[ name ];
+		if ( oldStyle[ name ] !== value ) {
+			if ( !shorthandStyles[ name ] ) {
+				if ( $.fx.step[ name ] || !isNaN( parseFloat( value ) ) ) {
+					diff[ name ] = value;
+				}
+			}
+		}
+	}
+
+	return diff;
+}
+
+// support: jQuery <1.8
+if ( !$.fn.addBack ) {
+	$.fn.addBack = function( selector ) {
+		return this.add( selector == null ?
+			this.prevObject : this.prevObject.filter( selector )
+		);
+	};
+}
+
+$.effects.animateClass = function( value, duration, easing, callback ) {
+	var o = $.speed( duration, easing, callback );
+
+	return this.queue( function() {
+		var animated = $( this ),
+			baseClass = animated.attr( "class" ) || "",
+			applyClassChange,
+			allAnimations = o.children ? animated.find( "*" ).addBack() : animated;
+
+		// map the animated objects to store the original styles.
+		allAnimations = allAnimations.map(function() {
+			var el = $( this );
+			return {
+				el: el,
+				start: getElementStyles( this )
+			};
+		});
+
+		// apply class change
+		applyClassChange = function() {
+			$.each( classAnimationActions, function(i, action) {
+				if ( value[ action ] ) {
+					animated[ action + "Class" ]( value[ action ] );
+				}
+			});
+		};
+		applyClassChange();
+
+		// map all animated objects again - calculate new styles and diff
+		allAnimations = allAnimations.map(function() {
+			this.end = getElementStyles( this.el[ 0 ] );
+			this.diff = styleDifference( this.start, this.end );
+			return this;
+		});
+
+		// apply original class
+		animated.attr( "class", baseClass );
+
+		// map all animated objects again - this time collecting a promise
+		allAnimations = allAnimations.map(function() {
+			var styleInfo = this,
+				dfd = $.Deferred(),
+				opts = $.extend({}, o, {
+					queue: false,
+					complete: function() {
+						dfd.resolve( styleInfo );
+					}
+				});
+
+			this.el.animate( this.diff, opts );
+			return dfd.promise();
+		});
+
+		// once all animations have completed:
+		$.when.apply( $, allAnimations.get() ).done(function() {
+
+			// set the final class
+			applyClassChange();
+
+			// for each animated element,
+			// clear all css properties that were animated
+			$.each( arguments, function() {
+				var el = this.el;
+				$.each( this.diff, function(key) {
+					el.css( key, "" );
+				});
+			});
+
+			// this is guarnteed to be there if you use jQuery.speed()
+			// it also handles dequeuing the next anim...
+			o.complete.call( animated[ 0 ] );
+		});
+	});
+};
+
+$.fn.extend({
+	addClass: (function( orig ) {
+		return function( classNames, speed, easing, callback ) {
+			return speed ?
+				$.effects.animateClass.call( this,
+					{ add: classNames }, speed, easing, callback ) :
+				orig.apply( this, arguments );
+		};
+	})( $.fn.addClass ),
+
+	removeClass: (function( orig ) {
+		return function( classNames, speed, easing, callback ) {
+			return arguments.length > 1 ?
+				$.effects.animateClass.call( this,
+					{ remove: classNames }, speed, easing, callback ) :
+				orig.apply( this, arguments );
+		};
+	})( $.fn.removeClass ),
+
+	toggleClass: (function( orig ) {
+		return function( classNames, force, speed, easing, callback ) {
+			if ( typeof force === "boolean" || force === undefined ) {
+				if ( !speed ) {
+					// without speed parameter
+					return orig.apply( this, arguments );
+				} else {
+					return $.effects.animateClass.call( this,
+						(force ? { add: classNames } : { remove: classNames }),
+						speed, easing, callback );
+				}
+			} else {
+				// without force parameter
+				return $.effects.animateClass.call( this,
+					{ toggle: classNames }, force, speed, easing );
+			}
+		};
+	})( $.fn.toggleClass ),
+
+	switchClass: function( remove, add, speed, easing, callback) {
+		return $.effects.animateClass.call( this, {
+			add: add,
+			remove: remove
+		}, speed, easing, callback );
+	}
+});
+
+})();
+
+/******************************************************************************/
+/*********************************** EFFECTS **********************************/
+/******************************************************************************/
+
+(function() {
+
+$.extend( $.effects, {
+	version: "1.10.3",
+
+	// Saves a set of properties in a data storage
+	save: function( element, set ) {
+		for( var i=0; i < set.length; i++ ) {
+			if ( set[ i ] !== null ) {
+				element.data( dataSpace + set[ i ], element[ 0 ].style[ set[ i ] ] );
+			}
+		}
+	},
+
+	// Restores a set of previously saved properties from a data storage
+	restore: function( element, set ) {
+		var val, i;
+		for( i=0; i < set.length; i++ ) {
+			if ( set[ i ] !== null ) {
+				val = element.data( dataSpace + set[ i ] );
+				// support: jQuery 1.6.2
+				// http://bugs.jquery.com/ticket/9917
+				// jQuery 1.6.2 incorrectly returns undefined for any falsy value.
+				// We can't differentiate between "" and 0 here, so we just assume
+				// empty string since it's likely to be a more common value...
+				if ( val === undefined ) {
+					val = "";
+				}
+				element.css( set[ i ], val );
+			}
+		}
+	},
+
+	setMode: function( el, mode ) {
+		if (mode === "toggle") {
+			mode = el.is( ":hidden" ) ? "show" : "hide";
+		}
+		return mode;
+	},
+
+	// Translates a [top,left] array into a baseline value
+	// this should be a little more flexible in the future to handle a string & hash
+	getBaseline: function( origin, original ) {
+		var y, x;
+		switch ( origin[ 0 ] ) {
+			case "top": y = 0; break;
+			case "middle": y = 0.5; break;
+			case "bottom": y = 1; break;
+			default: y = origin[ 0 ] / original.height;
+		}
+		switch ( origin[ 1 ] ) {
+			case "left": x = 0; break;
+			case "center": x = 0.5; break;
+			case "right": x = 1; break;
+			default: x = origin[ 1 ] / original.width;
+		}
+		return {
+			x: x,
+			y: y
+		};
+	},
+
+	// Wraps the element around a wrapper that copies position properties
+	createWrapper: function( element ) {
+
+		// if the element is already wrapped, return it
+		if ( element.parent().is( ".ui-effects-wrapper" )) {
+			return element.parent();
+		}
+
+		// wrap the element
+		var props = {
+				width: element.outerWidth(true),
+				height: element.outerHeight(true),
+				"float": element.css( "float" )
+			},
+			wrapper = $( "<div></div>" )
+				.addClass( "ui-effects-wrapper" )
+				.css({
+					fontSize: "100%",
+					background: "transparent",
+					border: "none",
+					margin: 0,
+					padding: 0
+				}),
+			// Store the size in case width/height are defined in % - Fixes #5245
+			size = {
+				width: element.width(),
+				height: element.height()
+			},
+			active = document.activeElement;
+
+		// support: Firefox
+		// Firefox incorrectly exposes anonymous content
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=561664
+		try {
+			active.id;
+		} catch( e ) {
+			active = document.body;
+		}
+
+		element.wrap( wrapper );
+
+		// Fixes #7595 - Elements lose focus when wrapped.
+		if ( element[ 0 ] === active || $.contains( element[ 0 ], active ) ) {
+			$( active ).focus();
+		}
+
+		wrapper = element.parent(); //Hotfix for jQuery 1.4 since some change in wrap() seems to actually lose the reference to the wrapped element
+
+		// transfer positioning properties to the wrapper
+		if ( element.css( "position" ) === "static" ) {
+			wrapper.css({ position: "relative" });
+			element.css({ position: "relative" });
+		} else {
+			$.extend( props, {
+				position: element.css( "position" ),
+				zIndex: element.css( "z-index" )
+			});
+			$.each([ "top", "left", "bottom", "right" ], function(i, pos) {
+				props[ pos ] = element.css( pos );
+				if ( isNaN( parseInt( props[ pos ], 10 ) ) ) {
+					props[ pos ] = "auto";
+				}
+			});
+			element.css({
+				position: "relative",
+				top: 0,
+				left: 0,
+				right: "auto",
+				bottom: "auto"
+			});
+		}
+		element.css(size);
+
+		return wrapper.css( props ).show();
+	},
+
+	removeWrapper: function( element ) {
+		var active = document.activeElement;
+
+		if ( element.parent().is( ".ui-effects-wrapper" ) ) {
+			element.parent().replaceWith( element );
+
+			// Fixes #7595 - Elements lose focus when wrapped.
+			if ( element[ 0 ] === active || $.contains( element[ 0 ], active ) ) {
+				$( active ).focus();
+			}
+		}
+
+
+		return element;
+	},
+
+	setTransition: function( element, list, factor, value ) {
+		value = value || {};
+		$.each( list, function( i, x ) {
+			var unit = element.cssUnit( x );
+			if ( unit[ 0 ] > 0 ) {
+				value[ x ] = unit[ 0 ] * factor + unit[ 1 ];
+			}
+		});
+		return value;
+	}
+});
+
+// return an effect options object for the given parameters:
+function _normalizeArguments( effect, options, speed, callback ) {
+
+	// allow passing all options as the first parameter
+	if ( $.isPlainObject( effect ) ) {
+		options = effect;
+		effect = effect.effect;
+	}
+
+	// convert to an object
+	effect = { effect: effect };
+
+	// catch (effect, null, ...)
+	if ( options == null ) {
+		options = {};
+	}
+
+	// catch (effect, callback)
+	if ( $.isFunction( options ) ) {
+		callback = options;
+		speed = null;
+		options = {};
+	}
+
+	// catch (effect, speed, ?)
+	if ( typeof options === "number" || $.fx.speeds[ options ] ) {
+		callback = speed;
+		speed = options;
+		options = {};
+	}
+
+	// catch (effect, options, callback)
+	if ( $.isFunction( speed ) ) {
+		callback = speed;
+		speed = null;
+	}
+
+	// add options to effect
+	if ( options ) {
+		$.extend( effect, options );
+	}
+
+	speed = speed || options.duration;
+	effect.duration = $.fx.off ? 0 :
+		typeof speed === "number" ? speed :
+		speed in $.fx.speeds ? $.fx.speeds[ speed ] :
+		$.fx.speeds._default;
+
+	effect.complete = callback || options.complete;
+
+	return effect;
+}
+
+function standardAnimationOption( option ) {
+	// Valid standard speeds (nothing, number, named speed)
+	if ( !option || typeof option === "number" || $.fx.speeds[ option ] ) {
+		return true;
+	}
+
+	// Invalid strings - treat as "normal" speed
+	if ( typeof option === "string" && !$.effects.effect[ option ] ) {
+		return true;
+	}
+
+	// Complete callback
+	if ( $.isFunction( option ) ) {
+		return true;
+	}
+
+	// Options hash (but not naming an effect)
+	if ( typeof option === "object" && !option.effect ) {
+		return true;
+	}
+
+	// Didn't match any standard API
+	return false;
+}
+
+$.fn.extend({
+	effect: function( /* effect, options, speed, callback */ ) {
+		var args = _normalizeArguments.apply( this, arguments ),
+			mode = args.mode,
+			queue = args.queue,
+			effectMethod = $.effects.effect[ args.effect ];
+
+		if ( $.fx.off || !effectMethod ) {
+			// delegate to the original method (e.g., .show()) if possible
+			if ( mode ) {
+				return this[ mode ]( args.duration, args.complete );
+			} else {
+				return this.each( function() {
+					if ( args.complete ) {
+						args.complete.call( this );
+					}
+				});
+			}
+		}
+
+		function run( next ) {
+			var elem = $( this ),
+				complete = args.complete,
+				mode = args.mode;
+
+			function done() {
+				if ( $.isFunction( complete ) ) {
+					complete.call( elem[0] );
+				}
+				if ( $.isFunction( next ) ) {
+					next();
+				}
+			}
+
+			// If the element already has the correct final state, delegate to
+			// the core methods so the internal tracking of "olddisplay" works.
+			if ( elem.is( ":hidden" ) ? mode === "hide" : mode === "show" ) {
+				elem[ mode ]();
+				done();
+			} else {
+				effectMethod.call( elem[0], args, done );
+			}
+		}
+
+		return queue === false ? this.each( run ) : this.queue( queue || "fx", run );
+	},
+
+	show: (function( orig ) {
+		return function( option ) {
+			if ( standardAnimationOption( option ) ) {
+				return orig.apply( this, arguments );
+			} else {
+				var args = _normalizeArguments.apply( this, arguments );
+				args.mode = "show";
+				return this.effect.call( this, args );
+			}
+		};
+	})( $.fn.show ),
+
+	hide: (function( orig ) {
+		return function( option ) {
+			if ( standardAnimationOption( option ) ) {
+				return orig.apply( this, arguments );
+			} else {
+				var args = _normalizeArguments.apply( this, arguments );
+				args.mode = "hide";
+				return this.effect.call( this, args );
+			}
+		};
+	})( $.fn.hide ),
+
+	toggle: (function( orig ) {
+		return function( option ) {
+			if ( standardAnimationOption( option ) || typeof option === "boolean" ) {
+				return orig.apply( this, arguments );
+			} else {
+				var args = _normalizeArguments.apply( this, arguments );
+				args.mode = "toggle";
+				return this.effect.call( this, args );
+			}
+		};
+	})( $.fn.toggle ),
+
+	// helper functions
+	cssUnit: function(key) {
+		var style = this.css( key ),
+			val = [];
+
+		$.each( [ "em", "px", "%", "pt" ], function( i, unit ) {
+			if ( style.indexOf( unit ) > 0 ) {
+				val = [ parseFloat( style ), unit ];
+			}
+		});
+		return val;
+	}
+});
+
+})();
+
+/******************************************************************************/
+/*********************************** EASING ***********************************/
+/******************************************************************************/
+
+(function() {
+
+// based on easing equations from Robert Penner (http://www.robertpenner.com/easing)
+
+var baseEasings = {};
+
+$.each( [ "Quad", "Cubic", "Quart", "Quint", "Expo" ], function( i, name ) {
+	baseEasings[ name ] = function( p ) {
+		return Math.pow( p, i + 2 );
+	};
+});
+
+$.extend( baseEasings, {
+	Sine: function ( p ) {
+		return 1 - Math.cos( p * Math.PI / 2 );
+	},
+	Circ: function ( p ) {
+		return 1 - Math.sqrt( 1 - p * p );
+	},
+	Elastic: function( p ) {
+		return p === 0 || p === 1 ? p :
+			-Math.pow( 2, 8 * (p - 1) ) * Math.sin( ( (p - 1) * 80 - 7.5 ) * Math.PI / 15 );
+	},
+	Back: function( p ) {
+		return p * p * ( 3 * p - 2 );
+	},
+	Bounce: function ( p ) {
+		var pow2,
+			bounce = 4;
+
+		while ( p < ( ( pow2 = Math.pow( 2, --bounce ) ) - 1 ) / 11 ) {}
+		return 1 / Math.pow( 4, 3 - bounce ) - 7.5625 * Math.pow( ( pow2 * 3 - 2 ) / 22 - p, 2 );
+	}
+});
+
+$.each( baseEasings, function( name, easeIn ) {
+	$.easing[ "easeIn" + name ] = easeIn;
+	$.easing[ "easeOut" + name ] = function( p ) {
+		return 1 - easeIn( 1 - p );
+	};
+	$.easing[ "easeInOut" + name ] = function( p ) {
+		return p < 0.5 ?
+			easeIn( p * 2 ) / 2 :
+			1 - easeIn( p * -2 + 2 ) / 2;
+	};
+});
+
+})();
+
+})(jQuery);
+(function( $, undefined ) {
+
+var rvertical = /up|down|vertical/,
+	rpositivemotion = /up|left|vertical|horizontal/;
+
+$.effects.effect.blind = function( o, done ) {
+	// Create element
+	var el = $( this ),
+		props = [ "position", "top", "bottom", "left", "right", "height", "width" ],
+		mode = $.effects.setMode( el, o.mode || "hide" ),
+		direction = o.direction || "up",
+		vertical = rvertical.test( direction ),
+		ref = vertical ? "height" : "width",
+		ref2 = vertical ? "top" : "left",
+		motion = rpositivemotion.test( direction ),
+		animation = {},
+		show = mode === "show",
+		wrapper, distance, margin;
+
+	// if already wrapped, the wrapper's properties are my property. #6245
+	if ( el.parent().is( ".ui-effects-wrapper" ) ) {
+		$.effects.save( el.parent(), props );
+	} else {
+		$.effects.save( el, props );
+	}
+	el.show();
+	wrapper = $.effects.createWrapper( el ).css({
+		overflow: "hidden"
+	});
+
+	distance = wrapper[ ref ]();
+	margin = parseFloat( wrapper.css( ref2 ) ) || 0;
+
+	animation[ ref ] = show ? distance : 0;
+	if ( !motion ) {
+		el
+			.css( vertical ? "bottom" : "right", 0 )
+			.css( vertical ? "top" : "left", "auto" )
+			.css({ position: "absolute" });
+
+		animation[ ref2 ] = show ? margin : distance + margin;
+	}
+
+	// start at 0 if we are showing
+	if ( show ) {
+		wrapper.css( ref, 0 );
+		if ( ! motion ) {
+			wrapper.css( ref2, margin + distance );
+		}
+	}
+
+	// Animate
+	wrapper.animate( animation, {
+		duration: o.duration,
+		easing: o.easing,
+		queue: false,
+		complete: function() {
+			if ( mode === "hide" ) {
+				el.hide();
+			}
+			$.effects.restore( el, props );
+			$.effects.removeWrapper( el );
+			done();
+		}
+	});
+
+};
+
+})(jQuery);
+(function( $, undefined ) {
+
+$.effects.effect.highlight = function( o, done ) {
+	var elem = $( this ),
+		props = [ "backgroundImage", "backgroundColor", "opacity" ],
+		mode = $.effects.setMode( elem, o.mode || "show" ),
+		animation = {
+			backgroundColor: elem.css( "backgroundColor" )
+		};
+
+	if (mode === "hide") {
+		animation.opacity = 0;
+	}
+
+	$.effects.save( elem, props );
+
+	elem
+		.show()
+		.css({
+			backgroundImage: "none",
+			backgroundColor: o.color || "#ffff99"
+		})
+		.animate( animation, {
+			queue: false,
+			duration: o.duration,
+			easing: o.easing,
+			complete: function() {
+				if ( mode === "hide" ) {
+					elem.hide();
+				}
+				$.effects.restore( elem, props );
+				done();
+			}
+		});
+};
+
+})(jQuery);
+
 ;/* jquery.nicescroll
 -- version 3.4.0
 -- copyright 2011-12-13 InuYaksa*2013
@@ -18352,6 +22251,5153 @@ exports.rethrow = function rethrow(err, filename, lineno){
   }
 
 }(this);
+
+
+;/*
+ *  Sugar Library v1.3.9
+ *
+ *  Freely distributable and licensed under the MIT-style license.
+ *  Copyright (c) 2013 Andrew Plummer
+ *  http://sugarjs.com/
+ *
+ * ---------------------------- */
+(function(){
+  /***
+   * @package Core
+   * @description Internal utility and common methods.
+   ***/
+
+
+  // A few optimizations for Google Closure Compiler will save us a couple kb in the release script.
+  var object = Object, array = Array, regexp = RegExp, date = Date, string = String, number = Number, math = Math, Undefined;
+
+  // Internal toString
+  var internalToString = object.prototype.toString;
+
+  // The global context
+  var globalContext = typeof global !== 'undefined' ? global : this;
+
+  // Type check methods need a way to be accessed dynamically outside global context.
+  var typeChecks = {};
+
+  // defineProperty exists in IE8 but will error when trying to define a property on
+  // native objects. IE8 does not have defineProperies, however, so this check saves a try/catch block.
+  var definePropertySupport = object.defineProperty && object.defineProperties;
+
+
+  // Class initializers and class helpers
+
+  var ClassNames = 'Array,Boolean,Date,Function,Number,String,RegExp'.split(',');
+
+  var isArray    = buildClassCheck(ClassNames[0]);
+  var isBoolean  = buildClassCheck(ClassNames[1]);
+  var isDate     = buildClassCheck(ClassNames[2]);
+  var isFunction = buildClassCheck(ClassNames[3]);
+  var isNumber   = buildClassCheck(ClassNames[4]);
+  var isString   = buildClassCheck(ClassNames[5]);
+  var isRegExp   = buildClassCheck(ClassNames[6]);
+
+  function buildClassCheck(name) {
+    var type, fn;
+    if(/String|Number|Boolean/.test(name)) {
+      type = name.toLowerCase();
+    }
+    fn = (name === 'Array' && array.isArray) || function(obj) {
+      if(type && typeof obj === type) {
+        return true;
+      }
+      return className(obj) === '[object '+name+']';
+    }
+    typeChecks[name] = fn;
+    return fn;
+  }
+
+  function className(obj) {
+    return internalToString.call(obj);
+  }
+
+  function initializeClasses() {
+    initializeClass(object);
+    iterateOverObject(ClassNames, function(i,name) {
+      initializeClass(globalContext[name]);
+    });
+  }
+
+  function initializeClass(klass) {
+    if(klass['SugarMethods']) return;
+    defineProperty(klass, 'SugarMethods', {});
+    extend(klass, false, false, {
+      'extend': function(methods, override, instance) {
+        extend(klass, instance !== false, override, methods);
+      },
+      'sugarRestore': function() {
+        return batchMethodExecute(klass, arguments, function(target, name, m) {
+          defineProperty(target, name, m.method);
+        });
+      },
+      'sugarRevert': function() {
+        return batchMethodExecute(klass, arguments, function(target, name, m) {
+          if(m.existed) {
+            defineProperty(target, name, m.original);
+          } else {
+            delete target[name];
+          }
+        });
+      }
+    });
+  }
+
+  // Class extending methods
+
+  function extend(klass, instance, override, methods) {
+    var extendee = instance ? klass.prototype : klass;
+    initializeClass(klass);
+    iterateOverObject(methods, function(name, method) {
+      var original = extendee[name];
+      var existed  = hasOwnProperty(extendee, name);
+      if(typeof override === 'function') {
+        method = wrapNative(extendee[name], method, override);
+      }
+      if(override !== false || !extendee[name]) {
+        defineProperty(extendee, name, method);
+      }
+      // If the method is internal to Sugar, then store a reference so it can be restored later.
+      klass['SugarMethods'][name] = { instance: instance, method: method, original: original, existed: existed };
+    });
+  }
+
+  function extendSimilar(klass, instance, override, set, fn) {
+    var methods = {};
+    set = isString(set) ? set.split(',') : set;
+    set.forEach(function(name, i) {
+      fn(methods, name, i);
+    });
+    extend(klass, instance, override, methods);
+  }
+
+  function batchMethodExecute(klass, args, fn) {
+    var all = args.length === 0, methods = multiArgs(args), changed = false;
+    iterateOverObject(klass['SugarMethods'], function(name, m) {
+      if(all || methods.indexOf(name) > -1) {
+        changed = true;
+        fn(m.instance ? klass.prototype : klass, name, m);
+      }
+    });
+    return changed;
+  }
+
+  function wrapNative(nativeFn, extendedFn, condition) {
+    return function() {
+      var fn;
+      if(nativeFn && (condition === true || !condition.apply(this, arguments))) {
+        fn = nativeFn;
+      } else {
+        fn = extendedFn;
+      }
+      return fn.apply(this, arguments);
+    }
+  }
+
+  function defineProperty(target, name, method) {
+    if(definePropertySupport) {
+      object.defineProperty(target, name, { 'value': method, 'configurable': true, 'enumerable': false, 'writable': true });
+    } else {
+      target[name] = method;
+    }
+  }
+
+
+  // Argument helpers
+
+  function multiArgs(args, fn) {
+    var result = [], i, len;
+    for(i = 0, len = args.length; i < len; i++) {
+      result.push(args[i]);
+      if(fn) fn.call(args, args[i], i);
+    }
+    return result;
+  }
+
+  function flattenedArgs(obj, fn, from) {
+    multiArgs(array.prototype.concat.apply([], array.prototype.slice.call(obj, from || 0)), fn);
+  }
+
+  function checkCallback(fn) {
+    if(!fn || !fn.call) {
+      throw new TypeError('Callback is not callable');
+    }
+  }
+
+
+  // General helpers
+
+  function isDefined(o) {
+    return o !== Undefined;
+  }
+
+  function isUndefined(o) {
+    return o === Undefined;
+  }
+
+
+  // Object helpers
+
+  function isObjectPrimitive(obj) {
+    // Check for null
+    return obj && typeof obj === 'object';
+  }
+
+  function isObject(obj) {
+    // === on the constructor is not safe across iframes
+    // 'hasOwnProperty' ensures that the object also inherits
+    // from Object, which is false for DOMElements in IE.
+    return !!obj && className(obj) === '[object Object]' && 'hasOwnProperty' in obj;
+  }
+
+  function hasOwnProperty(obj, key) {
+    return object['hasOwnProperty'].call(obj, key);
+  }
+
+  function iterateOverObject(obj, fn) {
+    var key;
+    for(key in obj) {
+      if(!hasOwnProperty(obj, key)) continue;
+      if(fn.call(obj, key, obj[key], obj) === false) break;
+    }
+  }
+
+  function simpleMerge(target, source) {
+    iterateOverObject(source, function(key) {
+      target[key] = source[key];
+    });
+    return target;
+  }
+
+  // Hash definition
+
+  function Hash(obj) {
+    simpleMerge(this, obj);
+  };
+
+  Hash.prototype.constructor = object;
+
+  // Number helpers
+
+  function getRange(start, stop, fn, step) {
+    var arr = [], i = parseInt(start), down = step < 0;
+    while((!down && i <= stop) || (down && i >= stop)) {
+      arr.push(i);
+      if(fn) fn.call(this, i);
+      i += step || 1;
+    }
+    return arr;
+  }
+
+  function round(val, precision, method) {
+    var fn = math[method || 'round'];
+    var multiplier = math.pow(10, math.abs(precision || 0));
+    if(precision < 0) multiplier = 1 / multiplier;
+    return fn(val * multiplier) / multiplier;
+  }
+
+  function ceil(val, precision) {
+    return round(val, precision, 'ceil');
+  }
+
+  function floor(val, precision) {
+    return round(val, precision, 'floor');
+  }
+
+  function padNumber(num, place, sign, base) {
+    var str = math.abs(num).toString(base || 10);
+    str = repeatString(place - str.replace(/\.\d+/, '').length, '0') + str;
+    if(sign || num < 0) {
+      str = (num < 0 ? '-' : '+') + str;
+    }
+    return str;
+  }
+
+  function getOrdinalizedSuffix(num) {
+    if(num >= 11 && num <= 13) {
+      return 'th';
+    } else {
+      switch(num % 10) {
+        case 1:  return 'st';
+        case 2:  return 'nd';
+        case 3:  return 'rd';
+        default: return 'th';
+      }
+    }
+  }
+
+
+  // String helpers
+
+  // WhiteSpace/LineTerminator as defined in ES5.1 plus Unicode characters in the Space, Separator category.
+  function getTrimmableCharacters() {
+    return '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u2028\u2029\u3000\uFEFF';
+  }
+
+  function repeatString(times, str) {
+    return array(math.max(0, isDefined(times) ? times : 1) + 1).join(str || '');
+  }
+
+
+  // RegExp helpers
+
+  function getRegExpFlags(reg, add) {
+    var flags = reg.toString().match(/[^/]*$/)[0];
+    if(add) {
+      flags = (flags + add).split('').sort().join('').replace(/([gimy])\1+/g, '$1');
+    }
+    return flags;
+  }
+
+  function escapeRegExp(str) {
+    if(!isString(str)) str = string(str);
+    return str.replace(/([\\/'*+?|()\[\]{}.^$])/g,'\\$1');
+  }
+
+
+  // Specialized helpers
+
+
+  // Used by Array#unique and Object.equal
+
+  function stringify(thing, stack) {
+    var type = typeof thing,
+        thingIsObject,
+        thingIsArray,
+        klass, value,
+        arr, key, i, len;
+
+    // Return quickly if string to save cycles
+    if(type === 'string') return thing;
+
+    klass         = internalToString.call(thing)
+    thingIsObject = isObject(thing);
+    thingIsArray  = klass === '[object Array]';
+
+    if(thing != null && thingIsObject || thingIsArray) {
+      // This method for checking for cyclic structures was egregiously stolen from
+      // the ingenious method by @kitcambridge from the Underscore script:
+      // https://github.com/documentcloud/underscore/issues/240
+      if(!stack) stack = [];
+      // Allowing a step into the structure before triggering this
+      // script to save cycles on standard JSON structures and also to
+      // try as hard as possible to catch basic properties that may have
+      // been modified.
+      if(stack.length > 1) {
+        i = stack.length;
+        while (i--) {
+          if (stack[i] === thing) {
+            return 'CYC';
+          }
+        }
+      }
+      stack.push(thing);
+      value = string(thing.constructor);
+      arr = thingIsArray ? thing : object.keys(thing).sort();
+      for(i = 0, len = arr.length; i < len; i++) {
+        key = thingIsArray ? i : arr[i];
+        value += key + stringify(thing[key], stack);
+      }
+      stack.pop();
+    } else if(1 / thing === -Infinity) {
+      value = '-0';
+    } else {
+      value = string(thing && thing.valueOf ? thing.valueOf() : thing);
+    }
+    return type + klass + value;
+  }
+
+  function isEqual(a, b) {
+    if(objectIsMatchedByValue(a) && objectIsMatchedByValue(b)) {
+      return stringify(a) === stringify(b);
+    } else {
+      return a === b;
+    }
+  }
+
+  function objectIsMatchedByValue(obj) {
+    var klass = className(obj);
+    return /^\[object Date|Array|String|Number|RegExp|Boolean|Arguments\]$/.test(klass) ||
+           isObject(obj);
+  }
+
+
+  // Used by Array#at and String#at
+
+  function entryAtIndex(arr, args, str) {
+    var result = [], length = arr.length, loop = args[args.length - 1] !== false, r;
+    multiArgs(args, function(index) {
+      if(isBoolean(index)) return false;
+      if(loop) {
+        index = index % length;
+        if(index < 0) index = length + index;
+      }
+      r = str ? arr.charAt(index) || '' : arr[index];
+      result.push(r);
+    });
+    return result.length < 2 ? result[0] : result;
+  }
+
+
+  // Object class methods implemented as instance methods
+
+  function buildObjectInstanceMethods(set, target) {
+    extendSimilar(target, true, false, set, function(methods, name) {
+      methods[name + (name === 'equal' ? 's' : '')] = function() {
+        return object[name].apply(null, [this].concat(multiArgs(arguments)));
+      }
+    });
+  }
+
+  initializeClasses();
+
+
+
+  /***
+   * @package ES5
+   * @description Shim methods that provide ES5 compatible functionality. This package can be excluded if you do not require legacy browser support (IE8 and below).
+   *
+   ***/
+
+
+  /***
+   * Object module
+   *
+   ***/
+
+  extend(object, false, false, {
+
+    'keys': function(obj) {
+      var keys = [];
+      if(!isObjectPrimitive(obj) && !isRegExp(obj) && !isFunction(obj)) {
+        throw new TypeError('Object required');
+      }
+      iterateOverObject(obj, function(key, value) {
+        keys.push(key);
+      });
+      return keys;
+    }
+
+  });
+
+
+  /***
+   * Array module
+   *
+   ***/
+
+  // ECMA5 methods
+
+  function arrayIndexOf(arr, search, fromIndex, increment) {
+    var length = arr.length,
+        fromRight = increment == -1,
+        start = fromRight ? length - 1 : 0,
+        index = toIntegerWithDefault(fromIndex, start);
+    if(index < 0) {
+      index = length + index;
+    }
+    if((!fromRight && index < 0) || (fromRight && index >= length)) {
+      index = start;
+    }
+    while((fromRight && index >= 0) || (!fromRight && index < length)) {
+      if(arr[index] === search) {
+        return index;
+      }
+      index += increment;
+    }
+    return -1;
+  }
+
+  function arrayReduce(arr, fn, initialValue, fromRight) {
+    var length = arr.length, count = 0, defined = isDefined(initialValue), result, index;
+    checkCallback(fn);
+    if(length == 0 && !defined) {
+      throw new TypeError('Reduce called on empty array with no initial value');
+    } else if(defined) {
+      result = initialValue;
+    } else {
+      result = arr[fromRight ? length - 1 : count];
+      count++;
+    }
+    while(count < length) {
+      index = fromRight ? length - count - 1 : count;
+      if(index in arr) {
+        result = fn(result, arr[index], index, arr);
+      }
+      count++;
+    }
+    return result;
+  }
+
+  function toIntegerWithDefault(i, d) {
+    if(isNaN(i)) {
+      return d;
+    } else {
+      return parseInt(i >> 0);
+    }
+  }
+
+  function checkFirstArgumentExists(args) {
+    if(args.length === 0) {
+      throw new TypeError('First argument must be defined');
+    }
+  }
+
+
+
+
+  extend(array, false, false, {
+
+    /***
+     *
+     * @method Array.isArray(<obj>)
+     * @returns Boolean
+     * @short Returns true if <obj> is an Array.
+     * @extra This method is provided for browsers that don't support it internally.
+     * @example
+     *
+     *   Array.isArray(3)        -> false
+     *   Array.isArray(true)     -> false
+     *   Array.isArray('wasabi') -> false
+     *   Array.isArray([1,2,3])  -> true
+     *
+     ***/
+    'isArray': function(obj) {
+      return isArray(obj);
+    }
+
+  });
+
+
+  extend(array, true, false, {
+
+    /***
+     * @method every(<f>, [scope])
+     * @returns Boolean
+     * @short Returns true if all elements in the array match <f>.
+     * @extra [scope] is the %this% object. %all% is provided an alias. In addition to providing this method for browsers that don't support it natively, this method also implements @array_matching.
+     * @example
+     *
+     +   ['a','a','a'].every(function(n) {
+     *     return n == 'a';
+     *   });
+     *   ['a','a','a'].every('a')   -> true
+     *   [{a:2},{a:2}].every({a:2}) -> true
+     ***/
+    'every': function(fn, scope) {
+      var length = this.length, index = 0;
+      checkFirstArgumentExists(arguments);
+      while(index < length) {
+        if(index in this && !fn.call(scope, this[index], index, this)) {
+          return false;
+        }
+        index++;
+      }
+      return true;
+    },
+
+    /***
+     * @method some(<f>, [scope])
+     * @returns Boolean
+     * @short Returns true if any element in the array matches <f>.
+     * @extra [scope] is the %this% object. %any% is provided as an alias. In addition to providing this method for browsers that don't support it natively, this method also implements @array_matching.
+     * @example
+     *
+     +   ['a','b','c'].some(function(n) {
+     *     return n == 'a';
+     *   });
+     +   ['a','b','c'].some(function(n) {
+     *     return n == 'd';
+     *   });
+     *   ['a','b','c'].some('a')   -> true
+     *   [{a:2},{b:5}].some({a:2}) -> true
+     ***/
+    'some': function(fn, scope) {
+      var length = this.length, index = 0;
+      checkFirstArgumentExists(arguments);
+      while(index < length) {
+        if(index in this && fn.call(scope, this[index], index, this)) {
+          return true;
+        }
+        index++;
+      }
+      return false;
+    },
+
+    /***
+     * @method map(<map>, [scope])
+     * @returns Array
+     * @short Maps the array to another array containing the values that are the result of calling <map> on each element.
+     * @extra [scope] is the %this% object. In addition to providing this method for browsers that don't support it natively, this enhanced method also directly accepts a string, which is a shortcut for a function that gets that property (or invokes a function) on each element.
+     * @example
+     *
+     +   [1,2,3].map(function(n) {
+     *     return n * 3;
+     *   });                                  -> [3,6,9]
+     *   ['one','two','three'].map(function(n) {
+     *     return n.length;
+     *   });                                  -> [3,3,5]
+     *   ['one','two','three'].map('length')  -> [3,3,5]
+     ***/
+    'map': function(fn, scope) {
+      var length = this.length, index = 0, result = new Array(length);
+      checkFirstArgumentExists(arguments);
+      while(index < length) {
+        if(index in this) {
+          result[index] = fn.call(scope, this[index], index, this);
+        }
+        index++;
+      }
+      return result;
+    },
+
+    /***
+     * @method filter(<f>, [scope])
+     * @returns Array
+     * @short Returns any elements in the array that match <f>.
+     * @extra [scope] is the %this% object. In addition to providing this method for browsers that don't support it natively, this method also implements @array_matching.
+     * @example
+     *
+     +   [1,2,3].filter(function(n) {
+     *     return n > 1;
+     *   });
+     *   [1,2,2,4].filter(2) -> 2
+     *
+     ***/
+    'filter': function(fn, scope) {
+      var length = this.length, index = 0, result = [];
+      checkFirstArgumentExists(arguments);
+      while(index < length) {
+        if(index in this && fn.call(scope, this[index], index, this)) {
+          result.push(this[index]);
+        }
+        index++;
+      }
+      return result;
+    },
+
+    /***
+     * @method indexOf(<search>, [fromIndex])
+     * @returns Number
+     * @short Searches the array and returns the first index where <search> occurs, or -1 if the element is not found.
+     * @extra [fromIndex] is the index from which to begin the search. This method performs a simple strict equality comparison on <search>. It does not support enhanced functionality such as searching the contents against a regex, callback, or deep comparison of objects. For such functionality, use the %findIndex% method instead.
+     * @example
+     *
+     *   [1,2,3].indexOf(3)           -> 1
+     *   [1,2,3].indexOf(7)           -> -1
+     *
+     ***/
+    'indexOf': function(search, fromIndex) {
+      if(isString(this)) return this.indexOf(search, fromIndex);
+      return arrayIndexOf(this, search, fromIndex, 1);
+    },
+
+    /***
+     * @method lastIndexOf(<search>, [fromIndex])
+     * @returns Number
+     * @short Searches the array and returns the last index where <search> occurs, or -1 if the element is not found.
+     * @extra [fromIndex] is the index from which to begin the search. This method performs a simple strict equality comparison on <search>.
+     * @example
+     *
+     *   [1,2,1].lastIndexOf(1)                 -> 2
+     *   [1,2,1].lastIndexOf(7)                 -> -1
+     *
+     ***/
+    'lastIndexOf': function(search, fromIndex) {
+      if(isString(this)) return this.lastIndexOf(search, fromIndex);
+      return arrayIndexOf(this, search, fromIndex, -1);
+    },
+
+    /***
+     * @method forEach([fn], [scope])
+     * @returns Nothing
+     * @short Iterates over the array, calling [fn] on each loop.
+     * @extra This method is only provided for those browsers that do not support it natively. [scope] becomes the %this% object.
+     * @example
+     *
+     *   ['a','b','c'].forEach(function(a) {
+     *     // Called 3 times: 'a','b','c'
+     *   });
+     *
+     ***/
+    'forEach': function(fn, scope) {
+      var length = this.length, index = 0;
+      checkCallback(fn);
+      while(index < length) {
+        if(index in this) {
+          fn.call(scope, this[index], index, this);
+        }
+        index++;
+      }
+    },
+
+    /***
+     * @method reduce(<fn>, [init])
+     * @returns Mixed
+     * @short Reduces the array to a single result.
+     * @extra If [init] is passed as a starting value, that value will be passed as the first argument to the callback. The second argument will be the first element in the array. From that point, the result of the callback will then be used as the first argument of the next iteration. This is often refered to as "accumulation", and [init] is often called an "accumulator". If [init] is not passed, then <fn> will be called n - 1 times, where n is the length of the array. In this case, on the first iteration only, the first argument will be the first element of the array, and the second argument will be the second. After that callbacks work as normal, using the result of the previous callback as the first argument of the next. This method is only provided for those browsers that do not support it natively.
+     *
+     * @example
+     *
+     +   [1,2,3,4].reduce(function(a, b) {
+     *     return a - b;
+     *   });
+     +   [1,2,3,4].reduce(function(a, b) {
+     *     return a - b;
+     *   }, 100);
+     *
+     ***/
+    'reduce': function(fn, init) {
+      return arrayReduce(this, fn, init);
+    },
+
+    /***
+     * @method reduceRight([fn], [init])
+     * @returns Mixed
+     * @short Identical to %Array#reduce%, but operates on the elements in reverse order.
+     * @extra This method is only provided for those browsers that do not support it natively.
+     *
+     *
+     *
+     *
+     * @example
+     *
+     +   [1,2,3,4].reduceRight(function(a, b) {
+     *     return a - b;
+     *   });
+     *
+     ***/
+    'reduceRight': function(fn, init) {
+      return arrayReduce(this, fn, init, true);
+    }
+
+
+  });
+
+
+
+
+  /***
+   * String module
+   *
+   ***/
+
+
+  function buildTrim() {
+    var support = getTrimmableCharacters().match(/^\s+$/);
+    try { string.prototype.trim.call([1]); } catch(e) { support = false; }
+    extend(string, true, !support, {
+
+      /***
+       * @method trim[Side]()
+       * @returns String
+       * @short Removes leading and/or trailing whitespace from the string.
+       * @extra Whitespace is defined as line breaks, tabs, and any character in the "Space, Separator" Unicode category, conforming to the the ES5 spec. The standard %trim% method is only added when not fully supported natively.
+       *
+       * @set
+       *   trim
+       *   trimLeft
+       *   trimRight
+       *
+       * @example
+       *
+       *   '   wasabi   '.trim()      -> 'wasabi'
+       *   '   wasabi   '.trimLeft()  -> 'wasabi   '
+       *   '   wasabi   '.trimRight() -> '   wasabi'
+       *
+       ***/
+      'trim': function() {
+        return this.toString().trimLeft().trimRight();
+      },
+
+      'trimLeft': function() {
+        return this.replace(regexp('^['+getTrimmableCharacters()+']+'), '');
+      },
+
+      'trimRight': function() {
+        return this.replace(regexp('['+getTrimmableCharacters()+']+$'), '');
+      }
+    });
+  }
+
+
+
+  /***
+   * Function module
+   *
+   ***/
+
+
+  extend(Function, true, false, {
+
+     /***
+     * @method bind(<scope>, [arg1], ...)
+     * @returns Function
+     * @short Binds <scope> as the %this% object for the function when it is called. Also allows currying an unlimited number of parameters.
+     * @extra "currying" means setting parameters ([arg1], [arg2], etc.) ahead of time so that they are passed when the function is called later. If you pass additional parameters when the function is actually called, they will be added will be added to the end of the curried parameters. This method is provided for browsers that don't support it internally.
+     * @example
+     *
+     +   (function() {
+     *     return this;
+     *   }).bind('woof')(); -> returns 'woof'; function is bound with 'woof' as the this object.
+     *   (function(a) {
+     *     return a;
+     *   }).bind(1, 2)();   -> returns 2; function is bound with 1 as the this object and 2 curried as the first parameter
+     *   (function(a, b) {
+     *     return a + b;
+     *   }).bind(1, 2)(3);  -> returns 5; function is bound with 1 as the this object, 2 curied as the first parameter and 3 passed as the second when calling the function
+     *
+     ***/
+    'bind': function(scope) {
+      var fn = this, args = multiArgs(arguments).slice(1), nop, bound;
+      if(!isFunction(this)) {
+        throw new TypeError('Function.prototype.bind called on a non-function');
+      }
+      bound = function() {
+        return fn.apply(fn.prototype && this instanceof fn ? this : scope, args.concat(multiArgs(arguments)));
+      }
+      bound.prototype = this.prototype;
+      return bound;
+    }
+
+  });
+
+  /***
+   * Date module
+   *
+   ***/
+
+   /***
+   * @method toISOString()
+   * @returns String
+   * @short Formats the string to ISO8601 format.
+   * @extra This will always format as UTC time. Provided for browsers that do not support this method.
+   * @example
+   *
+   *   Date.create().toISOString() -> ex. 2011-07-05 12:24:55.528Z
+   *
+   ***
+   * @method toJSON()
+   * @returns String
+   * @short Returns a JSON representation of the date.
+   * @extra This is effectively an alias for %toISOString%. Will always return the date in UTC time. Provided for browsers that do not support this method.
+   * @example
+   *
+   *   Date.create().toJSON() -> ex. 2011-07-05 12:24:55.528Z
+   *
+   ***/
+
+  extend(date, false, false, {
+
+     /***
+     * @method Date.now()
+     * @returns String
+     * @short Returns the number of milliseconds since January 1st, 1970 00:00:00 (UTC time).
+     * @extra Provided for browsers that do not support this method.
+     * @example
+     *
+     *   Date.now() -> ex. 1311938296231
+     *
+     ***/
+    'now': function() {
+      return new date().getTime();
+    }
+
+  });
+
+   function buildISOString() {
+    var d = new date(date.UTC(1999, 11, 31)), target = '1999-12-31T00:00:00.000Z';
+    var support = d.toISOString && d.toISOString() === target;
+    extendSimilar(date, true, !support, 'toISOString,toJSON', function(methods, name) {
+      methods[name] = function() {
+        return padNumber(this.getUTCFullYear(), 4) + '-' +
+               padNumber(this.getUTCMonth() + 1, 2) + '-' +
+               padNumber(this.getUTCDate(), 2) + 'T' +
+               padNumber(this.getUTCHours(), 2) + ':' +
+               padNumber(this.getUTCMinutes(), 2) + ':' +
+               padNumber(this.getUTCSeconds(), 2) + '.' +
+               padNumber(this.getUTCMilliseconds(), 3) + 'Z';
+      }
+    });
+   }
+
+  // Initialize
+  buildTrim();
+  buildISOString();
+
+
+  /***
+   * @package Date
+   * @dependency core
+   * @description Date parsing and formatting, relative formats like "1 minute ago", Number methods like "daysAgo", localization support with default English locale definition.
+   *
+   ***/
+
+  var English;
+  var CurrentLocalization;
+
+  var TimeFormat = ['ampm','hour','minute','second','ampm','utc','offset_sign','offset_hours','offset_minutes','ampm']
+  var DecimalReg = '(?:[,.]\\d+)?';
+  var HoursReg   = '\\d{1,2}' + DecimalReg;
+  var SixtyReg   = '[0-5]\\d' + DecimalReg;
+  var RequiredTime = '({t})?\\s*('+HoursReg+')(?:{h}('+SixtyReg+')?{m}(?::?('+SixtyReg+'){s})?\\s*(?:({t})|(Z)|(?:([+-])(\\d{2,2})(?::?(\\d{2,2}))?)?)?|\\s*({t}))';
+
+  var KanjiDigits     = '〇一二三四五六七八九十百千万';
+  var FullWidthDigits = '０１２３４５６７８９';
+  var AsianDigitMap = {};
+  var AsianDigitReg;
+
+  var DateArgumentUnits;
+  var DateUnitsReversed;
+  var CoreDateFormats = [];
+
+  var DateOutputFormats = [
+    {
+      token: 'f{1,4}|ms|milliseconds',
+      format: function(d) {
+        return callDateGet(d, 'Milliseconds');
+      }
+    },
+    {
+      token: 'ss?|seconds',
+      format: function(d, len) {
+        return callDateGet(d, 'Seconds');
+      }
+    },
+    {
+      token: 'mm?|minutes',
+      format: function(d, len) {
+        return callDateGet(d, 'Minutes');
+      }
+    },
+    {
+      token: 'hh?|hours|12hr',
+      format: function(d) {
+        return getShortHour(d);
+      }
+    },
+    {
+      token: 'HH?|24hr',
+      format: function(d) {
+        return callDateGet(d, 'Hours');
+      }
+    },
+    {
+      token: 'dd?|date|day',
+      format: function(d) {
+        return callDateGet(d, 'Date');
+      }
+    },
+    {
+      token: 'dow|weekday',
+      word: true,
+      format: function(d, loc, n, t) {
+        var dow = callDateGet(d, 'Day');
+        return loc['weekdays'][dow + (n - 1) * 7];
+      }
+    },
+    {
+      token: 'MM?',
+      format: function(d) {
+        return callDateGet(d, 'Month') + 1;
+      }
+    },
+    {
+      token: 'mon|month',
+      word: true,
+      format: function(d, loc, n, len) {
+        var month = callDateGet(d, 'Month');
+        return loc['months'][month + (n - 1) * 12];
+      }
+    },
+    {
+      token: 'y{2,4}|year',
+      format: function(d) {
+        return callDateGet(d, 'FullYear');
+      }
+    },
+    {
+      token: '[Tt]{1,2}',
+      format: function(d, loc, n, format) {
+        if(loc['ampm'].length == 0) return '';
+        var hours = callDateGet(d, 'Hours');
+        var str = loc['ampm'][floor(hours / 12)];
+        if(format.length === 1) str = str.slice(0,1);
+        if(format.slice(0,1) === 'T') str = str.toUpperCase();
+        return str;
+      }
+    },
+    {
+      token: 'z{1,4}|tz|timezone',
+      text: true,
+      format: function(d, loc, n, format) {
+        var tz = d.getUTCOffset();
+        if(format == 'z' || format == 'zz') {
+          tz = tz.replace(/(\d{2})(\d{2})/, function(f,h,m) {
+            return padNumber(h, format.length);
+          });
+        }
+        return tz;
+      }
+    },
+    {
+      token: 'iso(tz|timezone)',
+      format: function(d) {
+        return d.getUTCOffset(true);
+      }
+    },
+    {
+      token: 'ord',
+      format: function(d) {
+        var date = callDateGet(d, 'Date');
+        return date + getOrdinalizedSuffix(date);
+      }
+    }
+  ];
+
+  var DateUnits = [
+    {
+      unit: 'year',
+      method: 'FullYear',
+      ambiguous: true,
+      multiplier: function(d) {
+        var adjust = d ? (d.isLeapYear() ? 1 : 0) : 0.25;
+        return (365 + adjust) * 24 * 60 * 60 * 1000;
+      }
+    },
+    {
+      unit: 'month',
+      method: 'Month',
+      ambiguous: true,
+      multiplier: function(d, ms) {
+        var days = 30.4375, inMonth;
+        if(d) {
+          inMonth = d.daysInMonth();
+          if(ms <= inMonth.days()) {
+            days = inMonth;
+          }
+        }
+        return days * 24 * 60 * 60 * 1000;
+      },
+      error: 0.919
+    },
+    {
+      unit: 'week',
+      method: 'ISOWeek',
+      multiplier: function() {
+        return 7 * 24 * 60 * 60 * 1000;
+      }
+    },
+    {
+      unit: 'day',
+      method: 'Date',
+      ambiguous: true,
+      multiplier: function() {
+        return 24 * 60 * 60 * 1000;
+      }
+    },
+    {
+      unit: 'hour',
+      method: 'Hours',
+      multiplier: function() {
+        return 60 * 60 * 1000;
+      }
+    },
+    {
+      unit: 'minute',
+      method: 'Minutes',
+      multiplier: function() {
+        return 60 * 1000;
+      }
+    },
+    {
+      unit: 'second',
+      method: 'Seconds',
+      multiplier: function() {
+        return 1000;
+      }
+    },
+    {
+      unit: 'millisecond',
+      method: 'Milliseconds',
+      multiplier: function() {
+        return 1;
+      }
+    }
+  ];
+
+
+
+
+  // Date Localization
+
+  var Localizations = {};
+
+  // Localization object
+
+  function Localization(l) {
+    simpleMerge(this, l);
+    this.compiledFormats = CoreDateFormats.concat();
+  }
+
+  Localization.prototype = {
+
+    getMonth: function(n) {
+      if(isNumber(n)) {
+        return n - 1;
+      } else {
+        return this['months'].indexOf(n) % 12;
+      }
+    },
+
+    getWeekday: function(n) {
+      return this['weekdays'].indexOf(n) % 7;
+    },
+
+    getNumber: function(n) {
+      var i;
+      if(isNumber(n)) {
+        return n;
+      } else if(n && (i = this['numbers'].indexOf(n)) !== -1) {
+        return (i + 1) % 10;
+      } else {
+        return 1;
+      }
+    },
+
+    getNumericDate: function(n) {
+      var self = this;
+      return n.replace(regexp(this['num'], 'g'), function(d) {
+        var num = self.getNumber(d);
+        return num || '';
+      });
+    },
+
+    getEnglishUnit: function(n) {
+      return English['units'][this['units'].indexOf(n) % 8];
+    },
+
+    getRelativeFormat: function(adu) {
+      return this.convertAdjustedToFormat(adu, adu[2] > 0 ? 'future' : 'past');
+    },
+
+    getDuration: function(ms) {
+      return this.convertAdjustedToFormat(getAdjustedUnit(ms), 'duration');
+    },
+
+    hasVariant: function(code) {
+      code = code || this.code;
+      return code === 'en' || code === 'en-US' ? true : this['variant'];
+    },
+
+    matchAM: function(str) {
+      return str === this['ampm'][0];
+    },
+
+    matchPM: function(str) {
+      return str && str === this['ampm'][1];
+    },
+
+    convertAdjustedToFormat: function(adu, mode) {
+      var sign, unit, mult,
+          num    = adu[0],
+          u      = adu[1],
+          ms     = adu[2],
+          format = this[mode] || this['relative'];
+      if(isFunction(format)) {
+        return format.call(this, num, u, ms, mode);
+      }
+      mult = this['plural'] && num > 1 ? 1 : 0;
+      unit = this['units'][mult * 8 + u] || this['units'][u];
+      if(this['capitalizeUnit']) unit = simpleCapitalize(unit);
+      sign = this['modifiers'].filter(function(m) { return m.name == 'sign' && m.value == (ms > 0 ? 1 : -1); })[0];
+      return format.replace(/\{(.*?)\}/g, function(full, match) {
+        switch(match) {
+          case 'num': return num;
+          case 'unit': return unit;
+          case 'sign': return sign.src;
+        }
+      });
+    },
+
+    getFormats: function() {
+      return this.cachedFormat ? [this.cachedFormat].concat(this.compiledFormats) : this.compiledFormats;
+    },
+
+    addFormat: function(src, allowsTime, match, variant, iso) {
+      var to = match || [], loc = this, time, timeMarkers, lastIsNumeral;
+
+      src = src.replace(/\s+/g, '[-,. ]*');
+      src = src.replace(/\{([^,]+?)\}/g, function(all, k) {
+        var value, arr, result,
+            opt   = k.match(/\?$/),
+            nc    = k.match(/^(\d+)\??$/),
+            slice = k.match(/(\d)(?:-(\d))?/),
+            key   = k.replace(/[^a-z]+$/, '');
+        if(nc) {
+          value = loc['tokens'][nc[1]];
+        } else if(loc[key]) {
+          value = loc[key];
+        } else if(loc[key + 's']) {
+          value = loc[key + 's'];
+          if(slice) {
+            // Can't use filter here as Prototype hijacks the method and doesn't
+            // pass an index, so use a simple loop instead!
+            arr = [];
+            value.forEach(function(m, i) {
+              var mod = i % (loc['units'] ? 8 : value.length);
+              if(mod >= slice[1] && mod <= (slice[2] || slice[1])) {
+                arr.push(m);
+              }
+            });
+            value = arr;
+          }
+          value = arrayToAlternates(value);
+        }
+        if(nc) {
+          result = '(?:' + value + ')';
+        } else {
+          if(!match) {
+            to.push(key);
+          }
+          result = '(' + value + ')';
+        }
+        if(opt) {
+          result += '?';
+        }
+        return result;
+      });
+      if(allowsTime) {
+        time = prepareTime(RequiredTime, loc, iso);
+        timeMarkers = ['t','[\\s\\u3000]'].concat(loc['timeMarker']);
+        lastIsNumeral = src.match(/\\d\{\d,\d\}\)+\??$/);
+        addDateInputFormat(loc, '(?:' + time + ')[,\\s\\u3000]+?' + src, TimeFormat.concat(to), variant);
+        addDateInputFormat(loc, src + '(?:[,\\s]*(?:' + timeMarkers.join('|') + (lastIsNumeral ? '+' : '*') +')' + time + ')?', to.concat(TimeFormat), variant);
+      } else {
+        addDateInputFormat(loc, src, to, variant);
+      }
+    }
+
+  };
+
+
+  // Localization helpers
+
+  function getLocalization(localeCode, fallback) {
+    var loc;
+    if(!isString(localeCode)) localeCode = '';
+    loc = Localizations[localeCode] || Localizations[localeCode.slice(0,2)];
+    if(fallback === false && !loc) {
+      throw new Error('Invalid locale.');
+    }
+    return loc || CurrentLocalization;
+  }
+
+  function setLocalization(localeCode, set) {
+    var loc, canAbbreviate;
+
+    function initializeField(name) {
+      var val = loc[name];
+      if(isString(val)) {
+        loc[name] = val.split(',');
+      } else if(!val) {
+        loc[name] = [];
+      }
+    }
+
+    function eachAlternate(str, fn) {
+      str = str.split('+').map(function(split) {
+        return split.replace(/(.+):(.+)$/, function(full, base, suffixes) {
+          return suffixes.split('|').map(function(suffix) {
+            return base + suffix;
+          }).join('|');
+        });
+      }).join('|');
+      return str.split('|').forEach(fn);
+    }
+
+    function setArray(name, abbreviate, multiple) {
+      var arr = [];
+      loc[name].forEach(function(full, i) {
+        if(abbreviate) {
+          full += '+' + full.slice(0,3);
+        }
+        eachAlternate(full, function(day, j) {
+          arr[j * multiple + i] = day.toLowerCase();
+        });
+      });
+      loc[name] = arr;
+    }
+
+    function getDigit(start, stop, allowNumbers) {
+      var str = '\\d{' + start + ',' + stop + '}';
+      if(allowNumbers) str += '|(?:' + arrayToAlternates(loc['numbers']) + ')+';
+      return str;
+    }
+
+    function getNum() {
+      var arr = ['\\d+'].concat(loc['articles']);
+      if(loc['numbers']) arr = arr.concat(loc['numbers']);
+      return arrayToAlternates(arr);
+    }
+
+    function setDefault(name, value) {
+      loc[name] = loc[name] || value;
+    }
+
+    function setModifiers() {
+      var arr = [];
+      loc.modifiersByName = {};
+      loc['modifiers'].push({ 'name': 'day', 'src': 'yesterday', 'value': -1 });
+      loc['modifiers'].push({ 'name': 'day', 'src': 'today', 'value': 0 });
+      loc['modifiers'].push({ 'name': 'day', 'src': 'tomorrow', 'value': 1 });
+      loc['modifiers'].forEach(function(modifier) {
+        var name = modifier.name;
+        eachAlternate(modifier.src, function(t) {
+          var locEntry = loc[name];
+          loc.modifiersByName[t] = modifier;
+          arr.push({ name: name, src: t, value: modifier.value });
+          loc[name] = locEntry ? locEntry + '|' + t : t;
+        });
+      });
+      loc['day'] += '|' + arrayToAlternates(loc['weekdays']);
+      loc['modifiers'] = arr;
+    }
+
+    // Initialize the locale
+    loc = new Localization(set);
+    initializeField('modifiers');
+    'months,weekdays,units,numbers,articles,tokens,timeMarker,ampm,timeSuffixes,dateParse,timeParse'.split(',').forEach(initializeField);
+
+    canAbbreviate = !loc['monthSuffix'];
+
+    setArray('months',   canAbbreviate, 12);
+    setArray('weekdays', canAbbreviate, 7);
+    setArray('units', false, 8);
+    setArray('numbers', false, 10);
+
+    setDefault('code', localeCode);
+    setDefault('date', getDigit(1,2, loc['digitDate']));
+    setDefault('year', "'\\d{2}|" + getDigit(4,4));
+    setDefault('num', getNum());
+
+    setModifiers();
+
+    if(loc['monthSuffix']) {
+      loc['month'] = getDigit(1,2);
+      loc['months'] = getRange(1, 12).map(function(n) { return n + loc['monthSuffix']; });
+    }
+    loc['full_month'] = getDigit(1,2) + '|' + arrayToAlternates(loc['months']);
+
+    // The order of these formats is very important. Order is reversed so formats that come
+    // later will take precedence over formats that come before. This generally means that
+    // more specific formats should come later, however, the {year} format should come before
+    // {day}, as 2011 needs to be parsed as a year (2011) and not date (20) + hours (11)
+
+    // If the locale has time suffixes then add a time only format for that locale
+    // that is separate from the core English-based one.
+    if(loc['timeSuffixes'].length > 0) {
+      loc.addFormat(prepareTime(RequiredTime, loc), false, TimeFormat)
+    }
+
+    loc.addFormat('{day}', true);
+    loc.addFormat('{month}' + (loc['monthSuffix'] || ''));
+    loc.addFormat('{year}' + (loc['yearSuffix'] || ''));
+
+    loc['timeParse'].forEach(function(src) {
+      loc.addFormat(src, true);
+    });
+
+    loc['dateParse'].forEach(function(src) {
+      loc.addFormat(src);
+    });
+
+    return Localizations[localeCode] = loc;
+  }
+
+
+  // General helpers
+
+  function addDateInputFormat(locale, format, match, variant) {
+    locale.compiledFormats.unshift({
+      variant: variant,
+      locale: locale,
+      reg: regexp('^' + format + '$', 'i'),
+      to: match
+    });
+  }
+
+  function simpleCapitalize(str) {
+    return str.slice(0,1).toUpperCase() + str.slice(1);
+  }
+
+  function arrayToAlternates(arr) {
+    return arr.filter(function(el) {
+      return !!el;
+    }).join('|');
+  }
+
+  // Date argument helpers
+
+  function collectDateArguments(args, allowDuration) {
+    var obj, arr;
+    if(isObject(args[0])) {
+      return args;
+    } else if (isNumber(args[0]) && !isNumber(args[1])) {
+      return [args[0]];
+    } else if (isString(args[0]) && allowDuration) {
+      return [getDateParamsFromString(args[0]), args[1]];
+    }
+    obj = {};
+    DateArgumentUnits.forEach(function(u,i) {
+      obj[u.unit] = args[i];
+    });
+    return [obj];
+  }
+
+  function getDateParamsFromString(str, num) {
+    var params = {};
+    match = str.match(/^(\d+)?\s?(\w+?)s?$/i);
+    if(match) {
+      if(isUndefined(num)) {
+        num = parseInt(match[1]) || 1;
+      }
+      params[match[2].toLowerCase()] = num;
+    }
+    return params;
+  }
+
+  // Date parsing helpers
+
+  function getFormatMatch(match, arr) {
+    var obj = {}, value, num;
+    arr.forEach(function(key, i) {
+      value = match[i + 1];
+      if(isUndefined(value) || value === '') return;
+      if(key === 'year') {
+        obj.yearAsString = value.replace(/'/, '');
+      }
+      num = parseFloat(value.replace(/'/, '').replace(/,/, '.'));
+      obj[key] = !isNaN(num) ? num : value.toLowerCase();
+    });
+    return obj;
+  }
+
+  function cleanDateInput(str) {
+    str = str.trim().replace(/^just (?=now)|\.+$/i, '');
+    return convertAsianDigits(str);
+  }
+
+  function convertAsianDigits(str) {
+    return str.replace(AsianDigitReg, function(full, disallowed, match) {
+      var sum = 0, place = 1, lastWasHolder, lastHolder;
+      if(disallowed) return full;
+      match.split('').reverse().forEach(function(letter) {
+        var value = AsianDigitMap[letter], holder = value > 9;
+        if(holder) {
+          if(lastWasHolder) sum += place;
+          place *= value / (lastHolder || 1);
+          lastHolder = value;
+        } else {
+          if(lastWasHolder === false) {
+            place *= 10;
+          }
+          sum += place * value;
+        }
+        lastWasHolder = holder;
+      });
+      if(lastWasHolder) sum += place;
+      return sum;
+    });
+  }
+
+  function getExtendedDate(f, localeCode, prefer, forceUTC) {
+    var d = new date(), relative = false, baseLocalization, loc, format, set, unit, weekday, num, tmp, after;
+
+    d.utc(forceUTC);
+
+    if(isDate(f)) {
+      // If the source here is already a date object, then the operation
+      // is the same as cloning the date, which preserves the UTC flag.
+      d.utc(f.isUTC()).setTime(f.getTime());
+    } else if(isNumber(f)) {
+      d.setTime(f);
+    } else if(isObject(f)) {
+      d.set(f, true);
+      set = f;
+    } else if(isString(f)) {
+
+      // The act of getting the localization will pre-initialize
+      // if it is missing and add the required formats.
+      baseLocalization = getLocalization(localeCode);
+
+      // Clean the input and convert Kanji based numerals if they exist.
+      f = cleanDateInput(f);
+
+      if(baseLocalization) {
+        iterateOverObject(baseLocalization.getFormats(), function(i, dif) {
+          var match = f.match(dif.reg);
+          if(match) {
+            format = dif;
+            loc = format.locale;
+            set = getFormatMatch(match, format.to, loc);
+
+            if(set['utc']) {
+              d.utc();
+            }
+
+            loc.cachedFormat = format;
+
+            if(set.timestamp) {
+              set = set.timestamp;
+              return false;
+            }
+
+            // If there's a variant (crazy Endian American format), swap the month and day.
+            if(format.variant && !isString(set['month']) && (isString(set['date']) || baseLocalization.hasVariant(localeCode))) {
+              tmp = set['month'];
+              set['month'] = set['date'];
+              set['date']  = tmp;
+            }
+
+            // If the year is 2 digits then get the implied century.
+            if(set['year'] && set.yearAsString.length === 2) {
+              set['year'] = getYearFromAbbreviation(set['year']);
+            }
+
+            // Set the month which may be localized.
+            if(set['month']) {
+              set['month'] = loc.getMonth(set['month']);
+              if(set['shift'] && !set['unit']) set['unit'] = loc['units'][7];
+            }
+
+            // If there is both a weekday and a date, the date takes precedence.
+            if(set['weekday'] && set['date']) {
+              delete set['weekday'];
+            // Otherwise set a localized weekday.
+            } else if(set['weekday']) {
+              set['weekday'] = loc.getWeekday(set['weekday']);
+              if(set['shift'] && !set['unit']) set['unit'] = loc['units'][5];
+            }
+
+            // Relative day localizations such as "today" and "tomorrow".
+            if(set['day'] && (tmp = loc.modifiersByName[set['day']])) {
+              set['day'] = tmp.value;
+              d.reset();
+              relative = true;
+            // If the day is a weekday, then set that instead.
+            } else if(set['day'] && (weekday = loc.getWeekday(set['day'])) > -1) {
+              delete set['day'];
+              if(set['num'] && set['month']) {
+                // If we have "the 2nd tuesday of June", set the day to the beginning of the month, then
+                // look ahead to set the weekday after all other properties have been set. The weekday needs
+                // to be set after the actual set because it requires overriding the "prefer" argument which
+                // could unintentionally send the year into the future, past, etc.
+                after = function() {
+                  var w = d.getWeekday();
+                  d.setWeekday((7 * (set['num'] - 1)) + (w > weekday ? weekday + 7 : weekday));
+                }
+                set['day'] = 1;
+              } else {
+                set['weekday'] = weekday;
+              }
+            }
+
+            if(set['date'] && !isNumber(set['date'])) {
+              set['date'] = loc.getNumericDate(set['date']);
+            }
+
+            // If the time is 1pm-11pm advance the time by 12 hours.
+            if(loc.matchPM(set['ampm']) && set['hour'] < 12) {
+              set['hour'] += 12;
+            } else if(loc.matchAM(set['ampm']) && set['hour'] === 12) {
+              set['hour'] = 0;
+            }
+
+            // Adjust for timezone offset
+            if('offset_hours' in set || 'offset_minutes' in set) {
+              d.utc();
+              set['offset_minutes'] = set['offset_minutes'] || 0;
+              set['offset_minutes'] += set['offset_hours'] * 60;
+              if(set['offset_sign'] === '-') {
+                set['offset_minutes'] *= -1;
+              }
+              set['minute'] -= set['offset_minutes'];
+            }
+
+            // Date has a unit like "days", "months", etc. are all relative to the current date.
+            if(set['unit']) {
+              relative = true;
+              num = loc.getNumber(set['num']);
+              unit = loc.getEnglishUnit(set['unit']);
+
+              // Shift and unit, ie "next month", "last week", etc.
+              if(set['shift'] || set['edge']) {
+                num *= (tmp = loc.modifiersByName[set['shift']]) ? tmp.value : 0;
+
+                // Relative month and static date: "the 15th of last month"
+                if(unit === 'month' && isDefined(set['date'])) {
+                  d.set({ 'day': set['date'] }, true);
+                  delete set['date'];
+                }
+
+                // Relative year and static month/date: "June 15th of last year"
+                if(unit === 'year' && isDefined(set['month'])) {
+                  d.set({ 'month': set['month'], 'day': set['date'] }, true);
+                  delete set['month'];
+                  delete set['date'];
+                }
+              }
+              // Unit and sign, ie "months ago", "weeks from now", etc.
+              if(set['sign'] && (tmp = loc.modifiersByName[set['sign']])) {
+                num *= tmp.value;
+              }
+
+              // Units can be with non-relative dates, set here. ie "the day after monday"
+              if(isDefined(set['weekday'])) {
+                d.set({'weekday': set['weekday'] }, true);
+                delete set['weekday'];
+              }
+
+              // Finally shift the unit.
+              set[unit] = (set[unit] || 0) + num;
+            }
+
+            if(set['year_sign'] === '-') {
+              set['year'] *= -1;
+            }
+
+            DateUnitsReversed.slice(1,4).forEach(function(u, i) {
+              var value = set[u.unit], fraction = value % 1;
+              if(fraction) {
+                set[DateUnitsReversed[i].unit] = round(fraction * (u.unit === 'second' ? 1000 : 60));
+                set[u.unit] = floor(value);
+              }
+            });
+            return false;
+          }
+        });
+      }
+      if(!format) {
+        // The Date constructor does something tricky like checking the number
+        // of arguments so simply passing in undefined won't work.
+        if(f !== 'now') {
+          d = new date(f);
+        }
+        if(forceUTC) {
+          // Falling back to system date here which cannot be parsed as UTC,
+          // so if we're forcing UTC then simply add the offset.
+          d.addMinutes(-d.getTimezoneOffset());
+        }
+      } else if(relative) {
+        d.advance(set);
+      } else {
+        if(d._utc) {
+          // UTC times can traverse into other days or even months,
+          // so preemtively reset the time here to prevent this.
+          d.reset();
+        }
+        updateDate(d, set, true, false, prefer);
+      }
+
+      // If there is an "edge" it needs to be set after the
+      // other fields are set. ie "the end of February"
+      if(set && set['edge']) {
+        tmp = loc.modifiersByName[set['edge']];
+        iterateOverObject(DateUnitsReversed.slice(4), function(i, u) {
+          if(isDefined(set[u.unit])) {
+            unit = u.unit;
+            return false;
+          }
+        });
+        if(unit === 'year') set.specificity = 'month';
+        else if(unit === 'month' || unit === 'week') set.specificity = 'day';
+        d[(tmp.value < 0 ? 'endOf' : 'beginningOf') + simpleCapitalize(unit)]();
+        // This value of -2 is arbitrary but it's a nice clean way to hook into this system.
+        if(tmp.value === -2) d.reset();
+      }
+      if(after) {
+        after();
+      }
+      // A date created by parsing a string presumes that the format *itself* is UTC, but
+      // not that the date, once created, should be manipulated as such. In other words,
+      // if you are creating a date object from a server time "2012-11-15T12:00:00Z",
+      // in the majority of cases you are using it to create a date that will, after creation,
+      // be manipulated as local, so reset the utc flag here.
+      d.utc(false);
+    }
+    return {
+      date: d,
+      set: set
+    }
+  }
+
+  // If the year is two digits, add the most appropriate century prefix.
+  function getYearFromAbbreviation(year) {
+    return round(callDateGet(new date(), 'FullYear') / 100) * 100 - round(year / 100) * 100 + year;
+  }
+
+  function getShortHour(d) {
+    var hours = callDateGet(d, 'Hours');
+    return hours === 0 ? 12 : hours - (floor(hours / 13) * 12);
+  }
+
+  // weeksSince won't work here as the result needs to be floored, not rounded.
+  function getWeekNumber(date) {
+    date = date.clone();
+    var dow = callDateGet(date, 'Day') || 7;
+    date.addDays(4 - dow).reset();
+    return 1 + floor(date.daysSince(date.clone().beginningOfYear()) / 7);
+  }
+
+  function getAdjustedUnit(ms) {
+    var next, ams = math.abs(ms), value = ams, unit = 0;
+    DateUnitsReversed.slice(1).forEach(function(u, i) {
+      next = floor(round(ams / u.multiplier() * 10) / 10);
+      if(next >= 1) {
+        value = next;
+        unit = i + 1;
+      }
+    });
+    return [value, unit, ms];
+  }
+
+  function getAdjustedUnitWithMonthFallback(date) {
+    var adu = getAdjustedUnit(date.millisecondsFromNow());
+    if(adu[1] === 6) {
+      // If the adjusted unit is in months, then better to use
+      // the "monthsfromNow" which applies a special error margin
+      // for edge cases such as Jan-09 - Mar-09 being less than
+      // 2 months apart (when using a strict numeric definition).
+      // The third "ms" element in the array will handle the sign
+      // (past or future), so simply take the absolute value here.
+      adu[0] = math.abs(date.monthsFromNow());
+    }
+    return adu;
+  }
+
+
+  // Date formatting helpers
+
+  function formatDate(date, format, relative, localeCode) {
+    var adu, loc = getLocalization(localeCode), caps = regexp(/^[A-Z]/), value, shortcut;
+    if(!date.isValid()) {
+      return 'Invalid Date';
+    } else if(Date[format]) {
+      format = Date[format];
+    } else if(isFunction(format)) {
+      adu = getAdjustedUnitWithMonthFallback(date);
+      format = format.apply(date, adu.concat(loc));
+    }
+    if(!format && relative) {
+      adu = adu || getAdjustedUnitWithMonthFallback(date);
+      // Adjust up if time is in ms, as this doesn't
+      // look very good for a standard relative date.
+      if(adu[1] === 0) {
+        adu[1] = 1;
+        adu[0] = 1;
+      }
+      return loc.getRelativeFormat(adu);
+    }
+
+    format = format || 'long';
+    format = loc[format] || format;
+
+    DateOutputFormats.forEach(function(dof) {
+      format = format.replace(regexp('\\{('+dof.token+')(\\d)?\\}', dof.word ? 'i' : ''), function(m,t,d) {
+        var val = dof.format(date, loc, d || 1, t), l = t.length, one = t.match(/^(.)\1+$/);
+        if(dof.word) {
+          if(l === 3) val = val.slice(0,3);
+          if(one || t.match(caps)) val = simpleCapitalize(val);
+        } else if(one && !dof.text) {
+          val = (isNumber(val) ? padNumber(val, l) : val.toString()).slice(-l);
+        }
+        return val;
+      });
+    });
+    return format;
+  }
+
+  // Date comparison helpers
+
+  function compareDate(d, find, buffer, forceUTC) {
+    var p, t, min, max, minOffset, maxOffset, override, capitalized, accuracy = 0, loBuffer = 0, hiBuffer = 0;
+    p = getExtendedDate(find, null, null, forceUTC);
+    if(buffer > 0) {
+      loBuffer = hiBuffer = buffer;
+      override = true;
+    }
+    if(!p.date.isValid()) return false;
+    if(p.set && p.set.specificity) {
+      DateUnits.forEach(function(u, i) {
+        if(u.unit === p.set.specificity) {
+          accuracy = u.multiplier(p.date, d - p.date) - 1;
+        }
+      });
+      capitalized = simpleCapitalize(p.set.specificity);
+      if(p.set['edge'] || p.set['shift']) {
+        p.date['beginningOf' + capitalized]();
+      }
+      if(p.set.specificity === 'month') {
+        max = p.date.clone()['endOf' + capitalized]().getTime();
+      }
+      if(!override && p.set['sign'] && p.set.specificity != 'millisecond') {
+        // If the time is relative, there can occasionally be an disparity between the relative date
+        // and "now", which it is being compared to, so set an extra buffer to account for this.
+        loBuffer = 50;
+        hiBuffer = -50;
+      }
+    }
+    t   = d.getTime();
+    min = p.date.getTime();
+    max = max || (min + accuracy);
+    max = compensateForTimezoneTraversal(d, min, max);
+    return t >= (min - loBuffer) && t <= (max + hiBuffer);
+  }
+
+  function compensateForTimezoneTraversal(d, min, max) {
+    var dMin, dMax, minOffset, maxOffset;
+    dMin = new Date(min);
+    dMax = new Date(max).utc(d.isUTC());
+    if(callDateGet(dMax, 'Hours') !== 23) {
+      minOffset = dMin.getTimezoneOffset();
+      maxOffset = dMax.getTimezoneOffset();
+      if(minOffset !== maxOffset) {
+        max += (maxOffset - minOffset).minutes();
+      }
+    }
+    return max;
+  }
+
+  function updateDate(d, params, reset, advance, prefer) {
+    var weekday, specificityIndex;
+
+    function getParam(key) {
+      return isDefined(params[key]) ? params[key] : params[key + 's'];
+    }
+
+    function paramExists(key) {
+      return isDefined(getParam(key));
+    }
+
+    function uniqueParamExists(key, isDay) {
+      return paramExists(key) || (isDay && paramExists('weekday'));
+    }
+
+    function canDisambiguate() {
+      var now = new date;
+      return (prefer === -1 && d > now) || (prefer === 1 && d < now);
+    }
+
+    if(isNumber(params) && advance) {
+      // If param is a number and we're advancing, the number is presumed to be milliseconds.
+      params = { 'milliseconds': params };
+    } else if(isNumber(params)) {
+      // Otherwise just set the timestamp and return.
+      d.setTime(params);
+      return d;
+    }
+
+    // "date" can also be passed for the day
+    if(isDefined(params['date'])) {
+      params['day'] = params['date'];
+    }
+
+    // Reset any unit lower than the least specific unit set. Do not do this for weeks
+    // or for years. This needs to be performed before the acutal setting of the date
+    // because the order needs to be reversed in order to get the lowest specificity,
+    // also because higher order units can be overwritten by lower order units, such
+    // as setting hour: 3, minute: 345, etc.
+    iterateOverObject(DateUnitsReversed, function(i,u) {
+      var isDay = u.unit === 'day';
+      if(uniqueParamExists(u.unit, isDay)) {
+        params.specificity = u.unit;
+        specificityIndex = +i;
+        return false;
+      } else if(reset && u.unit !== 'week' && (!isDay || !paramExists('week'))) {
+        // Days are relative to months, not weeks, so don't reset if a week exists.
+        callDateSet(d, u.method, (isDay ? 1 : 0));
+      }
+    });
+
+
+    // Now actually set or advance the date in order, higher units first.
+    DateUnits.forEach(function(u,i) {
+      var unit = u.unit, method = u.method, higherUnit = DateUnits[i - 1], value;
+      value = getParam(unit)
+      if(isUndefined(value)) return;
+      if(advance) {
+        if(unit === 'week') {
+          value  = (params['day'] || 0) + (value * 7);
+          method = 'Date';
+        }
+        value = (value * advance) + callDateGet(d, method);
+      } else if(unit === 'month' && paramExists('day')) {
+        // When setting the month, there is a chance that we will traverse into a new month.
+        // This happens in DST shifts, for example June 1st DST jumping to January 1st
+        // (non-DST) will have a shift of -1:00 which will traverse into the previous year.
+        // Prevent this by proactively setting the day when we know it will be set again anyway.
+        // It can also happen when there are not enough days in the target month. This second
+        // situation is identical to checkMonthTraversal below, however when we are advancing
+        // we want to reset the date to "the last date in the target month". In the case of
+        // DST shifts, however, we want to avoid the "edges" of months as that is where this
+        // unintended traversal can happen. This is the reason for the different handling of
+        // two similar but slightly different situations.
+        //
+        // TL;DR This method avoids the edges of a month IF not advancing and the date is going
+        // to be set anyway, while checkMonthTraversal resets the date to the last day if advancing.
+        //
+        callDateSet(d, 'Date', 15);
+      }
+      callDateSet(d, method, value);
+      if(advance && unit === 'month') {
+        checkMonthTraversal(d, value);
+      }
+    });
+
+
+    // If a weekday is included in the params, set it ahead of time and set the params
+    // to reflect the updated date so that resetting works properly.
+    if(!advance && !paramExists('day') && paramExists('weekday')) {
+      var weekday = getParam('weekday'), isAhead, futurePreferred;
+      d.setWeekday(weekday);
+    }
+
+    if(canDisambiguate()) {
+      iterateOverObject(DateUnitsReversed.slice(specificityIndex + 1), function(i,u) {
+        var ambiguous = u.ambiguous || (u.unit === 'week' && paramExists('weekday'));
+        if(ambiguous && !uniqueParamExists(u.unit, u.unit === 'day')) {
+          d[u.addMethod](prefer);
+          return false;
+        }
+      });
+    }
+    return d;
+  }
+
+  function callDateGet(d, method) {
+    return d['get' + (d._utc ? 'UTC' : '') + method]();
+  }
+
+  function callDateSet(d, method, value) {
+    return d['set' + (d._utc && method != 'ISOWeek' ? 'UTC' : '') + method](value);
+  }
+
+  // The ISO format allows times strung together without a demarcating ":", so make sure
+  // that these markers are now optional.
+  function prepareTime(format, loc, iso) {
+    var timeSuffixMapping = {'h':0,'m':1,'s':2}, add;
+    loc = loc || English;
+    return format.replace(/{([a-z])}/g, function(full, token) {
+      var separators = [],
+          isHours = token === 'h',
+          tokenIsRequired = isHours && !iso;
+      if(token === 't') {
+        return loc['ampm'].join('|');
+      } else {
+        if(isHours) {
+          separators.push(':');
+        }
+        if(add = loc['timeSuffixes'][timeSuffixMapping[token]]) {
+          separators.push(add + '\\s*');
+        }
+        return separators.length === 0 ? '' : '(?:' + separators.join('|') + ')' + (tokenIsRequired ? '' : '?');
+      }
+    });
+  }
+
+
+  // If the month is being set, then we don't want to accidentally
+  // traverse into a new month just because the target month doesn't have enough
+  // days. In other words, "5 months ago" from July 30th is still February, even
+  // though there is no February 30th, so it will of necessity be February 28th
+  // (or 29th in the case of a leap year).
+
+  function checkMonthTraversal(date, targetMonth) {
+    if(targetMonth < 0) {
+      targetMonth = targetMonth % 12 + 12;
+    }
+    if(targetMonth % 12 != callDateGet(date, 'Month')) {
+      callDateSet(date, 'Date', 0);
+    }
+  }
+
+  function createDate(args, prefer, forceUTC) {
+    var f, localeCode;
+    if(isNumber(args[1])) {
+      // If the second argument is a number, then we have an enumerated constructor type as in "new Date(2003, 2, 12);"
+      f = collectDateArguments(args)[0];
+    } else {
+      f          = args[0];
+      localeCode = args[1];
+    }
+    return getExtendedDate(f, localeCode, prefer, forceUTC).date;
+  }
+
+  function buildDateUnits() {
+    DateUnitsReversed = DateUnits.concat().reverse();
+    DateArgumentUnits = DateUnits.concat();
+    DateArgumentUnits.splice(2,1);
+  }
+
+
+  /***
+   * @method [units]Since([d], [locale] = currentLocale)
+   * @returns Number
+   * @short Returns the time since [d] in the appropriate unit.
+   * @extra [d] will accept a date object, timestamp, or text format. If not specified, [d] is assumed to be now. [locale] can be passed to specify the locale that the date is in. %[unit]Ago% is provided as an alias to make this more readable when [d] is assumed to be the current date. For more see @date_format.
+   *
+   * @set
+   *   millisecondsSince
+   *   secondsSince
+   *   minutesSince
+   *   hoursSince
+   *   daysSince
+   *   weeksSince
+   *   monthsSince
+   *   yearsSince
+   *
+   * @example
+   *
+   *   Date.create().millisecondsSince('1 hour ago') -> 3,600,000
+   *   Date.create().daysSince('1 week ago')         -> 7
+   *   Date.create().yearsSince('15 years ago')      -> 15
+   *   Date.create('15 years ago').yearsAgo()        -> 15
+   *
+   ***
+   * @method [units]Ago()
+   * @returns Number
+   * @short Returns the time ago in the appropriate unit.
+   *
+   * @set
+   *   millisecondsAgo
+   *   secondsAgo
+   *   minutesAgo
+   *   hoursAgo
+   *   daysAgo
+   *   weeksAgo
+   *   monthsAgo
+   *   yearsAgo
+   *
+   * @example
+   *
+   *   Date.create('last year').millisecondsAgo() -> 3,600,000
+   *   Date.create('last year').daysAgo()         -> 7
+   *   Date.create('last year').yearsAgo()        -> 15
+   *
+   ***
+   * @method [units]Until([d], [locale] = currentLocale)
+   * @returns Number
+   * @short Returns the time until [d] in the appropriate unit.
+   * @extra [d] will accept a date object, timestamp, or text format. If not specified, [d] is assumed to be now. [locale] can be passed to specify the locale that the date is in. %[unit]FromNow% is provided as an alias to make this more readable when [d] is assumed to be the current date. For more see @date_format.
+   *
+   * @set
+   *   millisecondsUntil
+   *   secondsUntil
+   *   minutesUntil
+   *   hoursUntil
+   *   daysUntil
+   *   weeksUntil
+   *   monthsUntil
+   *   yearsUntil
+   *
+   * @example
+   *
+   *   Date.create().millisecondsUntil('1 hour from now') -> 3,600,000
+   *   Date.create().daysUntil('1 week from now')         -> 7
+   *   Date.create().yearsUntil('15 years from now')      -> 15
+   *   Date.create('15 years from now').yearsFromNow()    -> 15
+   *
+   ***
+   * @method [units]FromNow()
+   * @returns Number
+   * @short Returns the time from now in the appropriate unit.
+   *
+   * @set
+   *   millisecondsFromNow
+   *   secondsFromNow
+   *   minutesFromNow
+   *   hoursFromNow
+   *   daysFromNow
+   *   weeksFromNow
+   *   monthsFromNow
+   *   yearsFromNow
+   *
+   * @example
+   *
+   *   Date.create('next year').millisecondsFromNow() -> 3,600,000
+   *   Date.create('next year').daysFromNow()         -> 7
+   *   Date.create('next year').yearsFromNow()        -> 15
+   *
+   ***
+   * @method add[Units](<num>, [reset] = false)
+   * @returns Date
+   * @short Adds <num> of the unit to the date. If [reset] is true, all lower units will be reset.
+   * @extra Note that "months" is ambiguous as a unit of time. If the target date falls on a day that does not exist (ie. August 31 -> February 31), the date will be shifted to the last day of the month. Don't use %addMonths% if you need precision.
+   *
+   * @set
+   *   addMilliseconds
+   *   addSeconds
+   *   addMinutes
+   *   addHours
+   *   addDays
+   *   addWeeks
+   *   addMonths
+   *   addYears
+   *
+   * @example
+   *
+   *   Date.create().addMilliseconds(5) -> current time + 5 milliseconds
+   *   Date.create().addDays(5)         -> current time + 5 days
+   *   Date.create().addYears(5)        -> current time + 5 years
+   *
+   ***
+   * @method isLast[Unit]()
+   * @returns Boolean
+   * @short Returns true if the date is last week/month/year.
+   *
+   * @set
+   *   isLastWeek
+   *   isLastMonth
+   *   isLastYear
+   *
+   * @example
+   *
+   *   Date.create('yesterday').isLastWeek()  -> true or false?
+   *   Date.create('yesterday').isLastMonth() -> probably not...
+   *   Date.create('yesterday').isLastYear()  -> even less likely...
+   *
+   ***
+   * @method isThis[Unit]()
+   * @returns Boolean
+   * @short Returns true if the date is this week/month/year.
+   *
+   * @set
+   *   isThisWeek
+   *   isThisMonth
+   *   isThisYear
+   *
+   * @example
+   *
+   *   Date.create('tomorrow').isThisWeek()  -> true or false?
+   *   Date.create('tomorrow').isThisMonth() -> probably...
+   *   Date.create('tomorrow').isThisYear()  -> signs point to yes...
+   *
+   ***
+   * @method isNext[Unit]()
+   * @returns Boolean
+   * @short Returns true if the date is next week/month/year.
+   *
+   * @set
+   *   isNextWeek
+   *   isNextMonth
+   *   isNextYear
+   *
+   * @example
+   *
+   *   Date.create('tomorrow').isNextWeek()  -> true or false?
+   *   Date.create('tomorrow').isNextMonth() -> probably not...
+   *   Date.create('tomorrow').isNextYear()  -> even less likely...
+   *
+   ***
+   * @method beginningOf[Unit]()
+   * @returns Date
+   * @short Sets the date to the beginning of the appropriate unit.
+   *
+   * @set
+   *   beginningOfDay
+   *   beginningOfWeek
+   *   beginningOfMonth
+   *   beginningOfYear
+   *
+   * @example
+   *
+   *   Date.create().beginningOfDay()   -> the beginning of today (resets the time)
+   *   Date.create().beginningOfWeek()  -> the beginning of the week
+   *   Date.create().beginningOfMonth() -> the beginning of the month
+   *   Date.create().beginningOfYear()  -> the beginning of the year
+   *
+   ***
+   * @method endOf[Unit]()
+   * @returns Date
+   * @short Sets the date to the end of the appropriate unit.
+   *
+   * @set
+   *   endOfDay
+   *   endOfWeek
+   *   endOfMonth
+   *   endOfYear
+   *
+   * @example
+   *
+   *   Date.create().endOfDay()   -> the end of today (sets the time to 23:59:59.999)
+   *   Date.create().endOfWeek()  -> the end of the week
+   *   Date.create().endOfMonth() -> the end of the month
+   *   Date.create().endOfYear()  -> the end of the year
+   *
+   ***/
+
+  function buildDateMethods() {
+    extendSimilar(date, true, false, DateUnits, function(methods, u, i) {
+      var unit = u.unit, caps = simpleCapitalize(unit), multiplier = u.multiplier(), since, until;
+      u.addMethod = 'add' + caps + 's';
+      // "since/until now" only count "past" an integer, i.e. "2 days ago" is
+      // anything between 2 - 2.999 days. The default margin of error is 0.999,
+      // but "months" have an inherently larger margin, as the number of days
+      // in a given month may be significantly less than the number of days in
+      // the average month, so for example "30 days" before March 15 may in fact
+      // be 1 month ago. Years also have a margin of error due to leap years,
+      // but this is roughly 0.999 anyway (365 / 365.25). Other units do not
+      // technically need the error margin applied to them but this accounts
+      // for discrepancies like (15).hoursAgo() which technically creates the
+      // current date first, then creates a date 15 hours before and compares
+      // them, the discrepancy between the creation of the 2 dates means that
+      // they may actually be 15.0001 hours apart. Milliseconds don't have
+      // fractions, so they won't be subject to this error margin.
+      function applyErrorMargin(ms) {
+        var num      = ms / multiplier,
+            fraction = num % 1,
+            error    = u.error || 0.999;
+        if(fraction && math.abs(fraction % 1) > error) {
+          num = round(num);
+        }
+        return parseInt(num);
+      }
+      since = function(f, localeCode) {
+        return applyErrorMargin(this.getTime() - date.create(f, localeCode).getTime());
+      };
+      until = function(f, localeCode) {
+        return applyErrorMargin(date.create(f, localeCode).getTime() - this.getTime());
+      };
+      methods[unit+'sAgo']     = until;
+      methods[unit+'sUntil']   = until;
+      methods[unit+'sSince']   = since;
+      methods[unit+'sFromNow'] = since;
+      methods[u.addMethod] = function(num, reset) {
+        var set = {};
+        set[unit] = num;
+        return this.advance(set, reset);
+      };
+      buildNumberToDateAlias(u, multiplier);
+      if(i < 3) {
+        ['Last','This','Next'].forEach(function(shift) {
+          methods['is' + shift + caps] = function() {
+            return this.is(shift + ' ' + unit);
+          };
+        });
+      }
+      if(i < 4) {
+        methods['beginningOf' + caps] = function() {
+          var set = {};
+          switch(unit) {
+            case 'year':  set['year']    = callDateGet(this, 'FullYear'); break;
+            case 'month': set['month']   = callDateGet(this, 'Month');    break;
+            case 'day':   set['day']     = callDateGet(this, 'Date');     break;
+            case 'week':  set['weekday'] = 0; break;
+          }
+          return this.set(set, true);
+        };
+        methods['endOf' + caps] = function() {
+          var set = { 'hours': 23, 'minutes': 59, 'seconds': 59, 'milliseconds': 999 };
+          switch(unit) {
+            case 'year':  set['month']   = 11; set['day'] = 31; break;
+            case 'month': set['day']     = this.daysInMonth();  break;
+            case 'week':  set['weekday'] = 6;                   break;
+          }
+          return this.set(set, true);
+        };
+      }
+    });
+  }
+
+  function buildCoreInputFormats() {
+    English.addFormat('([+-])?(\\d{4,4})[-.]?{full_month}[-.]?(\\d{1,2})?', true, ['year_sign','year','month','date'], false, true);
+    English.addFormat('(\\d{1,2})[-.\\/]{full_month}(?:[-.\\/](\\d{2,4}))?', true, ['date','month','year'], true);
+    English.addFormat('{full_month}[-.](\\d{4,4})', false, ['month','year']);
+    English.addFormat('\\/Date\\((\\d+(?:\\+\\d{4,4})?)\\)\\/', false, ['timestamp'])
+    English.addFormat(prepareTime(RequiredTime, English), false, TimeFormat)
+
+    // When a new locale is initialized it will have the CoreDateFormats initialized by default.
+    // From there, adding new formats will push them in front of the previous ones, so the core
+    // formats will be the last to be reached. However, the core formats themselves have English
+    // months in them, which means that English needs to first be initialized and creates a race
+    // condition. I'm getting around this here by adding these generalized formats in the order
+    // specific -> general, which will mean they will be added to the English localization in
+    // general -> specific order, then chopping them off the front and reversing to get the correct
+    // order. Note that there are 7 formats as 2 have times which adds a front and a back format.
+    CoreDateFormats = English.compiledFormats.slice(0,7).reverse();
+    English.compiledFormats = English.compiledFormats.slice(7).concat(CoreDateFormats);
+  }
+
+  function buildDateOutputShortcuts() {
+    extendSimilar(date, true, false, 'short,long,full', function(methods, name) {
+      methods[name] = function(localeCode) {
+        return formatDate(this, name, false, localeCode);
+      }
+    });
+  }
+
+  function buildAsianDigits() {
+    KanjiDigits.split('').forEach(function(digit, value) {
+      var holder;
+      if(value > 9) {
+        value = math.pow(10, value - 9);
+      }
+      AsianDigitMap[digit] = value;
+    });
+    FullWidthDigits.split('').forEach(function(digit, value) {
+      AsianDigitMap[digit] = value;
+    });
+    // Kanji numerals may also be included in phrases which are text-based rather
+    // than actual numbers such as Chinese weekdays (上周三), and "the day before
+    // yesterday" (一昨日) in Japanese, so don't match these.
+    AsianDigitReg = regexp('([期週周])?([' + KanjiDigits + FullWidthDigits + ']+)(?!昨)', 'g');
+  }
+
+   /***
+   * @method is[Day]()
+   * @returns Boolean
+   * @short Returns true if the date falls on that day.
+   * @extra Also available: %isYesterday%, %isToday%, %isTomorrow%, %isWeekday%, and %isWeekend%.
+   *
+   * @set
+   *   isToday
+   *   isYesterday
+   *   isTomorrow
+   *   isWeekday
+   *   isWeekend
+   *   isSunday
+   *   isMonday
+   *   isTuesday
+   *   isWednesday
+   *   isThursday
+   *   isFriday
+   *   isSaturday
+   *
+   * @example
+   *
+   *   Date.create('tomorrow').isToday() -> false
+   *   Date.create('thursday').isTomorrow() -> ?
+   *   Date.create('yesterday').isWednesday() -> ?
+   *   Date.create('today').isWeekend() -> ?
+   *
+   ***
+   * @method isFuture()
+   * @returns Boolean
+   * @short Returns true if the date is in the future.
+   * @example
+   *
+   *   Date.create('next week').isFuture() -> true
+   *   Date.create('last week').isFuture() -> false
+   *
+   ***
+   * @method isPast()
+   * @returns Boolean
+   * @short Returns true if the date is in the past.
+   * @example
+   *
+   *   Date.create('last week').isPast() -> true
+   *   Date.create('next week').isPast() -> false
+   *
+   ***/
+  function buildRelativeAliases() {
+    var special  = 'today,yesterday,tomorrow,weekday,weekend,future,past'.split(',');
+    var weekdays = English['weekdays'].slice(0,7);
+    var months   = English['months'].slice(0,12);
+    extendSimilar(date, true, false, special.concat(weekdays).concat(months), function(methods, name) {
+      methods['is'+ simpleCapitalize(name)] = function(utc) {
+       return this.is(name, 0, utc);
+      };
+    });
+  }
+
+  function buildUTCAliases() {
+    date.extend({
+      'utc': {
+
+        'create': function() {
+          return createDate(arguments, 0, true);
+        },
+
+        'past': function() {
+          return createDate(arguments, -1, true);
+        },
+
+        'future': function() {
+          return createDate(arguments, 1, true);
+        }
+
+      }
+    }, false, false);
+  }
+
+  function setDateProperties() {
+    date.extend({
+      'RFC1123': '{Dow}, {dd} {Mon} {yyyy} {HH}:{mm}:{ss} {tz}',
+      'RFC1036': '{Weekday}, {dd}-{Mon}-{yy} {HH}:{mm}:{ss} {tz}',
+      'ISO8601_DATE': '{yyyy}-{MM}-{dd}',
+      'ISO8601_DATETIME': '{yyyy}-{MM}-{dd}T{HH}:{mm}:{ss}.{fff}{isotz}'
+    }, false, false);
+  }
+
+
+  date.extend({
+
+     /***
+     * @method Date.create(<d>, [locale] = currentLocale)
+     * @returns Date
+     * @short Alternate Date constructor which understands many different text formats, a timestamp, or another date.
+     * @extra If no argument is given, date is assumed to be now. %Date.create% additionally can accept enumerated parameters as with the standard date constructor. [locale] can be passed to specify the locale that the date is in. When unspecified, the current locale (default is English) is assumed. UTC-based dates can be created through the %utc% object. For more see @date_format.
+     * @set
+     *   Date.utc.create
+     *
+     * @example
+     *
+     *   Date.create('July')          -> July of this year
+     *   Date.create('1776')          -> 1776
+     *   Date.create('today')         -> today
+     *   Date.create('wednesday')     -> This wednesday
+     *   Date.create('next friday')   -> Next friday
+     *   Date.create('July 4, 1776')  -> July 4, 1776
+     *   Date.create(-446806800000)   -> November 5, 1955
+     *   Date.create(1776, 6, 4)      -> July 4, 1776
+     *   Date.create('1776年07月04日', 'ja') -> July 4, 1776
+     *   Date.utc.create('July 4, 1776', 'en')  -> July 4, 1776
+     *
+     ***/
+    'create': function() {
+      return createDate(arguments);
+    },
+
+     /***
+     * @method Date.past(<d>, [locale] = currentLocale)
+     * @returns Date
+     * @short Alternate form of %Date.create% with any ambiguity assumed to be the past.
+     * @extra For example %"Sunday"% can be either "the Sunday coming up" or "the Sunday last" depending on context. Note that dates explicitly in the future ("next Sunday") will remain in the future. This method simply provides a hint when ambiguity exists. UTC-based dates can be created through the %utc% object. For more, see @date_format.
+     * @set
+     *   Date.utc.past
+     * @example
+     *
+     *   Date.past('July')          -> July of this year or last depending on the current month
+     *   Date.past('Wednesday')     -> This wednesday or last depending on the current weekday
+     *
+     ***/
+    'past': function() {
+      return createDate(arguments, -1);
+    },
+
+     /***
+     * @method Date.future(<d>, [locale] = currentLocale)
+     * @returns Date
+     * @short Alternate form of %Date.create% with any ambiguity assumed to be the future.
+     * @extra For example %"Sunday"% can be either "the Sunday coming up" or "the Sunday last" depending on context. Note that dates explicitly in the past ("last Sunday") will remain in the past. This method simply provides a hint when ambiguity exists. UTC-based dates can be created through the %utc% object. For more, see @date_format.
+     * @set
+     *   Date.utc.future
+     *
+     * @example
+     *
+     *   Date.future('July')          -> July of this year or next depending on the current month
+     *   Date.future('Wednesday')     -> This wednesday or next depending on the current weekday
+     *
+     ***/
+    'future': function() {
+      return createDate(arguments, 1);
+    },
+
+     /***
+     * @method Date.addLocale(<code>, <set>)
+     * @returns Locale
+     * @short Adds a locale <set> to the locales understood by Sugar.
+     * @extra For more see @date_format.
+     *
+     ***/
+    'addLocale': function(localeCode, set) {
+      return setLocalization(localeCode, set);
+    },
+
+     /***
+     * @method Date.setLocale(<code>)
+     * @returns Locale
+     * @short Sets the current locale to be used with dates.
+     * @extra Sugar has support for 13 locales that are available through the "Date Locales" package. In addition you can define a new locale with %Date.addLocale%. For more see @date_format.
+     *
+     ***/
+    'setLocale': function(localeCode, set) {
+      var loc = getLocalization(localeCode, false);
+      CurrentLocalization = loc;
+      // The code is allowed to be more specific than the codes which are required:
+      // i.e. zh-CN or en-US. Currently this only affects US date variants such as 8/10/2000.
+      if(localeCode && localeCode != loc['code']) {
+        loc['code'] = localeCode;
+      }
+      return loc;
+    },
+
+     /***
+     * @method Date.getLocale([code] = current)
+     * @returns Locale
+     * @short Gets the locale for the given code, or the current locale.
+     * @extra The resulting locale object can be manipulated to provide more control over date localizations. For more about locales, see @date_format.
+     *
+     ***/
+    'getLocale': function(localeCode) {
+      return !localeCode ? CurrentLocalization : getLocalization(localeCode, false);
+    },
+
+     /**
+     * @method Date.addFormat(<format>, <match>, [code] = null)
+     * @returns Nothing
+     * @short Manually adds a new date input format.
+     * @extra This method allows fine grained control for alternate formats. <format> is a string that can have regex tokens inside. <match> is an array of the tokens that each regex capturing group will map to, for example %year%, %date%, etc. For more, see @date_format.
+     *
+     **/
+    'addFormat': function(format, match, localeCode) {
+      addDateInputFormat(getLocalization(localeCode), format, match);
+    }
+
+  }, false, false);
+
+  date.extend({
+
+     /***
+     * @method set(<set>, [reset] = false)
+     * @returns Date
+     * @short Sets the date object.
+     * @extra This method can accept multiple formats including a single number as a timestamp, an object, or enumerated parameters (as with the Date constructor). If [reset] is %true%, any units more specific than those passed will be reset.
+     *
+     * @example
+     *
+     *   new Date().set({ year: 2011, month: 11, day: 31 }) -> December 31, 2011
+     *   new Date().set(2011, 11, 31)                       -> December 31, 2011
+     *   new Date().set(86400000)                           -> 1 day after Jan 1, 1970
+     *   new Date().set({ year: 2004, month: 6 }, true)     -> June 1, 2004, 00:00:00.000
+     *
+     ***/
+    'set': function() {
+      var args = collectDateArguments(arguments);
+      return updateDate(this, args[0], args[1])
+    },
+
+     /***
+     * @method setWeekday()
+     * @returns Nothing
+     * @short Sets the weekday of the date.
+     * @extra In order to maintain a parallel with %getWeekday% (which itself is an alias for Javascript native %getDay%), Sunday is considered day %0%. This contrasts with ISO-8601 standard (used in %getISOWeek% and %setISOWeek%) which places Sunday at the end of the week (day 7). This effectively means that passing %0% to this method while in the middle of a week will rewind the date, where passing %7% will advance it.
+     *
+     * @example
+     *
+     *   d = new Date(); d.setWeekday(1); d; -> Monday of this week
+     *   d = new Date(); d.setWeekday(6); d; -> Saturday of this week
+     *
+     ***/
+    'setWeekday': function(dow) {
+      if(isUndefined(dow)) return;
+      return callDateSet(this, 'Date', callDateGet(this, 'Date') + dow - callDateGet(this, 'Day'));
+    },
+
+     /***
+     * @method setISOWeek()
+     * @returns Nothing
+     * @short Sets the week (of the year) as defined by the ISO-8601 standard.
+     * @extra Note that this standard places Sunday at the end of the week (day 7).
+     *
+     * @example
+     *
+     *   d = new Date(); d.setISOWeek(15); d; -> 15th week of the year
+     *
+     ***/
+    'setISOWeek': function(week) {
+      var weekday = callDateGet(this, 'Day') || 7;
+      if(isUndefined(week)) return;
+      this.set({ 'month': 0, 'date': 4 });
+      this.set({ 'weekday': 1 });
+      if(week > 1) {
+        this.addWeeks(week - 1);
+      }
+      if(weekday !== 1) {
+        this.advance({ 'days': weekday - 1 });
+      }
+      return this.getTime();
+    },
+
+     /***
+     * @method getISOWeek()
+     * @returns Number
+     * @short Gets the date's week (of the year) as defined by the ISO-8601 standard.
+     * @extra Note that this standard places Sunday at the end of the week (day 7). If %utc% is set on the date, the week will be according to UTC time.
+     *
+     * @example
+     *
+     *   new Date().getISOWeek()    -> today's week of the year
+     *
+     ***/
+    'getISOWeek': function() {
+      return getWeekNumber(this);
+    },
+
+     /***
+     * @method getUTCOffset([iso])
+     * @returns String
+     * @short Returns a string representation of the offset from UTC time. If [iso] is true the offset will be in ISO8601 format.
+     * @example
+     *
+     *   new Date().getUTCOffset()     -> "+0900"
+     *   new Date().getUTCOffset(true) -> "+09:00"
+     *
+     ***/
+    'getUTCOffset': function(iso) {
+      var offset = this._utc ? 0 : this.getTimezoneOffset();
+      var colon  = iso === true ? ':' : '';
+      if(!offset && iso) return 'Z';
+      return padNumber(floor(-offset / 60), 2, true) + colon + padNumber(math.abs(offset % 60), 2);
+    },
+
+     /***
+     * @method utc([on] = true)
+     * @returns Date
+     * @short Sets the internal utc flag for the date. When on, UTC-based methods will be called internally.
+     * @extra For more see @date_format.
+     * @example
+     *
+     *   new Date().utc(true)
+     *   new Date().utc(false)
+     *
+     ***/
+    'utc': function(set) {
+      defineProperty(this, '_utc', set === true || arguments.length === 0);
+      return this;
+    },
+
+     /***
+     * @method isUTC()
+     * @returns Boolean
+     * @short Returns true if the date has no timezone offset.
+     * @extra This will also return true for utc-based dates (dates that have the %utc% method set true). Note that even if the utc flag is set, %getTimezoneOffset% will always report the same thing as Javascript always reports that based on the environment's locale.
+     * @example
+     *
+     *   new Date().isUTC()           -> true or false?
+     *   new Date().utc(true).isUTC() -> true
+     *
+     ***/
+    'isUTC': function() {
+      return !!this._utc || this.getTimezoneOffset() === 0;
+    },
+
+     /***
+     * @method advance(<set>, [reset] = false)
+     * @returns Date
+     * @short Sets the date forward.
+     * @extra This method can accept multiple formats including an object, a string in the format %3 days%, a single number as milliseconds, or enumerated parameters (as with the Date constructor). If [reset] is %true%, any units more specific than those passed will be reset. For more see @date_format.
+     * @example
+     *
+     *   new Date().advance({ year: 2 }) -> 2 years in the future
+     *   new Date().advance('2 days')    -> 2 days in the future
+     *   new Date().advance(0, 2, 3)     -> 2 months 3 days in the future
+     *   new Date().advance(86400000)    -> 1 day in the future
+     *
+     ***/
+    'advance': function() {
+      var args = collectDateArguments(arguments, true);
+      return updateDate(this, args[0], args[1], 1);
+    },
+
+     /***
+     * @method rewind(<set>, [reset] = false)
+     * @returns Date
+     * @short Sets the date back.
+     * @extra This method can accept multiple formats including a single number as a timestamp, an object, or enumerated parameters (as with the Date constructor). If [reset] is %true%, any units more specific than those passed will be reset. For more see @date_format.
+     * @example
+     *
+     *   new Date().rewind({ year: 2 }) -> 2 years in the past
+     *   new Date().rewind(0, 2, 3)     -> 2 months 3 days in the past
+     *   new Date().rewind(86400000)    -> 1 day in the past
+     *
+     ***/
+    'rewind': function() {
+      var args = collectDateArguments(arguments, true);
+      return updateDate(this, args[0], args[1], -1);
+    },
+
+     /***
+     * @method isValid()
+     * @returns Boolean
+     * @short Returns true if the date is valid.
+     * @example
+     *
+     *   new Date().isValid()         -> true
+     *   new Date('flexor').isValid() -> false
+     *
+     ***/
+    'isValid': function() {
+      return !isNaN(this.getTime());
+    },
+
+     /***
+     * @method isAfter(<d>, [margin] = 0)
+     * @returns Boolean
+     * @short Returns true if the date is after the <d>.
+     * @extra [margin] is to allow extra margin of error (in ms). <d> will accept a date object, timestamp, or text format. If not specified, <d> is assumed to be now. See @date_format for more.
+     * @example
+     *
+     *   new Date().isAfter('tomorrow')  -> false
+     *   new Date().isAfter('yesterday') -> true
+     *
+     ***/
+    'isAfter': function(d, margin, utc) {
+      return this.getTime() > date.create(d).getTime() - (margin || 0);
+    },
+
+     /***
+     * @method isBefore(<d>, [margin] = 0)
+     * @returns Boolean
+     * @short Returns true if the date is before <d>.
+     * @extra [margin] is to allow extra margin of error (in ms). <d> will accept a date object, timestamp, or text format. If not specified, <d> is assumed to be now. See @date_format for more.
+     * @example
+     *
+     *   new Date().isBefore('tomorrow')  -> true
+     *   new Date().isBefore('yesterday') -> false
+     *
+     ***/
+    'isBefore': function(d, margin) {
+      return this.getTime() < date.create(d).getTime() + (margin || 0);
+    },
+
+     /***
+     * @method isBetween(<d1>, <d2>, [margin] = 0)
+     * @returns Boolean
+     * @short Returns true if the date falls between <d1> and <d2>.
+     * @extra [margin] is to allow extra margin of error (in ms). <d1> and <d2> will accept a date object, timestamp, or text format. If not specified, they are assumed to be now. See @date_format for more.
+     * @example
+     *
+     *   new Date().isBetween('yesterday', 'tomorrow')    -> true
+     *   new Date().isBetween('last year', '2 years ago') -> false
+     *
+     ***/
+    'isBetween': function(d1, d2, margin) {
+      var t  = this.getTime();
+      var t1 = date.create(d1).getTime();
+      var t2 = date.create(d2).getTime();
+      var lo = math.min(t1, t2);
+      var hi = math.max(t1, t2);
+      margin = margin || 0;
+      return (lo - margin < t) && (hi + margin > t);
+    },
+
+     /***
+     * @method isLeapYear()
+     * @returns Boolean
+     * @short Returns true if the date is a leap year.
+     * @example
+     *
+     *   Date.create('2000').isLeapYear() -> true
+     *
+     ***/
+    'isLeapYear': function() {
+      var year = callDateGet(this, 'FullYear');
+      return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    },
+
+     /***
+     * @method daysInMonth()
+     * @returns Number
+     * @short Returns the number of days in the date's month.
+     * @example
+     *
+     *   Date.create('May').daysInMonth()            -> 31
+     *   Date.create('February, 2000').daysInMonth() -> 29
+     *
+     ***/
+    'daysInMonth': function() {
+      return 32 - callDateGet(new date(callDateGet(this, 'FullYear'), callDateGet(this, 'Month'), 32), 'Date');
+    },
+
+     /***
+     * @method format(<format>, [locale] = currentLocale)
+     * @returns String
+     * @short Formats and outputs the date.
+     * @extra <format> can be a number of pre-determined formats or a string of tokens. Locale-specific formats are %short%, %long%, and %full% which have their own aliases and can be called with %date.short()%, etc. If <format> is not specified the %long% format is assumed. [locale] specifies a locale code to use (if not specified the current locale is used). See @date_format for more details.
+     *
+     * @set
+     *   short
+     *   long
+     *   full
+     *
+     * @example
+     *
+     *   Date.create().format()                                   -> ex. July 4, 2003
+     *   Date.create().format('{Weekday} {d} {Month}, {yyyy}')    -> ex. Monday July 4, 2003
+     *   Date.create().format('{hh}:{mm}')                        -> ex. 15:57
+     *   Date.create().format('{12hr}:{mm}{tt}')                  -> ex. 3:57pm
+     *   Date.create().format(Date.ISO8601_DATETIME)              -> ex. 2011-07-05 12:24:55.528Z
+     *   Date.create('last week').format('short', 'ja')                -> ex. 先週
+     *   Date.create('yesterday').format(function(value,unit,ms,loc) {
+     *     // value = 1, unit = 3, ms = -86400000, loc = [current locale object]
+     *   });                                                      -> ex. 1 day ago
+     *
+     ***/
+    'format': function(f, localeCode) {
+      return formatDate(this, f, false, localeCode);
+    },
+
+     /***
+     * @method relative([fn], [locale] = currentLocale)
+     * @returns String
+     * @short Returns a relative date string offset to the current time.
+     * @extra [fn] can be passed to provide for more granular control over the resulting string. [fn] is passed 4 arguments: the adjusted value, unit, offset in milliseconds, and a localization object. As an alternate syntax, [locale] can also be passed as the first (and only) parameter. For more, see @date_format.
+     * @example
+     *
+     *   Date.create('90 seconds ago').relative() -> 1 minute ago
+     *   Date.create('January').relative()        -> ex. 5 months ago
+     *   Date.create('January').relative('ja')    -> 3ヶ月前
+     *   Date.create('120 minutes ago').relative(function(val,unit,ms,loc) {
+     *     // value = 2, unit = 3, ms = -7200, loc = [current locale object]
+     *   });                                      -> ex. 5 months ago
+     *
+     ***/
+    'relative': function(f, localeCode) {
+      if(isString(f)) {
+        localeCode = f;
+        f = null;
+      }
+      return formatDate(this, f, true, localeCode);
+    },
+
+     /***
+     * @method is(<d>, [margin] = 0)
+     * @returns Boolean
+     * @short Returns true if the date is <d>.
+     * @extra <d> will accept a date object, timestamp, or text format. %is% additionally understands more generalized expressions like month/weekday names, 'today', etc, and compares to the precision implied in <d>. [margin] allows an extra margin of error in milliseconds.  For more, see @date_format.
+     * @example
+     *
+     *   Date.create().is('July')               -> true or false?
+     *   Date.create().is('1776')               -> false
+     *   Date.create().is('today')              -> true
+     *   Date.create().is('weekday')            -> true or false?
+     *   Date.create().is('July 4, 1776')       -> false
+     *   Date.create().is(-6106093200000)       -> false
+     *   Date.create().is(new Date(1776, 6, 4)) -> false
+     *
+     ***/
+    'is': function(d, margin, utc) {
+      var tmp, comp;
+      if(!this.isValid()) return;
+      if(isString(d)) {
+        d = d.trim().toLowerCase();
+        comp = this.clone().utc(utc);
+        switch(true) {
+          case d === 'future':  return this.getTime() > new date().getTime();
+          case d === 'past':    return this.getTime() < new date().getTime();
+          case d === 'weekday': return callDateGet(comp, 'Day') > 0 && callDateGet(comp, 'Day') < 6;
+          case d === 'weekend': return callDateGet(comp, 'Day') === 0 || callDateGet(comp, 'Day') === 6;
+          case (tmp = English['weekdays'].indexOf(d) % 7) > -1: return callDateGet(comp, 'Day') === tmp;
+          case (tmp = English['months'].indexOf(d) % 12) > -1:  return callDateGet(comp, 'Month') === tmp;
+        }
+      }
+      return compareDate(this, d, margin, utc);
+    },
+
+     /***
+     * @method reset([unit] = 'hours')
+     * @returns Date
+     * @short Resets the unit passed and all smaller units. Default is "hours", effectively resetting the time.
+     * @example
+     *
+     *   Date.create().reset('day')   -> Beginning of today
+     *   Date.create().reset('month') -> 1st of the month
+     *
+     ***/
+    'reset': function(unit) {
+      var params = {}, recognized;
+      unit = unit || 'hours';
+      if(unit === 'date') unit = 'days';
+      recognized = DateUnits.some(function(u) {
+        return unit === u.unit || unit === u.unit + 's';
+      });
+      params[unit] = unit.match(/^days?/) ? 1 : 0;
+      return recognized ? this.set(params, true) : this;
+    },
+
+     /***
+     * @method clone()
+     * @returns Date
+     * @short Clones the date.
+     * @example
+     *
+     *   Date.create().clone() -> Copy of now
+     *
+     ***/
+    'clone': function() {
+      var d = new date(this.getTime());
+      d.utc(!!this._utc);
+      return d;
+    }
+
+  });
+
+
+  // Instance aliases
+  date.extend({
+
+     /***
+     * @method iso()
+     * @alias toISOString
+     *
+     ***/
+    'iso': function() {
+      return this.toISOString();
+    },
+
+     /***
+     * @method getWeekday()
+     * @returns Number
+     * @short Alias for %getDay%.
+     * @set
+     *   getUTCWeekday
+     *
+     * @example
+     *
+     +   Date.create().getWeekday();    -> (ex.) 3
+     +   Date.create().getUTCWeekday();    -> (ex.) 3
+     *
+     ***/
+    'getWeekday':    date.prototype.getDay,
+    'getUTCWeekday':    date.prototype.getUTCDay
+
+  });
+
+
+
+  /***
+   * Number module
+   *
+   ***/
+
+  /***
+   * @method [unit]()
+   * @returns Number
+   * @short Takes the number as a corresponding unit of time and converts to milliseconds.
+   * @extra Method names can be both singular and plural.  Note that as "a month" is ambiguous as a unit of time, %months% will be equivalent to 30.4375 days, the average number in a month. Be careful using %months% if you need exact precision.
+   *
+   * @set
+   *   millisecond
+   *   milliseconds
+   *   second
+   *   seconds
+   *   minute
+   *   minutes
+   *   hour
+   *   hours
+   *   day
+   *   days
+   *   week
+   *   weeks
+   *   month
+   *   months
+   *   year
+   *   years
+   *
+   * @example
+   *
+   *   (5).milliseconds() -> 5
+   *   (10).hours()       -> 36000000
+   *   (1).day()          -> 86400000
+   *
+   ***
+   * @method [unit]Before([d], [locale] = currentLocale)
+   * @returns Date
+   * @short Returns a date that is <n> units before [d], where <n> is the number.
+   * @extra [d] will accept a date object, timestamp, or text format. Note that "months" is ambiguous as a unit of time. If the target date falls on a day that does not exist (ie. August 31 -> February 31), the date will be shifted to the last day of the month. Be careful using %monthsBefore% if you need exact precision. See @date_format for more.
+   *
+   * @set
+   *   millisecondBefore
+   *   millisecondsBefore
+   *   secondBefore
+   *   secondsBefore
+   *   minuteBefore
+   *   minutesBefore
+   *   hourBefore
+   *   hoursBefore
+   *   dayBefore
+   *   daysBefore
+   *   weekBefore
+   *   weeksBefore
+   *   monthBefore
+   *   monthsBefore
+   *   yearBefore
+   *   yearsBefore
+   *
+   * @example
+   *
+   *   (5).daysBefore('tuesday')          -> 5 days before tuesday of this week
+   *   (1).yearBefore('January 23, 1997') -> January 23, 1996
+   *
+   ***
+   * @method [unit]Ago()
+   * @returns Date
+   * @short Returns a date that is <n> units ago.
+   * @extra Note that "months" is ambiguous as a unit of time. If the target date falls on a day that does not exist (ie. August 31 -> February 31), the date will be shifted to the last day of the month. Be careful using %monthsAgo% if you need exact precision.
+   *
+   * @set
+   *   millisecondAgo
+   *   millisecondsAgo
+   *   secondAgo
+   *   secondsAgo
+   *   minuteAgo
+   *   minutesAgo
+   *   hourAgo
+   *   hoursAgo
+   *   dayAgo
+   *   daysAgo
+   *   weekAgo
+   *   weeksAgo
+   *   monthAgo
+   *   monthsAgo
+   *   yearAgo
+   *   yearsAgo
+   *
+   * @example
+   *
+   *   (5).weeksAgo() -> 5 weeks ago
+   *   (1).yearAgo()  -> January 23, 1996
+   *
+   ***
+   * @method [unit]After([d], [locale] = currentLocale)
+   * @returns Date
+   * @short Returns a date <n> units after [d], where <n> is the number.
+   * @extra [d] will accept a date object, timestamp, or text format. Note that "months" is ambiguous as a unit of time. If the target date falls on a day that does not exist (ie. August 31 -> February 31), the date will be shifted to the last day of the month. Be careful using %monthsAfter% if you need exact precision. See @date_format for more.
+   *
+   * @set
+   *   millisecondAfter
+   *   millisecondsAfter
+   *   secondAfter
+   *   secondsAfter
+   *   minuteAfter
+   *   minutesAfter
+   *   hourAfter
+   *   hoursAfter
+   *   dayAfter
+   *   daysAfter
+   *   weekAfter
+   *   weeksAfter
+   *   monthAfter
+   *   monthsAfter
+   *   yearAfter
+   *   yearsAfter
+   *
+   * @example
+   *
+   *   (5).daysAfter('tuesday')          -> 5 days after tuesday of this week
+   *   (1).yearAfter('January 23, 1997') -> January 23, 1998
+   *
+   ***
+   * @method [unit]FromNow()
+   * @returns Date
+   * @short Returns a date <n> units from now.
+   * @extra Note that "months" is ambiguous as a unit of time. If the target date falls on a day that does not exist (ie. August 31 -> February 31), the date will be shifted to the last day of the month. Be careful using %monthsFromNow% if you need exact precision.
+   *
+   * @set
+   *   millisecondFromNow
+   *   millisecondsFromNow
+   *   secondFromNow
+   *   secondsFromNow
+   *   minuteFromNow
+   *   minutesFromNow
+   *   hourFromNow
+   *   hoursFromNow
+   *   dayFromNow
+   *   daysFromNow
+   *   weekFromNow
+   *   weeksFromNow
+   *   monthFromNow
+   *   monthsFromNow
+   *   yearFromNow
+   *   yearsFromNow
+   *
+   * @example
+   *
+   *   (5).weeksFromNow() -> 5 weeks ago
+   *   (1).yearFromNow()  -> January 23, 1998
+   *
+   ***/
+  function buildNumberToDateAlias(u, multiplier) {
+    var unit = u.unit, methods = {};
+    function base() { return round(this * multiplier); }
+    function after() { return createDate(arguments)[u.addMethod](this);  }
+    function before() { return createDate(arguments)[u.addMethod](-this); }
+    methods[unit] = base;
+    methods[unit + 's'] = base;
+    methods[unit + 'Before'] = before;
+    methods[unit + 'sBefore'] = before;
+    methods[unit + 'Ago'] = before;
+    methods[unit + 'sAgo'] = before;
+    methods[unit + 'After'] = after;
+    methods[unit + 'sAfter'] = after;
+    methods[unit + 'FromNow'] = after;
+    methods[unit + 'sFromNow'] = after;
+    number.extend(methods);
+  }
+
+  number.extend({
+
+     /***
+     * @method duration([locale] = currentLocale)
+     * @returns String
+     * @short Takes the number as milliseconds and returns a unit-adjusted localized string.
+     * @extra This method is the same as %Date#relative% without the localized equivalent of "from now" or "ago". [locale] can be passed as the first (and only) parameter. Note that this method is only available when the dates package is included.
+     * @example
+     *
+     *   (500).duration() -> '500 milliseconds'
+     *   (1200).duration() -> '1 second'
+     *   (75).minutes().duration() -> '1 hour'
+     *   (75).minutes().duration('es') -> '1 hora'
+     *
+     ***/
+    'duration': function(localeCode) {
+      return getLocalization(localeCode).getDuration(this);
+    }
+
+  });
+
+
+  English = CurrentLocalization = date.addLocale('en', {
+    'plural':     true,
+    'timeMarker': 'at',
+    'ampm':       'am,pm',
+    'months':     'January,February,March,April,May,June,July,August,September,October,November,December',
+    'weekdays':   'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+    'units':      'millisecond:|s,second:|s,minute:|s,hour:|s,day:|s,week:|s,month:|s,year:|s',
+    'numbers':    'one,two,three,four,five,six,seven,eight,nine,ten',
+    'articles':   'a,an,the',
+    'tokens':     'the,st|nd|rd|th,of',
+    'short':      '{Month} {d}, {yyyy}',
+    'long':       '{Month} {d}, {yyyy} {h}:{mm}{tt}',
+    'full':       '{Weekday} {Month} {d}, {yyyy} {h}:{mm}:{ss}{tt}',
+    'past':       '{num} {unit} {sign}',
+    'future':     '{num} {unit} {sign}',
+    'duration':   '{num} {unit}',
+    'modifiers': [
+      { 'name': 'sign',  'src': 'ago|before', 'value': -1 },
+      { 'name': 'sign',  'src': 'from now|after|from|in|later', 'value': 1 },
+      { 'name': 'edge',  'src': 'last day', 'value': -2 },
+      { 'name': 'edge',  'src': 'end', 'value': -1 },
+      { 'name': 'edge',  'src': 'first day|beginning', 'value': 1 },
+      { 'name': 'shift', 'src': 'last', 'value': -1 },
+      { 'name': 'shift', 'src': 'the|this', 'value': 0 },
+      { 'name': 'shift', 'src': 'next', 'value': 1 }
+    ],
+    'dateParse': [
+      '{num} {unit} {sign}',
+      '{sign} {num} {unit}',
+      '{month} {year}',
+      '{shift} {unit=5-7}',
+      '{0?} {date}{1}',
+      '{0?} {edge} of {shift?} {unit=4-7?}{month?}{year?}'
+    ],
+    'timeParse': [
+      '{0} {num}{1} {day} of {month} {year?}',
+      '{weekday?} {month} {date}{1?} {year?}',
+      '{date} {month} {year}',
+      '{date} {month}',
+      '{shift} {weekday}',
+      '{shift} week {weekday}',
+      '{weekday} {2?} {shift} week',
+      '{num} {unit=4-5} {sign} {day}',
+      '{0?} {date}{1} of {month}',
+      '{0?}{month?} {date?}{1?} of {shift} {unit=6-7}'
+    ]
+  });
+
+  buildDateUnits();
+  buildDateMethods();
+  buildCoreInputFormats();
+  buildDateOutputShortcuts();
+  buildAsianDigits();
+  buildRelativeAliases();
+  buildUTCAliases();
+  setDateProperties();
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('da');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('da', {
+  'plural': true,
+  'months': 'januar,februar,marts,april,maj,juni,juli,august,september,oktober,november,december',
+  'weekdays': 'søndag|sondag,mandag,tirsdag,onsdag,torsdag,fredag,lørdag|lordag',
+  'units': 'millisekund:|er,sekund:|er,minut:|ter,tim:e|er,dag:|e,ug:e|er|en,måned:|er|en+maaned:|er|en,år:||et+aar:||et',
+  'numbers': 'en|et,to,tre,fire,fem,seks,syv,otte,ni,ti',
+  'tokens': 'den,for',
+  'articles': 'den',
+  'short':'d. {d}. {month} {yyyy}',
+  'long': 'den {d}. {month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} den {d}. {month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{num} {unit} {sign}',
+  'future': '{sign} {num} {unit}',
+  'duration': '{num} {unit}',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'forgårs|i forgårs|forgaars|i forgaars', 'value': -2 },
+    { 'name': 'day', 'src': 'i går|igår|i gaar|igaar', 'value': -1 },
+    { 'name': 'day', 'src': 'i dag|idag', 'value': 0 },
+    { 'name': 'day', 'src': 'i morgen|imorgen', 'value': 1 },
+    { 'name': 'day', 'src': 'over morgon|overmorgen|i over morgen|i overmorgen|iovermorgen', 'value': 2 },
+    { 'name': 'sign', 'src': 'siden', 'value': -1 },
+    { 'name': 'sign', 'src': 'om', 'value':  1 },
+    { 'name': 'shift', 'src': 'i sidste|sidste', 'value': -1 },
+    { 'name': 'shift', 'src': 'denne', 'value': 0 },
+    { 'name': 'shift', 'src': 'næste|naeste', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{sign} {num} {unit}',
+    '{1?} {num} {unit} {sign}',
+    '{shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{0?} {weekday?} {date?} {month} {year}',
+    '{date} {month}',
+    '{shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('de');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('de', {
+  'plural': true,
+   'capitalizeUnit': true,
+  'months': 'Januar,Februar,März|Marz,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember',
+  'weekdays': 'Sonntag,Montag,Dienstag,Mittwoch,Donnerstag,Freitag,Samstag',
+  'units': 'Millisekunde:|n,Sekunde:|n,Minute:|n,Stunde:|n,Tag:|en,Woche:|n,Monat:|en,Jahr:|en',
+  'numbers': 'ein:|e|er|en|em,zwei,drei,vier,fuenf,sechs,sieben,acht,neun,zehn',
+  'tokens': 'der',
+  'short':'{d}. {Month} {yyyy}',
+  'long': '{d}. {Month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} {d}. {Month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{sign} {num} {unit}',
+  'future': '{sign} {num} {unit}',
+  'duration': '{num} {unit}',
+  'timeMarker': 'um',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'vorgestern', 'value': -2 },
+    { 'name': 'day', 'src': 'gestern', 'value': -1 },
+    { 'name': 'day', 'src': 'heute', 'value': 0 },
+    { 'name': 'day', 'src': 'morgen', 'value': 1 },
+    { 'name': 'day', 'src': 'übermorgen|ubermorgen|uebermorgen', 'value': 2 },
+    { 'name': 'sign', 'src': 'vor:|her', 'value': -1 },
+    { 'name': 'sign', 'src': 'in', 'value': 1 },
+    { 'name': 'shift', 'src': 'letzte:|r|n|s', 'value': -1 },
+    { 'name': 'shift', 'src': 'nächste:|r|n|s+nachste:|r|n|s+naechste:|r|n|s+kommende:n|r', 'value': 1 }
+  ],
+  'dateParse': [
+    '{sign} {num} {unit}',
+    '{num} {unit} {sign}',
+    '{shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{weekday?} {date?} {month} {year?}',
+    '{shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('es');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('es', {
+  'plural': true,
+  'months': 'enero,febrero,marzo,abril,mayo,junio,julio,agosto,septiembre,octubre,noviembre,diciembre',
+  'weekdays': 'domingo,lunes,martes,miércoles|miercoles,jueves,viernes,sábado|sabado',
+  'units': 'milisegundo:|s,segundo:|s,minuto:|s,hora:|s,día|días|dia|dias,semana:|s,mes:|es,año|años|ano|anos',
+  'numbers': 'uno,dos,tres,cuatro,cinco,seis,siete,ocho,nueve,diez',
+  'tokens': 'el,de',
+  'short':'{d} {month} {yyyy}',
+  'long': '{d} {month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} {d} {month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{sign} {num} {unit}',
+  'future': '{num} {unit} {sign}',
+  'duration': '{num} {unit}',
+  'timeMarker': 'a las',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'anteayer', 'value': -2 },
+    { 'name': 'day', 'src': 'ayer', 'value': -1 },
+    { 'name': 'day', 'src': 'hoy', 'value': 0 },
+    { 'name': 'day', 'src': 'mañana|manana', 'value': 1 },
+    { 'name': 'sign', 'src': 'hace', 'value': -1 },
+    { 'name': 'sign', 'src': 'de ahora', 'value': 1 },
+    { 'name': 'shift', 'src': 'pasad:o|a', 'value': -1 },
+    { 'name': 'shift', 'src': 'próximo|próxima|proximo|proxima', 'value': 1 }
+  ],
+  'dateParse': [
+    '{sign} {num} {unit}',
+    '{num} {unit} {sign}',
+    '{0?} {unit=5-7} {shift}',
+    '{0?} {shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{shift} {weekday}',
+    '{weekday} {shift}',
+    '{date?} {1?} {month} {1?} {year?}'
+  ]
+});
+Date.addLocale('fi', {
+    'plural':     true,
+    'timeMarker': 'kello',
+    'ampm':       ',',
+    'months':     'tammikuu,helmikuu,maaliskuu,huhtikuu,toukokuu,kesäkuu,heinäkuu,elokuu,syyskuu,lokakuu,marraskuu,joulukuu',
+    'weekdays':   'sunnuntai,maanantai,tiistai,keskiviikko,torstai,perjantai,lauantai',
+    'units':      'millisekun:ti|tia|teja|tina|nin,sekun:ti|tia|teja|tina|nin,minuut:ti|tia|teja|tina|in,tun:ti|tia|teja|tina|nin,päiv:ä|ää|iä|änä|än,viik:ko|koa|koja|on|kona,kuukau:si|sia|tta|den|tena,vuo:si|sia|tta|den|tena',
+    'numbers':    'yksi|ensimmäinen,kaksi|toinen,kolm:e|as,neljä:s,vii:si|des,kuu:si|des,seitsemä:n|s,kahdeksa:n|s,yhdeksä:n|s,kymmene:n|s',
+    'articles':   '',
+    'optionals':  '',
+    'short':      '{d}. {month}ta {yyyy}',
+    'long':       '{d}. {month}ta {yyyy} kello {H}.{mm}',
+    'full':       '{Weekday}na {d}. {month}ta {yyyy} kello {H}.{mm}',
+    'relative':       function(num, unit, ms, format) {
+      var units = this['units'];
+      function numberWithUnit(mult) {
+        return (num === 1 ? '' : num + ' ') + units[(8 * mult) + unit];
+      }
+      switch(format) {
+        case 'duration':  return numberWithUnit(0);
+        case 'past':      return numberWithUnit(num > 1 ? 1 : 0) + ' sitten';
+        case 'future':    return numberWithUnit(4) + ' päästä';
+      }
+    },
+    'modifiers': [
+        { 'name': 'day',   'src': 'toissa päivänä|toissa päiväistä', 'value': -2 },
+        { 'name': 'day',   'src': 'eilen|eilistä', 'value': -1 },
+        { 'name': 'day',   'src': 'tänään', 'value': 0 },
+        { 'name': 'day',   'src': 'huomenna|huomista', 'value': 1 },
+        { 'name': 'day',   'src': 'ylihuomenna|ylihuomista', 'value': 2 },
+        { 'name': 'sign',  'src': 'sitten|aiemmin', 'value': -1 },
+        { 'name': 'sign',  'src': 'päästä|kuluttua|myöhemmin', 'value': 1 },
+        { 'name': 'edge',  'src': 'viimeinen|viimeisenä', 'value': -2 },
+        { 'name': 'edge',  'src': 'lopussa', 'value': -1 },
+        { 'name': 'edge',  'src': 'ensimmäinen|ensimmäisenä', 'value': 1 },
+        { 'name': 'shift', 'src': 'edellinen|edellisenä|edeltävä|edeltävänä|viime|toissa', 'value': -1 },
+        { 'name': 'shift', 'src': 'tänä|tämän', 'value': 0 },
+        { 'name': 'shift', 'src': 'seuraava|seuraavana|tuleva|tulevana|ensi', 'value': 1 }
+    ],
+    'dateParse': [
+        '{num} {unit} {sign}',
+        '{sign} {num} {unit}',
+        '{num} {unit=4-5} {sign} {day}',
+        '{month} {year}',
+        '{shift} {unit=5-7}'
+    ],
+    'timeParse': [
+        '{0} {num}{1} {day} of {month} {year?}',
+        '{weekday?} {month} {date}{1} {year?}',
+        '{date} {month} {year}',
+        '{shift} {weekday}',
+        '{shift} week {weekday}',
+        '{weekday} {2} {shift} week',
+        '{0} {date}{1} of {month}',
+        '{0}{month?} {date?}{1} of {shift} {unit=6-7}'
+    ]
+});
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('fr');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('fr', {
+  'plural': true,
+  'months': 'janvier,février|fevrier,mars,avril,mai,juin,juillet,août,septembre,octobre,novembre,décembre|decembre',
+  'weekdays': 'dimanche,lundi,mardi,mercredi,jeudi,vendredi,samedi',
+  'units': 'milliseconde:|s,seconde:|s,minute:|s,heure:|s,jour:|s,semaine:|s,mois,an:|s|née|nee',
+  'numbers': 'un:|e,deux,trois,quatre,cinq,six,sept,huit,neuf,dix',
+  'tokens': ["l'|la|le"],
+  'short':'{d} {month} {yyyy}',
+  'long': '{d} {month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} {d} {month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{sign} {num} {unit}',
+  'future': '{sign} {num} {unit}',
+  'duration': '{num} {unit}',
+  'timeMarker': 'à',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'hier', 'value': -1 },
+    { 'name': 'day', 'src': "aujourd'hui", 'value': 0 },
+    { 'name': 'day', 'src': 'demain', 'value': 1 },
+    { 'name': 'sign', 'src': 'il y a', 'value': -1 },
+    { 'name': 'sign', 'src': "dans|d'ici", 'value': 1 },
+    { 'name': 'shift', 'src': 'derni:èr|er|ère|ere', 'value': -1 },
+    { 'name': 'shift', 'src': 'prochain:|e', 'value': 1 }
+  ],
+  'dateParse': [
+    '{sign} {num} {unit}',
+    '{sign} {num} {unit}',
+    '{0?} {unit=5-7} {shift}'
+  ],
+  'timeParse': [
+    '{weekday?} {0?} {date?} {month} {year?}',
+    '{0?} {weekday} {shift}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('it');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('it', {
+  'plural': true,
+  'months': 'Gennaio,Febbraio,Marzo,Aprile,Maggio,Giugno,Luglio,Agosto,Settembre,Ottobre,Novembre,Dicembre',
+  'weekdays': 'Domenica,Luned:ì|i,Marted:ì|i,Mercoled:ì|i,Gioved:ì|i,Venerd:ì|i,Sabato',
+  'units': 'millisecond:o|i,second:o|i,minut:o|i,or:a|e,giorn:o|i,settiman:a|e,mes:e|i,ann:o|i',
+  'numbers': "un:|a|o|',due,tre,quattro,cinque,sei,sette,otto,nove,dieci",
+  'tokens': "l'|la|il",
+  'short':'{d} {Month} {yyyy}',
+  'long': '{d} {Month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} {d} {Month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{num} {unit} {sign}',
+  'future': '{num} {unit} {sign}',
+  'duration': '{num} {unit}',
+  'timeMarker': 'alle',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'ieri', 'value': -1 },
+    { 'name': 'day', 'src': 'oggi', 'value': 0 },
+    { 'name': 'day', 'src': 'domani', 'value': 1 },
+    { 'name': 'day', 'src': 'dopodomani', 'value': 2 },
+    { 'name': 'sign', 'src': 'fa', 'value': -1 },
+    { 'name': 'sign', 'src': 'da adesso', 'value': 1 },
+    { 'name': 'shift', 'src': 'scors:o|a', 'value': -1 },
+    { 'name': 'shift', 'src': 'prossim:o|a', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{0?} {unit=5-7} {shift}',
+    '{0?} {shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{weekday?} {date?} {month} {year?}',
+    '{shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('ja');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('ja', {
+  'monthSuffix': '月',
+  'weekdays': '日曜日,月曜日,火曜日,水曜日,木曜日,金曜日,土曜日',
+  'units': 'ミリ秒,秒,分,時間,日,週間|週,ヶ月|ヵ月|月,年',
+  'short': '{yyyy}年{M}月{d}日',
+  'long': '{yyyy}年{M}月{d}日 {H}時{mm}分',
+  'full': '{yyyy}年{M}月{d}日 {Weekday} {H}時{mm}分{ss}秒',
+  'past': '{num}{unit}{sign}',
+  'future': '{num}{unit}{sign}',
+  'duration': '{num}{unit}',
+  'timeSuffixes': '時,分,秒',
+  'ampm': '午前,午後',
+  'modifiers': [
+    { 'name': 'day', 'src': '一昨日', 'value': -2 },
+    { 'name': 'day', 'src': '昨日', 'value': -1 },
+    { 'name': 'day', 'src': '今日', 'value': 0 },
+    { 'name': 'day', 'src': '明日', 'value': 1 },
+    { 'name': 'day', 'src': '明後日', 'value': 2 },
+    { 'name': 'sign', 'src': '前', 'value': -1 },
+    { 'name': 'sign', 'src': '後', 'value':  1 },
+    { 'name': 'shift', 'src': '去|先', 'value': -1 },
+    { 'name': 'shift', 'src': '来', 'value':  1 }
+  ],
+  'dateParse': [
+    '{num}{unit}{sign}'
+  ],
+  'timeParse': [
+    '{shift}{unit=5-7}{weekday?}',
+    '{year}年{month?}月?{date?}日?',
+    '{month}月{date?}日?',
+    '{date}日'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('ko');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('ko', {
+  'digitDate': true,
+  'monthSuffix': '월',
+  'weekdays': '일요일,월요일,화요일,수요일,목요일,금요일,토요일',
+  'units': '밀리초,초,분,시간,일,주,개월|달,년',
+  'numbers': '일|한,이,삼,사,오,육,칠,팔,구,십',
+  'short': '{yyyy}년{M}월{d}일',
+  'long': '{yyyy}년{M}월{d}일 {H}시{mm}분',
+  'full': '{yyyy}년{M}월{d}일 {Weekday} {H}시{mm}분{ss}초',
+  'past': '{num}{unit} {sign}',
+  'future': '{num}{unit} {sign}',
+  'duration': '{num}{unit}',
+  'timeSuffixes': '시,분,초',
+  'ampm': '오전,오후',
+  'modifiers': [
+    { 'name': 'day', 'src': '그저께', 'value': -2 },
+    { 'name': 'day', 'src': '어제', 'value': -1 },
+    { 'name': 'day', 'src': '오늘', 'value': 0 },
+    { 'name': 'day', 'src': '내일', 'value': 1 },
+    { 'name': 'day', 'src': '모레', 'value': 2 },
+    { 'name': 'sign', 'src': '전', 'value': -1 },
+    { 'name': 'sign', 'src': '후', 'value':  1 },
+    { 'name': 'shift', 'src': '지난|작', 'value': -1 },
+    { 'name': 'shift', 'src': '이번', 'value': 0 },
+    { 'name': 'shift', 'src': '다음|내', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num}{unit} {sign}',
+    '{shift?} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{shift} {unit=5?} {weekday}',
+    '{year}년{month?}월?{date?}일?',
+    '{month}월{date?}일?',
+    '{date}일'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('nl');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('nl', {
+  'plural': true,
+  'months': 'januari,februari,maart,april,mei,juni,juli,augustus,september,oktober,november,december',
+  'weekdays': 'zondag|zo,maandag|ma,dinsdag|di,woensdag|woe|wo,donderdag|do,vrijdag|vrij|vr,zaterdag|za',
+  'units': 'milliseconde:|n,seconde:|n,minu:ut|ten,uur,dag:|en,we:ek|ken,maand:|en,jaar',
+  'numbers': 'een,twee,drie,vier,vijf,zes,zeven,acht,negen',
+  'tokens': '',
+  'short':'{d} {Month} {yyyy}',
+  'long': '{d} {Month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} {d} {Month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{num} {unit} {sign}',
+  'future': '{num} {unit} {sign}',
+  'duration': '{num} {unit}',
+  'timeMarker': "'s|om",
+  'modifiers': [
+    { 'name': 'day', 'src': 'gisteren', 'value': -1 },
+    { 'name': 'day', 'src': 'vandaag', 'value': 0 },
+    { 'name': 'day', 'src': 'morgen', 'value': 1 },
+    { 'name': 'day', 'src': 'overmorgen', 'value': 2 },
+    { 'name': 'sign', 'src': 'geleden', 'value': -1 },
+    { 'name': 'sign', 'src': 'vanaf nu', 'value': 1 },
+    { 'name': 'shift', 'src': 'laatste|vorige|afgelopen', 'value': -1 },
+    { 'name': 'shift', 'src': 'volgend:|e', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{0?} {unit=5-7} {shift}',
+    '{0?} {shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{weekday?} {date?} {month} {year?}',
+    '{shift} {weekday}'
+  ]
+});
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('pl');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.optionals. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('pl', {
+  'plural':    true,
+  'months':    'Styczeń|Stycznia,Luty|Lutego,Marzec|Marca,Kwiecień|Kwietnia,Maj|Maja,Czerwiec|Czerwca,Lipiec|Lipca,Sierpień|Sierpnia,Wrzesień|Września,Październik|Października,Listopad|Listopada,Grudzień|Grudnia',
+  'weekdays':  'Niedziela|Niedzielę,Poniedziałek,Wtorek,Środ:a|ę,Czwartek,Piątek,Sobota|Sobotę',
+  'units':     'milisekund:a|y|,sekund:a|y|,minut:a|y|,godzin:a|y|,dzień|dni,tydzień|tygodnie|tygodni,miesiące|miesiące|miesięcy,rok|lata|lat',
+  'numbers':   'jeden|jedną,dwa|dwie,trzy,cztery,pięć,sześć,siedem,osiem,dziewięć,dziesięć',
+  'optionals': 'w|we,roku',
+  'short':     '{d} {Month} {yyyy}',
+  'long':      '{d} {Month} {yyyy} {H}:{mm}',
+  'full' :     '{Weekday}, {d} {Month} {yyyy} {H}:{mm}:{ss}',
+  'past':      '{num} {unit} {sign}',
+  'future':    '{sign} {num} {unit}',
+  'duration':  '{num} {unit}',
+  'timeMarker':'o',
+  'ampm':      'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'przedwczoraj', 'value': -2 },
+    { 'name': 'day', 'src': 'wczoraj', 'value': -1 },
+    { 'name': 'day', 'src': 'dzisiaj|dziś', 'value': 0 },
+    { 'name': 'day', 'src': 'jutro', 'value': 1 },
+    { 'name': 'day', 'src': 'pojutrze', 'value': 2 },
+    { 'name': 'sign', 'src': 'temu|przed', 'value': -1 },
+    { 'name': 'sign', 'src': 'za', 'value': 1 },
+    { 'name': 'shift', 'src': 'zeszły|zeszła|ostatni|ostatnia', 'value': -1 },
+    { 'name': 'shift', 'src': 'następny|następna|następnego|przyszły|przyszła|przyszłego', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{sign} {num} {unit}',
+    '{month} {year}',
+    '{shift} {unit=5-7}',
+    '{0} {shift?} {weekday}'
+  ],
+  'timeParse': [
+    '{date} {month} {year?} {1}',
+    '{0} {shift?} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('pt');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('pt', {
+  'plural': true,
+  'months': 'janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro',
+  'weekdays': 'domingo,segunda-feira,terça-feira,quarta-feira,quinta-feira,sexta-feira,sábado|sabado',
+  'units': 'milisegundo:|s,segundo:|s,minuto:|s,hora:|s,dia:|s,semana:|s,mês|mêses|mes|meses,ano:|s',
+  'numbers': 'um,dois,três|tres,quatro,cinco,seis,sete,oito,nove,dez,uma,duas',
+  'tokens': 'a,de',
+  'short':'{d} de {month} de {yyyy}',
+  'long': '{d} de {month} de {yyyy} {H}:{mm}',
+  'full': '{Weekday}, {d} de {month} de {yyyy} {H}:{mm}:{ss}',
+  'past': '{num} {unit} {sign}',
+  'future': '{sign} {num} {unit}',
+  'duration': '{num} {unit}',
+  'timeMarker': 'às',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'anteontem', 'value': -2 },
+    { 'name': 'day', 'src': 'ontem', 'value': -1 },
+    { 'name': 'day', 'src': 'hoje', 'value': 0 },
+    { 'name': 'day', 'src': 'amanh:ã|a', 'value': 1 },
+    { 'name': 'sign', 'src': 'atrás|atras|há|ha', 'value': -1 },
+    { 'name': 'sign', 'src': 'daqui a', 'value': 1 },
+    { 'name': 'shift', 'src': 'passad:o|a', 'value': -1 },
+    { 'name': 'shift', 'src': 'próximo|próxima|proximo|proxima', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{sign} {num} {unit}',
+    '{0?} {unit=5-7} {shift}',
+    '{0?} {shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{date?} {1?} {month} {1?} {year?}',
+    '{0?} {shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('ru');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('ru', {
+  'months': 'Январ:я|ь,Феврал:я|ь,Март:а|,Апрел:я|ь,Ма:я|й,Июн:я|ь,Июл:я|ь,Август:а|,Сентябр:я|ь,Октябр:я|ь,Ноябр:я|ь,Декабр:я|ь',
+  'weekdays': 'Воскресенье,Понедельник,Вторник,Среда,Четверг,Пятница,Суббота',
+  'units': 'миллисекунд:а|у|ы|,секунд:а|у|ы|,минут:а|у|ы|,час:||а|ов,день|день|дня|дней,недел:я|ю|и|ь|е,месяц:||а|ев|е,год|год|года|лет|году',
+  'numbers': 'од:ин|ну,дв:а|е,три,четыре,пять,шесть,семь,восемь,девять,десять',
+  'tokens': 'в|на,года',
+  'short':'{d} {month} {yyyy} года',
+  'long': '{d} {month} {yyyy} года {H}:{mm}',
+  'full': '{Weekday} {d} {month} {yyyy} года {H}:{mm}:{ss}',
+  'relative': function(num, unit, ms, format) {
+    var numberWithUnit, last = num.toString().slice(-1);
+    switch(true) {
+      case num >= 11 && num <= 15: mult = 3; break;
+      case last == 1: mult = 1; break;
+      case last >= 2 && last <= 4: mult = 2; break;
+      default: mult = 3;
+    }
+    numberWithUnit = num + ' ' + this['units'][(mult * 8) + unit];
+    switch(format) {
+      case 'duration':  return numberWithUnit;
+      case 'past':      return numberWithUnit + ' назад';
+      case 'future':    return 'через ' + numberWithUnit;
+    }
+  },
+  'timeMarker': 'в',
+  'ampm': ' утра, вечера',
+  'modifiers': [
+    { 'name': 'day', 'src': 'позавчера', 'value': -2 },
+    { 'name': 'day', 'src': 'вчера', 'value': -1 },
+    { 'name': 'day', 'src': 'сегодня', 'value': 0 },
+    { 'name': 'day', 'src': 'завтра', 'value': 1 },
+    { 'name': 'day', 'src': 'послезавтра', 'value': 2 },
+    { 'name': 'sign', 'src': 'назад', 'value': -1 },
+    { 'name': 'sign', 'src': 'через', 'value': 1 },
+    { 'name': 'shift', 'src': 'прошл:ый|ой|ом', 'value': -1 },
+    { 'name': 'shift', 'src': 'следующ:ий|ей|ем', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{sign} {num} {unit}',
+    '{month} {year}',
+    '{0?} {shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{date} {month} {year?} {1?}',
+    '{0?} {shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('sv');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('sv', {
+  'plural': true,
+  'months': 'januari,februari,mars,april,maj,juni,juli,augusti,september,oktober,november,december',
+  'weekdays': 'söndag|sondag,måndag:|en+mandag:|en,tisdag,onsdag,torsdag,fredag,lördag|lordag',
+  'units': 'millisekund:|er,sekund:|er,minut:|er,timm:e|ar,dag:|ar,veck:a|or|an,månad:|er|en+manad:|er|en,år:||et+ar:||et',
+  'numbers': 'en|ett,två|tva,tre,fyra,fem,sex,sju,åtta|atta,nio,tio',
+  'tokens': 'den,för|for',
+  'articles': 'den',
+  'short':'den {d} {month} {yyyy}',
+  'long': 'den {d} {month} {yyyy} {H}:{mm}',
+  'full': '{Weekday} den {d} {month} {yyyy} {H}:{mm}:{ss}',
+  'past': '{num} {unit} {sign}',
+  'future': '{sign} {num} {unit}',
+  'duration': '{num} {unit}',
+  'ampm': 'am,pm',
+  'modifiers': [
+    { 'name': 'day', 'src': 'förrgår|i förrgår|iförrgår|forrgar|i forrgar|iforrgar', 'value': -2 },
+    { 'name': 'day', 'src': 'går|i går|igår|gar|i gar|igar', 'value': -1 },
+    { 'name': 'day', 'src': 'dag|i dag|idag', 'value': 0 },
+    { 'name': 'day', 'src': 'morgon|i morgon|imorgon', 'value': 1 },
+    { 'name': 'day', 'src': 'över morgon|övermorgon|i över morgon|i övermorgon|iövermorgon|over morgon|overmorgon|i over morgon|i overmorgon|iovermorgon', 'value': 2 },
+    { 'name': 'sign', 'src': 'sedan|sen', 'value': -1 },
+    { 'name': 'sign', 'src': 'om', 'value':  1 },
+    { 'name': 'shift', 'src': 'i förra|förra|i forra|forra', 'value': -1 },
+    { 'name': 'shift', 'src': 'denna', 'value': 0 },
+    { 'name': 'shift', 'src': 'nästa|nasta', 'value': 1 }
+  ],
+  'dateParse': [
+    '{num} {unit} {sign}',
+    '{sign} {num} {unit}',
+    '{1?} {num} {unit} {sign}',
+    '{shift} {unit=5-7}'
+  ],
+  'timeParse': [
+    '{0?} {weekday?} {date?} {month} {year}',
+    '{date} {month}',
+    '{shift} {weekday}'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('zh-CN');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+Date.addLocale('zh-CN', {
+  'variant': true,
+  'monthSuffix': '月',
+  'weekdays': '星期日|周日,星期一|周一,星期二|周二,星期三|周三,星期四|周四,星期五|周五,星期六|周六',
+  'units': '毫秒,秒钟,分钟,小时,天,个星期|周,个月,年',
+  'tokens': '日|号',
+  'short':'{yyyy}年{M}月{d}日',
+  'long': '{yyyy}年{M}月{d}日 {tt}{h}:{mm}',
+  'full': '{yyyy}年{M}月{d}日 {weekday} {tt}{h}:{mm}:{ss}',
+  'past': '{num}{unit}{sign}',
+  'future': '{num}{unit}{sign}',
+  'duration': '{num}{unit}',
+  'timeSuffixes': '点|时,分钟?,秒',
+  'ampm': '上午,下午',
+  'modifiers': [
+    { 'name': 'day', 'src': '前天', 'value': -2 },
+    { 'name': 'day', 'src': '昨天', 'value': -1 },
+    { 'name': 'day', 'src': '今天', 'value': 0 },
+    { 'name': 'day', 'src': '明天', 'value': 1 },
+    { 'name': 'day', 'src': '后天', 'value': 2 },
+    { 'name': 'sign', 'src': '前', 'value': -1 },
+    { 'name': 'sign', 'src': '后', 'value':  1 },
+    { 'name': 'shift', 'src': '上|去', 'value': -1 },
+    { 'name': 'shift', 'src': '这', 'value':  0 },
+    { 'name': 'shift', 'src': '下|明', 'value':  1 }
+  ],
+  'dateParse': [
+    '{num}{unit}{sign}',
+    '{shift}{unit=5-7}'
+  ],
+  'timeParse': [
+    '{shift}{weekday}',
+    '{year}年{month?}月?{date?}{0?}',
+    '{month}月{date?}{0?}',
+    '{date}[日号]'
+  ]
+});
+
+/*
+ *
+ * Date.addLocale(<code>) adds this locale to Sugar.
+ * To set the locale globally, simply call:
+ *
+ * Date.setLocale('zh-TW');
+ *
+ * var locale = Date.getLocale(<code>) will return this object, which
+ * can be tweaked to change the behavior of parsing/formatting in the locales.
+ *
+ * locale.addFormat adds a date format (see this file for examples).
+ * Special tokens in the date format will be parsed out into regex tokens:
+ *
+ * {0} is a reference to an entry in locale.tokens. Output: (?:the)?
+ * {unit} is a reference to all units. Output: (day|week|month|...)
+ * {unit3} is a reference to a specific unit. Output: (hour)
+ * {unit3-5} is a reference to a subset of the units array. Output: (hour|day|week)
+ * {unit?} "?" makes that token optional. Output: (day|week|month)?
+ *
+ * {day} Any reference to tokens in the modifiers array will include all with the same name. Output: (yesterday|today|tomorrow)
+ *
+ * All spaces are optional and will be converted to "\s*"
+ *
+ * Locale arrays months, weekdays, units, numbers, as well as the "src" field for
+ * all entries in the modifiers array follow a special format indicated by a colon:
+ *
+ * minute:|s  = minute|minutes
+ * thicke:n|r = thicken|thicker
+ *
+ * Additionally in the months, weekdays, units, and numbers array these will be added at indexes that are multiples
+ * of the relevant number for retrieval. For example having "sunday:|s" in the units array will result in:
+ *
+ * units: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sundays']
+ *
+ * When matched, the index will be found using:
+ *
+ * units.indexOf(match) % 7;
+ *
+ * Resulting in the correct index with any number of alternates for that entry.
+ *
+ */
+
+  //'zh-TW': '1;月;年;;星期日|週日,星期一|週一,星期二|週二,星期三|週三,星期四|週四,星期五|週五,星期六|週六;毫秒,秒鐘,分鐘,小時,天,個星期|週,個月,年;;;日|號;;上午,下午;點|時,分鐘?,秒;{num}{unit}{sign},{shift}{unit=5-7};{shift}{weekday},{year}年{month?}月?{date?}{0},{month}月{date?}{0},{date}{0};{yyyy}年{M}月{d}日 {Weekday};{tt}{h}:{mm}:{ss};前天,昨天,今天,明天,後天;,前,,後;,上|去,這,下|明',
+
+Date.addLocale('zh-TW', {
+  'monthSuffix': '月',
+  'weekdays': '星期日|週日,星期一|週一,星期二|週二,星期三|週三,星期四|週四,星期五|週五,星期六|週六',
+  'units': '毫秒,秒鐘,分鐘,小時,天,個星期|週,個月,年',
+  'tokens': '日|號',
+  'short':'{yyyy}年{M}月{d}日',
+  'long': '{yyyy}年{M}月{d}日 {tt}{h}:{mm}',
+  'full': '{yyyy}年{M}月{d}日 {Weekday} {tt}{h}:{mm}:{ss}',
+  'past': '{num}{unit}{sign}',
+  'future': '{num}{unit}{sign}',
+  'duration': '{num}{unit}',
+  'timeSuffixes': '點|時,分鐘?,秒',
+  'ampm': '上午,下午',
+  'modifiers': [
+    { 'name': 'day', 'src': '前天', 'value': -2 },
+    { 'name': 'day', 'src': '昨天', 'value': -1 },
+    { 'name': 'day', 'src': '今天', 'value': 0 },
+    { 'name': 'day', 'src': '明天', 'value': 1 },
+    { 'name': 'day', 'src': '後天', 'value': 2 },
+    { 'name': 'sign', 'src': '前', 'value': -1 },
+    { 'name': 'sign', 'src': '後', 'value': 1 },
+    { 'name': 'shift', 'src': '上|去', 'value': -1 },
+    { 'name': 'shift', 'src': '這', 'value':  0 },
+    { 'name': 'shift', 'src': '下|明', 'value':  1 }
+  ],
+  'dateParse': [
+    '{num}{unit}{sign}',
+    '{shift}{unit=5-7}'
+  ],
+  'timeParse': [
+    '{shift}{weekday}',
+    '{year}年{month?}月?{date?}{0?}',
+    '{month}月{date?}{0?}',
+    '{date}[日號]'
+  ]
+});
+
+
+  /***
+   * @package DateRange
+   * @dependency date
+   * @description Date Ranges define a range of time. They can enumerate over specific points within that range, and be manipulated and compared.
+   *
+   ***/
+
+  var DateRange = function(start, end) {
+    this.start = date.create(start);
+    this.end   = date.create(end);
+  };
+
+  // 'toString' doesn't appear in a for..in loop in IE even though
+  // hasOwnProperty reports true, so extend() can't be used here.
+  // Also tried simply setting the prototype = {} up front for all
+  // methods but GCC very oddly started dropping properties in the
+  // object randomly (maybe because of the global scope?) hence
+  // the need for the split logic here.
+  DateRange.prototype.toString = function() {
+    /***
+     * @method toString()
+     * @returns String
+     * @short Returns a string representation of the DateRange.
+     * @example
+     *
+     *   Date.range('2003', '2005').toString() -> January 1, 2003..January 1, 2005
+     *
+     ***/
+    return this.isValid() ? this.start.full() + '..' + this.end.full() : 'Invalid DateRange';
+  };
+
+  extend(DateRange, true, false, {
+
+    /***
+     * @method isValid()
+     * @returns Boolean
+     * @short Returns true if the DateRange is valid, false otherwise.
+     * @example
+     *
+     *   Date.range('2003', '2005').isValid() -> true
+     *   Date.range('2005', '2003').isValid() -> false
+     *
+     ***/
+    'isValid': function() {
+      return this.start < this.end;
+    },
+
+    /***
+     * @method duration()
+     * @returns Number
+     * @short Return the duration of the DateRange in milliseconds.
+     * @example
+     *
+     *   Date.range('2003', '2005').duration() -> 94694400000
+     *
+     ***/
+    'duration': function() {
+      return this.isValid() ? this.end.getTime() - this.start.getTime() : NaN;
+    },
+
+    /***
+     * @method contains(<d>)
+     * @returns Boolean
+     * @short Returns true if <d> is contained inside the DateRange. <d> may be a date or another DateRange.
+     * @example
+     *
+     *   Date.range('2003', '2005').contains(Date.create('2004')) -> true
+     *
+     ***/
+    'contains': function(obj) {
+      var self = this, arr = obj.start && obj.end ? [obj.start, obj.end] : [obj];
+      return arr.every(function(d) {
+        return d >= self.start && d <= self.end;
+      });
+    },
+
+    /***
+     * @method every(<increment>, [fn])
+     * @returns Array
+     * @short Iterates through the DateRange for every <increment>, calling [fn] if it is passed. Returns an array of each increment visited.
+     * @extra When <increment> is a number, increments will be to the exact millisecond. <increment> can also be a string in the format %{number} {unit}s%, in which case it will increment in the unit specified. Note that a discrepancy exists in the case of months, as %(2).months()% is an approximation. Stepping through the actual months by passing %"2 months"% is usually preferable in this case.
+     * @example
+     *
+     *   Date.range('2003-01', '2003-03').every("2 months") -> [...]
+     *
+     ***/
+    'every': function(increment, fn) {
+      var current = this.start.clone(), result = [], index = 0, params, isDay;
+      if(isString(increment)) {
+        current.advance(getDateParamsFromString(increment, 0), true);
+        params = getDateParamsFromString(increment);
+        isDay = increment.toLowerCase() === 'day';
+      } else {
+        params = { 'milliseconds': increment };
+      }
+      while(current <= this.end) {
+        result.push(current);
+        if(fn) fn(current, index);
+        if(isDay && callDateGet(current, 'Hours') === 23) {
+          // When DST traversal happens at 00:00 hours, the time is effectively
+          // pushed back to 23:00, meaning 1) 00:00 for that day does not exist,
+          // and 2) there is no difference between 23:00 and 00:00, as you are
+          // "jumping" around in time. Hours here will be reset before the date
+          // is advanced and the date will never in fact advance, so set the hours
+          // directly ahead to the next day to avoid this problem.
+          current = current.clone();
+          callDateSet(current, 'Hours', 48);
+        } else {
+          current = current.clone().advance(params, true);
+        }
+        index++;
+      }
+      return result;
+    },
+
+    /***
+     * @method union(<range>)
+     * @returns DateRange
+     * @short Returns a new DateRange with the earliest starting point as its start, and the latest ending point as its end. If the two ranges do not intersect this will effectively remove the "gap" between them.
+     * @example
+     *
+     *   Date.range('2003=01', '2005-01').union(Date.range('2004-01', '2006-01')) -> Jan 1, 2003..Jan 1, 2006
+     *
+     ***/
+    'union': function(range) {
+      return new DateRange(
+        this.start < range.start ? this.start : range.start,
+        this.end   > range.end   ? this.end   : range.end
+      );
+    },
+
+    /***
+     * @method intersect(<range>)
+     * @returns DateRange
+     * @short Returns a new DateRange with the latest starting point as its start, and the earliest ending point as its end. If the two ranges do not intersect this will effectively produce an invalid range.
+     * @example
+     *
+     *   Date.range('2003-01', '2005-01').intersect(Date.range('2004-01', '2006-01')) -> Jan 1, 2004..Jan 1, 2005
+     *
+     ***/
+    'intersect': function(range) {
+      return new DateRange(
+        this.start > range.start ? this.start : range.start,
+        this.end   < range.end   ? this.end   : range.end
+      );
+    },
+
+    /***
+     * @method clone()
+     * @returns DateRange
+     * @short Clones the DateRange.
+     * @example
+     *
+     *   Date.range('2003-01', '2005-01').intersect(Date.range('2004-01', '2006-01')) -> Jan 1, 2004..Jan 1, 2005
+     *
+     ***/
+    'clone': function(range) {
+      return new DateRange(this.start, this.end);
+    }
+
+  });
+
+  /***
+   * @method each[Unit]([fn])
+   * @returns Date
+   * @short Increments through the date range for each [unit], calling [fn] if it is passed. Returns an array of each increment visited.
+   *
+   * @set
+   *   eachMillisecond
+   *   eachSecond
+   *   eachMinute
+   *   eachHour
+   *   eachDay
+   *   eachWeek
+   *   eachMonth
+   *   eachYear
+   *
+   * @example
+   *
+   *   Date.range('2003-01', '2003-02').eachMonth()     -> [...]
+   *   Date.range('2003-01-15', '2003-01-16').eachDay() -> [...]
+   *
+   ***/
+  extendSimilar(DateRange, true, false, 'Millisecond,Second,Minute,Hour,Day,Week,Month,Year', function(methods, name) {
+    methods['each' + name] = function(fn) { return this.every(name, fn); }
+  });
+
+
+  /***
+   * Date module
+   ***/
+
+  extend(date, false, false, {
+
+     /***
+     * @method Date.range([start], [end])
+     * @returns DateRange
+     * @short Creates a new date range.
+     * @extra If either [start] or [end] are null, they will default to the current date.
+     *
+     ***/
+    'range': function(start, end) {
+      return new DateRange(start, end);
+    }
+
+  });
+
+})();
+;/*
+* jQuery UI Tag-it!
+*
+* @version v2.0 (06/2011)
+*
+* Copyright 2011, Levy Carneiro Jr.
+* Released under the MIT license.
+* http://aehlke.github.com/tag-it/LICENSE
+*
+* Homepage:
+*   http://aehlke.github.com/tag-it/
+*
+* Authors:
+*   Levy Carneiro Jr.
+*   Martin Rehfeld
+*   Tobias Schmidt
+*   Skylar Challand
+*   Alex Ehlke
+*
+* Maintainer:
+*   Alex Ehlke - Twitter: @aehlke
+*
+* Dependencies:
+*   jQuery v1.4+
+*   jQuery UI v1.8+
+*/
+(function($) {
+
+    $.widget('ui.tagit', {
+        options: {
+            allowDuplicates   : false,
+            caseSensitive     : true,
+            fieldName         : 'tags',
+            placeholderText   : null,   // Sets `placeholder` attr on input field.
+            readOnly          : false,  // Disables editing.
+            removeConfirmation: false,  // Require confirmation to remove tags.
+            tagLimit          : null,   // Max number of tags allowed (null for unlimited).
+
+            // Used for autocomplete, unless you override `autocomplete.source`.
+            availableTags     : [],
+
+            // Use to override or add any options to the autocomplete widget.
+            //
+            // By default, autocomplete.source will map to availableTags,
+            // unless overridden.
+            autocomplete: {},
+
+            // Shows autocomplete before the user even types anything.
+            showAutocompleteOnFocus: false,
+
+            // When enabled, quotes are unneccesary for inputting multi-word tags.
+            allowSpaces: false,
+
+            // The below options are for using a single field instead of several
+            // for our form values.
+            //
+            // When enabled, will use a single hidden field for the form,
+            // rather than one per tag. It will delimit tags in the field
+            // with singleFieldDelimiter.
+            //
+            // The easiest way to use singleField is to just instantiate tag-it
+            // on an INPUT element, in which case singleField is automatically
+            // set to true, and singleFieldNode is set to that element. This
+            // way, you don't need to fiddle with these options.
+            singleField: false,
+
+            // This is just used when preloading data from the field, and for
+            // populating the field with delimited tags as the user adds them.
+            singleFieldDelimiter: ',',
+
+            // Set this to an input DOM node to use an existing form field.
+            // Any text in it will be erased on init. But it will be
+            // populated with the text of tags as they are created,
+            // delimited by singleFieldDelimiter.
+            //
+            // If this is not set, we create an input node for it,
+            // with the name given in settings.fieldName.
+            singleFieldNode: null,
+
+            // Whether to animate tag removals or not.
+            animate: true,
+
+            // Optionally set a tabindex attribute on the input that gets
+            // created for tag-it.
+            tabIndex: null,
+
+            // Event callbacks.
+            beforeTagAdded      : null,
+            afterTagAdded       : null,
+
+            beforeTagRemoved    : null,
+            afterTagRemoved     : null,
+
+            onTagClicked        : null,
+            onTagLimitExceeded  : null,
+
+
+            // DEPRECATED:
+            //
+            // /!\ These event callbacks are deprecated and WILL BE REMOVED at some
+            // point in the future. They're here for backwards-compatibility.
+            // Use the above before/after event callbacks instead.
+            onTagAdded  : null,
+            onTagRemoved: null,
+            // `autocomplete.source` is the replacement for tagSource.
+            tagSource: null
+            // Do not use the above deprecated options.
+        },
+
+        _create: function() {
+            // for handling static scoping inside callbacks
+            var that = this;
+
+            // There are 2 kinds of DOM nodes this widget can be instantiated on:
+            //     1. UL, OL, or some element containing either of these.
+            //     2. INPUT, in which case 'singleField' is overridden to true,
+            //        a UL is created and the INPUT is hidden.
+            if (this.element.is('input')) {
+                this.tagList = $('<ul></ul>').insertAfter(this.element);
+                this.options.singleField = true;
+                this.options.singleFieldNode = this.element;
+                this.element.addClass('tagit-hidden-field');
+            } else {
+                this.tagList = this.element.find('ul, ol').andSelf().last();
+            }
+
+            this.tagInput = $('<input type="text" />').addClass('ui-widget-content');
+
+            if (this.options.readOnly) this.tagInput.attr('disabled', 'disabled');
+
+            if (this.options.tabIndex) {
+                this.tagInput.attr('tabindex', this.options.tabIndex);
+            }
+
+            if (this.options.placeholderText) {
+                this.tagInput.attr('placeholder', this.options.placeholderText);
+            }
+
+            if (!this.options.autocomplete.source) {
+                this.options.autocomplete.source = function(search, showChoices) {
+                    var filter = search.term.toLowerCase();
+                    var choices = $.grep(this.options.availableTags, function(element) {
+                        // Only match autocomplete options that begin with the search term.
+                        // (Case insensitive.)
+                        return (element.toLowerCase().indexOf(filter) === 0);
+                    });
+                    if (!this.options.allowDuplicates) {
+                        choices = this._subtractArray(choices, this.assignedTags());
+                    }
+                    showChoices(choices);
+                };
+            }
+
+            if (this.options.showAutocompleteOnFocus) {
+                this.tagInput.focus(function(event, ui) {
+                    that._showAutocomplete();
+                });
+
+                if (typeof this.options.autocomplete.minLength === 'undefined') {
+                    this.options.autocomplete.minLength = 0;
+                }
+            }
+
+            // Bind autocomplete.source callback functions to this context.
+            if ($.isFunction(this.options.autocomplete.source)) {
+                this.options.autocomplete.source = $.proxy(this.options.autocomplete.source, this);
+            }
+
+            // DEPRECATED.
+            if ($.isFunction(this.options.tagSource)) {
+                this.options.tagSource = $.proxy(this.options.tagSource, this);
+            }
+
+            this.tagList
+                .addClass('tagit')
+                .addClass('ui-widget ui-widget-content ui-corner-all')
+                // Create the input field.
+                .append($('<li class="tagit-new"></li>').append(this.tagInput))
+                .click(function(e) {
+                    var target = $(e.target);
+                    if (target.hasClass('tagit-label')) {
+                        var tag = target.closest('.tagit-choice');
+                        if (!tag.hasClass('removed')) {
+                            that._trigger('onTagClicked', e, {tag: tag, tagLabel: that.tagLabel(tag)});
+                        }
+                    } else {
+                        // Sets the focus() to the input field, if the user
+                        // clicks anywhere inside the UL. This is needed
+                        // because the input field needs to be of a small size.
+                        that.tagInput.focus();
+                    }
+                });
+
+            // Single field support.
+            var addedExistingFromSingleFieldNode = false;
+            if (this.options.singleField) {
+                if (this.options.singleFieldNode) {
+                    // Add existing tags from the input field.
+                    var node = $(this.options.singleFieldNode);
+                    var tags = node.val().split(this.options.singleFieldDelimiter);
+                    node.val('');
+                    $.each(tags, function(index, tag) {
+                        that.createTag(tag, null, true);
+                        addedExistingFromSingleFieldNode = true;
+                    });
+                } else {
+                    // Create our single field input after our list.
+                    this.options.singleFieldNode = $('<input type="hidden" style="display:none;" value="" name="' + this.options.fieldName + '" />');
+                    this.tagList.after(this.options.singleFieldNode);
+                }
+            }
+
+            // Add existing tags from the list, if any.
+            if (!addedExistingFromSingleFieldNode) {
+                this.tagList.children('li').each(function() {
+                    if (!$(this).hasClass('tagit-new')) {
+                        that.createTag($(this).text(), $(this).attr('class'), true);
+                        $(this).remove();
+                    }
+                });
+            }
+
+            // Events.
+            this.tagInput
+                .keydown(function(event) {
+                    // Backspace is not detected within a keypress, so it must use keydown.
+                    if (event.which == $.ui.keyCode.BACKSPACE && that.tagInput.val() === '') {
+                        var tag = that._lastTag();
+                        if (!that.options.removeConfirmation || tag.hasClass('remove')) {
+                            // When backspace is pressed, the last tag is deleted.
+                            that.removeTag(tag);
+                        } else if (that.options.removeConfirmation) {
+                            tag.addClass('remove ui-state-highlight');
+                        }
+                    } else if (that.options.removeConfirmation) {
+                        that._lastTag().removeClass('remove ui-state-highlight');
+                    }
+
+                    // Comma/Space/Enter are all valid delimiters for new tags,
+                    // except when there is an open quote or if setting allowSpaces = true.
+                    // Tab will also create a tag, unless the tag input is empty,
+                    // in which case it isn't caught.
+                    if (
+                        (event.which === $.ui.keyCode.COMMA && event.shiftKey === false) ||
+                        event.which === $.ui.keyCode.ENTER ||
+                        (
+                            event.which == $.ui.keyCode.TAB &&
+                            that.tagInput.val() !== ''
+                        ) ||
+                        (
+                            event.which == $.ui.keyCode.SPACE &&
+                            that.options.allowSpaces !== true &&
+                            (
+                                $.trim(that.tagInput.val()).replace( /^s*/, '' ).charAt(0) != '"' ||
+                                (
+                                    $.trim(that.tagInput.val()).charAt(0) == '"' &&
+                                    $.trim(that.tagInput.val()).charAt($.trim(that.tagInput.val()).length - 1) == '"' &&
+                                    $.trim(that.tagInput.val()).length - 1 !== 0
+                                )
+                            )
+                        )
+                    ) {
+                        // Enter submits the form if there's no text in the input.
+                        if (!(event.which === $.ui.keyCode.ENTER && that.tagInput.val() === '')) {
+                            event.preventDefault();
+                        }
+
+                        // Autocomplete will create its own tag from a selection and close automatically.
+                        if (!(that.options.autocomplete.autoFocus && that.tagInput.data('autocomplete-open'))) {
+                            that.tagInput.autocomplete('close');
+                            that.createTag(that._cleanedInput());
+                        }
+                    }
+                }).blur(function(e){
+                    // Create a tag when the element loses focus.
+                    // If autocomplete is enabled and suggestion was clicked, don't add it.
+                    if (!that.tagInput.data('autocomplete-open')) {
+                        that.createTag(that._cleanedInput());
+                    }
+                });
+
+            // Autocomplete.
+            if (this.options.availableTags || this.options.tagSource || this.options.autocomplete.source) {
+                var autocompleteOptions = {
+                    select: function(event, ui) {
+                        that.createTag(ui.item.value);
+                        // Preventing the tag input to be updated with the chosen value.
+                        return false;
+                    }
+                };
+                $.extend(autocompleteOptions, this.options.autocomplete);
+
+                // tagSource is deprecated, but takes precedence here since autocomplete.source is set by default,
+                // while tagSource is left null by default.
+                autocompleteOptions.source = this.options.tagSource || autocompleteOptions.source;
+
+                this.tagInput.autocomplete(autocompleteOptions).bind('autocompleteopen.tagit', function(event, ui) {
+                    that.tagInput.data('autocomplete-open', true);
+                }).bind('autocompleteclose.tagit', function(event, ui) {
+                    that.tagInput.data('autocomplete-open', false)
+                });
+
+                this.tagInput.autocomplete('widget').addClass('tagit-autocomplete');
+            }
+        },
+
+        destroy: function() {
+            $.Widget.prototype.destroy.call(this);
+
+            this.element.unbind('.tagit');
+            this.tagList.unbind('.tagit');
+
+            this.tagInput.removeData('autocomplete-open');
+
+            this.tagList.removeClass([
+                'tagit',
+                'ui-widget',
+                'ui-widget-content',
+                'ui-corner-all',
+                'tagit-hidden-field'
+            ].join(' '));
+
+            if (this.element.is('input')) {
+                this.element.removeClass('tagit-hidden-field');
+                this.tagList.remove();
+            } else {
+                this.element.children('li').each(function() {
+                    if ($(this).hasClass('tagit-new')) {
+                        $(this).remove();
+                    } else {
+                        $(this).removeClass([
+                            'tagit-choice',
+                            'ui-widget-content',
+                            'ui-state-default',
+                            'ui-state-highlight',
+                            'ui-corner-all',
+                            'remove',
+                            'tagit-choice-editable',
+                            'tagit-choice-read-only'
+                        ].join(' '));
+
+                        $(this).text($(this).children('.tagit-label').text());
+                    }
+                });
+
+                if (this.singleFieldNode) {
+                    this.singleFieldNode.remove();
+                }
+            }
+
+            return this;
+        },
+
+        _cleanedInput: function() {
+            // Returns the contents of the tag input, cleaned and ready to be passed to createTag
+            return $.trim(this.tagInput.val().replace(/^"(.*)"$/, '$1'));
+        },
+
+        _lastTag: function() {
+            return this.tagList.find('.tagit-choice:last:not(.removed)');
+        },
+
+        _tags: function() {
+            return this.tagList.find('.tagit-choice:not(.removed)');
+        },
+
+        assignedTags: function() {
+            // Returns an array of tag string values
+            var that = this;
+            var tags = [];
+            if (this.options.singleField) {
+                tags = $(this.options.singleFieldNode).val().split(this.options.singleFieldDelimiter);
+                if (tags[0] === '') {
+                    tags = [];
+                }
+            } else {
+                this._tags().each(function() {
+                    tags.push(that.tagLabel(this));
+                });
+            }
+            return tags;
+        },
+
+        _updateSingleTagsField: function(tags) {
+            // Takes a list of tag string values, updates this.options.singleFieldNode.val to the tags delimited by this.options.singleFieldDelimiter
+            $(this.options.singleFieldNode).val(tags.join(this.options.singleFieldDelimiter)).trigger('change');
+        },
+
+        _subtractArray: function(a1, a2) {
+            var result = [];
+            for (var i = 0; i < a1.length; i++) {
+                if ($.inArray(a1[i], a2) == -1) {
+                    result.push(a1[i]);
+                }
+            }
+            return result;
+        },
+
+        tagLabel: function(tag) {
+            // Returns the tag's string label.
+            if (this.options.singleField) {
+                return $(tag).find('.tagit-label:first').text();
+            } else {
+                return $(tag).find('input:first').val();
+            }
+        },
+
+        _showAutocomplete: function() {
+            this.tagInput.autocomplete('search', '');
+        },
+
+        _findTagByLabel: function(name) {
+            var that = this;
+            var tag = null;
+            this._tags().each(function(i) {
+                if (that._formatStr(name) == that._formatStr(that.tagLabel(this))) {
+                    tag = $(this);
+                    return false;
+                }
+            });
+            return tag;
+        },
+
+        _isNew: function(name) {
+            return !this._findTagByLabel(name);
+        },
+
+        _formatStr: function(str) {
+            if (this.options.caseSensitive) {
+                return str;
+            }
+            return $.trim(str.toLowerCase());
+        },
+
+        _effectExists: function(name) {
+            return Boolean($.effects && ($.effects[name] || ($.effects.effect && $.effects.effect[name])));
+        },
+
+        createTag: function(value, additionalClass, duringInitialization) {
+            var that = this;
+
+            value = $.trim(value);
+
+            if(this.options.preprocessTag) {
+                value = this.options.preprocessTag(value);
+            }
+
+            if (value === '') {
+                return false;
+            }
+
+            if (!this.options.allowDuplicates && !this._isNew(value)) {
+                var existingTag = this._findTagByLabel(value);
+                if (this._trigger('onTagExists', null, {
+                    existingTag: existingTag,
+                    duringInitialization: duringInitialization
+                }) !== false) {
+                    if (this._effectExists('highlight')) {
+                        existingTag.effect('highlight');
+                    }
+                }
+                return false;
+            }
+
+            if (this.options.tagLimit && this._tags().length >= this.options.tagLimit) {
+                this._trigger('onTagLimitExceeded', null, {duringInitialization: duringInitialization});
+                return false;
+            }
+
+            var label = $(this.options.onTagClicked ? '<a class="tagit-label"></a>' : '<span class="tagit-label"></span>').text(value);
+
+            // Create tag.
+            var tag = $('<li></li>')
+                .addClass('tagit-choice ui-widget-content ui-state-default ui-corner-all')
+                .addClass(additionalClass)
+                .append(label);
+
+            if (this.options.readOnly){
+                tag.addClass('tagit-choice-read-only');
+            } else {
+                tag.addClass('tagit-choice-editable');
+                // Button for removing the tag.
+                var removeTagIcon = $('<span></span>')
+                    .addClass('ui-icon ui-icon-close');
+                var removeTag = $('<a><span class="text-icon">\xd7</span></a>') // \xd7 is an X
+                    .addClass('tagit-close')
+                    .append(removeTagIcon)
+                    .click(function(e) {
+                        // Removes a tag when the little 'x' is clicked.
+                        that.removeTag(tag);
+                    });
+                tag.append(removeTag);
+            }
+
+            // Unless options.singleField is set, each tag has a hidden input field inline.
+            if (!this.options.singleField) {
+                var escapedValue = label.html();
+                tag.append('<input type="hidden" value="' + escapedValue + '" name="' + this.options.fieldName + '" class="tagit-hidden-field" />');
+            }
+
+            if (this._trigger('beforeTagAdded', null, {
+                tag: tag,
+                tagLabel: this.tagLabel(tag),
+                duringInitialization: duringInitialization
+            }) === false) {
+                return;
+            }
+
+            if (this.options.singleField) {
+                var tags = this.assignedTags();
+                tags.push(value);
+                this._updateSingleTagsField(tags);
+            }
+
+            // DEPRECATED.
+            this._trigger('onTagAdded', null, tag);
+
+            this.tagInput.val('');
+
+            // Insert tag.
+            this.tagInput.parent().before(tag);
+
+            this._trigger('afterTagAdded', null, {
+                tag: tag,
+                tagLabel: this.tagLabel(tag),
+                duringInitialization: duringInitialization
+            });
+
+            if (this.options.showAutocompleteOnFocus && !duringInitialization) {
+                setTimeout(function () { that._showAutocomplete(); }, 0);
+            }
+        },
+
+        removeTag: function(tag, animate) {
+            animate = typeof animate === 'undefined' ? this.options.animate : animate;
+
+            tag = $(tag);
+
+            // DEPRECATED.
+            this._trigger('onTagRemoved', null, tag);
+
+            if (this._trigger('beforeTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)}) === false) {
+                return;
+            }
+
+            if (this.options.singleField) {
+                var tags = this.assignedTags();
+                var removedTagLabel = this.tagLabel(tag);
+                tags = $.grep(tags, function(el){
+                    return el != removedTagLabel;
+                });
+                this._updateSingleTagsField(tags);
+            }
+
+            if (animate) {
+                tag.addClass('removed'); // Excludes this tag from _tags.
+                var hide_args = this._effectExists('blind') ? ['blind', {direction: 'horizontal'}, 'fast'] : ['fast'];
+
+                var thisTag = this;
+                hide_args.push(function() {
+                    tag.remove();
+                    thisTag._trigger('afterTagRemoved', null, {tag: tag, tagLabel: thisTag.tagLabel(tag)});
+                });
+
+                tag.fadeOut('fast').hide.apply(tag, hide_args).dequeue();
+            } else {
+                tag.remove();
+                this._trigger('afterTagRemoved', null, {tag: tag, tagLabel: this.tagLabel(tag)});
+            }
+
+        },
+
+        removeTagByLabel: function(tagLabel, animate) {
+            var toRemove = this._findTagByLabel(tagLabel);
+            if (!toRemove) {
+                throw "No such tag exists with the name '" + tagLabel + "'";
+            }
+            this.removeTag(toRemove, animate);
+        },
+
+        removeAll: function() {
+            // Removes all tags.
+            var that = this;
+            this._tags().each(function(index, tag) {
+                that.removeTag(tag, false);
+            });
+        }
+
+    });
+})(jQuery);
 
 
 ;
