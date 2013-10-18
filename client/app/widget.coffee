@@ -20,8 +20,12 @@ $ ->
     window.t = @polyglot.t.bind @polyglot
 
     class Router extends Backbone.Router
-        routes: 'contact/:id' : 'goto'
-        goto: (id) -> homeGoTo 'contacts/contact/' + id
+        routes:
+            '': ->
+            '*redirect': 'redirect'
+        redirect: (path) ->
+            @navigate '#', trigger: true
+            homeGoTo 'contacts/' + path
 
     ContactsCollection = require('collections/contact')
     ContactsList = require('views/contactslist')
@@ -30,18 +34,7 @@ $ ->
     @contactslist.$el.appendTo $('body')
     @contactslist.render()
     @contacts.reset window.initcontacts, parse: true
-    @contactslist.$el.appendTo $('body')
-
-    gotoapp = $("""
-        <a id="gotoapp" href="/apps/contacts/">
-            <i class="icon-resize-full icon-white"></i>
-        </a>
-    """).click (e) ->
-        homeGoTo 'contacts/#'
-        e.preventDefault()
-        false
-
-    @contactslist.$el.append gotoapp
+    delete window.initcontacts
 
     router = new Router()
     Backbone.history.start()
