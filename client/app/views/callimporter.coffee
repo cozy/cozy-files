@@ -31,6 +31,7 @@ module.exports = class CallImporterView extends BaseView
                 @toImport = CallLogReader.parse reader.result
                 @onLogFileParsed()
             catch error
+                console.log error.stack
                 @$('.control-group').addClass 'error'
                 @$('.help-inline').text t 'failed to parse'
 
@@ -44,22 +45,18 @@ module.exports = class CallImporterView extends BaseView
 
         for log in @toImport
             html = '<tr>'
-            for field in ['direction', 'number', 'datetime']
-                html += "<td> #{log[field]} </td>"
+            html += "<td> #{log.direction} </td>"
+            html += "<td> #{log.remote.tel} </td>"
+            html += "<td> #{Date.create(log.timestamp).format()} </td>"
             html += '</tr>'
             @$('tbody').append $ html
 
         @confirmBtn.removeClass 'disabled'
 
     doImport: ->
-        return true unless @toImport
-
-        @toImport.each (contact) ->
-            contact.save null,
-                success: ->
-                    app.contacts.add contact
-
+        alert('@TODO')
         @close()
+        require('application').router.navigate ''
 
     close: ->
         @$el.modal 'hide'

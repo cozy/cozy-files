@@ -20,6 +20,7 @@ module.exports = class Contact extends Backbone.Model
     defaults: ->
         fn: ''
         note: ''
+        tags: []
 
     parse: (attrs) ->
         if attrs.datapoints

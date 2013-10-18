@@ -1,31 +1,4 @@
-#spinOverlay: span= t("Saving ...")
-
-
-a.btn#save=   t("Save")
-
-.btn-group#more
-  a.btn.dropdown-toggle(data-toggle="dropdown", href="#")
-    = t("More")
-    | &nbsp;
-    span.caret
-  ul.dropdown-menu.pull-right
-    li: a.addbirthday= t("Add Birthday")
-    li: a.addcompany=  t("Add Company")
-    li: a.addtitle=    t("Add Title")
-    li.divider
-    li: a.addtel=      t("Add Phone")
-    li: a.addemail=    t("Add Email")
-    li: a.addadr=      t("Add Postal")
-    li: a.addurl=      t("Add Url")
-    li: a.addother=    t("Add Other")
-    li.divider
-    li.delete: a#delete
-      i.icon-remove
-      = t("Delete the contact")
-
-
-
-
+a#close(href="#") &lt;
 
 div#picture
   if hasPicture
@@ -36,41 +9,59 @@ div#picture
   #uploadnotice= t("Change")
   input#uploader(type="file")
 
-a#close(href="#") &times;
-
 #wrap-name-notes
   input#name(placeholder=t("Name"), value="#{fn}")
-  textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+  input#tags.tagit(value=tags.join(','))
 
+span#save-info= t('changes saved') + ' '
+  a#undo=t('undo')
 
+a#delete(title= t("delete the contact"))= t('delete')
 
 #zones
+  #notes-zone.zone
+    h2= t('notes')
+    textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+
   #abouts.zone
-    h2= t("About")
-      a.btn.add.addabout: i.icon-plus
+    h2= t("about")
     ul
+    a.btn.add.addabout= t('add')
 
   #tels.zone
-    h2= t("Phones")
-      a.btn.add.addtel: i.icon-plus
+    h2= t("phones")
     ul
+    a.btn.add.addtel= t('add')
 
   #emails.zone
-    h2= t("Emails")
-      a.btn.add.addemail: i.icon-plus
+    h2= t("emails")
     ul
+    a.btn.add.addemail= t('add')
 
   #adrs.zone
-    h2= t("Postal")
-      a.btn.add.addadr: i.icon-plus
+    h2= t("postal")
     ul
+    a.btn.add.addadr= t('add')
 
   #urls.zone
-    h2= t("Links")
-      a.btn.add.addurl: i.icon-plus
+    h2= t("links")
     ul
+    a.btn.add.addurl= t('add')
 
   #others.zone
-    h2= t("Others")
-      a.btn.add.addother: i.icon-plus
+    h2= t("others")
     ul
+    a.btn.add.addother= t('add')
+
+
+
+  #adder.zone
+    h2= ("add")
+    a.addbirthday= t("birthday") + ', '
+    a.addcompany=  t("company") + ', '
+    a.addtitle=    t("title") + ', '
+    a.addtel=      t("phone") + ', '
+    a.addemail=    t("email") + ', '
+    a.addadr=      t("postal") + ', '
+    a.addurl=      t("url") + ', '
+    a.addother=    t("other")

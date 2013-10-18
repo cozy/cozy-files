@@ -34,7 +34,7 @@ h1, h2, h3, h4, #name
 
 
 #contacts-list
-  width 50%
+  width 450px
   position absolute
   left 0px
   top 0px
@@ -45,63 +45,62 @@ h1, h2, h3, h4, #name
     height 40px
     padding 1px
     overflow hidden
-
-    a
-      width 33.333%
-      height 40px
-      font-size 1em
-      line-height 40px
-      margin 0px
-      padding 0px
-      display inline-block
-      box-sizing border-box
-      -moz-box-sizing border-box
-      text-align center
-      border-right 1px solid white
-      border-left 1px solid white
-      color white
-      background-color buttoncolor
-
-    a:hover
-      outline 0px
-      text-decoration none
-      background-color highlightcolor
-
-    a:active
-      box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
-      background: highlightcolor - 5%
-
-  #searchbar
-    background-color lightgrey
-    height 40px
-    position relative
+    padding 10px
     box-sizing border-box
-
-    input
-      display block
-      box-sizing border-box
-      width 100%
-      height 100%
-      margin-right 2px
-      background-color transparent
-      border 1px solid transparent
-      border-radius 0px
-      box-shadow none
-      margin 0px
 
     input:focus
       box-shadow none
       border 1px solid highlightcolor
 
+    .input-append.input-prepend
+      float left
+      width 65.95744680851064%
+
+
+    // search logo
+    .add-on
+      background-color lightgrey
+      border-top-left-radius 100%
+      border-bottom-left-radius 100%
+      border 0px
+      height 22px
+      i
+        margin-top 2px
+
     #filterClean
-      position absolute
-      top 10px
-      right 5px
+      display inline-block
+      position relative
+      height 26px
+      line-height 13px
+      text-align center
+      width 26px
+      background-color red
+      padding 0px
+      box-sizing border-box
+      -moz-box-sizing border-box
+      vertical-align middle
+      margin 0px 0px 0px -28px
+      border 0px
+      border-radius 13px
+      z-index 2
+
+    #new, #gohelp
+      background-color buttoncolor
+      display inline-block
+      float left
+      margin-left 2.127659574468085%
+      width 14.893617021276595%
+      text-align center
+      line-height 26px
+      i
+        margin-top 2px
+
+
 
 
   #contacts
     position absolute
-    top 83px
+    top 50px
     bottom 0px
     left 0px
     right 0px
@@ -148,8 +147,10 @@ h1, h2, h3, h4, #name
 
 
 #contact, #doc
-  width 50%
+  // width 50%
   position absolute
+  z-index 3
+  left 450px
   right 0px
   top 0px
   bottom 0px
@@ -194,7 +195,7 @@ h1, h2, h3, h4, #name
     position absolute
     border 3px solid buttoncolor
     left 8px
-    top 50px
+    top 20px
     width 64px
     height 64px
     overflow hidden
@@ -237,25 +238,53 @@ h1, h2, h3, h4, #name
   input, textarea
     border-radius 0px
     background-color transparent
-    display block
-    float left
+    display inline-block
     box-shadow none
     margin 0px
     border 1px solid transparent
 
-  input:hover, textarea:hover
-    border 1px solid buttoncolor
+    &:hover
+      border 1px solid buttoncolor
 
-  input:focus, textarea:focus
-    border 1px solid buttoncolor
-    background-color white
-    outline none
+    &:focus
+      border 1px solid buttoncolor
+      background-color white
+      outline none
+
+  #delete
+    display block
+    position absolute
+    right 10px
+    top 20px
+    padding 0px 5px
+    color white
+    text-decoration none
+    background-color red
+    // width 30px
+    height 30px
+    text-align center
+    line-height 30px
 
   #wrap-name-notes
     position absolute
-    top 50px
+    top 20px
     left 77px
     right 10px
+
+  #tags
+    display none
+
+  ul.tagit
+    border 0px
+    input
+      &:hover
+        border 0px
+      &:focus
+        border 0px
+        background-color transparent
+        outline none
+
+
 
   #name
     display block
@@ -275,50 +304,52 @@ h1, h2, h3, h4, #name
     display block
     box-sizing border-box
     width 100%
-    height 70px
     padding-left 15px
     resize none
     border 1px solid transparent
-    border-top 0px
   #notes:focus
     border 1px solid buttoncolor
-    border-top 0px
 
-  #save
-    border-radius 15px !important
+  #save-info
     position absolute
-    top 8px
-    left 46px
-
-  #more
-    position absolute
-    right 10px
-    top 8px
-    text-align right
-    .btn
-      border-radius 15px !important
-      border-bottom-right-radius 0px !important
-
-    .dropdown-menu
-      text-align left
-      a
-        cursor pointer
+    top 20px
+    right 100px
+    height 30px
+    line-height 30px
+    padding 0px 5px
+    background-color #f9edbe
 
   #zones
     position absolute
-    top 160px
+    top 120px
     left 0px
     right 0px
     bottom 0px
 
+    #notes-zone
+      float right
+
     .zone
       width 48%
-      margin 1%
-      float left
+      margin 0% 1%
+      padding 0px
+      // float left
+
       a.btn.add
-        display inline-block
-        margin-left 10px
+        display block
+        width 100%
+        height 30px
+        background-color lightgrey + 70%
+        background-image none
+        border 0px
+        padding 0px
+        margin 5px 0px 0px 0px
+        border-radius 0px
+        line-height 30px
         opacity 0
+
+        &:hover
+          background-color lightgrey + 20%
 
       h2
         margin-left 5px
@@ -360,35 +391,35 @@ h1, h2, h3, h4, #name
     display none
 
 
-.btn
-  background none
-  text-shadow none
-  background-color buttoncolor
-  border-radius 0px !important
-  border 0px
-  color white
+// .btn
+//   background none
+//   text-shadow none
+//   background-color buttoncolor
+//   border-radius 0px !important
+//   border 0px
+//   color white
 
-  .caret
-    border-top 4px solid white
+//   .caret
+//     border-top 4px solid white
 
-.btn.disabled
-  border 1px solid buttoncolor
-  background-color lightgrey
+// .btn.disabled
+//   border 1px solid buttoncolor
+//   background-color lightgrey
 
-.btn:not(.disabled):hover
-  background-color highlightcolor
-  text-decoration none
-  color white
+// .btn:not(.disabled):hover
+//   background-color highlightcolor
+//   text-decoration none
+//   color white
 
-.btn:not(.disabled):active
-.btn:not(.disabled):focus
-  background-color buttoncolor
-  color white
-  text-decoration none
+// .btn:not(.disabled):active
+// .btn:not(.disabled):focus
+//   background-color buttoncolor
+//   color white
+//   text-decoration none
 
-.btn:not(.disabled):active, .btn.pressed
-    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
-    background: highlightcolor - 5%
+// .btn:not(.disabled):active, .btn.pressed
+//     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
+//     background: highlightcolor - 5%
 
 .dropdown-menu
   border-radius 0px
@@ -401,6 +432,8 @@ h1, h2, h3, h4, #name
     background-color buttoncolor
     color white
 
+a
+  cursor pointer
 
 @media (max-width: 900px)
 
@@ -409,9 +442,12 @@ h1, h2, h3, h4, #name
 
     #contacts-list, #doc, #contact
         width 100%
+        left 0px
 
     #contact
       #zones .zone
         width 98%
       #close
         display block
+      #picture
+        top 53px

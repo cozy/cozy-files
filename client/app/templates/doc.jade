@@ -1,8 +1,17 @@
-h2= t('help')
+h2= t('Settings')
+
+h3= t('Help')
 
 p= t("click left to display")
 
 p= t("carddav info")
 
-p= t("call log info")
+h3= t('Import / export')
+p= t("call log info") + ' '
     a(href="#callimport")= t('import call log')
+
+p= t('vcard export info') + ' '
+    a(href="contacts.vcf", download="contacts.vcf", title=t("export vcard"))= t('export all vcard')
+
+p= t("vcard import info") + ' '
+    a(href="#import")= t('import vcard')

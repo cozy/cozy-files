@@ -18,6 +18,8 @@ module.exports = class ContactsList extends ViewCollection
         super
         @list        = @$ '#contacts'
         @filterfield = @$ '#filterfield'
+        @filterClean = @$ '#filterClean'
+        @filterClean.hide()
         @filterfield.focus()
         @list.niceScroll()
 
@@ -34,7 +36,6 @@ module.exports = class ContactsList extends ViewCollection
         line = @views[model.cid].$el
         line.addClass 'activated'
 
-
         position = line.position().top
         outofview = position < 0 or position > @list.height()
         @list.scrollTop @list.scrollTop() + position if outofview
@@ -42,17 +43,22 @@ module.exports = class ContactsList extends ViewCollection
     cleanFilter: (event) ->
         event.preventDefault()
         @filterfield.val('')
+        @filterClean.hide()
         view.$el.show() for id, view of @views
 
     keyUpCallback: (event) ->
 
         if event.keyCode is 27 #ESC
             @filterfield.val('')
+            @filterClean.hide()
             App.router.navigate "", true
 
         filtertxt = @filterfield.val()
+        @filterClean.show()
 
-        return unless filtertxt.length > 2 or filtertxt.length is 0
+        return unless filtertxt.length > 1 or filtertxt.length is 0
+
+        @filterClean.toggle filtertxt.length isnt 0
 
         filtertxt = filtertxt.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
         @filter    = new RegExp filtertxt, 'i'
@@ -60,7 +66,7 @@ module.exports = class ContactsList extends ViewCollection
         firstmodel = null
 
         for id, view of @views
-            match = (@filtertxt is '') or view.model.match @filter
+            match = (filtertxt is '0') or view.model.match @filter
             view.$el.toggle match
 
             firstmodel = view.model if match and not firstmodel

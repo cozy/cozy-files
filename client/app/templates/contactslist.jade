@@ -1,19 +1,14 @@
-#toolbar
-    a#new(href="#contact/new")
+form#toolbar.form-search
+    .input-append.input-prepend
+        span.add-on: i.icon-search.icon-white
+        input#filterfield.search-query.input-large(
+            type="text", placeholder=t("search placeholder"))
+        a#filterClean: i.icon-remove.icon-white
+
+    a#new(href="#contact/new", title=t("add contact"))
       i.icon-plus.icon-white
-      span= t("New Contact")
 
-    a#importvcf(href="#import")
-      i.icon-download.icon-white
-      span= t("Import vCard")
-
-    a#exportvcf(href="contacts.vcf")
-      i.icon-upload.icon-white
-      span= t("Export vCard")
-
-#searchbar
-    input#filterfield(type="text", placeholder=t("Search ..."))
-    a#filterClean(href="")
-        i.icon-remove
+    a#gohelp(href="#settings", title=t("go to settings"))
+      i.icon-cog.icon-white
 
 #contacts

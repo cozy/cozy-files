@@ -8,6 +8,7 @@ Contact          = require 'models/contact'
 module.exports = class Router extends Backbone.Router
     routes:
         ''                    : 'help'
+        'settings'            : 'help'
         'import'              : 'import'
         'callimport'          : 'callimport'
         'contact/new'         : 'newcontact'
@@ -34,6 +35,8 @@ module.exports = class Router extends Backbone.Router
 
     newcontact: ->
         contact = new Contact()
+        contact.dataPoints.add name: 'tel', type: 'main', value: ''
+        contact.dataPoints.add name: 'email', type: 'main', value: ''
         contact.once 'change:id', =>
             app.contacts.add contact
             @navigate "contact/#{contact.id}", false

@@ -1,4 +1,5 @@
 ViewCollection = require 'lib/view_collection'
+TagsView = require 'views/contact_tags'
 Datapoint = require 'models/datapoint'
 
 
@@ -18,28 +19,31 @@ module.exports = class ContactView extends ViewCollection
         'click .addadr'     : @addClicked 'adr'
         'click .addother'   : @addClicked 'other'
         'click .addurl'     : @addClicked 'url'
-        'click #save'       : 'save'
+        'click #undo'       : 'undo'
         'click #delete'     : 'delete'
-        'blur .value'       : 'cleanup'
+        'keyup .type'       : 'onKeyUp'
+        'keyup .value'      : 'onKeyUp'
+        'keyup #notes'      : 'resizeNote'
+        'change #uploader'  : 'photoChanged'
+
+        'keypress .type'    : 'changeOccured'
         'keypress #name'    : 'changeOccured'
         'change #name'      : 'changeOccured'
         'keypress #notes'   : 'changeOccured'
         'change #notes'     : 'changeOccured'
-        'change #uploader'  : 'photoChanged'
 
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
+        @saveLater = _.debounce @save, 1000
         super
 
     initialize: ->
         super
-        @listenTo @model,      'change' , @modelChanged
-        @listenTo @model,      'destroy', @modelDestroyed
-        @listenTo @model,      'request', @onRequest
-        @listenTo @model,      'error',   @onError
-        @listenTo @model,      'sync',    @onSuccess
-
+        @listenTo @model     , 'change' , @modelChanged
+        @listenTo @model     , 'request', @onRequest
+        @listenTo @model     , 'error'  , @onError
+        @listenTo @model     , 'sync'   , @onSuccess
         @listenTo @collection, 'change' , @changeOccured
 
     getRenderData: ->
@@ -52,14 +56,21 @@ module.exports = class ContactView extends ViewCollection
 
         @hideEmptyZones()
         @spinner =    @$('#spinOverlay')
-        @saveButton = @$('#save').addClass('disabled').text t 'Saved'
+        @savedInfo = @$('#save-info').hide()
         @needSaving = false
         @namefield = @$('#name')
         @notesfield = @$('#notes')
         @uploader = @$('#uploader')[0]
         @picture  = @$('#picture .picture')
+        @tags = new TagsView
+            el: @$('#tags')
+            model: @model
+            contactView: @
         super
         @$el.niceScroll()
+        @resizeNote()
+        @currentState = @model.toJSON()
+
 
     remove: ->
         @$el.getNiceScroll().remove()
@@ -84,38 +95,79 @@ module.exports = class ContactView extends ViewCollection
         typeField.focus()
         typeField.select()
 
-    changeOccured: ->
-        @saveButton.removeClass('disabled').text t 'Save'
+    changeOccured: =>
+        @model.set
+            fn:  @namefield.val()
+            note: @notesfield.val()
+        console.log @currentState, @model.toJSON()
+        return if _.isEqual @currentState, @model.toJSON()
+        console.log "ACUAL CHANGE"
         @needSaving = true
-
-    modelChanged: ->
-        @namefield.val  @model.get 'fn'
-        @notesfield.val @model.get 'note'
+        @savedInfo.hide()
+        @saveLater()
 
     delete: ->
         @model.destroy() if @model.isNew() or confirm t 'Are you sure ?'
 
-    cleanup: ->
-        @model.dataPoints.prune()
-        @hideEmptyZones()
-
     save: =>
         return unless @needSaving
-        @cleanup()
         @needSaving = false
-        @model.save
-            fn:  @namefield.val()
-            note: @notesfield.val()
+        @savedInfo.show().text 'saving changes'
+        @model.save()
+
+    undo: =>
+        return unless @lastState
+        @model.set @lastState, parse: true
+        @model.save null, undo: true
+        @resizeNote()
+
+    onKeyUp: (event) ->
+        # only enters
+        return true unless (event.which or event.keyCode) is 13
+        zone = $(event.target).parents('.zone')[0].id
+        name = zone.substring 0, zone.length-1
+        point = new Datapoint name: name
+        @model.dataPoints.add point
+        typeField = @zones[name].children().last().find('.type')
+        typeField.focus()
+        typeField.select()
+        return false
+
+    resizeNote: (event) ->
+        notes = @notesfield.val()
+        rows = loc = 0
+        # count occurences of \n in notes
+        while loc = notes.indexOf("\n", loc) + 1
+            rows++
+
+        @notesfield.prop 'rows', rows + 2
 
     onRequest: ->
         @spinner.show()
 
-    onSuccess: ->
+    onSuccess: (model, result, options) ->
         @spinner.hide()
-        @saveButton.addClass('disabled').text t 'Saved'
+        if options.undo
+            @savedInfo.text t('undone') + ' '
+            setTimeout =>
+                @savedInfo.fadeOut()
+            , 1000
+        else
+            @savedInfo.text t('changes saved') + ' '
+            undo = $("<a id='undo'>#{t('undo')}</a>")
+            @savedInfo.append undo
+            @lastState = @currentState
+
+        @currentState = @model.toJSON()
 
     onError: ->
         @spinner.hide()
+
+    modelChanged: =>
+        @notesfield.val @model.get 'note'
+        @namefield.val  @model.get 'fn'
+        @tags?.refresh()
+        @resizeNote()
 
     photoChanged: () =>
 

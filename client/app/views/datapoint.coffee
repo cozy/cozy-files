@@ -10,6 +10,8 @@ module.exports = class DataPointView extends BaseView
     events: ->
         'blur .type'     : 'store'
         'blur .value'    : 'store'
+        'keyup .type'  : 'onKeyup'
+        'keyup .value' : 'onKeyup'
 
     getRenderData: ->
         _.extend @model.toJSON(), placeholder: @getPlaceHolder()
@@ -34,6 +36,23 @@ module.exports = class DataPointView extends BaseView
             when 'tel' then '+33 1 23 45 67 89'
             when 'url' then 'http://example.com/john-smith'
             when 'about', 'other' then t 'type here'
+
+    onKeyup: (event) ->
+        empty = $(event.target).val().length is 0
+        backspace = (event.which or event.keyCode) is 8
+
+        unless backspace
+            @secondBack = false
+            return true
+
+        unless empty
+            return true
+
+        if @secondBack
+            prev = @$el.prev('li').find('.value')
+            @remove()
+            prev.focus().select() if prev
+        else @secondBack = true
 
     store: ->
         @model.set
