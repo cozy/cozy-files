@@ -3,7 +3,7 @@ americano = require 'americano-cozy'
 module.exports = Contact = americano.getModel 'Contact',
     id            : String
     fn            : String
-    datapoints    : [Object]
+    datapoints    : (x) -> x
     note          : String
     tags          : (x) -> x # DAMN IT JUGGLING
     _attachments  : Object

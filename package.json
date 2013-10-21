@@ -34,10 +34,13 @@
       "description": "Read language setting"
     },
     "PhoneCommunicationLog": {
-      "description": "Display last calls with this contact"
+      "description": "FING/Orange retrieve calls log from your invoice"
+    },
+    "ContactLog": {
+      "description": "Log your history with a contact"
     },
     "Mail": {
-      "description": "Display last emails with this contact"
+      "description": "Display last emails for a contact"
     }
   },
   "cozy-widget": "/apps/contacts/widget"
