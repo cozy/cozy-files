@@ -9,10 +9,17 @@
             a(href="http://support.digidna.net/entries/22585757-Export-iPhone-Call-History-to-PC-or-Mac",
                 target="_blank") Export iPhone Call History
     .control-group
-        label.control-label(for="vcfupload")= t("choose log file")
+        label.control-label(for="country")= t("choose phone country")
+        .controls
+            select#phonecountry
+                each code, country in countries
+                    option(value=code)= code + ' ' + country
+
+        label.control-label(for="csvupload")= t("choose log file")
         .controls
             input#csvupload(type="file", accept="text/csv;text/plain")
             span.help-inline
+
 #import-config.modal-body
     p= t('ready to import')
     table.table.stripped-table

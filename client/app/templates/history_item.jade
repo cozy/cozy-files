@@ -1,0 +1,8 @@
+td
+    if directionIcon != false
+        i(class=directionIcon)
+td: i(class=typeIcon)
+td= new Date(date).format('long')
+td.details
+    input.editor(type="text", placeholder=t("type here"))
+    a.notedelete: i.icon-remove

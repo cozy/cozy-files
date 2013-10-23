@@ -1,4 +1,5 @@
 ViewCollection = require 'lib/view_collection'
+HistoryView = require 'views/history'
 TagsView = require 'views/contact_tags'
 Datapoint = require 'models/datapoint'
 
@@ -11,8 +12,9 @@ module.exports = class ContactView extends ViewCollection
 
     events: ->
         'click .addbirthday': @addClicked 'about', 'birthday'
-        'click .addcompany' : @addClicked 'about', 'org'
+        'click .addorg' : @addClicked 'about', 'org'
         'click .addtitle'   : @addClicked 'about', 'title'
+        'click .addcozy'    : @addClicked 'about', 'cozy'
         'click .addabout'   : @addClicked 'about'
         'click .addtel'     : @addClicked 'tel'
         'click .addemail'   : @addClicked 'email'
@@ -35,7 +37,7 @@ module.exports = class ContactView extends ViewCollection
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
-        @saveLater = _.debounce @save, 1000
+        @saveLater = _.debounce @save, 3000
         super
 
     initialize: ->
@@ -45,6 +47,8 @@ module.exports = class ContactView extends ViewCollection
         @listenTo @model     , 'error'  , @onError
         @listenTo @model     , 'sync'   , @onSuccess
         @listenTo @collection, 'change' , @changeOccured
+        @listenTo @collection, 'add' , @changeOccured
+        @listenTo @collection, 'remove' , @changeOccured
 
     getRenderData: ->
         _.extend {}, @model.toJSON(), hasPicture: @model.hasPicture or false
@@ -71,6 +75,9 @@ module.exports = class ContactView extends ViewCollection
         @resizeNote()
         @currentState = @model.toJSON()
 
+        @history = new HistoryView
+            collection: @model.history
+        @history.render().$el.appendTo @$('#history')
 
     remove: ->
         @$el.getNiceScroll().remove()
@@ -78,7 +85,16 @@ module.exports = class ContactView extends ViewCollection
 
     hideEmptyZones: ->
         for type, zone of @zones
-            zone.parent().toggle @model.dataPoints.hasOne type
+            hasOne = @model.dataPoints.hasOne type
+            zone.parent().toggle hasOne
+            @$("#adder .add#{type}").toggle not hasOne
+
+        for name in ['birthday', 'org', 'title', 'cozy']
+            hasOne = @model.dataPoints.hasOne 'about', name
+            @$("#adder .add#{name}").toggle not hasOne
+
+        @$('#adder h2').toggle @$('#adder a:visible').length isnt 0
+        @$el.getNiceScroll().resize()
 
     appendView: (dataPointView) ->
         return unless @zones
@@ -99,9 +115,7 @@ module.exports = class ContactView extends ViewCollection
         @model.set
             fn:  @namefield.val()
             note: @notesfield.val()
-        console.log @currentState, @model.toJSON()
         return if _.isEqual @currentState, @model.toJSON()
-        console.log "ACUAL CHANGE"
         @needSaving = true
         @savedInfo.hide()
         @saveLater()
@@ -141,6 +155,7 @@ module.exports = class ContactView extends ViewCollection
             rows++
 
         @notesfield.prop 'rows', rows + 2
+        @$el.getNiceScroll().resize()
 
     onRequest: ->
         @spinner.show()
@@ -149,6 +164,7 @@ module.exports = class ContactView extends ViewCollection
         @spinner.hide()
         if options.undo
             @savedInfo.text t('undone') + ' '
+            @lastState = null
             setTimeout =>
                 @savedInfo.fadeOut()
             , 1000

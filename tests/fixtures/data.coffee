@@ -1,6 +1,13 @@
 sampleaddress = 'Box3;Suite215;14 Avenue de la République;Compiègne;Picardie;60200;France'
 
 
+makeLog = (tsp, dir, nb, dur) ->
+    timestamp: tsp
+    direction: dir
+    remote: tel: nb
+    content: duration: dur
+    type: 'VOICE'
+
 module.exports =
 
     contact1:
@@ -15,13 +22,13 @@ module.exports =
 
 
     logs1: [
-            {timestamp: '2007-05-13T16:49:01.000Z', direction:'INCOMING', number:'+331234567', duration:'00:05:00'}
-            {timestamp: '2007-06-13T16:49:01.000Z', direction:'OUTGOING', number:'+331234567', duration:'00:02:00'}
-            {timestamp: '2007-07-13T16:49:01.000Z', direction:'INCOMING', number:'+331634567', duration:'01:00:00'}
+        makeLog '2007-05-13T16:49:01.000Z', 'INCOMING', '+331234567', '00:05:00'
+        makeLog '2007-06-13T16:49:01.000Z', 'OUTGOING', '+331234567', '00:02:00'
+        makeLog '2007-07-13T16:49:01.000Z', 'INCOMING', '+331234500', '01:05:00'
         ]
 
 module.exports.logs2 = module.exports.logs1.concat [
-            {timestamp: '2007-08-13T16:49:01.000Z', direction:'OUTGOING', number:'12584367', duration:'00:02:00'}
+        makeLog '2007-08-13T16:49:01.000Z', 'OUTGOING', '+331234567', '00:02:00'
         ]
 
 module.exports.logsOrange = [

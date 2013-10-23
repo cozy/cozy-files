@@ -2,8 +2,17 @@ module.exports = class DataPointCollection extends Backbone.Collection
 
     model: require 'models/datapoint'
 
-    hasOne: (type) ->
-        @where(name: type).length > 0
+    hasOne: (name, type) ->
+        query = name: name
+        query.type = type if type
+        return @where(query).length > 0
+
+    toJSON: ->
+        truedps = this.filter (model) ->
+            value = model.get('value')
+            (value isnt null) and (value isnt '') and (value isnt ' ')
+
+        return truedps.map (model) -> model.toJSON()
 
     prune: () ->
         toDelete = []

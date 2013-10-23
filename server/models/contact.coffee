@@ -12,6 +12,13 @@ Contact::phoneNumbers = ->
     model = @toJSON()
     return (dp.value for i, dp of model.datapoints when dp.name is 'tel')
 
+Contact::remoteKeys = ->
+    model = @toJSON()
+    out = [@id]
+    for dp in model.datapoints when dp.name in ['tel', 'mail']
+        out.push dp.value
+    return out
+
 Contact::toVCF = ->
 
     model = @toJSON()

@@ -4,3 +4,8 @@ if name == 'adr'
   textarea.value(rows="4", placeholder="#{placeholder}") #{value}
 else
   input.value(type="text", placeholder="#{placeholder}", value="#{value}")
+
+a.dpaction: i.icon
+
+a.dpremove(title= t('remove datapoint'))
+    i.icon-trash

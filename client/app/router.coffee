@@ -7,7 +7,7 @@ Contact          = require 'models/contact'
 
 module.exports = class Router extends Backbone.Router
     routes:
-        ''                    : 'help'
+        ''                    : 'list'
         'settings'            : 'help'
         'import'              : 'import'
         'callimport'          : 'callimport'
@@ -18,10 +18,14 @@ module.exports = class Router extends Backbone.Router
         $('body').on 'keyup', (event) =>
             @navigate "", true if event.keyCode is 27 #ESC
 
-    help: ->
-        @displayView new DocView()
+    list: ->
+        return @help() if $(window).width() > 900
+        @displayView null
         $('#filterfied').focus()
         app.contactslist.activate null
+
+    help: ->
+        @displayView new DocView()
 
     import: ->
         @help()

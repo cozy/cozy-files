@@ -14,22 +14,26 @@ module.exports = class CallImporterView extends BaseView
         'change #csvupload': 'onUpload'
         'click  #confirm-btn': 'doImport'
 
+    getRenderData: ->
+        countries: require('lib/phone_number').countries
+
     afterRender: ->
         @$el.modal('show')
         @upload = @$('#csvupload')[0]
+        @country = @$('#phonecountry')
         @file_step = @$('#import-file')
         @parse_step = @$('#import-config').hide()
         @confirmBtn = @$('#confirm-btn')
 
     onUpload: ->
         file = @upload.files[0]
+        country = @country.val()
 
         reader = new FileReader()
         reader.readAsText file
         reader.onloadend = =>
             try
-                @toImport = CallLogReader.parse reader.result
-                @onLogFileParsed()
+                CallLogReader.parse reader.result, country, @onLogFileParsed, @onLogFileProgress
             catch error
                 console.log error.stack
                 @$('.control-group').addClass 'error'
@@ -38,15 +42,24 @@ module.exports = class CallImporterView extends BaseView
         reader.onerror = =>
             console.log "ERROR READING", reader.result, reader.error
 
+    onLogFileProgress: (done, total) =>
+        p = Math.round(100 * done/total)
+        @$('.help-inline').text t('progress') + ": #{p}%"
 
-    onLogFileParsed: ->
+    onLogFileParsed: (err, toImport) =>
+        if err
+            console.log error.stack
+            @$('.control-group').addClass 'error'
+            @$('.help-inline').text t 'failed to parse'
+            return
+
         @file_step.remove()
         @parse_step.show()
 
-        for log in @toImport
+        for log in toImport
             html = '<tr>'
             html += "<td> #{log.direction} </td>"
-            html += "<td> #{log.remote.tel} </td>"
+            html += "<td> +#{log.remote.tel} </td>"
             html += "<td> #{Date.create(log.timestamp).format()} </td>"
             html += '</tr>'
             @$('tbody').append $ html
@@ -54,9 +67,7 @@ module.exports = class CallImporterView extends BaseView
         @confirmBtn.removeClass 'disabled'
 
     doImport: ->
-        alert('@TODO')
-        @close()
-        require('application').router.navigate ''
+
 
     close: ->
         @$el.modal 'hide'

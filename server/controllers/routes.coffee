@@ -1,5 +1,5 @@
 contact = require './contact'
-callLog = require './call_log'
+contactLog = require './contact_log'
 
 module.exports =
 
@@ -11,6 +11,9 @@ module.exports =
 
     'contactid':
         param: contact.fetch
+
+    'logid':
+        param: contactLog.fetch
 
     'contacts.vcf':
         get: contact.vCard
@@ -28,8 +31,13 @@ module.exports =
         get: contact.picture
 
     'contacts/:contactid/logs':
-        get:  callLog.byContact
-        post: callLog.create
+        get:  contactLog.byContact
+        post: contactLog.create
+
+    # do not fetch contact when we work only on a log
+    'contacts/:contactnotfetched/logs/:logid':
+        put:  contactLog.update
+        del:  contactLog.delete
 
     'logs':
-        post: callLog.merge
+        post: contactLog.merge

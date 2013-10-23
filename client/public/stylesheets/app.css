@@ -40,7 +40,7 @@ h4,
 }
 #contacts-list #toolbar input:focus {
   box-shadow: none;
-  border: 1px solid #fe8800;
+  border: 1px solid #ffc47f;
 }
 #contacts-list #toolbar .input-append.input-prepend {
   float: left;
@@ -68,7 +68,6 @@ h4,
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  -moz-box-sizing: border-box;
   vertical-align: middle;
   margin: 0px 0px 0px -28px;
   border: 0px;
@@ -132,7 +131,7 @@ h4,
 }
 #contacts-list #contacts .contact-thumb:hover {
   text-decoration: none;
-  background-color: #fe8800;
+  background-color: #ffc47f;
 }
 #contacts-list #contacts .contact-thumb:focus {
   text-decoration: none;
@@ -149,18 +148,8 @@ h4,
   background-image: url("../img/background-right.jpg");
   box-shadow: 6px 0px 3px -2px #e5e5e5 inset;
 }
-#doc {
-  padding-left: 20px;
-  padding-top: 50px;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-}
-#contact {
-  padding-top: 50px;
-}
-#contact #close {
+#contact #close,
+#doc #close {
   display: none;
   position: absolute;
   top: 8px;
@@ -174,13 +163,25 @@ h4,
   background-color: #34a6ff;
   color: #fff;
 }
-#contact #close:hover {
+#contact #close:hover,
+#doc #close:hover {
   text-decoration: none;
-  background-color: #fe8800;
+  background-color: #ffc47f;
 }
-#contact #close:active {
+#contact #close:active,
+#doc #close:active {
   box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 0 0;
-  background: #f18100;
+  background: #ffbb6c;
+}
+#doc {
+  padding-left: 20px;
+  padding-top: 50px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#contact {
+  padding-top: 50px;
 }
 #contact #picture {
   display: block;
@@ -253,7 +254,7 @@ h4,
   padding: 0px 5px;
   color: #fff;
   text-decoration: none;
-  background-color: #f00;
+  background-color: #f66;
   height: 30px;
   text-align: center;
   line-height: 30px;
@@ -263,9 +264,6 @@ h4,
   top: 20px;
   left: 77px;
   right: 10px;
-}
-#contact #tags {
-  display: none;
 }
 #contact ul.tagit {
   border: 0px;
@@ -277,6 +275,9 @@ h4,
   border: 0px;
   background-color: transparent;
   outline: none;
+}
+#contact #tags {
+  display: none;
 }
 #contact #name {
   display: block;
@@ -294,19 +295,6 @@ h4,
 #contact #name:focus {
   outline: none;
 }
-#contact #notes {
-  display: block;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-  padding-left: 15px;
-  resize: none;
-  border: 1px solid transparent;
-}
-#contact #notes:focus {
-  border: 1px solid #34a6ff;
-}
 #contact #save-info {
   position: absolute;
   top: 20px;
@@ -316,22 +304,91 @@ h4,
   padding: 0px 5px;
   background-color: #f9edbe;
 }
-#contact #zones {
+#right,
+#left {
   position: absolute;
   top: 120px;
-  left: 0px;
+  width: 50%;
+}
+#right h2,
+#left h2,
+#right .nav-tabs li a,
+#left .nav-tabs li a {
+  font-family: styled;
+  color: inherit;
+  font-size: 31.5px;
+  line-height: 40px;
+  padding: 0px 5px;
+  font-weight: normal;
+  border-bottom: 1px solid #d3d3d3;
+}
+#right {
   right: 0px;
+}
+#right .nav-tabs {
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+#right textarea {
+  width: 98%;
+}
+#right #history {
+  width: 100%;
+}
+#right #history table {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 90%;
+  margin: 10px 5%;
+}
+#right #history table thead {
+  background-color: #34a6ff;
+  color: #fff;
+}
+#right #history table tr td:nth-child(1),
+#right #history table tr td:nth-child(2),
+#right #history table tr th:nth-child(1),
+#right #history table tr th:nth-child(2) {
+  width: 18px;
+}
+#right #history table tr td:nth-child(3),
+#right #history table tr th:nth-child(3) {
+  width: 30%;
+}
+#right #history table tr.injector {
+  line-height: 0px;
+  height: 2px;
+}
+#right #history table tr.injector td {
+  background-color: #ffc47f;
+  height: 2px;
+  padding: 0px;
+  position: relative;
+}
+#right #history table tr.injector td a {
+  display: block;
+  position: absolute;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0px 5px;
   bottom: 0px;
+  height: 20px;
+  line-height: 20px;
+  right: 0px;
+  background-color: #ffc47f;
 }
-#contact #zones #notes-zone {
-  float: right;
+#left {
+  left: 0px;
 }
-#contact #zones .zone {
-  width: 48%;
+#left .zone {
+  width: 98%;
   margin: 0% 1%;
   padding: 0px;
+  float: left;
 }
-#contact #zones .zone a.btn.add {
+#left .zone a.btn.add {
   display: block;
   width: 100%;
   height: 30px;
@@ -344,51 +401,38 @@ h4,
   line-height: 30px;
   opacity: 0;
 }
-#contact #zones .zone a.btn.add:hover {
+#left .zone a.btn.add:hover {
   background-color: #dcdcdc;
 }
-#contact #zones .zone h2 {
-  margin-left: 5px;
-  font-weight: normal;
-  border-bottom: 1px solid #d3d3d3;
-}
-#contact #zones .zone ul {
-  margin: 0px;
-}
-#contact #zones .zone ul li {
-  list-style-type: none;
-}
-#contact #zones .zone ul li .type:focus,
-#contact #zones .zone ul li .value:focus {
-  border: 1px solid #34a6ff;
-}
-#contact #zones .zone ul li .type {
-  width: 25%;
-  font-weight: bold;
-}
-#contact #zones .zone ul li .value {
-  width: 65%;
-}
-#contact #zones .zone:hover a.btn.add {
+#left .zone:hover a.btn.add {
   transition: 0.5s;
   opacity: 1;
 }
-#contact #spinOverlay {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  height: 100%;
-  width: 100%;
-  background-color: #000;
-  color: #fff;
-  opacity: 0.4;
-  font-size: 50px;
-  line-height: 180px;
-  text-align: center;
+#left .zone ul {
+  margin: 0px;
+}
+#left .zone ul li {
+  list-style-type: none;
+}
+#left .zone ul li .type {
+  width: 25%;
+  font-weight: bold;
+}
+#left .zone ul li .value {
+  width: 55%;
+}
+#left .zone ul li .dpremove,
+#left .zone ul li .dpaction {
+  width: 5%;
+  height: 20px;
+  float: right;
+  vertical-align: middle;
+}
+#left .zone ul li .dpremove {
   display: none;
 }
-.dropdown-menu {
-  border-radius: 0px;
+#left .zone ul li:hover .dpremove {
+  display: inline-block;
 }
 #importer {
   border-radius: 0px;
@@ -404,20 +448,19 @@ a {
   cursor: pointer;
 }
 @media (max-width: 900px) {
-  #doc {
-    display: none;
-  }
   #contacts-list,
   #doc,
   #contact {
     width: 100%;
     left: 0px;
   }
-  #contact #zones .zone {
-    width: 98%;
-  }
+  #contacts-list #close,
+  #doc #close,
   #contact #close {
     display: block;
+  }
+  #contact #zones .zone {
+    width: 98%;
   }
   #contact #picture {
     top: 53px;

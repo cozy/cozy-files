@@ -18,10 +18,21 @@ span#save-info= t('changes saved') + ' '
 
 a#delete(title= t("delete the contact"))= t('delete')
 
-#zones
-  #notes-zone.zone
-    h2= t('notes')
-    textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+#right
+
+  ul.nav.nav-tabs
+    li.active: a(href="#notes-zone", data-toggle="tab")= t('notes')
+    li: a(href="#history", data-toggle="tab")= t('history')
+
+  .tab-content
+    #notes-zone.tab-pane.active
+      textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+
+    #history.tab-pane
+
+
+#left
+
 
   #abouts.zone
     h2= t("about")
@@ -53,15 +64,14 @@ a#delete(title= t("delete the contact"))= t('delete')
     ul
     a.btn.add.addother= t('add')
 
-
-
   #adder.zone
-    h2= ("add")
-    a.addbirthday= t("birthday") + ', '
-    a.addcompany=  t("company") + ', '
-    a.addtitle=    t("title") + ', '
-    a.addtel=      t("phone") + ', '
-    a.addemail=    t("email") + ', '
-    a.addadr=      t("postal") + ', '
-    a.addurl=      t("url") + ', '
+    h2= t("add")
+    a.addbirthday= t("birthday") + ' '
+    a.addorg=      t("company") + ' '
+    a.addtitle=    t("title") + ' '
+    a.addcozy=     t("cozy url") + ' '
+    a.addtel=      t("phone") + ' '
+    a.addemail=    t("email") + ' '
+    a.addadr=      t("postal") + ' '
+    a.addurl=      t("url") + ' '
     a.addother=    t("other")

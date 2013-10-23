@@ -15,7 +15,7 @@ box-sizing(n)
 bgcolor = #fcfcfc
 shadowcolor = #444
 basecolor = lightgrey + 40%
-highlightcolor = #fe8800
+highlightcolor = #FFC47F
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
 almostblack = #555555
@@ -31,7 +31,7 @@ body
 h1, h2, h3, h4, #name
   font-family styled
 
-
+// CONTACT LIST
 
 #contacts-list
   width 450px
@@ -56,7 +56,6 @@ h1, h2, h3, h4, #name
       float left
       width 65.95744680851064%
 
-
     // search logo
     .add-on
       background-color lightgrey
@@ -77,7 +76,6 @@ h1, h2, h3, h4, #name
       background-color red
       padding 0px
       box-sizing border-box
-      -moz-box-sizing border-box
       vertical-align middle
       margin 0px 0px 0px -28px
       border 0px
@@ -94,9 +92,6 @@ h1, h2, h3, h4, #name
       line-height 26px
       i
         margin-top 2px
-
-
-
 
   #contacts
     position absolute
@@ -146,6 +141,7 @@ h1, h2, h3, h4, #name
       text-decoration none
 
 
+
 #contact, #doc
   // width 50%
   position absolute
@@ -157,16 +153,6 @@ h1, h2, h3, h4, #name
   background-color basecolor
   background-image url('../img/background-right.jpg')
   box-shadow: 6px 0px 3px -2px basecolor inset
-
-#doc
-  padding-left 20px
-  padding-top 50px
-  box-sizing border-box
-  -moz-box-sizing border-box
-
-#contact
-
-  padding-top 50px
 
   #close
     display none
@@ -189,6 +175,14 @@ h1, h2, h3, h4, #name
     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
     background: highlightcolor - 5%
 
+#doc
+  padding-left 20px
+  padding-top 50px
+  box-sizing border-box
+
+#contact
+
+  padding-top 50px
 
   #picture
     display block
@@ -259,8 +253,7 @@ h1, h2, h3, h4, #name
     padding 0px 5px
     color white
     text-decoration none
-    background-color red
-    // width 30px
+    background-color red + 40%
     height 30px
     text-align center
     line-height 30px
@@ -271,8 +264,6 @@ h1, h2, h3, h4, #name
     left 77px
     right 10px
 
-  #tags
-    display none
 
   ul.tagit
     border 0px
@@ -284,7 +275,8 @@ h1, h2, h3, h4, #name
         background-color transparent
         outline none
 
-
+  #tags
+    display none
 
   #name
     display block
@@ -300,16 +292,6 @@ h1, h2, h3, h4, #name
   #name:focus
     outline none
 
-  #notes
-    display block
-    box-sizing border-box
-    width 100%
-    padding-left 15px
-    resize none
-    border 1px solid transparent
-  #notes:focus
-    border 1px solid buttoncolor
-
   #save-info
     position absolute
     top 20px
@@ -319,76 +301,120 @@ h1, h2, h3, h4, #name
     padding 0px 5px
     background-color #f9edbe
 
-  #zones
-    position absolute
-    top 120px
-    left 0px
-    right 0px
-    bottom 0px
 
-    #notes-zone
-      float right
+#right, #left
+  position absolute
+  top 120px
+  width 50%
 
-    .zone
-      width 48%
-      margin 0% 1%
+  h2, .nav-tabs li a
+    font-family styled
+    color inherit
+    font-size 31.5px
+    line-height 40px
+    padding 0px 5px
+    font-weight normal
+    border-bottom 1px solid lightgrey
+
+#right
+  right 0px
+
+  .nav-tabs
+    margin-top 10px
+    margin-bottom 0px
+
+  textarea
+    width 98%
+
+  #history
+    width 100%
+    table
+      box-sizing border-box
+      width 90%
+      margin 10px 5%
+      thead
+        background-color buttoncolor
+        color white
+
+      tr
+        td:nth-child(1), td:nth-child(2), th:nth-child(1), th:nth-child(2)
+          width 18px
+        td:nth-child(3),  th:nth-child(3)
+          width 30%
+
+      tr.injector
+        line-height 0px
+        height 2px
+        td
+          background-color highlightcolor
+          height 2px
+          padding 0px
+          position relative
+          a
+            display block
+            position absolute
+            box-sizing border-box
+            padding 0px 5px
+            bottom 0px
+            height 20px
+            line-height 20px
+            right 0px
+            background-color highlightcolor
+
+
+#left
+  left 0px
+
+  .zone
+    width 98%
+    margin 0% 1%
+    padding 0px
+    float left
+
+    a.btn.add
+      display block
+      width 100%
+      height 30px
+      background-color lightgrey + 70%
+      background-image none
+      border 0px
       padding 0px
-      // float left
+      margin 5px 0px 0px 0px
+      border-radius 0px
+      line-height 30px
+      opacity 0
 
-      a.btn.add
-        display block
-        width 100%
-        height 30px
-        background-color lightgrey + 70%
-        background-image none
-        border 0px
-        padding 0px
-        margin 5px 0px 0px 0px
-        border-radius 0px
-        line-height 30px
-        opacity 0
+      &:hover
+        background-color lightgrey + 20%
 
-        &:hover
-          background-color lightgrey + 20%
-
-      h2
-        margin-left 5px
-        font-weight normal
-        border-bottom 1px solid lightgrey
-
-      ul
-        margin 0px
-        li
-          list-style-type none
-          .type:focus
-          .value:focus
-            border 1px solid buttoncolor
-
-          .type
-            width 25%
-            font-weight bold
-
-          .value
-            width 65%
-
-    .zone:hover
-      a.btn.add
+    &:hover a.btn.add
         transition 0.5s
         opacity 1
 
-  #spinOverlay
-    position absolute
-    top 0px
-    left 0px
-    height 100%
-    width 100%
-    background-color black
-    color white
-    opacity 0.4
-    font-size 50px
-    line-height 180px
-    text-align center
-    display none
+    ul
+      margin 0px
+      li
+        list-style-type none
+
+        .type
+          width 25%
+          font-weight bold
+
+        .value
+          width 55%
+
+        .dpremove, .dpaction
+          width 5%
+          height 20px
+          float right
+          vertical-align middle
+
+        .dpremove
+          display none
+
+        &:hover .dpremove
+          display inline-block
+
 
 
 // .btn
@@ -421,9 +447,6 @@ h1, h2, h3, h4, #name
 //     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
 //     background: highlightcolor - 5%
 
-.dropdown-menu
-  border-radius 0px
-
 #importer
   border-radius 0px
   .btn.disabled
@@ -437,17 +460,15 @@ a
 
 @media (max-width: 900px)
 
-    #doc
-        display none
-
     #contacts-list, #doc, #contact
         width 100%
         left 0px
 
+        #close
+          display block
+
     #contact
       #zones .zone
         width 98%
-      #close
-        display block
       #picture
         top 53px

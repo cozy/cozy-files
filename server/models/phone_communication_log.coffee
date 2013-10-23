@@ -1,8 +1,10 @@
 americano = require 'americano-cozy'
 async = require 'async'
 
+ContactLog = require './contact_log'
+
 # This is the FING communication log doctype
-PhoneCommunicationLog = americano.getModel 'PhoneCommunicationLog',
+PCLog = americano.getModel 'PhoneCommunicationLog',
     origin              : type: String, default: 'cozy-contacts'
     direction           : String
     timestamp           : String
@@ -13,59 +15,39 @@ PhoneCommunicationLog = americano.getModel 'PhoneCommunicationLog',
     snippet             : String
 
 
-PhoneCommunicationLog.byNumber = (number, callback) ->
-    options = key : PhoneCommunicationLog.normalizeNumber number
-    PhoneCommunicationLog.request 'byNumber', options, callback
+PCLog.byNumber = (number, callback) ->
+    options = key : PCLog.normalizeNumber number
+    PCLog.request 'byNumber', options, callback
 
 # for realtime
-PhoneCommunicationLog.deduplicate = (event, id) ->
-    PhoneCommunicationLog.find id, (err, log) ->
+PCLog.mergeToContactLogRT = (event, id) ->
+    PCLog.find id, (err, log) ->
         if err or not log?.snippet
-            return console.log "[Dedup] could not found doc id=", id, err, log
+            return console.log "[Dup] could not found doc id=", id, err, log
 
-        if log.origin isnt 'Orange'
-            return null # not orange, not pb
-
-        snippet = log.snippet
-
-        PhoneCommunicationLog.request 'bySnippet', key:snippet, (err, items) ->
-            if err
-                return console.log "[Dedup]", snippet, "err = ", err
-
-            if items.length < 2
-                return console.log "[Dedup]", snippet, "no dup"
-
-            async.each items, (item, cb) ->
-                # we keep the one from Orange
-                if item.origin is 'Orange' then cb null
-                else item.destroy cb
-            , (err) ->
-                if err
-                    return console.log "[Dedup]", snippet, " fail=", err
-                else
-                    console.log "[Dedup]", snippet, " success"
+        converted = PCLog.toContactLog log
+        ContactLog.merge [converted], (err) ->
+            console.log err if err
 
 # for initialization
-PhoneCommunicationLog.removeDuplicates = (callback) ->
-    PhoneCommunicationLog.request 'bySnippet', (err, items) ->
+PCLog.mergeToContactLog = (callback) ->
+    PCLog.request 'bySnippet', (err, logs) ->
         return callback err if err
-        index = {}
-        toDelete = []
-        for item in items
 
-            duplicate = index[item.snippet]
+        converted = logs.map PCLog.toContactLog
+        ContactLog.merge converted, (callback)
 
-            # pick a survivor
-            if duplicate?.origin is "Orange"
-                toDelete.push item
-            else if duplicate
-                toDelete.push duplicate
-            else
-                index[item.snippet] = item
+PCLog.toContactLog = (finglog) ->
+    out =
+        timestamp: finglog.timestamp
+        direction: finglog.direction
+        remote: tel: finglog.correspondantNumber
+        type: finglog.type
+        snippet: finglog.snippet
 
-        async.each toDelete, (item, cb) ->
-            item.destroy cb
-        , callback
+    if out.type is 'VOICE'
+        out.content = duration: finglog.chipCount
 
+    return out
 
-module.exports = PhoneCommunicationLog
+module.exports = PCLog

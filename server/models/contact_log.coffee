@@ -8,7 +8,7 @@ module.exports = ContactLog = americano.getModel 'ContactLog',
     direction           : type: String, default: 'NA'
     timestamp           : String
     remote              : Object
-    content             : Object
+    content             : (x) -> x
     wrong               : type: Boolean, default: false
 
 ContactLog.byRemote = (keys, callback) ->
@@ -22,7 +22,10 @@ ContactLog.bySnippet = (keys, callback) ->
         callback null, indexed
 
 ContactLog.normalizeNumber = (number) ->
-    return number.replace '+', ''
+    number = number.replace ' ', ''
+    number = number.replace '-', ''
+    number = number.replace '+', ''
+    return number
 
 ContactLog.makeSnippet = (log) ->
     if log.snippet then return log.snippet
@@ -30,17 +33,18 @@ ContactLog.makeSnippet = (log) ->
         remote = log.remote.id or log.remote.tel or log.remote.mail
         return "#{log.timestamp} : #{log.type} #{log.direction} #{remote}"
 
-ContactLog.merge = (newLogs) ->
+ContactLog.merge = (newLogs, callback) ->
     snippets = newLogs.map ContactLog.makeSnippet
 
     # fetch all old logs wich could conflict
     ContactLog.bySnippet snippets, (err, oldlogs) ->
-        return res.error err if err
+        return callback err if err
 
-        async.eachSeries newlogs, (log, cb) ->
+        async.eachSeries newLogs, (log, cb) ->
             # ignore existing logs
-            return cb null if oldlogs[log.snippet]?
-            ContactLog.create log, cb
-        , (err) ->
-            return res.error err if err
-            res.send success: 'created', 201
+            snippet = ContactLog.makeSnippet(log)
+            if oldlogs[snippet]?
+                return cb null
+            else
+                ContactLog.create log, cb
+        , callback

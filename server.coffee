@@ -13,18 +13,17 @@ start = (port, callback) ->
         patch1 (err) ->
             return callback? err if err
 
-            # FING ONLY
-            # remove duplicates call log that might have appears
-            # while app was down
-            PhoneCommunicationLog.removeDuplicates (err) ->
+            # Create ContactLog for FING Log log that might
+            # have appears while app was down
+            PhoneCommunicationLog.mergeToContactLog (err) ->
                 return callback? err if err
 
                 # make client realtime
-                realtime = Realtimer server: server, ['contact.*']
+                realtime = Realtimer server: server, ['contact.*', 'callLog.*']
 
-                # FING ONLY remove duplicates call log when they appears
+                # create ContactLog when FING Log appears
                 realtime.on 'phonecommunicationlog.create', \
-                    PhoneCommunicationLog.deduplicate
+                    PhoneCommunicationLog.mergeToContactLogRT
 
                 callback? null, app, server
 

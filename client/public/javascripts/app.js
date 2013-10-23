@@ -164,6 +164,27 @@ module.exports = ContactCollection = (function(_super) {
 
 });
 
+;require.register("collections/contactlog", function(exports, require, module) {
+var ContactLogCollection, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+module.exports = ContactLogCollection = (function(_super) {
+  __extends(ContactLogCollection, _super);
+
+  function ContactLogCollection() {
+    _ref = ContactLogCollection.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ContactLogCollection.prototype.model = require('models/contactlog');
+
+  return ContactLogCollection;
+
+})(Backbone.Collection);
+
+});
+
 ;require.register("collections/datapoint", function(exports, require, module) {
 var DataPointCollection, _ref,
   __hasProp = {}.hasOwnProperty,
@@ -179,10 +200,30 @@ module.exports = DataPointCollection = (function(_super) {
 
   DataPointCollection.prototype.model = require('models/datapoint');
 
-  DataPointCollection.prototype.hasOne = function(type) {
-    return this.where({
-      name: type
-    }).length > 0;
+  DataPointCollection.prototype.hasOne = function(name, type) {
+    var query;
+
+    query = {
+      name: name
+    };
+    if (type) {
+      query.type = type;
+    }
+    return this.where(query).length > 0;
+  };
+
+  DataPointCollection.prototype.toJSON = function() {
+    var truedps;
+
+    truedps = this.filter(function(model) {
+      var value;
+
+      value = model.get('value');
+      return (value !== null) && (value !== '') && (value !== ' ');
+    });
+    return truedps.map(function(model) {
+      return model.toJSON();
+    });
   };
 
   DataPointCollection.prototype.prune = function() {
@@ -265,10 +306,16 @@ module.exports = BaseView = (function(_super) {
 });
 
 ;require.register("lib/call_log_reader", function(exports, require, module) {
-var isAndroidCallLogExport, isIOSCallLogExport, parseDuration;
+var directionAlias, isAndroidCallLogExport, isAndroidSMSExport, isIOSCallLogExport, normalizeNumber, parseCSV, parseDuration;
+
+normalizeNumber = require('lib/phone_number');
 
 isAndroidCallLogExport = function(firstline) {
   return firstline === 'date,type,number,name,number type,duration';
+};
+
+isAndroidSMSExport = function(firstline) {
+  return firstline === 'Date,Time,Type,Number,Name,Message';
 };
 
 isIOSCallLogExport = function(firstline) {
@@ -296,44 +343,124 @@ parseDuration = function(duration) {
   return duration = hours * 3600 + minutes * 60 + seconds;
 };
 
-module.exports.parse = function(log) {
-  var lines;
+parseCSV = function(csv, progress, callback, result, state) {
+  var c, field, i, limit, quoted, row;
 
-  lines = log.split(/\r?\n/);
-  if (isAndroidCallLogExport(lines[0])) {
-    lines.shift();
-    lines.pop();
-    return lines.map(function(line) {
-      var direction, duration, number, timestamp, _, _ref;
-
-      _ref = line.split(','), timestamp = _ref[0], direction = _ref[1], number = _ref[2], _ = _ref[3], _ = _ref[4], duration = _ref[5];
-      console.log(timestamp, Date.create(timestamp));
-      return {
-        timestamp: Date.create(timestamp).toISOString(),
-        direction: direction,
-        remote: {
-          tel: number
-        },
-        content: {
-          duration: parseDuration(duration)
+  if (result == null) {
+    result = [[]];
+  }
+  if (state == null) {
+    state = {};
+  }
+  console.log(state);
+  i = state.i || -1;
+  field = state.field || '';
+  quoted = state.quoted || false;
+  limit = i + 10000;
+  row = result.length - 1;
+  while (true) {
+    i++;
+    if (i > limit) {
+      return setTimeout(function() {
+        progress(i, csv.length);
+        return parseCSV(csv, progress, callback, result, {
+          i: i - 1,
+          field: field,
+          quoted: quoted
+        });
+      }, 10);
+    }
+    c = csv[i];
+    if (c == null) {
+      return callback(null, result);
+    } else if (c === "\"") {
+      if (quoted) {
+        if (csv[i + 1] === "\"") {
+          field += c;
+          i++;
+        } else {
+          quoted = false;
         }
-      };
+      } else {
+        quoted = true;
+      }
+    } else if (!quoted && c === ',') {
+      result[row].push(field);
+      field = '';
+    } else if (!quoted && (c === "\r" || c === "\n")) {
+      if (field !== '') {
+        result[row].push(field);
+        row++;
+        result[row] = [];
+        field = '';
+      }
+    } else {
+      field += c;
+    }
+  }
+};
+
+directionAlias = {
+  'in': 'INCOMING',
+  'out': 'OUTGOING'
+};
+
+module.exports.parse = function(log, context, callback, progress) {
+  var firstline;
+
+  firstline = log.split(/\r?\n/)[0];
+  if (isAndroidCallLogExport(firstline)) {
+    return parseCSV(log, progress, function(err, parsed) {
+      parsed.shift();
+      parsed.pop();
+      return callback(null, parsed.map(function(line) {
+        var direction, duration, number, timestamp, _;
+
+        timestamp = line[0], direction = line[1], number = line[2], _ = line[3], _ = line[4], duration = line[5];
+        return {
+          type: 'VOICE',
+          direction: direction,
+          timestamp: Date.create(timestamp).toISOString(),
+          remote: {
+            tel: normalizeNumber(number, context)
+          },
+          content: {
+            duration: parseDuration(duration)
+          }
+        };
+      }));
     });
-  } else if (isIOSCallLogExport(lines[0])) {
-    return lines.map(function(line) {
-      var direction, duration, number, timestamp, _, _ref;
+  } else if (isAndroidSMSExport(firstline)) {
+    return parseCSV(log, progress, function(err, parsed) {
+      var out;
 
-      _ref = line.split("\t"), direction = _ref[0], timestamp = _ref[1], duration = _ref[2], number = _ref[3], _ = _ref[4];
-      return {
-        timestamp: Date.create(timestamp).toISOString(),
-        direction: direction,
-        remote: {
-          tel: number
-        },
-        content: {
-          duration: parseDuration(duration)
+      parsed.shift();
+      parsed.pop();
+      out = [];
+      parsed.map(function(line) {
+        var date, direction, message, number, numbers, time, tstmp, _, _i, _len, _ref, _results;
+
+        date = line[0], time = line[1], direction = line[2], numbers = line[3], _ = line[4], message = line[5];
+        tstmp = Date.create(date + 'T' + time + '.000Z').toISOString();
+        _ref = numbers.split(';');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          number = _ref[_i];
+          _results.push(out.push({
+            type: 'SMS',
+            direction: directionAlias[direction],
+            timestamp: tstmp,
+            remote: {
+              tel: normalizeNumber(number, context)
+            },
+            content: {
+              message: message
+            }
+          }));
         }
-      };
+        return _results;
+      });
+      return callback(null, out);
     });
   } else {
     throw new Error("Format not parsable");
@@ -343,684 +470,692 @@ module.exports.parse = function(log) {
 });
 
 ;require.register("lib/phone_number", function(exports, require, module) {
-var PhoneNumber, db;
+var CODES, db, normalizeNumber;
 
-module.exports = PhoneNumber = (function() {
-  function PhoneNumber(value, contexte) {}
+CODES = db = {};
 
-  return PhoneNumber;
+module.exports = normalizeNumber = function(value, defaultcode) {
+  var number;
 
-})();
+  number = value.replace(/[- \+]/g, '');
+  if (number[0] !== '0') {
+    return number;
+  } else if (number[1] === 0) {
+    return number.substring(2);
+  } else {
+    return defaultcode + number.substring(1);
+  }
+};
 
-PhoneNumber.countryCodes = db = {};
+module.exports.countries = db;
 
-db["0"] = "Reserved";
+db['Reserved'] = '0';
 
-db["1"] = "American Samoa";
+db['American Samoa'] = '1';
 
-db["1"] = "Anguilla";
+db['Anguilla'] = '1';
 
-db["1"] = "Antigua and Barbuda";
+db['Antigua and Barbuda'] = '1';
 
-db["1"] = "Bahamas (Commonwealth of the)";
+db['Bahamas (Commonwealth of the)'] = '1';
 
-db["1"] = "Barbados";
+db['Barbados'] = '1';
 
-db["1"] = "Bermuda";
+db['Bermuda'] = '1';
 
-db["1"] = "British Virgin Islands";
+db['British Virgin Islands'] = '1';
 
-db["1"] = "Canada";
+db['Canada'] = '1';
 
-db["1"] = "Cayman Islands";
+db['Cayman Islands'] = '1';
 
-db["1"] = "Dominica (Commonwealth of)";
+db['Dominica (Commonwealth of)'] = '1';
 
-db["1"] = "Dominican Republic";
+db['Dominican Republic'] = '1';
 
-db["1"] = "Grenada";
+db['Grenada'] = '1';
 
-db["1"] = "Guam";
+db['Guam'] = '1';
 
-db["1"] = "Jamaica";
+db['Jamaica'] = '1';
 
-db["1"] = "Montserrat";
+db['Montserrat'] = '1';
 
-db["1"] = "Northern Mariana Islands (Commonwealth of the)";
+db['Northern Mariana Islands (Commonwealth of the)'] = '1';
 
-db["1"] = "Puerto Rico";
+db['Puerto Rico'] = '1';
 
-db["1"] = "Saint Kitts and Nevis";
+db['Saint Kitts and Nevis'] = '1';
 
-db["1"] = "Saint Lucia";
+db['Saint Lucia'] = '1';
 
-db["1"] = "Saint Vincent and the Grenadines";
+db['Saint Vincent and the Grenadines'] = '1';
 
-db["1"] = "Trinidad and Tobago";
+db['Trinidad and Tobago'] = '1';
 
-db["1"] = "Turks and Caicos Islands";
+db['Turks and Caicos Islands'] = '1';
 
-db["1"] = "United States of America";
+db['United States of America'] = '1';
 
-db["1"] = "United States Virgin Islands";
+db['United States Virgin Islands'] = '1';
 
-db["20"] = "Egypt (Arab Republic of)";
+db['Egypt (Arab Republic of)'] = '20';
 
-db["210"] = "Spare code";
+db['Spare code'] = '210';
 
-db["211"] = "Spare code";
+db['Spare code'] = '211';
 
-db["212"] = "Morocco (Kingdom of)";
+db['Morocco (Kingdom of)'] = '212';
 
-db["213"] = "Algeria (People's Democratic Republic of)";
+db['Algeria (People\'s Democratic Republic of)'] = '213';
 
-db["214"] = "Spare code";
+db['Spare code'] = '214';
 
-db["215"] = "Spare code";
+db['Spare code'] = '215';
 
-db["216"] = "Tunisia";
+db['Tunisia'] = '216';
 
-db["217"] = "Spare code";
+db['Spare code'] = '217';
 
-db["218"] = "Libya (Socialist People's Libyan Arab Jamahiriya)";
+db['Libya (Socialist People\'s Libyan Arab Jamahiriya)'] = '218';
 
-db["219"] = "Spare code";
+db['Spare code'] = '219';
 
-db["220"] = "Gambia (Republic of the)";
+db['Gambia (Republic of the)'] = '220';
 
-db["221"] = "Senegal (Republic of)";
+db['Senegal (Republic of)'] = '221';
 
-db["222"] = "Mauritania (Islamic Republic of)";
+db['Mauritania (Islamic Republic of)'] = '222';
 
-db["223"] = "Mali (Republic of)";
+db['Mali (Republic of)'] = '223';
 
-db["224"] = "Guinea (Republic of)";
+db['Guinea (Republic of)'] = '224';
 
-db["225"] = "Côte d'Ivoire (Republic of)";
+db['Côte d\'Ivoire (Republic of)'] = '225';
 
-db["226"] = "Burkina Faso";
+db['Burkina Faso'] = '226';
 
-db["227"] = "Niger (Republic of the)";
+db['Niger (Republic of the)'] = '227';
 
-db["228"] = "Togolese Republic";
+db['Togolese Republic'] = '228';
 
-db["229"] = "Benin (Republic of)";
+db['Benin (Republic of)'] = '229';
 
-db["230"] = "Mauritius (Republic of)";
+db['Mauritius (Republic of)'] = '230';
 
-db["231"] = "Liberia (Republic of)";
+db['Liberia (Republic of)'] = '231';
 
-db["232"] = "Sierra Leone";
+db['Sierra Leone'] = '232';
 
-db["233"] = "Ghana";
+db['Ghana'] = '233';
 
-db["234"] = "Nigeria (Federal Republic of)";
+db['Nigeria (Federal Republic of)'] = '234';
 
-db["235"] = "Chad (Republic of)";
+db['Chad (Republic of)'] = '235';
 
-db["236"] = "Central African Republic";
+db['Central African Republic'] = '236';
 
-db["237"] = "Cameroon (Republic of)";
+db['Cameroon (Republic of)'] = '237';
 
-db["238"] = "Cape Verde (Republic of)";
+db['Cape Verde (Republic of)'] = '238';
 
-db["239"] = "Sao Tome and Principe (Democratic Republic of)";
+db['Sao Tome and Principe (Democratic Republic of)'] = '239';
 
-db["240"] = "Equatorial Guinea (Republic of)";
+db['Equatorial Guinea (Republic of)'] = '240';
 
-db["241"] = "Gabonese Republic";
+db['Gabonese Republic'] = '241';
 
-db["242"] = "Congo (Republic of the)";
+db['Congo (Republic of the)'] = '242';
 
-db["243"] = "Democratic Republic of the Congo";
+db['Democratic Republic of the Congo'] = '243';
 
-db["244"] = "Angola (Republic of)";
+db['Angola (Republic of)'] = '244';
 
-db["245"] = "Guinea-Bissau (Republic of)";
+db['Guinea-Bissau (Republic of)'] = '245';
 
-db["246"] = "Diego Garcia";
+db['Diego Garcia'] = '246';
 
-db["247"] = "Ascension";
+db['Ascension'] = '247';
 
-db["248"] = "Seychelles (Republic of)";
+db['Seychelles (Republic of)'] = '248';
 
-db["249"] = "Sudan (Republic of the)";
+db['Sudan (Republic of the)'] = '249';
 
-db["250"] = "Rwanda (Republic of)";
+db['Rwanda (Republic of)'] = '250';
 
-db["251"] = "Ethiopia (Federal Democratic Republic of)";
+db['Ethiopia (Federal Democratic Republic of)'] = '251';
 
-db["252"] = "Somali Democratic Republic";
+db['Somali Democratic Republic'] = '252';
 
-db["253"] = "Djibouti (Republic of)";
+db['Djibouti (Republic of)'] = '253';
 
-db["254"] = "Kenya (Republic of)";
+db['Kenya (Republic of)'] = '254';
 
-db["255"] = "Tanzania (United Republic of)";
+db['Tanzania (United Republic of)'] = '255';
 
-db["256"] = "Uganda (Republic of)";
+db['Uganda (Republic of)'] = '256';
 
-db["257"] = "Burundi (Republic of)";
+db['Burundi (Republic of)'] = '257';
 
-db["258"] = "Mozambique (Republic of)";
+db['Mozambique (Republic of)'] = '258';
 
-db["259"] = "Spare code";
+db['Spare code'] = '259';
 
-db["260"] = "Zambia (Republic of)";
+db['Zambia (Republic of)'] = '260';
 
-db["261"] = "Madagascar (Republic of)";
+db['Madagascar (Republic of)'] = '261';
 
-db["262"] = "French Departments and Territories in the Indian Ocean j";
+db['French Departments and Territories in the Indian Ocean j'] = '262';
 
-db["263"] = "Zimbabwe (Republic of)";
+db['Zimbabwe (Republic of)'] = '263';
 
-db["264"] = "Namibia (Republic of)";
+db['Namibia (Republic of)'] = '264';
 
-db["265"] = "Malawi";
+db['Malawi'] = '265';
 
-db["266"] = "Lesotho (Kingdom of)";
+db['Lesotho (Kingdom of)'] = '266';
 
-db["267"] = "Botswana (Republic of)";
+db['Botswana (Republic of)'] = '267';
 
-db["268"] = "Swaziland (Kingdom of)";
+db['Swaziland (Kingdom of)'] = '268';
 
-db["269"] = "Comoros (Union of the)";
+db['Comoros (Union of the)'] = '269';
 
-db["269"] = "Mayotte";
+db['Mayotte'] = '269';
 
-db["27"] = "South Africa (Republic of)";
+db['South Africa (Republic of)'] = '27';
 
-db["280"] = "Spare code";
+db['Spare code'] = '280';
 
-db["281"] = "Spare code";
+db['Spare code'] = '281';
 
-db["282"] = "Spare code";
+db['Spare code'] = '282';
 
-db["283"] = "Spare code";
+db['Spare code'] = '283';
 
-db["284"] = "Spare code";
+db['Spare code'] = '284';
 
-db["285"] = "Spare code";
+db['Spare code'] = '285';
 
-db["286"] = "Spare code";
+db['Spare code'] = '286';
 
-db["287"] = "Spare code";
+db['Spare code'] = '287';
 
-db["288"] = "Spare code";
+db['Spare code'] = '288';
 
-db["289"] = "Spare code";
+db['Spare code'] = '289';
 
-db["290"] = "Saint Helena";
+db['Saint Helena'] = '290';
 
-db["290"] = "Tristan da Cunha";
+db['Tristan da Cunha'] = '290';
 
-db["291"] = "Eritrea";
+db['Eritrea'] = '291';
 
-db["292"] = "Spare code";
+db['Spare code'] = '292';
 
-db["293"] = "Spare code";
+db['Spare code'] = '293';
 
-db["294"] = "Spare code";
+db['Spare code'] = '294';
 
-db["295"] = "Spare code";
+db['Spare code'] = '295';
 
-db["296"] = "Spare code";
+db['Spare code'] = '296';
 
-db["297"] = "Aruba";
+db['Aruba'] = '297';
 
-db["298"] = "Faroe Islands";
+db['Faroe Islands'] = '298';
 
-db["299"] = "Greenland (Denmark)";
+db['Greenland (Denmark)'] = '299';
 
-db["30"] = "Greece";
+db['Greece'] = '30';
 
-db["31"] = "Netherlands (Kingdom of the)";
+db['Netherlands (Kingdom of the)'] = '31';
 
-db["32"] = "Belgium";
+db['Belgium'] = '32';
 
-db["33"] = "France";
+db['France'] = '33';
 
-db["34"] = "Spain";
+db['Spain'] = '34';
 
-db["350"] = "Gibraltar";
+db['Gibraltar'] = '350';
 
-db["351"] = "Portugal";
+db['Portugal'] = '351';
 
-db["352"] = "Luxembourg";
+db['Luxembourg'] = '352';
 
-db["353"] = "Ireland";
+db['Ireland'] = '353';
 
-db["354"] = "Iceland";
+db['Iceland'] = '354';
 
-db["355"] = "Albania (Republic of)";
+db['Albania (Republic of)'] = '355';
 
-db["356"] = "Malta";
+db['Malta'] = '356';
 
-db["357"] = "Cyprus (Republic of)";
+db['Cyprus (Republic of)'] = '357';
 
-db["358"] = "Finland";
+db['Finland'] = '358';
 
-db["359"] = "Bulgaria (Republic of)";
+db['Bulgaria (Republic of)'] = '359';
 
-db["36"] = "Hungary (Republic of)";
+db['Hungary (Republic of)'] = '36';
 
-db["370"] = "Lithuania (Republic of)";
+db['Lithuania (Republic of)'] = '370';
 
-db["371"] = "Latvia (Republic of)";
+db['Latvia (Republic of)'] = '371';
 
-db["372"] = "Estonia (Republic of)";
+db['Estonia (Republic of)'] = '372';
 
-db["373"] = "Moldova (Republic of)";
+db['Moldova (Republic of)'] = '373';
 
-db["374"] = "Armenia (Republic of)";
+db['Armenia (Republic of)'] = '374';
 
-db["375"] = "Belarus (Republic of)";
+db['Belarus (Republic of)'] = '375';
 
-db["376"] = "Andorra (Principality of)";
+db['Andorra (Principality of)'] = '376';
 
-db["377"] = "Monaco (Principality of)";
+db['Monaco (Principality of)'] = '377';
 
-db["378"] = "San Marino (Republic of)";
+db['San Marino (Republic of)'] = '378';
 
-db["379"] = "Vatican City State f";
+db['Vatican City State f'] = '379';
 
-db["380"] = "Ukraine";
+db['Ukraine'] = '380';
 
-db["381"] = "Serbia (Republic of)";
+db['Serbia (Republic of)'] = '381';
 
-db["382"] = "Montenegro (Republic of)";
+db['Montenegro (Republic of)'] = '382';
 
-db["383"] = "Spare code";
+db['Spare code'] = '383';
 
-db["384"] = "Spare code";
+db['Spare code'] = '384';
 
-db["385"] = "Croatia (Republic of)";
+db['Croatia (Republic of)'] = '385';
 
-db["386"] = "Slovenia (Republic of)";
+db['Slovenia (Republic of)'] = '386';
 
-db["387"] = "Bosnia and Herzegovina";
+db['Bosnia and Herzegovina'] = '387';
 
-db["388"] = "Group of countries, shared code";
+db['Group of countries, shared code'] = '388';
 
-db["389"] = "The Former Yugoslav Republic of Macedonia";
+db['The Former Yugoslav Republic of Macedonia'] = '389';
 
-db["39"] = "Italy";
+db['Italy'] = '39';
 
-db["39"] = "Vatican City State";
+db['Vatican City State'] = '39';
 
-db["40"] = "Romania";
+db['Romania'] = '40';
 
-db["41"] = "Switzerland (Confederation of)";
+db['Switzerland (Confederation of)'] = '41';
 
-db["420"] = "Czech Republic";
+db['Czech Republic'] = '420';
 
-db["421"] = "Slovak Republic";
+db['Slovak Republic'] = '421';
 
-db["422"] = "Spare code";
+db['Spare code'] = '422';
 
-db["423"] = "Liechtenstein (Principality of)";
+db['Liechtenstein (Principality of)'] = '423';
 
-db["424"] = "Spare code";
+db['Spare code'] = '424';
 
-db["425"] = "Spare code";
+db['Spare code'] = '425';
 
-db["426"] = "Spare code";
+db['Spare code'] = '426';
 
-db["427"] = "Spare code";
+db['Spare code'] = '427';
 
-db["428"] = "Spare code";
+db['Spare code'] = '428';
 
-db["429"] = "Spare code";
+db['Spare code'] = '429';
 
-db["43"] = "Austria";
+db['Austria'] = '43';
 
-db["44"] = "United Kingdom of Great Britain and Northern Ireland";
+db['United Kingdom of Great Britain and Northern Ireland'] = '44';
 
-db["45"] = "Denmark";
+db['Denmark'] = '45';
 
-db["46"] = "Sweden";
+db['Sweden'] = '46';
 
-db["47"] = "Norway";
+db['Norway'] = '47';
 
-db["48"] = "Poland (Republic of)";
+db['Poland (Republic of)'] = '48';
 
-db["49"] = "Germany (Federal Republic of)";
+db['Germany (Federal Republic of)'] = '49';
 
-db["500"] = "Falkland Islands (Malvinas)";
+db['Falkland Islands (Malvinas)'] = '500';
 
-db["501"] = "Belize";
+db['Belize'] = '501';
 
-db["502"] = "Guatemala (Republic of)";
+db['Guatemala (Republic of)'] = '502';
 
-db["503"] = "El Salvador (Republic of)";
+db['El Salvador (Republic of)'] = '503';
 
-db["504"] = "Honduras (Republic of)";
+db['Honduras (Republic of)'] = '504';
 
-db["505"] = "Nicaragua";
+db['Nicaragua'] = '505';
 
-db["506"] = "Costa Rica";
+db['Costa Rica'] = '506';
 
-db["507"] = "Panama (Republic of)";
+db['Panama (Republic of)'] = '507';
 
-db["508"] = "Saint Pierre and Miquelon (Collectivité territoriale de la République française)";
+db['Saint Pierre and Miquelon'] = '508';
 
-db["509"] = "Haiti (Republic of)";
+db['Haiti (Republic of)'] = '509';
 
-db["51"] = "Peru";
+db['Peru'] = '51';
 
-db["52"] = "Mexico";
+db['Mexico'] = '52';
 
-db["53"] = "Cuba";
+db['Cuba'] = '53';
 
-db["54"] = "Argentine Republic";
+db['Argentine Republic'] = '54';
 
-db["55"] = "Brazil (Federative Republic of)";
+db['Brazil (Federative Republic of)'] = '55';
 
-db["56"] = "Chile";
+db['Chile'] = '56';
 
-db["57"] = "Colombia (Republic of)";
+db['Colombia (Republic of)'] = '57';
 
-db["58"] = "Venezuela (Bolivarian Republic of)";
+db['Venezuela (Bolivarian Republic of)'] = '58';
 
-db["590"] = "Guadeloupe (French Department of)";
+db['Guadeloupe (French Department of)'] = '590';
 
-db["591"] = "Bolivia (Republic of)";
+db['Bolivia (Republic of)'] = '591';
 
-db["592"] = "Guyana";
+db['Guyana'] = '592';
 
-db["593"] = "Ecuador";
+db['Ecuador'] = '593';
 
-db["594"] = "French Guiana (French Department of)";
+db['French Guiana (French Department of)'] = '594';
 
-db["595"] = "Paraguay (Republic of)";
+db['Paraguay (Republic of)'] = '595';
 
-db["596"] = "Martinique (French Department of)";
+db['Martinique (French Department of)'] = '596';
 
-db["597"] = "Suriname (Republic of)";
+db['Suriname (Republic of)'] = '597';
 
-db["598"] = "Uruguay (Eastern Republic of)";
+db['Uruguay (Eastern Republic of)'] = '598';
 
-db["599"] = "Netherlands Antilles";
+db['Netherlands Antilles'] = '599';
 
-db["60"] = "Malaysia";
+db['Malaysia'] = '60';
 
-db["61"] = "Australia i";
+db['Australia i'] = '61';
 
-db["62"] = "Indonesia (Republic of)";
+db['Indonesia (Republic of)'] = '62';
 
-db["63"] = "Philippines (Republic of the)";
+db['Philippines (Republic of the)'] = '63';
 
-db["64"] = "New Zealand";
+db['New Zealand'] = '64';
 
-db["65"] = "Singapore (Republic of)";
+db['Singapore (Republic of)'] = '65';
 
-db["66"] = "Thailand";
+db['Thailand'] = '66';
 
-db["670"] = "Democratic Republic of Timor-Leste";
+db['Democratic Republic of Timor-Leste'] = '670';
 
-db["671"] = "Spare code";
+db['Spare code'] = '671';
 
-db["672"] = "Australian External Territories g";
+db['Australian External Territories g'] = '672';
 
-db["673"] = "Brunei Darussalam";
+db['Brunei Darussalam'] = '673';
 
-db["674"] = "Nauru (Republic of)";
+db['Nauru (Republic of)'] = '674';
 
-db["675"] = "Papua New Guinea";
+db['Papua New Guinea'] = '675';
 
-db["676"] = "Tonga (Kingdom of)";
+db['Tonga (Kingdom of)'] = '676';
 
-db["677"] = "Solomon Islands";
+db['Solomon Islands'] = '677';
 
-db["678"] = "Vanuatu (Republic of)";
+db['Vanuatu (Republic of)'] = '678';
 
-db["679"] = "Fiji (Republic of)";
+db['Fiji (Republic of)'] = '679';
 
-db["680"] = "Palau (Republic of)";
+db['Palau (Republic of)'] = '680';
 
-db["681"] = "Wallis and Futuna (Territoire français d'outre-mer)";
+db['Wallis and Futuna'] = '681';
 
-db["682"] = "Cook Islands";
+db['Cook Islands'] = '682';
 
-db["683"] = "Niue";
+db['Niue'] = '683';
 
-db["684"] = "Spare code";
+db['Spare code'] = '684';
 
-db["685"] = "Samoa (Independent State of)";
+db['Samoa (Independent State of)'] = '685';
 
-db["686"] = "Kiribati (Republic of)";
+db['Kiribati (Republic of)'] = '686';
 
-db["687"] = "New Caledonia (Territoire français d'outre-mer)";
+db['New Caledonia'] = '687';
 
-db["688"] = "Tuvalu";
+db['Tuvalu'] = '688';
 
-db["689"] = "French Polynesia (Territoire français d'outre-mer)";
+db['French Polynesia'] = '689';
 
-db["690"] = "Tokelau";
+db['Tokelau'] = '690';
 
-db["691"] = "Micronesia (Federated States of)";
+db['Micronesia (Federated States of)'] = '691';
 
-db["692"] = "Marshall Islands (Republic of the)";
+db['Marshall Islands (Republic of the)'] = '692';
 
-db["693"] = "Spare code";
+db['Spare code'] = '693';
 
-db["694"] = "Spare code";
+db['Spare code'] = '694';
 
-db["695"] = "Spare code";
+db['Spare code'] = '695';
 
-db["696"] = "Spare code";
+db['Spare code'] = '696';
 
-db["697"] = "Spare code";
+db['Spare code'] = '697';
 
-db["698"] = "Spare code";
+db['Spare code'] = '698';
 
-db["699"] = "Spare code";
+db['Spare code'] = '699';
 
-db["7"] = "Kazakhstan (Republic of)";
+db['Kazakhstan (Republic of)'] = '7';
 
-db["7"] = "Russian Federation";
+db['Russian Federation'] = '7';
 
-db["800"] = "International Freephone Service";
+db['International Freephone Service'] = '800';
 
-db["801"] = "Spare code";
+db['Spare code'] = '801';
 
-db["802"] = "Spare code";
+db['Spare code'] = '802';
 
-db["803"] = "Spare code";
+db['Spare code'] = '803';
 
-db["804"] = "Spare code";
+db['Spare code'] = '804';
 
-db["805"] = "Spare code";
+db['Spare code'] = '805';
 
-db["806"] = "Spare code";
+db['Spare code'] = '806';
 
-db["807"] = "Spare code";
+db['Spare code'] = '807';
 
-db["808"] = "International Shared Cost Service (ISCS)";
+db['International Shared Cost Service (ISCS)'] = '808';
 
-db["809"] = "Spare code";
+db['Spare code'] = '809';
 
-db["81"] = "Japan";
+db['Japan'] = '81';
 
-db["82"] = "Korea (Republic of)";
+db['Korea (Republic of)'] = '82';
 
-db["830"] = "Spare code";
+db['Spare code'] = '830';
 
-db["831"] = "Spare code";
+db['Spare code'] = '831';
 
-db["832"] = "Spare code";
+db['Spare code'] = '832';
 
-db["833"] = "Spare code";
+db['Spare code'] = '833';
 
-db["834"] = "Spare code";
+db['Spare code'] = '834';
 
-db["835"] = "Spare code";
+db['Spare code'] = '835';
 
-db["836"] = "Spare code";
+db['Spare code'] = '836';
 
-db["837"] = "Spare code";
+db['Spare code'] = '837';
 
-db["838"] = "Spare code";
+db['Spare code'] = '838';
 
-db["839"] = "Spare code";
+db['Spare code'] = '839';
 
-db["84"] = "Viet Nam (Socialist Republic of)";
+db['Viet Nam (Socialist Republic of)'] = '84';
 
-db["850"] = "Democratic People's Republic of Korea";
+db['Democratic People\'s Republic of Korea'] = '850';
 
-db["851"] = "Spare code";
+db['Spare code'] = '851';
 
-db["852"] = "Hong Kong, China";
+db['Hong Kong, China'] = '852';
 
-db["853"] = "Macao, China";
+db['Macao, China'] = '853';
 
-db["854"] = "Spare code";
+db['Spare code'] = '854';
 
-db["855"] = "Cambodia (Kingdom of)";
+db['Cambodia (Kingdom of)'] = '855';
 
-db["856"] = "Lao People's Democratic Republic";
+db['Lao People\'s Democratic Republic'] = '856';
 
-db["857"] = "Spare code";
+db['Spare code'] = '857';
 
-db["858"] = "Spare code";
+db['Spare code'] = '858';
 
-db["859"] = "Spare code";
+db['Spare code'] = '859';
 
-db["86"] = "China (People's Republic of)";
+db['China (People\'s Republic of)'] = '86';
 
-db["870"] = "Inmarsat SNAC";
+db['Inmarsat SNAC'] = '870';
 
-db["871"] = "Spare code";
+db['Spare code'] = '871';
 
-db["872"] = "Spare code";
+db['Spare code'] = '872';
 
-db["873"] = "Spare code";
+db['Spare code'] = '873';
 
-db["874"] = "Spare code";
+db['Spare code'] = '874';
 
-db["875"] = "Reserved - Maritime Mobile Service Applications";
+db['Reserved - Maritime Mobile Service Applications'] = '875';
 
-db["876"] = "Reserved - Maritime Mobile Service Applications";
+db['Reserved - Maritime Mobile Service Applications'] = '876';
 
-db["877"] = "Reserved - Maritime Mobile Service Applications";
+db['Reserved - Maritime Mobile Service Applications'] = '877';
 
-db["878"] = "Universal Personal Telecommunication Service (UPT) e";
+db['Universal Personal Telecommunication Service (UPT) e'] = '878';
 
-db["879"] = "Reserved for national non-commercial purposes";
+db['Reserved for national non-commercial purposes'] = '879';
 
-db["880"] = "Bangladesh (People's Republic of)";
+db['Bangladesh (People\'s Republic of)'] = '880';
 
-db["881"] = "Global Mobile Satellite System (GMSS), shared code n";
+db['Global Mobile Satellite System (GMSS), shared code n'] = '881';
 
-db["882"] = "International Networks, shared code o";
+db['International Networks, shared code o'] = '882';
 
-db["883"] = "International Networks, shared code p, q";
+db['International Networks, shared code p, q'] = '883';
 
-db["884"] = "Spare code";
+db['Spare code'] = '884';
 
-db["885"] = "Spare code";
+db['Spare code'] = '885';
 
-db["886"] = "Taiwan, China";
+db['Taiwan, China'] = '886';
 
-db["887"] = "Spare code";
+db['Spare code'] = '887';
 
-db["888"] = "Telecommunications for Disaster Relief (TDR) k";
+db['Telecommunications for Disaster Relief (TDR) k'] = '888';
 
-db["889"] = "Spare code";
+db['Spare code'] = '889';
 
-db["890"] = "Spare code";
+db['Spare code'] = '890';
 
-db["891"] = "Spare code";
+db['Spare code'] = '891';
 
-db["892"] = "Spare code";
+db['Spare code'] = '892';
 
-db["893"] = "Spare code";
+db['Spare code'] = '893';
 
-db["894"] = "Spare code";
+db['Spare code'] = '894';
 
-db["895"] = "Spare code";
+db['Spare code'] = '895';
 
-db["896"] = "Spare code";
+db['Spare code'] = '896';
 
-db["897"] = "Spare code";
+db['Spare code'] = '897';
 
-db["898"] = "Spare code";
+db['Spare code'] = '898';
 
-db["899"] = "Spare code";
+db['Spare code'] = '899';
 
-db["90"] = "Turkey";
+db['Turkey'] = '90';
 
-db["91"] = "India (Republic of)";
+db['India (Republic of)'] = '91';
 
-db["92"] = "Pakistan (Islamic Republic of)";
+db['Pakistan (Islamic Republic of)'] = '92';
 
-db["93"] = "Afghanistan";
+db['Afghanistan'] = '93';
 
-db["94"] = "Sri Lanka (Democratic Socialist Republic of)";
+db['Sri Lanka (Democratic Socialist Republic of)'] = '94';
 
-db["95"] = "Myanmar (Union of)";
+db['Myanmar (Union of)'] = '95';
 
-db["960"] = "Maldives (Republic of)";
+db['Maldives (Republic of)'] = '960';
 
-db["961"] = "Lebanon";
+db['Lebanon'] = '961';
 
-db["962"] = "Jordan (Hashemite Kingdom of)";
+db['Jordan (Hashemite Kingdom of)'] = '962';
 
-db["963"] = "Syrian Arab Republic";
+db['Syrian Arab Republic'] = '963';
 
-db["964"] = "Iraq (Republic of)";
+db['Iraq (Republic of)'] = '964';
 
-db["965"] = "Kuwait (State of)";
+db['Kuwait (State of)'] = '965';
 
-db["966"] = "Saudi Arabia (Kingdom of)";
+db['Saudi Arabia (Kingdom of)'] = '966';
 
-db["967"] = "Yemen (Republic of)";
+db['Yemen (Republic of)'] = '967';
 
-db["968"] = "Oman (Sultanate of)";
+db['Oman (Sultanate of)'] = '968';
 
-db["969"] = "Reserved - reservation currently under investigation";
+db['Reserved - reservation currently under investigation'] = '969';
 
-db["970"] = "Reserved l";
+db['Reserved l'] = '970';
 
-db["971"] = "United Arab Emirates h";
+db['United Arab Emirates h'] = '971';
 
-db["972"] = "Israel (State of)";
+db['Israel (State of)'] = '972';
 
-db["973"] = "Bahrain (Kingdom of)";
+db['Bahrain (Kingdom of)'] = '973';
 
-db["974"] = "Qatar (State of)";
+db['Qatar (State of)'] = '974';
 
-db["975"] = "Bhutan (Kingdom of)";
+db['Bhutan (Kingdom of)'] = '975';
 
-db["976"] = "Mongolia";
+db['Mongolia'] = '976';
 
-db["977"] = "Nepal (Federal Democratic Republic of)";
+db['Nepal (Federal Democratic Republic of)'] = '977';
 
-db["978"] = "Spare code";
+db['Spare code'] = '978';
 
-db["979"] = "International Premium Rate Service (IPRS)";
+db['International Premium Rate Service (IPRS)'] = '979';
 
-db["98"] = "Iran (Islamic Republic of)";
+db['Iran (Islamic Republic of)'] = '98';
 
-db["990"] = "Spare code";
+db['Spare code'] = '990';
 
-db["991"] = "Trial of a proposed new international telecommunication public";
+db['Trial of a proposed new international telecommunication public'] = '991';
 
-db["992"] = "Tajikistan (Republic of)";
+db['Tajikistan (Republic of)'] = '992';
 
-db["993"] = "Turkmenistan";
+db['Turkmenistan'] = '993';
 
-db["994"] = "Azerbaijani Republic";
+db['Azerbaijani Republic'] = '994';
 
-db["995"] = "Georgia";
+db['Georgia'] = '995';
 
-db["996"] = "Kyrgyz Republic";
+db['Kyrgyz Republic'] = '996';
 
-db["997"] = "Spare code";
+db['Spare code'] = '997';
 
-db["998"] = "Uzbekistan (Republic of)";
+db['Uzbekistan (Republic of)'] = '998';
 
-db["999"] = "Reserved for future global service";
+db['Reserved for future global service'] = '999';
 
 });
 
@@ -1145,12 +1280,14 @@ module.exports = {
   "other": "Other",
   "delete": "Delete",
   "add": "Add",
+  "notes": "Notes",
+  "about": "About",
   "Delete the contact": "Delete the contact",
   "Name": "Name",
   "Change": "Change",
   "Take notes here": "Take notes here",
   "type here": "Type here",
-  "zbout": "About",
+  "about": "About",
   "phones": "Phones",
   "emails": "Emails",
   "postal": "Postal",
@@ -1159,6 +1296,14 @@ module.exports = {
   "Saved": "Saved",
   "Save changes ?": "Save changes ?",
   "This is not an image": "This is not an image",
+  "remove datapoint": "Remove",
+  "changes saved": "Changes saved",
+  "undo": "Undo",
+  "history": "History",
+  "cozy url": "Cozy",
+  "add tags": "Add tags",
+  "add note": "Add a note",
+  "duration": "Duration",
   "search placeholder": "Search ...",
   "New Contact": "New Contact",
   "Export vCard": "Export vCard",
@@ -1225,7 +1370,7 @@ module.exports = {
 });
 
 ;require.register("models/contact", function(exports, require, module) {
-var ANDROID_RELATION_TYPES, AndroidToDP, Contact, DataPoint, DataPointCollection,
+var ANDROID_RELATION_TYPES, AndroidToDP, Contact, ContactLogCollection, DataPoint, DataPointCollection,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1233,6 +1378,8 @@ var ANDROID_RELATION_TYPES, AndroidToDP, Contact, DataPoint, DataPointCollection
 DataPoint = require('models/datapoint');
 
 DataPointCollection = require('collections/datapoint');
+
+ContactLogCollection = require('collections/contactlog');
 
 ANDROID_RELATION_TYPES = ['custom', 'assistant', 'brother', 'child', 'domestic partner', 'father', 'friend', 'manager', 'mother', 'parent', 'partner', 'referred by', 'relative', 'sister', 'spouse'];
 
@@ -1246,6 +1393,25 @@ module.exports = Contact = (function(_super) {
     this.addDP = __bind(this.addDP, this);    this.dataPoints = new DataPointCollection();
     Contact.__super__.constructor.apply(this, arguments);
   }
+
+  Contact.prototype.initialize = function() {
+    var _this = this;
+
+    this.on('change:datapoints', function() {
+      var dps;
+
+      dps = _this.get('datapoints');
+      if (dps) {
+        _this.dataPoints.reset(dps);
+        return _this.set('datapoints', null);
+      }
+    });
+    this.history = new ContactLogCollection;
+    this.history.url = this.url() + '/logs';
+    return this.on('change:id', function() {
+      return _this.history.url = _this.url() + '/logs';
+    });
+  };
 
   Contact.prototype.defaults = function() {
     return {
@@ -1485,6 +1651,25 @@ Contact.fromVCF = function(vcf) {
 
 });
 
+;require.register("models/contactlog", function(exports, require, module) {
+var ContactLog, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+module.exports = ContactLog = (function(_super) {
+  __extends(ContactLog, _super);
+
+  function ContactLog() {
+    _ref = ContactLog.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  return ContactLog;
+
+})(Backbone.Model);
+
+});
+
 ;require.register("models/datapoint", function(exports, require, module) {
 var DataPoint, _ref,
   __hasProp = {}.hasOwnProperty,
@@ -1536,7 +1721,7 @@ module.exports = Router = (function(_super) {
   }
 
   Router.prototype.routes = {
-    '': 'help',
+    '': 'list',
     'settings': 'help',
     'import': 'import',
     'callimport': 'callimport',
@@ -1554,10 +1739,17 @@ module.exports = Router = (function(_super) {
     });
   };
 
-  Router.prototype.help = function() {
-    this.displayView(new DocView());
+  Router.prototype.list = function() {
+    if ($(window).width() > 900) {
+      return this.help();
+    }
+    this.displayView(null);
     $('#filterfied').focus();
     return app.contactslist.activate(null);
+  };
+
+  Router.prototype.help = function() {
+    return this.displayView(new DocView());
   };
 
   Router.prototype["import"] = function() {
@@ -1675,7 +1867,42 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('<a href="https://play.google.com/store/apps/details?id=com.dukemdev" target="_blank">Call Log Export</a></li><li>');
 var __val__ = t('import ios calls')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('<a href="http://support.digidna.net/entries/22585757-Export-iPhone-Call-History-to-PC-or-Mac" target="_blank">Export iPhone Call History</a></li></ul><div class="control-group"><label for="vcfupload" class="control-label">');
+buf.push('<a href="http://support.digidna.net/entries/22585757-Export-iPhone-Call-History-to-PC-or-Mac" target="_blank">Export iPhone Call History</a></li></ul><div class="control-group"><label for="country" class="control-label">');
+var __val__ = t("choose phone country")
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</label><div class="controls"><select id="phonecountry">');
+// iterate countries
+;(function(){
+  if ('number' == typeof countries.length) {
+
+    for (var country = 0, $$l = countries.length; country < $$l; country++) {
+      var code = countries[country];
+
+buf.push('<option');
+buf.push(attrs({ 'value':(code) }, {"value":true}));
+buf.push('>');
+var __val__ = code + ' ' + country
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</option>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var country in countries) {
+      $$l++;      var code = countries[country];
+
+buf.push('<option');
+buf.push(attrs({ 'value':(code) }, {"value":true}));
+buf.push('>');
+var __val__ = code + ' ' + country
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</option>');
+    }
+
+  }
+}).call(this);
+
+buf.push('</select></div><label for="csvupload" class="control-label">');
 var __val__ = t("choose log file")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</label><div class="controls"><input id="csvupload" type="file" accept="text/csv;text/plain"/><span class="help-inline"></span></div></div></div><div id="import-config" class="modal-body"><p>');
@@ -1737,12 +1964,15 @@ buf.push(attrs({ 'id':('delete'), 'title':(t("delete the contact")) }, {"title":
 buf.push('>');
 var __val__ = t('delete')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a><div id="zones"><div id="notes-zone" class="zone"><h2>');
+buf.push('</a><div id="right"><ul class="nav nav-tabs"><li class="active"><a href="#notes-zone" data-toggle="tab">');
 var __val__ = t('notes')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</h2><textarea');
+buf.push('</a></li><li><a href="#history" data-toggle="tab">');
+var __val__ = t('history')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></li></ul><div class="tab-content"><div id="notes-zone" class="tab-pane active"><textarea');
 buf.push(attrs({ 'rows':("3"), 'placeholder':(t('Take notes here')), 'id':('notes') }, {"rows":true,"placeholder":true}));
-buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="abouts" class="zone"><h2>');
+buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="history" class="tab-pane"></div></div></div><div id="left"><div id="abouts" class="zone"><h2>');
 var __val__ = t("about")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h2><ul></ul><a class="btn add addabout">');
@@ -1779,28 +2009,31 @@ buf.push('</h2><ul></ul><a class="btn add addother">');
 var __val__ = t('add')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a></div><div id="adder" class="zone"><h2>');
-var __val__ = ("add")
+var __val__ = t("add")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h2><a class="addbirthday">');
-var __val__ = t("birthday") + ', '
+var __val__ = t("birthday") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a><a class="addcompany">');
-var __val__ = t("company") + ', '
+buf.push('</a><a class="addorg">');
+var __val__ = t("company") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addtitle">');
-var __val__ = t("title") + ', '
+var __val__ = t("title") + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addcozy">');
+var __val__ = t("cozy url") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addtel">');
-var __val__ = t("phone") + ', '
+var __val__ = t("phone") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addemail">');
-var __val__ = t("email") + ', '
+var __val__ = t("email") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addadr">');
-var __val__ = t("postal") + ', '
+var __val__ = t("postal") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addurl">');
-var __val__ = t("url") + ', '
+var __val__ = t("url") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addother">');
 var __val__ = t("other")
@@ -1872,6 +2105,9 @@ buf.push('<input');
 buf.push(attrs({ 'type':("text"), 'placeholder':("" + (placeholder) + ""), 'value':("" + (value) + ""), "class": ('value') }, {"type":true,"placeholder":true,"value":true}));
 buf.push('/>');
 }
+buf.push('<a class="dpaction"><i class="icon"></i></a><a');
+buf.push(attrs({ 'title':(t('remove datapoint')), "class": ('dpremove') }, {"title":true}));
+buf.push('><i class="icon-trash"></i></a>');
 }
 return buf.join("");
 };
@@ -1883,11 +2119,11 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<h2>');
-var __val__ = t('Settings')
+buf.push('<a id="close" href="#">&lt;</a><h2>');
+var __val__ = t('settings')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h2><h3>');
-var __val__ = t('Help')
+var __val__ = t('help')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h3><p>');
 var __val__ = t("click left to display")
@@ -1896,7 +2132,7 @@ buf.push('</p><p>');
 var __val__ = t("carddav info")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</p><h3>');
-var __val__ = t('Import / export')
+var __val__ = t('import export')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h3><p>');
 var __val__ = t("call log info") + ' '
@@ -1919,6 +2155,47 @@ buf.push('<a href="#import">');
 var __val__ = t('import vcard')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a></p>');
+}
+return buf.join("");
+};
+});
+
+;require.register("templates/history", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<thead><tr><th></th><th></th><th>Date</th><th>Action</th></tr></thead><tbody><tr class="injector"><td colspan="4"><a id="inject-note">');
+var __val__ = t('add note')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></td></tr></tbody>');
+}
+return buf.join("");
+};
+});
+
+;require.register("templates/history_item", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<td>');
+if ( directionIcon != false)
+{
+buf.push('<i');
+buf.push(attrs({ "class": (directionIcon) }, {"class":true}));
+buf.push('></i>');
+}
+buf.push('</td><td><i');
+buf.push(attrs({ "class": (typeIcon) }, {"class":true}));
+buf.push('></i></td><td>');
+var __val__ = new Date(date).format('long')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</td><td class="details"><input');
+buf.push(attrs({ 'type':("text"), 'placeholder':(t("type here")), "class": ('editor') }, {"type":true,"placeholder":true}));
+buf.push('/><a class="notedelete"><i class="icon-remove"></i></a></td>');
 }
 return buf.join("");
 };
@@ -1950,6 +2227,7 @@ return buf.join("");
 
 ;require.register("views/callimporter", function(exports, require, module) {
 var BaseView, CallImporterView, CallLogReader, app, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1963,7 +2241,8 @@ module.exports = CallImporterView = (function(_super) {
   __extends(CallImporterView, _super);
 
   function CallImporterView() {
-    _ref = CallImporterView.__super__.constructor.apply(this, arguments);
+    this.onLogFileParsed = __bind(this.onLogFileParsed, this);
+    this.onLogFileProgress = __bind(this.onLogFileProgress, this);    _ref = CallImporterView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
 
@@ -1982,27 +2261,34 @@ module.exports = CallImporterView = (function(_super) {
     };
   };
 
+  CallImporterView.prototype.getRenderData = function() {
+    return {
+      countries: require('lib/phone_number').countries
+    };
+  };
+
   CallImporterView.prototype.afterRender = function() {
     this.$el.modal('show');
     this.upload = this.$('#csvupload')[0];
+    this.country = this.$('#phonecountry');
     this.file_step = this.$('#import-file');
     this.parse_step = this.$('#import-config').hide();
     return this.confirmBtn = this.$('#confirm-btn');
   };
 
   CallImporterView.prototype.onUpload = function() {
-    var file, reader,
+    var country, file, reader,
       _this = this;
 
     file = this.upload.files[0];
+    country = this.country.val();
     reader = new FileReader();
     reader.readAsText(file);
     reader.onloadend = function() {
       var error;
 
       try {
-        _this.toImport = CallLogReader.parse(reader.result);
-        return _this.onLogFileParsed();
+        return CallLogReader.parse(reader.result, country, _this.onLogFileParsed, _this.onLogFileProgress);
       } catch (_error) {
         error = _error;
         console.log(error.stack);
@@ -2015,17 +2301,29 @@ module.exports = CallImporterView = (function(_super) {
     };
   };
 
-  CallImporterView.prototype.onLogFileParsed = function() {
-    var html, log, _i, _len, _ref1;
+  CallImporterView.prototype.onLogFileProgress = function(done, total) {
+    var p;
 
+    p = Math.round(100 * done / total);
+    return this.$('.help-inline').text(t('progress') + (": " + p + "%"));
+  };
+
+  CallImporterView.prototype.onLogFileParsed = function(err, toImport) {
+    var html, log, _i, _len;
+
+    if (err) {
+      console.log(error.stack);
+      this.$('.control-group').addClass('error');
+      this.$('.help-inline').text(t('failed to parse'));
+      return;
+    }
     this.file_step.remove();
     this.parse_step.show();
-    _ref1 = this.toImport;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      log = _ref1[_i];
+    for (_i = 0, _len = toImport.length; _i < _len; _i++) {
+      log = toImport[_i];
       html = '<tr>';
       html += "<td> " + log.direction + " </td>";
-      html += "<td> " + log.remote.tel + " </td>";
+      html += "<td> +" + log.remote.tel + " </td>";
       html += "<td> " + (Date.create(log.timestamp).format()) + " </td>";
       html += '</tr>';
       this.$('tbody').append($(html));
@@ -2033,11 +2331,7 @@ module.exports = CallImporterView = (function(_super) {
     return this.confirmBtn.removeClass('disabled');
   };
 
-  CallImporterView.prototype.doImport = function() {
-    alert('@TODO');
-    this.close();
-    return require('application').router.navigate('');
-  };
+  CallImporterView.prototype.doImport = function() {};
 
   CallImporterView.prototype.close = function() {
     this.$el.modal('hide');
@@ -2051,12 +2345,14 @@ module.exports = CallImporterView = (function(_super) {
 });
 
 ;require.register("views/contact", function(exports, require, module) {
-var ContactView, Datapoint, TagsView, ViewCollection,
+var ContactView, Datapoint, HistoryView, TagsView, ViewCollection,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ViewCollection = require('lib/view_collection');
+
+HistoryView = require('views/history');
 
 TagsView = require('views/contact_tags');
 
@@ -2074,8 +2370,9 @@ module.exports = ContactView = (function(_super) {
   ContactView.prototype.events = function() {
     return {
       'click .addbirthday': this.addClicked('about', 'birthday'),
-      'click .addcompany': this.addClicked('about', 'org'),
+      'click .addorg': this.addClicked('about', 'org'),
       'click .addtitle': this.addClicked('about', 'title'),
+      'click .addcozy': this.addClicked('about', 'cozy'),
       'click .addabout': this.addClicked('about'),
       'click .addtel': this.addClicked('tel'),
       'click .addemail': this.addClicked('email'),
@@ -2102,7 +2399,7 @@ module.exports = ContactView = (function(_super) {
     this.undo = __bind(this.undo, this);
     this.save = __bind(this.save, this);
     this.changeOccured = __bind(this.changeOccured, this);    options.collection = options.model.dataPoints;
-    this.saveLater = _.debounce(this.save, 1000);
+    this.saveLater = _.debounce(this.save, 3000);
     ContactView.__super__.constructor.apply(this, arguments);
   }
 
@@ -2112,7 +2409,9 @@ module.exports = ContactView = (function(_super) {
     this.listenTo(this.model, 'request', this.onRequest);
     this.listenTo(this.model, 'error', this.onError);
     this.listenTo(this.model, 'sync', this.onSuccess);
-    return this.listenTo(this.collection, 'change', this.changeOccured);
+    this.listenTo(this.collection, 'change', this.changeOccured);
+    this.listenTo(this.collection, 'add', this.changeOccured);
+    return this.listenTo(this.collection, 'remove', this.changeOccured);
   };
 
   ContactView.prototype.getRenderData = function() {
@@ -2146,7 +2445,11 @@ module.exports = ContactView = (function(_super) {
     ContactView.__super__.afterRender.apply(this, arguments);
     this.$el.niceScroll();
     this.resizeNote();
-    return this.currentState = this.model.toJSON();
+    this.currentState = this.model.toJSON();
+    this.history = new HistoryView({
+      collection: this.model.history
+    });
+    return this.history.render().$el.appendTo(this.$('#history'));
   };
 
   ContactView.prototype.remove = function() {
@@ -2155,15 +2458,23 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype.hideEmptyZones = function() {
-    var type, zone, _ref, _results;
+    var hasOne, name, type, zone, _i, _len, _ref, _ref1;
 
     _ref = this.zones;
-    _results = [];
     for (type in _ref) {
       zone = _ref[type];
-      _results.push(zone.parent().toggle(this.model.dataPoints.hasOne(type)));
+      hasOne = this.model.dataPoints.hasOne(type);
+      zone.parent().toggle(hasOne);
+      this.$("#adder .add" + type).toggle(!hasOne);
     }
-    return _results;
+    _ref1 = ['birthday', 'org', 'title', 'cozy'];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      name = _ref1[_i];
+      hasOne = this.model.dataPoints.hasOne('about', name);
+      this.$("#adder .add" + name).toggle(!hasOne);
+    }
+    this.$('#adder h2').toggle(this.$('#adder a:visible').length !== 0);
+    return this.$el.getNiceScroll().resize();
   };
 
   ContactView.prototype.appendView = function(dataPointView) {
@@ -2200,11 +2511,9 @@ module.exports = ContactView = (function(_super) {
       fn: this.namefield.val(),
       note: this.notesfield.val()
     });
-    console.log(this.currentState, this.model.toJSON());
     if (_.isEqual(this.currentState, this.model.toJSON())) {
       return;
     }
-    console.log("ACUAL CHANGE");
     this.needSaving = true;
     this.savedInfo.hide();
     return this.saveLater();
@@ -2264,7 +2573,8 @@ module.exports = ContactView = (function(_super) {
     while (loc = notes.indexOf("\n", loc) + 1) {
       rows++;
     }
-    return this.notesfield.prop('rows', rows + 2);
+    this.notesfield.prop('rows', rows + 2);
+    return this.$el.getNiceScroll().resize();
   };
 
   ContactView.prototype.onRequest = function() {
@@ -2278,6 +2588,7 @@ module.exports = ContactView = (function(_super) {
     this.spinner.hide();
     if (options.undo) {
       this.savedInfo.text(t('undone') + ' ');
+      this.lastState = null;
       setTimeout(function() {
         return _this.savedInfo.fadeOut();
       }, 1000);
@@ -2598,7 +2909,8 @@ module.exports = DataPointView = (function(_super) {
       'blur .type': 'store',
       'blur .value': 'store',
       'keyup .type': 'onKeyup',
-      'keyup .value': 'onKeyup'
+      'keyup .value': 'onKeyup',
+      'click .dpremove': 'removeModel'
     };
   };
 
@@ -2611,9 +2923,11 @@ module.exports = DataPointView = (function(_super) {
   DataPointView.prototype.afterRender = function() {
     this.valuefield = this.$('.value');
     this.typefield = this.$('input.type');
-    return this.typefield.typeahead({
+    this.actionLink = this.$('.dpaction');
+    this.typefield.typeahead({
       source: this.getPossibleTypes
     });
+    return this.makeActionLink();
   };
 
   DataPointView.prototype.getPossibleTypes = function() {
@@ -2643,8 +2957,40 @@ module.exports = DataPointView = (function(_super) {
     }
   };
 
+  DataPointView.prototype.makeActionLink = function() {
+    var action, value,
+      _this = this;
+
+    action = function(icon, title, href, noblank) {
+      if (!_this.actionLink.parent()) {
+        _this.$el.append(_this.actionLink);
+      }
+      _this.actionLink.attr({
+        title: title,
+        href: href
+      });
+      if (noblank) {
+        _this.actionLink.removeAttr('target');
+      } else {
+        _this.actionLink.attr('target', '_blank');
+      }
+      return _this.actionLink.find('i').addClass('icon-' + icon);
+    };
+    value = this.model.get('value');
+    switch (this.model.get('name')) {
+      case 'email':
+        return action('envelope', 'send mail', "mailto:" + value, true);
+      case 'tel':
+        return action('headphones', 'call', "tel:" + value, true);
+      case 'url':
+        return action('share', 'go to this url', "" + value);
+      default:
+        return this.actionLink.detach();
+    }
+  };
+
   DataPointView.prototype.onKeyup = function(event) {
-    var backspace, empty, prev;
+    var backspace, empty;
 
     empty = $(event.target).val().length === 0;
     backspace = (event.which || event.keyCode) === 8;
@@ -2656,13 +3002,19 @@ module.exports = DataPointView = (function(_super) {
       return true;
     }
     if (this.secondBack) {
-      prev = this.$el.prev('li').find('.value');
-      this.remove();
-      if (prev) {
-        return prev.focus().select();
-      }
+      return this.removeModel();
     } else {
       return this.secondBack = true;
+    }
+  };
+
+  DataPointView.prototype.removeModel = function() {
+    var prev;
+
+    prev = this.$el.prev('li').find('.value');
+    this.model.collection.remove(this.model);
+    if (prev) {
+      return prev.focus().select();
     }
   };
 
@@ -2699,6 +3051,203 @@ module.exports = DocView = (function(_super) {
   DocView.prototype.template = require('templates/doc');
 
   return DocView;
+
+})(BaseView);
+
+});
+
+;require.register("views/history", function(exports, require, module) {
+var ContactLog, HistoryView, ViewCollection, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ViewCollection = require('lib/view_collection');
+
+ContactLog = require('models/contactlog');
+
+module.exports = HistoryView = (function(_super) {
+  __extends(HistoryView, _super);
+
+  function HistoryView() {
+    _ref = HistoryView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  HistoryView.prototype.tagName = 'table';
+
+  HistoryView.prototype.className = 'table-striped table-condensed table-bordered';
+
+  HistoryView.prototype.template = require('templates/history');
+
+  HistoryView.prototype.itemView = require('views/history_item');
+
+  HistoryView.prototype.events = function() {
+    return {
+      'mouseenter': 'showInjector',
+      'mouseleave': 'hideInjector',
+      'mouseover td': 'moveInjector',
+      'click #inject-note': 'injectNote'
+    };
+  };
+
+  HistoryView.prototype.afterRender = function() {
+    this.collection.fetch();
+    return this.injector = this.$('.injector').hide();
+  };
+
+  HistoryView.prototype.appendView = function(view) {
+    return this.$('tbody').append(view.$el);
+  };
+
+  HistoryView.prototype.showInjector = function() {
+    return this.injector.show();
+  };
+
+  HistoryView.prototype.hideInjector = function() {
+    return this.injector.hide();
+  };
+
+  HistoryView.prototype.moveInjector = function(event) {
+    var tr;
+
+    tr = $(event.target).parents('tr');
+    if (tr.hasClass('injector')) {
+      return;
+    }
+    if (this.injector.parent()) {
+      this.injector.detach();
+    }
+    if (tr.hasClass('annotable')) {
+      return tr.after(this.injector);
+    }
+  };
+
+  HistoryView.prototype.injectNote = function() {
+    var afterLog;
+
+    afterLog = this.collection.at(this.injector.index() - 1);
+    this.note = new ContactLog({
+      type: 'NOTE',
+      direction: 'NA',
+      content: '',
+      timestamp: afterLog.get('timestamp')
+    });
+    this.collection.add(this.note);
+    this.injector.after(this.views[this.note.cid].$el.detach());
+    return this.injector.detach();
+  };
+
+  HistoryView.prototype.formComplete = function() {
+    return this.injector = this.clone;
+  };
+
+  return HistoryView;
+
+})(ViewCollection);
+
+});
+
+;require.register("views/history_item", function(exports, require, module) {
+var BaseView, HistoryItemView, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('lib/base_view');
+
+module.exports = HistoryItemView = (function(_super) {
+  __extends(HistoryItemView, _super);
+
+  function HistoryItemView() {
+    _ref = HistoryItemView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  HistoryItemView.prototype.template = require('templates/history_item');
+
+  HistoryItemView.prototype.tagName = 'tr';
+
+  HistoryItemView.prototype.className = function() {
+    return 'history_item ' + (this.isAnnotable() ? 'annotable' : void 0);
+  };
+
+  HistoryItemView.prototype.events = {
+    'blur .editor': 'save',
+    'click .notedelete': 'delete'
+  };
+
+  HistoryItemView.prototype.getRenderData = function() {
+    return {
+      directionIcon: this.getDirectionIcon(),
+      typeIcon: this.getTypeIcon(),
+      details: this.getDetails(),
+      date: this.model.get('timestamp')
+    };
+  };
+
+  HistoryItemView.prototype.afterRender = function() {
+    this.editor = this.$('.editor');
+    if (this.model.get('type') === 'NOTE') {
+      this.editor.val(this.model.get('content'));
+      return this.editor.focus();
+    } else {
+      this.editor.remove();
+      return this.$('.details').text(this.getDetails());
+    }
+  };
+
+  HistoryItemView.prototype.isAnnotable = function() {
+    return 'NOTE' !== this.model.get('type');
+  };
+
+  HistoryItemView.prototype.save = function() {
+    return this.model.save({
+      content: this.editor.val()
+    });
+  };
+
+  HistoryItemView.prototype["delete"] = function() {
+    return this.model.destroy();
+  };
+
+  HistoryItemView.prototype.getDirectionIcon = function() {
+    switch (this.model.get('direction')) {
+      case 'INCOMING':
+        return 'icon-forward';
+      case 'OUTGOING':
+        return 'icon-backward';
+      default:
+        return false;
+    }
+  };
+
+  HistoryItemView.prototype.getTypeIcon = function() {
+    switch (this.model.get('type')) {
+      case 'VOICE':
+        return 'icon-headphones';
+      case 'MAIL':
+        return 'icon-enveloppe';
+      case 'NOTE':
+        return 'icon-edit';
+      default:
+        return 'icon-stop';
+    }
+  };
+
+  HistoryItemView.prototype.getDetails = function() {
+    var details;
+
+    details = this.model.get('content');
+    switch (this.model.get('type')) {
+      case 'VOICE':
+        return t('duration') + ' : ' + details.duration;
+      case 'NOTE':
+        return details;
+      default:
+        return '???';
+    }
+  };
+
+  return HistoryItemView;
 
 })(BaseView);
 
