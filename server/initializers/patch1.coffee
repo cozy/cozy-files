@@ -1,11 +1,11 @@
 Contact = require '../models/contact'
 async = require 'async'
 
-module.exports = (callback) ->
+module.exports = (next) ->
 
     # fix contacts created before vcf import
     Contact.rawRequest 'all', (err, contacts) ->
-        return callback err if err
+        return next err if err
 
         async.forEachSeries contacts, (contact, cb) ->
 
@@ -37,4 +37,4 @@ module.exports = (callback) ->
                         return cb err
 
                     contact.destroy cb
-        , callback
+        , next

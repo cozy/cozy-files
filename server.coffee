@@ -1,5 +1,8 @@
 PhoneCommunicationLog = require './server/models/phone_communication_log'
 Realtimer = require 'cozy-realtime-adapter'
+patch1 = require './server/initializers/patch1'
+logwatch = require './server/initializers/finglogwatch'
+
 
 start = (port, callback) ->
     require('americano').start
@@ -9,23 +12,13 @@ start = (port, callback) ->
         app.set 'views', './client/'
 
         # run patch to fix old contacts
-        patch1 = require './server/patches/patch1'
         patch1 (err) ->
             return callback? err if err
 
-            # Create ContactLog for FING Log log that might
-            # have appears while app was down
-            PhoneCommunicationLog.mergeToContactLog (err) ->
-                return callback? err if err
+            # start realtime and sync Fing's log with contact's log
+            logwatch (err) ->
 
-                # make client realtime
-                realtime = Realtimer server: server, ['contact.*', 'callLog.*']
-
-                # create ContactLog when FING Log appears
-                realtime.on 'phonecommunicationlog.create', \
-                    PhoneCommunicationLog.mergeToContactLogRT
-
-                callback? null, app, server
+                callback? err, app, server
 
 if not module.parent
     port = process.env.PORT or 9114
