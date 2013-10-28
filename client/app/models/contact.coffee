@@ -80,6 +80,7 @@ module.exports = class Contact extends Backbone.Model
     match: (filter) =>
         filter.test(@get('fn')) or
         filter.test(@get('note')) or
+        filter.test(@get('tags').join ' ') or
         @dataPoints.match filter
 
     toJSON: () ->

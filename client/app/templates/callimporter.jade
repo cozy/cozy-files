@@ -29,6 +29,10 @@
             th= t('log date')
         tbody
 
+#import-confirm.modal-body
+    p= t('importing this file')
+    p= t('may take a while')
+
 .modal-footer
     a#cancel-btn(href="#").btn= t("cancel")
     a#confirm-btn.btn.disabled.btn-primary= t("import")

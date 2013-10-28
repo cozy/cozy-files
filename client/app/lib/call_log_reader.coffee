@@ -76,7 +76,11 @@ parseCSV = (csv, progress, callback, result = [[]], state = {}) ->
 
 directionAlias =
     'in': 'INCOMING'
+    'Incoming': 'INCOMING'
+    'INCOMING':'INCOMING'
     'out': 'OUTGOING'
+    'Outgoing': 'OUTGOING'
+    'OUTGOING': 'OUTGOING'
 
 
 module.exports.parse = (log, context, callback, progress) ->
@@ -86,28 +90,33 @@ module.exports.parse = (log, context, callback, progress) ->
         parseCSV log, progress, (err, parsed) ->
             parsed.shift() # remove header line
             parsed.pop() # remove empty last line
-            callback null, parsed.map (line) ->
+            out = []
+            parsed.forEach (line) ->
                 [timestamp, direction, number, _, _, duration] = line
-                return {
+                direction = directionAlias[direction]
+                out.push
                     type: 'VOICE'
-                    direction
+                    direction : direction
                     timestamp: Date.create(timestamp).toISOString()
                     remote: tel: normalizeNumber number, context
                     content : duration: parseDuration duration
-                }
+            callback null, out
 
     else if isAndroidSMSExport firstline
         parseCSV log, progress, (err, parsed) ->
             parsed.shift()
             parsed.pop()
             out = []
-            parsed.map (line) ->
+            parsed.forEach (line) ->
                 [date, time, direction, numbers, _, message] = line
                 tstmp = Date.create(date + 'T' + time + '.000Z').toISOString()
+                direction = directionAlias[direction]
+                #ignore drafts
+                return null unless direction
                 for number in numbers.split(';')
                     out.push
                         type: 'SMS'
-                        direction : directionAlias[direction]
+                        direction : direction
                         timestamp : tstmp
                         remote: tel: normalizeNumber number, context
                         content: message: message

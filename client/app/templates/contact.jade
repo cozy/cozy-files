@@ -6,30 +6,32 @@ div#picture
   else
     img.picture(src="img/defaultpicture.png")
 
-  #uploadnotice= t("Change")
+  #uploadnotice= t("change")
   input#uploader(type="file")
 
 #wrap-name-notes
-  input#name(placeholder=t("Name"), value="#{fn}")
+  input#name(placeholder=t("name"), value="#{fn}")
   input#tags.tagit(value=tags.join(','))
 
 span#save-info= t('changes saved') + ' '
   a#undo=t('undo')
 
-a#delete(title= t("delete the contact"))= t('delete')
+a#delete(title= t("delete contact"))= t('delete')
 
 #right
 
   ul.nav.nav-tabs
+    li: a#infotab(href="#info", data-toggle="tab")= t('info')
     li.active: a(href="#notes-zone", data-toggle="tab")= t('notes')
-    li: a(href="#history", data-toggle="tab")= t('history')
+    li: a.tab(href="#history", data-toggle="tab")= t('history')
 
   .tab-content
     #notes-zone.tab-pane.active
-      textarea(rows="3", placeholder=t('Take notes here'))#notes #{note}
+      textarea(rows="3", placeholder=t('notes placeholder'))#notes #{note}
 
     #history.tab-pane
 
+    #info.tab-pane
 
 #left
 
@@ -70,6 +72,7 @@ a#delete(title= t("delete the contact"))= t('delete')
     a.addorg=      t("company") + ' '
     a.addtitle=    t("title") + ' '
     a.addcozy=     t("cozy url") + ' '
+    a.addtwitter=  t("twitter") + ' '
     a.addtel=      t("phone") + ' '
     a.addemail=    t("email") + ' '
     a.addadr=      t("postal") + ' '

@@ -14,3 +14,8 @@ module.exports = class ContactCollection extends Backbone.Collection
     initialize: ->
         super
         @on 'change:fn', => @sort()
+
+    getTags: ->
+        out = []
+        @each (contact) -> out = out.concat contact.get 'tags'
+        return _.unique out

@@ -30,6 +30,7 @@ module.exports = class DataPointView extends BaseView
         switch @model.get 'name'
             when 'about' then ['org', 'birthday', 'title']
             when 'other' then ['skype', 'jabber', 'irc']
+            when 'url'   then ['facebook', 'google', 'website']
             else ['main', 'home', 'work', 'assistant']
 
     getPlaceHolder: ->
@@ -59,7 +60,7 @@ module.exports = class DataPointView extends BaseView
             else @actionLink.detach()
 
 
-    onKeyup: (event) ->
+    onKeyup: (event) =>
         empty = $(event.target).val().length is 0
         backspace = (event.which or event.keyCode) is 8
 
@@ -70,14 +71,15 @@ module.exports = class DataPointView extends BaseView
         unless empty
             return true
 
-        if @secondBack then @removeModel()
+        if @secondBack then =>
+            prev = @$el.prev('li').find('.value')
+            @removeModel()
+            prev.focus().select() if prev
 
         else @secondBack = true
 
     removeModel: ->
-        prev = @$el.prev('li').find('.value')
         @model.collection.remove @model
-        prev.focus().select() if prev
 
     store: ->
         @model.set

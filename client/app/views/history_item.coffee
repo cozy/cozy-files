@@ -44,8 +44,9 @@ module.exports = class HistoryItemView extends BaseView
     getTypeIcon: ->
         switch @model.get 'type'
             when 'VOICE' then 'icon-headphones'
-            when 'MAIL' then 'icon-enveloppe'
-            when 'NOTE' then 'icon-edit'
+            when 'MAIL'  then 'icon-enveloppe'
+            when 'SMS'   then 'icon-list-alt'
+            when 'NOTE'  then 'icon-edit'
             else 'icon-stop'
 
     getDetails: ->
@@ -53,6 +54,7 @@ module.exports = class HistoryItemView extends BaseView
         switch @model.get 'type'
             when 'VOICE'
                 t('duration') + ' : ' + details.duration
+            when 'SMS' then details.message
             when 'NOTE' then details
             else '???'
 

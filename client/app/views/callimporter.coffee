@@ -1,5 +1,6 @@
 BaseView       = require 'lib/base_view'
 CallLogReader  = require 'lib/call_log_reader'
+ContactLogCollection = require 'collections/contactlog'
 app            = require 'application'
 
 module.exports = class CallImporterView extends BaseView
@@ -23,6 +24,7 @@ module.exports = class CallImporterView extends BaseView
         @country = @$('#phonecountry')
         @file_step = @$('#import-file')
         @parse_step = @$('#import-config').hide()
+        @confirm_step = @$('#import-confirm').hide()
         @confirmBtn = @$('#confirm-btn')
 
     onUpload: ->
@@ -57,18 +59,42 @@ module.exports = class CallImporterView extends BaseView
         @parse_step.show()
 
         for log in toImport
+
+            content = log.content.message or log.content.duration + 's'
+
             html = '<tr>'
             html += "<td> #{log.direction} </td>"
-            html += "<td> +#{log.remote.tel} </td>"
+            html += "<td> #{log.remote.tel} </td>"
             html += "<td> #{Date.create(log.timestamp).format()} </td>"
+            html += "<td> #{content} </td>"
             html += '</tr>'
             @$('tbody').append $ html
 
+        @toImport = toImport
         @confirmBtn.removeClass 'disabled'
 
     doImport: ->
 
+        @parse_step.remove()
+        @confirm_step.show()
 
-    close: ->
+        req = $.ajax 'logs',
+            type: 'POST'
+            data: JSON.stringify new ContactLogCollection(@toImport).toJSON()
+            contentType: 'application/json'
+            dataType: 'json'
+
+        req.done (data) =>
+            if data.success then @close()
+            else @showFaillure()
+
+        req.fail @showFaillure
+
+    showFaillure: =>
+        @$('.modal-body').html '<p>' + t('import fail') + '</p>'
+        @confirmBtn.remove()
+
+    close: =>
         @$el.modal 'hide'
+        app.router.navigate ''
         @remove()

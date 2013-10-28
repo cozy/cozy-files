@@ -267,6 +267,13 @@ h1, h2, h3, h4, #name
 
   ul.tagit
     border 0px
+    .tagit-choice
+      border-radius 0px
+      background-color buttoncolor
+      border-color buttoncolor
+      .tagit-label, .tagit-close .text-icon
+        color white
+
     input
       &:hover
         border 0px
@@ -323,12 +330,16 @@ h1, h2, h3, h4, #name
     margin-top 10px
     margin-bottom 0px
 
+  #infotab
+    display none
+
   textarea
     width 98%
 
   #history
     width 100%
     table
+      table-layout fixed
       box-sizing border-box
       width 90%
       margin 10px 5%
@@ -337,10 +348,17 @@ h1, h2, h3, h4, #name
         color white
 
       tr
+        height 1em
         td:nth-child(1), td:nth-child(2), th:nth-child(1), th:nth-child(2)
           width 18px
         td:nth-child(3),  th:nth-child(3)
           width 30%
+        td:nth-child(4)
+          overflow hidden
+          white-space nowrap
+          &:hover
+            white-space normal
+            overflow visible
 
       tr.injector
         line-height 0px
@@ -468,7 +486,20 @@ a
           display block
 
     #contact
-      #zones .zone
-        width 98%
+
+      #infotab
+        display block
+
+      #right, #left
+        width 100%
+
+      #abouts.zone h2
+        visibility hidden
+        height 10px
+
+      #left
+        top 160px
+        display none
+
       #picture
         top 53px

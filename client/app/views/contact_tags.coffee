@@ -17,12 +17,12 @@ module.exports = class TagsView extends BaseView
     tagAdded: (e, ui) =>
         unless @myOperation or ui.duringInitialization
             @model.set 'tags', @$el.tagit 'assignedTags'
-            @options.contactView.changeOccured()
+            @options.onChange()
 
     tagRemoved: (er, ui) =>
         unless @myOperation or ui.duringInitialization
             @model.set 'tags', @$el.tagit 'assignedTags'
-            @options.contactView.changeOccured()
+            @options.onChange()
 
     refresh: =>
         @myOperation = true

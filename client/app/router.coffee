@@ -19,8 +19,8 @@ module.exports = class Router extends Backbone.Router
             @navigate "", true if event.keyCode is 27 #ESC
 
     list: ->
-        return @help() if $(window).width() > 900
-        @displayView null
+        if $(window).width() > 900 then @help()
+        else @displayView null
         $('#filterfied').focus()
         app.contactslist.activate null
 
@@ -78,8 +78,8 @@ module.exports = class Router extends Backbone.Router
 
         app.contactview.remove() if app.contactview
         app.contactview = view
-        app.contactview.$el.appendTo $('body')
-        app.contactview.render()
+        app.contactview?.$el.appendTo $('body')
+        app.contactview?.render()
 
     displayViewFor: (contact) ->
         @currentContact = contact

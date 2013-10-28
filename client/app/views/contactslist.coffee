@@ -11,7 +11,7 @@ module.exports = class ContactsList extends ViewCollection
     template: require 'templates/contactslist'
 
     events:
-        'keyup #filterfield': 'keyUpCallback'
+        'change #filterfield': 'keyUpCallback'
         'click #filterClean': 'cleanFilter'
 
     afterRender: ->
@@ -22,6 +22,10 @@ module.exports = class ContactsList extends ViewCollection
         @filterClean.hide()
         @filterfield.focus()
         @list.niceScroll()
+        # fucking bootstrap
+        @filterfield.keyup @keyUpCallback
+        @filterfield.typeahead source: @getTags
+
 
     remove: ->
         super
@@ -46,7 +50,9 @@ module.exports = class ContactsList extends ViewCollection
         @filterClean.hide()
         view.$el.show() for id, view of @views
 
-    keyUpCallback: (event) ->
+    getTags: => @collection.getTags()
+
+    keyUpCallback: (event) =>
 
         if event.keyCode is 27 #ESC
             @filterfield.val('')

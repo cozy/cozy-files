@@ -15,6 +15,7 @@ module.exports = class HistoryView extends ViewCollection
         'click #inject-note': 'injectNote'
 
     afterRender: ->
+        super
         @collection.fetch()
         @injector = @$('.injector').hide()
 
