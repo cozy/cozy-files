@@ -350,6 +350,46 @@ h1, h2, h3, h4, #name
 
   #history
     width 100%
+
+    .history_item
+      width 100%
+      clear both
+
+      .wrap
+        width 70%
+        height 1.1em
+        line-height 1.1em
+        margin 3px 10px
+        padding 3px 0px
+        overflow hidden
+
+        .details, .content
+          display inline
+        .content
+          color grey
+
+      &.incoming .wrap
+        float left
+        background-color white
+        border-radius .2em
+      &.outgoing .wrap
+        float right
+        background-color basecolor + 50%
+        border-radius .2em
+      &.voice .wrap
+        width 100%
+        margin 3px 0px
+        background-color highlightcolor + 50%
+
+      &:hover .wrap
+        height auto
+        // .details, .content
+        //   display block
+        .content
+          color black
+
+
+
     table
       table-layout fixed
       box-sizing border-box
@@ -360,7 +400,6 @@ h1, h2, h3, h4, #name
         color white
 
       tr
-        height 1em
         td:nth-child(1), td:nth-child(2), th:nth-child(1), th:nth-child(2)
           width 18px
         td:nth-child(3),  th:nth-child(3)
@@ -368,9 +407,6 @@ h1, h2, h3, h4, #name
         td:nth-child(4)
           overflow hidden
           white-space nowrap
-          &:hover
-            white-space normal
-            overflow visible
 
       tr.injector
         line-height 0px

@@ -3,9 +3,7 @@ ContactLog = require 'models/contactlog'
 
 module.exports = class HistoryView extends ViewCollection
 
-    tagName: 'table'
-    className: 'table-striped table-condensed table-bordered'
-    template: require 'templates/history'
+    tagName: 'div'
     itemView: require 'views/history_item'
 
     events: ->
@@ -18,9 +16,6 @@ module.exports = class HistoryView extends ViewCollection
         super
         @collection.fetch()
         @injector = @$('.injector').hide()
-
-    appendView: (view) ->
-        @$('tbody').append view.$el
 
     showInjector: -> @injector.show()
     hideInjector: -> @injector.hide()

@@ -4,30 +4,29 @@ module.exports = class HistoryItemView extends BaseView
 
     template: require 'templates/history_item'
 
-    tagName: 'tr'
     className: ->
-        'history_item ' + if @isAnnotable() then 'annotable'
+        console.log 'HERE'
+        classes = ['history_item']
+        classes.push @model.get('direction').toLowerCase()
+        classes.push @model.get('type').toLowerCase()
+        classes.push 'annotable' if @isAnnotable()
+        return classes.join ' '
 
     events:
         'blur .editor'     : 'save'
         'click .notedelete': 'delete'
 
     getRenderData: ->
-        directionIcon: @getDirectionIcon()
-        typeIcon: @getTypeIcon()
-        details : @getDetails()
-        date: @model.get 'timestamp'
+        format = '{Mon} {d}, {h}:{m} : '
 
-    afterRender: ->
-        @editor = @$('.editor')
-        if @model.get('type') is 'NOTE'
-            @editor.val @model.get 'content'
-            @editor.focus()
-        else
-            @editor.remove()
-            @$('.details').text @getDetails()
+        return {
+            typeIcon: @getTypeIcon()
+            content : @getContent()
+            date: Date.create(@model.get('timestamp')).format format
+        }
 
-    isAnnotable: -> 'NOTE' isnt @model.get 'type'
+    isAnnotable: ->
+        @model.get('type') is 'VOICE'
 
     save: ->
         @model.save content: @editor.val()
@@ -43,20 +42,30 @@ module.exports = class HistoryItemView extends BaseView
 
     getTypeIcon: ->
         switch @model.get 'type'
-            when 'VOICE' then 'icon-headphones'
-            when 'MAIL'  then 'icon-enveloppe'
-            when 'SMS'   then 'icon-list-alt'
-            when 'NOTE'  then 'icon-edit'
+            when 'VOICE' then 'icon-voice'
+            when 'MAIL'  then 'icon-mail'
+            when 'SMS'   then 'icon-sms'
             else 'icon-stop'
 
-    getDetails: ->
+    getContent: ->
         details = @model.get 'content'
         switch @model.get 'type'
             when 'VOICE'
-                t('duration') + ' : ' + details.duration
+                t('duration') + ' : ' + @formatDuration details.duration
             when 'SMS' then details.message
-            when 'NOTE' then details
             else '???'
+
+    formatDuration: (duration) ->
+        seconds = (duration % 60)
+        minutes = (duration - seconds) % 3600
+        hours = (duration - minutes - seconds)
+
+        out = seconds + t('seconds')
+        out = minutes/60 + t('minutes') + ' ' + out if minutes
+        out = hours/3600 + t('hours') + ' ' + out if hours
+        return out
+
+
 
 
 
