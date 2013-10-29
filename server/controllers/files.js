@@ -40,8 +40,8 @@ module.exports.create = function(req, res) {
         msg: "Server error while creating file."
       }, 500);
     } else {
-      return newfile.attachFile(file.path, {
-        "name": "thumb"
+      return newfile.attachBinary(file.path, {
+        "name": "file"
       }, function(err) {
         if (err) {
           console.log("[Error]: " + err);
@@ -84,7 +84,7 @@ module.exports.getAttachment = function(req, res) {
     } else {
       res.setHeader('Content-Disposition', "inline");
       res.setHeader('content-type', "mime/type");
-      stream = file.getFile("thumb", function(err, resp, body) {
+      stream = file.getBinary("file", function(err, resp, body) {
         if (err) {
           return res.send({
             error: true,
@@ -101,23 +101,26 @@ module.exports.getAttachment = function(req, res) {
 
 module.exports.destroy = function(req, res) {
   return findFile(req.params.id, function(err, file) {
+    var _this = this;
     if (err) {
       return res.send({
         error: true,
         msg: err
       }, 404);
     } else {
-      return file.destroy(function(err) {
-        if (err) {
-          compound.logger.write(err);
-          return res.send({
-            error: 'Cannot destroy file'
-          }, 500);
-        } else {
-          return res.send({
-            success: 'File succesfuly deleted'
-          }, 200);
-        }
+      return file.removeBinary("file", function(err, resp, body) {
+        return file.destroy(function(err) {
+          if (err) {
+            compound.logger.write(err);
+            return res.send({
+              error: 'Cannot destroy file'
+            }, 500);
+          } else {
+            return res.send({
+              success: 'File succesfuly deleted'
+            }, 200);
+          }
+        });
       });
     }
   });

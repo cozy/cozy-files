@@ -64,32 +64,22 @@ module.exports.findFiles = (req, res) ->
         if err
             res.send error: true, msg: err, 404
         else
-            File.byFolder (err, files) ->
+            File.byFolder key: folder.slug ,(err, files) ->
                 if err
                     res.send error: true, msg: "Server error occured", 500
                 else
-                    # pb : change !!!
-                    result = []
-                    for file in files
-                        if file.path is folder.slug
-                            result.push file
-                    res.send result, 200 
+                    res.send files, 200 
 
 module.exports.findFolders = (req, res) ->
-    findFolder req.params.id, (err, currentFolder) ->
+    findFolder req.params.id, (err, folder) ->
         if err
             res.send error: true, msg: err, 404
         else
-            Folder.byFolder (err, folders) ->
+            Folder.byFolder key: folder.slug ,(err, folders) ->
                 if err
                     res.send error: true, msg: "Server error occured", 500
                 else
-                    # pb : change !!!
-                    result = []
-                    for folder in folders
-                        if folder.path is currentFolder.slug
-                            result.push folder
-                    res.send result, 200
+                    res.send folders, 200
 
 
 module.exports.destroy = (req, res) ->

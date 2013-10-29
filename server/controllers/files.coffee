@@ -25,7 +25,7 @@ module.exports.create = (req, res) ->
         if err
             res.send error: true, msg: "Server error while creating file.", 500
         else
-            newfile.attachFile file.path, {"name": "thumb"}, (err) ->
+            newfile.attachBinary file.path, {"name": "file"}, (err) ->
                 if err
                     console.log "[Error]: " + err
                 fs.unlink file.path, (err) ->
@@ -48,7 +48,7 @@ module.exports.getAttachment = (req, res) ->
         else
             res.setHeader 'Content-Disposition' , "inline"
             res.setHeader 'content-type' , "mime/type"
-            stream = file.getFile "thumb", (err, resp, body) =>
+            stream = file.getBinary "file", (err, resp, body) =>
                 if err
                     res.send error: true, msg: err, 500
             
@@ -61,9 +61,10 @@ module.exports.destroy = (req, res) ->
         if err
             res.send error: true, msg: err, 404
         else
-            file.destroy (err) ->
-                if err
-                    compound.logger.write err
-                    res.send error: 'Cannot destroy file', 500
-                else
-                    res.send success: 'File succesfuly deleted', 200
+            file.removeBinary "file", (err, resp, body) =>
+                file.destroy (err) ->
+                    if err
+                        compound.logger.write err
+                        res.send error: 'Cannot destroy file', 500
+                    else
+                        res.send success: 'File succesfuly deleted', 200

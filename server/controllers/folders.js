@@ -108,22 +108,16 @@ module.exports.findFiles = function(req, res) {
         msg: err
       }, 404);
     } else {
-      return File.byFolder(function(err, files) {
-        var file, result, _i, _len;
+      return File.byFolder({
+        key: folder.slug
+      }, function(err, files) {
         if (err) {
           return res.send({
             error: true,
             msg: "Server error occured"
           }, 500);
         } else {
-          result = [];
-          for (_i = 0, _len = files.length; _i < _len; _i++) {
-            file = files[_i];
-            if (file.path === folder.slug) {
-              result.push(file);
-            }
-          }
-          return res.send(result, 200);
+          return res.send(files, 200);
         }
       });
     }
@@ -131,29 +125,23 @@ module.exports.findFiles = function(req, res) {
 };
 
 module.exports.findFolders = function(req, res) {
-  return findFolder(req.params.id, function(err, currentFolder) {
+  return findFolder(req.params.id, function(err, folder) {
     if (err) {
       return res.send({
         error: true,
         msg: err
       }, 404);
     } else {
-      return Folder.byFolder(function(err, folders) {
-        var folder, result, _i, _len;
+      return Folder.byFolder({
+        key: folder.slug
+      }, function(err, folders) {
         if (err) {
           return res.send({
             error: true,
             msg: "Server error occured"
           }, 500);
         } else {
-          result = [];
-          for (_i = 0, _len = folders.length; _i < _len; _i++) {
-            folder = folders[_i];
-            if (folder.path === currentFolder.slug) {
-              result.push(folder);
-            }
-          }
-          return res.send(result, 200);
+          return res.send(folders, 200);
         }
       });
     }
