@@ -17,12 +17,16 @@ findFolder = function(id, callback) {
 };
 
 module.exports.create = function(req, res) {
+  var newFolderFullPath,
+    _this = this;
+  newFolderFullPath = req.body.path + '/' + req.body.name;
   return Folder.all(function(err, folders) {
-    var conflict, folder, _i, _len;
+    var conflict, folder, fullPath, _i, _len;
     conflict = false;
     for (_i = 0, _len = folders.length; _i < _len; _i++) {
       folder = folders[_i];
-      if (folder.slug === req.body.slug) {
+      fullPath = folder.path + '/' + folder.name;
+      if (fullPath === newFolderFullPath) {
         conflict = true;
         res.send({
           error: true,
@@ -58,94 +62,82 @@ module.exports.find = function(req, res) {
   });
 };
 
-module.exports.findFoldersRoot = function(req, res) {
-  return Folder.byFolder(function(err, folders) {
-    var folder, result, _i, _len;
-    if (err) {
-      return res.send({
-        error: true,
-        msg: "Server error occured"
-      }, 500);
-    } else {
-      result = [];
-      for (_i = 0, _len = folders.length; _i < _len; _i++) {
-        folder = folders[_i];
-        if (folder.path === '') {
-          result.push(folder);
-        }
-      }
-      return res.send(result, 200);
-    }
-  });
-};
-
-module.exports.findFilesRoot = function(req, res) {
-  return File.byFolder(function(err, files) {
-    var file, result, _i, _len;
-    if (err) {
-      return res.send({
-        error: true,
-        msg: "Server error occured"
-      }, 500);
-    } else {
-      result = [];
-      for (_i = 0, _len = files.length; _i < _len; _i++) {
-        file = files[_i];
-        if (file.path === '') {
-          result.push(file);
-        }
-      }
-      return res.send(result, 200);
-    }
-  });
-};
-
 module.exports.findFiles = function(req, res) {
-  return findFolder(req.params.id, function(err, folder) {
-    if (err) {
-      return res.send({
-        error: true,
-        msg: err
-      }, 404);
-    } else {
-      return File.byFolder({
-        key: folder.slug
-      }, function(err, files) {
-        if (err) {
-          return res.send({
-            error: true,
-            msg: "Server error occured"
-          }, 500);
-        } else {
-          return res.send(files, 200);
-        }
-      });
-    }
-  });
+  if (req.params.id === 'root') {
+    return File.byFolder({
+      key: ""
+    }, function(err, files) {
+      if (err) {
+        return res.send({
+          error: true,
+          msg: "Server error occured"
+        }, 500);
+      } else {
+        return res.send(files, 200);
+      }
+    });
+  } else {
+    return findFolder(req.params.id, function(err, folder) {
+      if (err) {
+        return res.send({
+          error: true,
+          msg: err
+        }, 404);
+      } else {
+        return File.byFolder({
+          key: folder.path + '/' + folder.name
+        }, function(err, files) {
+          if (err) {
+            return res.send({
+              error: true,
+              msg: "Server error occured"
+            }, 500);
+          } else {
+            return res.send(files, 200);
+          }
+        });
+      }
+    });
+  }
 };
 
 module.exports.findFolders = function(req, res) {
-  return findFolder(req.params.id, function(err, folder) {
-    if (err) {
-      return res.send({
-        error: true,
-        msg: err
-      }, 404);
-    } else {
-      return Folder.byFolder({
-        key: folder.slug
-      }, function(err, folders) {
-        if (err) {
-          return res.send({
-            error: true,
-            msg: "Server error occured"
-          }, 500);
-        } else {
-          return res.send(folders, 200);
-        }
-      });
-    }
-  });
+  if (req.params.id === 'root') {
+    return Folder.byFolder({
+      key: ""
+    }, function(err, folders) {
+      if (err) {
+        return res.send({
+          error: true,
+          msg: "Server error occured"
+        }, 500);
+      } else {
+        return res.send(folders, 200);
+      }
+    });
+  } else {
+    return findFolder(req.params.id, function(err, folder) {
+      if (err) {
+        return res.send({
+          error: true,
+          msg: err
+        }, 404);
+      } else {
+        return Folder.byFolder({
+          key: folder.path + '/' + folder.name
+        }, function(err, folders) {
+          if (err) {
+            return res.send({
+              error: true,
+              msg: "Server error occured"
+            }, 500);
+          } else {
+            return res.send(folders, 200);
+          }
+        });
+      }
+    });
+  }
 };
 
 module.exports.destroy = function(req, res) {
@@ -158,7 +150,7 @@ module.exports.destroy = function(req, res) {
       }, 404);
     } else {
       return Folder.all(function(err, folders) {
-        var folder, _i, _len;
+        var directory, folder, _i, _len;
         if (err) {
           return res.send({
             error: true,
@@ -167,7 +159,8 @@ module.exports.destroy = function(req, res) {
         } else {
           for (_i = 0, _len = folders.length; _i < _len; _i++) {
             folder = folders[_i];
-            if (folder.path.indexOf(currentFolder.slug) === 0) {
+            directory = currentFolder.path + '/' + currentFolder.name;
+            if (folder.path.indexOf(directory) === 0) {
               folder.destroy(function(err) {
                 if (err) {
                   return console.log(err);
@@ -185,11 +178,14 @@ module.exports.destroy = function(req, res) {
             } else {
               for (_j = 0, _len1 = files.length; _j < _len1; _j++) {
                 file = files[_j];
-                if (file.path.indexOf(currentFolder.slug) === 0) {
-                  file.destroy(function(err) {
-                    if (err) {
-                      return console.log(err);
-                    }
+                directory = currentFolder.path + '/' + currentFolder.name;
+                if (file.path.indexOf(directory) === 0) {
+                  file.removeBinary("file", function(err) {
+                    return file.destroy(function(err) {
+                      if (err) {
+                        return console.log(err);
+                      }
+                    });
                   });
                 }
               }

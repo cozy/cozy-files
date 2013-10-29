@@ -15,10 +15,6 @@ module.exports =
     'folders/:id':
         get: folders.find
         delete: folders.destroy
-    'folders/root/files':
-        get: folders.findFilesRoot
-    'folders/root/folders':
-        get: folders.findFoldersRoot
     'folders/:id/files':
         get: folders.findFiles
     'folders/:id/folders':

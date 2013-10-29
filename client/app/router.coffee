@@ -11,7 +11,7 @@ module.exports = class Router extends Backbone.Router
         'folders/:folderid' : 'folder'
 
     main: ->
-        folder = new Folder id:"root", slug:""
+        folder = new Folder id:"root", path:"", name:""
         @displayView new FolderView
             model: folder
 

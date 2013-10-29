@@ -6,7 +6,7 @@ americano = require('americano-cozy');
 module.exports = {
   file: {
     all: function(doc) {
-      return emit(doc.slug, doc);
+      return emit(doc._id, doc);
     },
     byFolder: function(doc) {
       return emit(doc.path, doc);
@@ -14,7 +14,7 @@ module.exports = {
   },
   folder: {
     all: function(doc) {
-      return emit(doc.slug, doc);
+      return emit(doc._id, doc);
     },
     byFolder: function(doc) {
       return emit(doc.path, doc);

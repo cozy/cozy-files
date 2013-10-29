@@ -6,9 +6,15 @@ americano = require('americano-cozy');
 module.exports = File = americano.getModel('File', {
   path: String,
   name: String,
-  slug: String,
-  binary: String,
-  _attachment: Object
+  permissions: String
+});
+
+({
+  creationDate: String,
+  lastModification: String,
+  size: Number,
+  binary: Object,
+  modificationHistory: Object
 });
 
 File.all = function(params, callback) {

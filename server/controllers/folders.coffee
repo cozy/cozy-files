@@ -14,10 +14,12 @@ findFolder = (id, callback) ->
 ## Actions ##
 
 module.exports.create = (req, res) ->
-    Folder.all (err, folders) ->
+    newFolderFullPath = req.body.path + '/' + req.body.name
+    Folder.all (err, folders) =>
         conflict = false
         for folder in folders
-            if folder.slug is req.body.slug
+            fullPath = folder.path + '/' + folder.name
+            if fullPath is newFolderFullPath
                 conflict = true
                 res.send error:true, msg: "This folder already exists", 400
         if not conflict
@@ -34,52 +36,42 @@ module.exports.find = (req, res) ->
         else   
             res.send folder, 200
 
-module.exports.findFoldersRoot = (req, res) ->
-    Folder.byFolder (err, folders) ->
-        if err
-            res.send error: true, msg: "Server error occured", 500
-        else
-            # pb : change !!!
-            result = []
-            for folder in folders
-                if folder.path is ''
-                    result.push folder
-            res.send result, 200
-
-
-module.exports.findFilesRoot = (req, res) ->
-    File.byFolder (err, files) ->
-        if err
-            res.send error: true, msg: "Server error occured", 500
-        else
-            # pb : change !!!
-            result = []
-            for file in files
-                if file.path is ''
-                    result.push file
-            res.send result, 200
-
 module.exports.findFiles = (req, res) ->
-    findFolder req.params.id, (err, folder) ->
-        if err
-            res.send error: true, msg: err, 404
-        else
-            File.byFolder key: folder.slug ,(err, files) ->
-                if err
-                    res.send error: true, msg: "Server error occured", 500
-                else
-                    res.send files, 200 
+    if req.params.id is 'root'
+        File.byFolder key: "" ,(err, files) ->
+            if err
+                res.send error: true, msg: "Server error occured", 500
+            else
+                res.send files, 200 
+    else
+        findFolder req.params.id, (err, folder) ->
+            if err
+                res.send error: true, msg: err, 404
+            else
+                File.byFolder key: folder.path + '/' + folder.name ,(err, files) ->
+                    if err
+                        res.send error: true, msg: "Server error occured", 500
+                    else
+                        res.send files, 200 
+
 
 module.exports.findFolders = (req, res) ->
-    findFolder req.params.id, (err, folder) ->
-        if err
-            res.send error: true, msg: err, 404
-        else
-            Folder.byFolder key: folder.slug ,(err, folders) ->
-                if err
-                    res.send error: true, msg: "Server error occured", 500
-                else
-                    res.send folders, 200
+    if req.params.id is 'root'
+        Folder.byFolder key: "" ,(err, folders) ->
+            if err
+                res.send error: true, msg: "Server error occured", 500
+            else
+                res.send folders, 200
+    else
+        findFolder req.params.id, (err, folder) ->
+            if err
+                res.send error: true, msg: err, 404
+            else
+                Folder.byFolder key: folder.path + '/' + folder.name ,(err, folders) ->
+                    if err
+                        res.send error: true, msg: "Server error occured", 500
+                    else
+                        res.send folders, 200
 
 
 module.exports.destroy = (req, res) ->
@@ -93,7 +85,8 @@ module.exports.destroy = (req, res) ->
                     res.send error: true, msg:  "Server error occured", 500
                 else
                     for folder in folders
-                        if (folder.path.indexOf(currentFolder.slug) is 0)
+                        directory = currentFolder.path + '/' + currentFolder.name
+                        if (folder.path.indexOf(directory) is 0)
                             folder.destroy (err) ->
                                 console.log err if err
                     # Remove files in the current folder
@@ -102,9 +95,11 @@ module.exports.destroy = (req, res) ->
                             res.send error: true, msg:  "Server error occured", 500
                         else
                             for file in files
-                                if (file.path.indexOf(currentFolder.slug) is 0)
-                                    file.destroy (err) ->
-                                        console.log err if err
+                                directory = currentFolder.path + '/' + currentFolder.name
+                                if (file.path.indexOf(directory) is 0)
+                                    file.removeBinary "file", (err) ->
+                                        file.destroy (err) ->
+                                            console.log err if err
                              # Remove the current folder
                             currentFolder.destroy (err) ->
                                 if err

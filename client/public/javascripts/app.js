@@ -605,7 +605,8 @@ window.require.register("router", function(exports, require, module) {
       var folder;
       folder = new Folder({
         id: "root",
-        slug: ""
+        path: "",
+        name: ""
       });
       return this.displayView(new FolderView({
         model: folder
@@ -700,8 +701,7 @@ window.require.register("views/fileslist", function(exports, require, module) {
       var file, fileAttributes;
       fileAttributes = {
         name: attach.name,
-        path: this.repository,
-        slug: this.repository + '/' + attach.name
+        path: this.repository
       };
       file = new File(fileAttributes);
       file.file = attach;
@@ -716,7 +716,6 @@ window.require.register("views/fileslist", function(exports, require, module) {
       formdata.append('cid', file.cid);
       formdata.append('name', file.get('name'));
       formdata.append('path', file.get('path'));
-      formdata.append('slug', file.get('slug'));
       formdata.append('file', file.file);
       return Backbone.sync('create', file, {
         contentType: false,
@@ -829,6 +828,10 @@ window.require.register("views/folder", function(exports, require, module) {
       AppView.__super__.afterRender.apply(this, arguments);
       this.name = this.$('#name');
       this.uploader = this.$('#uploader')[0];
+      this.repository = this.model.attributes.path + '/' + this.model.attributes.name;
+      if (this.repository === '/') {
+        this.repository = "";
+      }
       this.model.findFiles({
         success: function(files) {
           var collection, data;
@@ -836,7 +839,7 @@ window.require.register("views/folder", function(exports, require, module) {
           collection = new FileCollection(files);
           data = {
             collection: collection,
-            repository: _this.model.attributes.slug
+            repository: _this.repository
           };
           _this.filesList = new FilesList(data);
           _this.$('#files').append(_this.filesList.$el);
@@ -853,7 +856,7 @@ window.require.register("views/folder", function(exports, require, module) {
           collection = new FolderCollection(folders);
           data = {
             collection: collection,
-            repository: _this.model.attributes.slug
+            repository: _this.repository
           };
           _this.foldersList = new FoldersList(data);
           _this.$('#folders').append(_this.foldersList.$el);
@@ -869,8 +872,7 @@ window.require.register("views/folder", function(exports, require, module) {
       var err, folder;
       folder = {
         name: this.name.val(),
-        path: this.model.attributes.slug,
-        slug: this.model.attributes.slug + '/' + this.name.val()
+        path: this.repository
       };
       folder = new Folder(folder);
       err = folder.validate(folder.attributes);
@@ -1049,7 +1051,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="bar"><input id="uploader" type="file" class="flatbtn"/><input type="text" value="" id="name" placeholder="Folder name" class="input-block-level"/><button class="add flatbtn">Create new folder</button></div><div id="content"><div id="h4">' + escape((interp = model.slug) == null ? '' : interp) + '</div><div id="folders"></div><div id="files"></div></div>');
+  buf.push('<div id="bar"><input id="uploader" type="file" class="flatbtn"/><input type="text" value="" id="name" placeholder="Folder name" class="input-block-level"/><button class="add flatbtn">Create new folder</button></div><div id="content"><div id="h4">' + escape((interp = model.path + '/' + model.name) == null ? '' : interp) + '</div><div id="folders"></div><div id="files"></div></div>');
   }
   return buf.join("");
   };

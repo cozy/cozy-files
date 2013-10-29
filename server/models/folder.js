@@ -6,7 +6,14 @@ americano = require('americano-cozy');
 module.exports = Folder = americano.getModel('Folder', {
   path: String,
   name: String,
-  slug: String
+  permissions: String
+});
+
+({
+  creationDate: String,
+  lastModification: String,
+  size: Number,
+  modificationHistory: Object
 });
 
 Folder.all = function(params, callback) {

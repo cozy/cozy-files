@@ -3,6 +3,6 @@
     input.input-block-level(type="text", value="", id="name", placeholder="Folder name")
     button.add.flatbtn Create new folder
 #content
-    #h4 #{model.slug}
+    #h4 #{model.path + '/' + model.name}
     #folders
     #files

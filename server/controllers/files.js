@@ -108,7 +108,7 @@ module.exports.destroy = function(req, res) {
         msg: err
       }, 404);
     } else {
-      return file.removeBinary("file", function(err, resp, body) {
+      return file.removeBinary("file", function(err, res, body) {
         return file.destroy(function(err) {
           if (err) {
             compound.logger.write(err);

@@ -22,6 +22,9 @@ module.exports = class AppView extends BaseView
         super
         @name = @$('#name')
         @uploader = @$('#uploader')[0]
+        @repository = @model.attributes.path + '/' + @model.attributes.name
+        if @repository is '/'
+            @repository = ""
 
         @model.findFiles 
             success: (files) =>
@@ -29,7 +32,7 @@ module.exports = class AppView extends BaseView
                 collection = new FileCollection files
                 data = 
                     collection: collection 
-                    repository: @model.attributes.slug
+                    repository: @repository
                 @filesList = new FilesList data
                 @$('#files').append @filesList.$el
                 @filesList.render()  
@@ -42,7 +45,7 @@ module.exports = class AppView extends BaseView
                 collection = new FolderCollection folders
                 data = 
                     collection: collection 
-                    repository: @model.attributes.slug
+                    repository: @repository
                 @foldersList = new FoldersList data
                 @$('#folders').append @foldersList.$el 
                 @foldersList.render()
@@ -53,8 +56,7 @@ module.exports = class AppView extends BaseView
     onAddFolder: =>
         folder =
             name: @name.val()
-            path: @model.attributes.slug
-            slug: @model.attributes.slug + '/' + @name.val()
+            path: @repository
         folder = new Folder folder
         err = folder.validate folder.attributes
         if err

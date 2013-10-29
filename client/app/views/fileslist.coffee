@@ -25,19 +25,16 @@ module.exports = class FilesListView extends ViewCollection
         fileAttributes = 
             name: attach.name
             path: @repository
-            slug: @repository + '/' + attach.name
         file = new File fileAttributes
         file.file = attach
         @collection.add file
         @upload file
-
 
     upload: (file) =>
         formdata = new FormData()
         formdata.append 'cid', file.cid
         formdata.append 'name', file.get 'name'
         formdata.append 'path', file.get 'path'
-        formdata.append 'slug', file.get 'slug'
         formdata.append 'file', file.file
         Backbone.sync 'create', file,
             contentType: false
