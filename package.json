@@ -33,10 +33,6 @@
     "Folder":
     {
       "description": "Store folders in your cozy"
-    },
-    "Remote":
-    {
-      "description": "Manage your remote devices"
     }
   }
 
