@@ -1,5 +1,3 @@
-PhoneCommunicationLog = require './server/models/phone_communication_log'
-Realtimer = require 'cozy-realtime-adapter'
 patch1 = require './server/initializers/patch1'
 logwatch = require './server/initializers/finglogwatch'
 
@@ -16,7 +14,7 @@ start = (port, callback) ->
             return callback? err if err
 
             # start realtime and sync Fing's log with contact's log
-            logwatch (err) ->
+            logwatch server, (err) ->
 
                 callback? err, app, server
 

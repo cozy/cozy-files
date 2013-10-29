@@ -60,7 +60,8 @@ module.exports = class CallImporterView extends BaseView
 
         for log in toImport
 
-            content = log.content.message or log.content.duration + 's'
+            content = log.content.message or
+                @formatDuration log.content.duration
 
             html = '<tr>'
             html += "<td> #{log.direction} </td>"
