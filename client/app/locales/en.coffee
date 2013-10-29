@@ -45,6 +45,9 @@ module.exports =
   "add tags"              : "Add tags"
   "add note"              : "Add a note"
   "duration"              : "Duration"
+  "seconds"               : "s"
+  "minutes"               : "min"
+  "hours"                 : "h"
 
 # ContactList
   "search placeholder"    : "Search ..."

@@ -30,7 +30,7 @@ ContactLog.normalizeNumber = (number) ->
 ContactLog.makeSnippet = (log) ->
     if log.snippet then return log.snippet
     else
-        remote = log.remote.id or log.remote.tel or log.remote.mail
+        remote = log.remote?.id or log.remote?.tel or log.remote?.mail
         return "#{log.timestamp} : #{log.type} #{log.direction} #{remote}"
 
 ContactLog.merge = (newLogs, callback) ->

@@ -23,7 +23,7 @@ parseDuration = (duration) ->
         when 4 then [minutes, _, seconds, _] = parts
         when 6 then [hours, _, minutes, _, seconds, _] = parts
 
-    duration = hours * 3600 + minutes * 60 + seconds
+    duration = parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds)
 
 #char by char csv parser
 parseCSV = (csv, progress, callback, result = [[]], state = {}) ->
@@ -75,10 +75,11 @@ parseCSV = (csv, progress, callback, result = [[]], state = {}) ->
 
 
 directionAlias =
-    'in': 'INCOMING'
+    'in'      : 'INCOMING'
     'Incoming': 'INCOMING'
-    'INCOMING':'INCOMING'
-    'out': 'OUTGOING'
+    'INCOMING': 'INCOMING'
+    'Missed'  : 'INCOMING'
+    'out'     : 'OUTGOING'
     'Outgoing': 'OUTGOING'
     'OUTGOING': 'OUTGOING'
 

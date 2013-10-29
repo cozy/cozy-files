@@ -28,7 +28,8 @@ module.exports = class ContactView extends ViewCollection
 
         'keyup .type'       : 'addBelowIfEnter'
         'keyup input.value' : 'addBelowIfEnter'
-        'keyup #notes'      : 'resizeNote'
+        'keydown #notes'    : 'resizeNote'
+        'keypress #notes'   : 'resizeNote'
 
         'keyup #name'    : 'doNeedSaving'
         'keyup #notes'   : 'doNeedSaving'
@@ -84,7 +85,7 @@ module.exports = class ContactView extends ViewCollection
         # resize nice scroll when we switch to history tab
         @$('a[data-toggle="tab"]').on 'shown', =>
             @$('#left').hide() if $(window).width() < 900
-            @resizeNiceScroll
+            @resizeNiceScroll()
         @$('a#infotab').on 'shown', =>
             @$('#left').show()
             @resizeNiceScroll()
@@ -125,11 +126,10 @@ module.exports = class ContactView extends ViewCollection
         typeField.select()
 
     doNeedSaving: =>
-        console.log "doNeedSaving"
         @needSaving = true
+        return true
 
     changeOccured: =>
-        console.log "changeOccured"
         # wait 10 ms, for newly focused to be focused
         setTimeout =>
             # there is still something focused

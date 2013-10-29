@@ -58,7 +58,7 @@ module.exports =
             return res.error 500, "Creation failed.", err if err
 
             if file = req.files?['picture']
-                data = name: 'picture', type: file.type
+                data = name: 'picture'
                 contact.attachFile file.path, data, (err) ->
                     return res.error 500, "Creation failed.", err if err
 
@@ -83,7 +83,7 @@ module.exports =
             return res.error 500, "Update failed.", err if err
 
             if file = req.files?['picture']
-                data = name: 'picture', type: file.type
+                data = name: 'picture'
                 req.contact.attachFile file.path, data, (err) ->
                     return res.error 500, "Update failed.", err if err
 

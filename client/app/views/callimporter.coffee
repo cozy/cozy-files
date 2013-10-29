@@ -73,10 +73,22 @@ module.exports = class CallImporterView extends BaseView
         @toImport = toImport
         @confirmBtn.removeClass 'disabled'
 
+    formatDuration: (duration) ->
+        seconds = (duration % 60)
+        minutes = (duration - seconds) % 3600
+        hours = (duration - minutes - seconds)
+
+        out = seconds + t('seconds')
+        out = minutes/60 + t('minutes') + ' ' + out if minutes
+        out = hours/3600 + t('hours') + ' ' + out if hours
+        return out
+
     doImport: ->
+        return if @confirmBtn.hasClass 'disabled'
 
         @parse_step.remove()
         @confirm_step.show()
+        @confirmBtn.addClass 'disabled'
 
         req = $.ajax 'logs',
             type: 'POST'

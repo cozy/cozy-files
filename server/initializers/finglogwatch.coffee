@@ -1,6 +1,7 @@
-PhoneCommunicationLog = require('../models/phone_communication_log')
+PhoneCommunicationLog = require '../models/phone_communication_log'
+Realtimer = require 'cozy-realtime-adapter'
 
-module.exports = (next) ->
+module.exports = (server, next) ->
 
     # Create ContactLog for FING Log that might
     # have appears while app was down

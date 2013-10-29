@@ -54,11 +54,15 @@ module.exports = class DataPointView extends BaseView
             when 'email'
                 action 'envelope', 'send mail', "mailto:#{value}", true
             when 'tel'
-                action 'headphones', 'call', "tel:#{value}", true
+                href = @callProtocol() + ':+' + value
+                action 'headphones', 'call', href, true
             when 'url'
                 action 'share', 'go to this url', "#{value}"
             else @actionLink.detach()
 
+    callProtocol: ->
+        if navigator.userAgent.match(/(mobile)/gi) then 'tel'
+        else 'callto'
 
     onKeyup: (event) =>
         empty = $(event.target).val().length is 0
