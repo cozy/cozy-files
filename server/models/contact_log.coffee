@@ -22,9 +22,12 @@ ContactLog.bySnippet = (keys, callback) ->
         callback null, indexed
 
 ContactLog.normalizeNumber = (number) ->
-    number = number.replace ' ', ''
-    number = number.replace '-', ''
-    number = number.replace '+', ''
+    number = number.replace new RegExp(' ','g'), ''
+    number = number.replace new RegExp('\\+','g'), ''
+    number = number.replace new RegExp('\\(0\\)','g'), ''
+    number = number.replace new RegExp('\\(','g'), ''
+    number = number.replace new RegExp('\\)','g'), ''
+    number = number.replace new RegExp('-','g'), ''
     return number
 
 ContactLog.makeSnippet = (log) ->

@@ -1,4 +1,5 @@
 americano = require 'americano-cozy'
+ContactLog = require './contact_log'
 
 module.exports = Contact = americano.getModel 'Contact',
     id            : String
@@ -8,15 +9,14 @@ module.exports = Contact = americano.getModel 'Contact',
     tags          : (x) -> x # DAMN IT JUGGLING
     _attachments  : Object
 
-Contact::phoneNumbers = ->
-    model = @toJSON()
-    return (dp.value for i, dp of model.datapoints when dp.name is 'tel')
-
 Contact::remoteKeys = ->
     model = @toJSON()
     out = [@id]
-    for dp in model.datapoints when dp.name in ['tel', 'mail']
-        out.push dp.value
+    for dp in model.datapoints
+        if dp.name is 'tel'
+            out.push ContactLog.normalizeNumber dp.value
+        else if dp.name is 'email'
+            out.push dp.value.toLowerCase()
     return out
 
 Contact::toVCF = ->
