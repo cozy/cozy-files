@@ -5,7 +5,6 @@ module.exports = class HistoryItemView extends BaseView
     template: require 'templates/history_item'
 
     className: ->
-        console.log 'HERE'
         classes = ['history_item']
         classes.push @model.get('direction').toLowerCase()
         classes.push @model.get('type').toLowerCase()
@@ -51,7 +50,11 @@ module.exports = class HistoryItemView extends BaseView
         details = @model.get 'content'
         switch @model.get 'type'
             when 'VOICE'
-                t('duration') + ' : ' + @formatDuration details.duration
+                content = if @model.get('direction') is 'OUTGOING'
+                    t('you called')
+                else
+                    t('you were called')
+                return content + " (#{@formatDuration(details.duration)})"
             when 'SMS' then details.message
             else '???'
 

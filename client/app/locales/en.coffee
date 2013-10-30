@@ -48,6 +48,8 @@ module.exports =
   "seconds"               : "s"
   "minutes"               : "min"
   "hours"                 : "h"
+  "you called"            : "You called"
+  "you were called"       : "You were called"
 
 # ContactList
   "search placeholder"    : "Search ..."

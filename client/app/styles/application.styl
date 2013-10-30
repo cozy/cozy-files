@@ -345,8 +345,9 @@ h1, h2, h3, h4, #name
   #infotab
     display none
 
-  textarea
-    width 98%
+  textarea#notes
+    width 100%
+    box-sizing border-box
 
   #history
     width 100%
@@ -376,10 +377,6 @@ h1, h2, h3, h4, #name
         float right
         background-color basecolor + 50%
         border-radius .2em
-      &.voice .wrap
-        width 100%
-        margin 3px 0px
-        background-color highlightcolor + 50%
 
       &:hover .wrap
         height auto

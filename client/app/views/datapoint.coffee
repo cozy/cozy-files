@@ -57,7 +57,10 @@ module.exports = class DataPointView extends BaseView
                 href = @callProtocol() + ':+' + value
                 action 'headphones', 'call', href, true
             when 'url'
-                action 'share', 'go to this url', "#{value}"
+                action 'share', 'go to this url', "#{value}", true
+            when 'other'
+                if @model.get('type') is 'skype'
+                    action 'headphones', 'call', "callto:#{value}"
             else @actionLink.detach()
 
     callProtocol: ->
