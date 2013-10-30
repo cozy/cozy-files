@@ -6,6 +6,23 @@
   font-family: main;
   src: url("/fonts/signika-regular.ttf");
 }
+.icon-sms,
+.icon-voice,
+.icon-mail {
+  background-position: 0px 0px;
+  width: 16px;
+  height: 16px;
+  margin-right: 3px;
+}
+.icon-sms {
+  background-image: url("../img/sms.png");
+}
+.icon-voice {
+  background-image: url("../img/voice.png");
+}
+.icon-mail {
+  background-image: url("../img/mail.png");
+}
 html {
   height: 100%;
 }
@@ -268,6 +285,15 @@ h4,
 #contact ul.tagit {
   border: 0px;
 }
+#contact ul.tagit .tagit-choice {
+  border-radius: 0px;
+  background-color: #34a6ff;
+  border-color: #34a6ff;
+}
+#contact ul.tagit .tagit-choice .tagit-label,
+#contact ul.tagit .tagit-choice .tagit-close .text-icon {
+  color: #fff;
+}
 #contact ul.tagit input:hover {
   border: 0px;
 }
@@ -329,13 +355,55 @@ h4,
   margin-top: 10px;
   margin-bottom: 0px;
 }
-#right textarea {
-  width: 98%;
+#right #infotab {
+  display: none;
+}
+#right textarea#notes {
+  width: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 #right #history {
   width: 100%;
 }
+#right #history .history_item {
+  width: 100%;
+  clear: both;
+}
+#right #history .history_item .wrap {
+  width: 70%;
+  height: 1.1em;
+  line-height: 1.1em;
+  margin: 3px 10px;
+  padding: 3px 0px;
+  overflow: hidden;
+}
+#right #history .history_item .wrap .details,
+#right #history .history_item .wrap .content {
+  display: inline;
+}
+#right #history .history_item .wrap .content {
+  color: #808080;
+}
+#right #history .history_item.incoming .wrap {
+  float: left;
+  background-color: #fff;
+  border-radius: 0.2em;
+}
+#right #history .history_item.outgoing .wrap {
+  float: right;
+  background-color: #f2f2f2;
+  border-radius: 0.2em;
+}
+#right #history .history_item:hover .wrap {
+  height: auto;
+}
+#right #history .history_item:hover .wrap .content {
+  color: #000;
+}
 #right #history table {
+  table-layout: fixed;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -355,6 +423,10 @@ h4,
 #right #history table tr td:nth-child(3),
 #right #history table tr th:nth-child(3) {
   width: 30%;
+}
+#right #history table tr td:nth-child(4) {
+  overflow: hidden;
+  white-space: nowrap;
 }
 #right #history table tr.injector {
   line-height: 0px;
@@ -459,8 +531,20 @@ a {
   #contact #close {
     display: block;
   }
-  #contact #zones .zone {
-    width: 98%;
+  #contact #infotab {
+    display: block;
+  }
+  #contact #right,
+  #contact #left {
+    width: 100%;
+  }
+  #contact #abouts.zone h2 {
+    visibility: hidden;
+    height: 10px;
+  }
+  #contact #left {
+    top: 160px;
+    display: none;
   }
   #contact #picture {
     top: 53px;

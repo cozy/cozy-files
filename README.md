@@ -15,6 +15,11 @@ Clone this repository, install dependencies and run server.
     cd client/ && npm install && cd ..
     coffee server
 
+# Contributing
+
+Have an idea or a bug, open up an issue !
+Want to contribute but not sure what to do, have a look at TODO.md
+
 # About Cozy
 
 This app is suited to be deployed on the Cozy platform. Cozy is the personal

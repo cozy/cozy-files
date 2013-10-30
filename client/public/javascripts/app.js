@@ -158,6 +158,16 @@ module.exports = ContactCollection = (function(_super) {
     });
   };
 
+  ContactCollection.prototype.getTags = function() {
+    var out;
+
+    out = [];
+    this.each(function(contact) {
+      return out = out.concat(contact.get('tags'));
+    });
+    return _.unique(out);
+  };
+
   return ContactCollection;
 
 })(Backbone.Collection);
@@ -340,7 +350,7 @@ parseDuration = function(duration) {
         hours = parts[0], _ = parts[1], minutes = parts[2], _ = parts[3], seconds = parts[4], _ = parts[5];
     }
   }
-  return duration = hours * 3600 + minutes * 60 + seconds;
+  return duration = parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
 };
 
 parseCSV = function(csv, progress, callback, result, state) {
@@ -402,7 +412,12 @@ parseCSV = function(csv, progress, callback, result, state) {
 
 directionAlias = {
   'in': 'INCOMING',
-  'out': 'OUTGOING'
+  'Incoming': 'INCOMING',
+  'INCOMING': 'INCOMING',
+  'Missed': 'INCOMING',
+  'out': 'OUTGOING',
+  'Outgoing': 'OUTGOING',
+  'OUTGOING': 'OUTGOING'
 };
 
 module.exports.parse = function(log, context, callback, progress) {
@@ -411,13 +426,17 @@ module.exports.parse = function(log, context, callback, progress) {
   firstline = log.split(/\r?\n/)[0];
   if (isAndroidCallLogExport(firstline)) {
     return parseCSV(log, progress, function(err, parsed) {
+      var out;
+
       parsed.shift();
       parsed.pop();
-      return callback(null, parsed.map(function(line) {
+      out = [];
+      parsed.forEach(function(line) {
         var direction, duration, number, timestamp, _;
 
         timestamp = line[0], direction = line[1], number = line[2], _ = line[3], _ = line[4], duration = line[5];
-        return {
+        direction = directionAlias[direction];
+        return out.push({
           type: 'VOICE',
           direction: direction,
           timestamp: Date.create(timestamp).toISOString(),
@@ -427,8 +446,9 @@ module.exports.parse = function(log, context, callback, progress) {
           content: {
             duration: parseDuration(duration)
           }
-        };
-      }));
+        });
+      });
+      return callback(null, out);
     });
   } else if (isAndroidSMSExport(firstline)) {
     return parseCSV(log, progress, function(err, parsed) {
@@ -437,18 +457,22 @@ module.exports.parse = function(log, context, callback, progress) {
       parsed.shift();
       parsed.pop();
       out = [];
-      parsed.map(function(line) {
+      parsed.forEach(function(line) {
         var date, direction, message, number, numbers, time, tstmp, _, _i, _len, _ref, _results;
 
         date = line[0], time = line[1], direction = line[2], numbers = line[3], _ = line[4], message = line[5];
         tstmp = Date.create(date + 'T' + time + '.000Z').toISOString();
+        direction = directionAlias[direction];
+        if (!direction) {
+          return null;
+        }
         _ref = numbers.split(';');
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           number = _ref[_i];
           _results.push(out.push({
             type: 'SMS',
-            direction: directionAlias[direction],
+            direction: direction,
             timestamp: tstmp,
             remote: {
               tel: normalizeNumber(number, context)
@@ -1267,9 +1291,8 @@ module.exports = {
   "saving": "Saving ...",
   "saved": "Saved",
   "delete": "Delete",
-  "delete the contact": "Delete the contact",
+  "delete contact": "Delete the contact",
   "add contact": "Create a new contact",
-  "go to settings": "Settings",
   "company": "Company",
   "title": "Title",
   "birthday": "Birthday",
@@ -1282,10 +1305,9 @@ module.exports = {
   "add": "Add",
   "notes": "Notes",
   "about": "About",
-  "Delete the contact": "Delete the contact",
-  "Name": "Name",
-  "Change": "Change",
-  "Take notes here": "Take notes here",
+  "name": "Name",
+  "change": "Change",
+  "notes placeholder": "Take notes here",
   "type here": "Type here",
   "about": "About",
   "phones": "Phones",
@@ -1294,37 +1316,47 @@ module.exports = {
   "links": "Links",
   "others": "Others",
   "Saved": "Saved",
-  "Save changes ?": "Save changes ?",
-  "This is not an image": "This is not an image",
+  "save changes alert": "Save changes ?",
+  "not an image": "This is not an image",
   "remove datapoint": "Remove",
   "changes saved": "Changes saved",
   "undo": "Undo",
   "history": "History",
+  "info": "Info",
   "cozy url": "Cozy",
+  "twitter": "Twitter",
   "add tags": "Add tags",
   "add note": "Add a note",
   "duration": "Duration",
+  "seconds": "s",
+  "minutes": "min",
+  "hours": "h",
+  "you called": "You called",
+  "you were called": "You were called",
   "search placeholder": "Search ...",
-  "New Contact": "New Contact",
-  "Export vCard": "Export vCard",
-  "import vcard": "Import vCard",
+  "new contact": "New Contact",
+  "go to settings": "Settings",
   "choose vcard file": "Choose a vCard file",
   "is not a vcard": "is not a vCard",
   "cancel": "Cancel",
   "import": "Import",
-  "import.ready-msg": "Ready to import %{smart_count} contact |||| Ready to import %{smart_count} contacts",
   "import call log help": "If you are a FING and Orange user, do not use this",
-  "import android calls": "If you use an android phone, use the following application : ",
   "import ios calls": "If you use an iOS phone, follow this tutorial : ",
   "choose log file": "Then upload your generated log file",
-  "click left to display": "Click a contact in the left panel to display it",
-  "carddav info": "To sync your contacts with your mobile, install the cozy-webdav application",
+  "import.ready-msg": "Ready to import %{smart_count} contact ||||\nReady to import %{smart_count} contacts",
+  "import android calls": "If you use an android phone, use the following application : ",
+  "click left to display": "Click on a contact in the left panel to display",
+  "import export": "Import / Export",
   "call log info": "Click here to import your mobile's call log :",
   "import call log": "Import call Log",
   "vcard import info": "Click here to import a vCard file :",
-  "import vcard": "Import vCard file",
+  "import vcard": "Import vCard",
+  "export all vcard": "Export vCard file",
+  "export vcard": "Export vCard file",
+  "settings": "Settings",
+  "help": "Help",
   "vcard export info": "Click here to export all your contacts as a vCard file :",
-  "export all vcard": "Export vCard file"
+  "carddav info": "To sync your contacts with your mobile, install the cozy-webdav\napplication"
 };
 
 });
@@ -1480,7 +1512,7 @@ module.exports = Contact = (function(_super) {
   };
 
   Contact.prototype.match = function(filter) {
-    return filter.test(this.get('fn')) || filter.test(this.get('note')) || this.dataPoints.match(filter);
+    return filter.test(this.get('fn')) || filter.test(this.get('note')) || filter.test(this.get('tags').join(' ')) || this.dataPoints.match(filter);
   };
 
   Contact.prototype.toJSON = function() {
@@ -1741,9 +1773,10 @@ module.exports = Router = (function(_super) {
 
   Router.prototype.list = function() {
     if ($(window).width() > 900) {
-      return this.help();
+      this.help();
+    } else {
+      this.displayView(null);
     }
-    this.displayView(null);
     $('#filterfied').focus();
     return app.contactslist.activate(null);
   };
@@ -1808,7 +1841,7 @@ module.exports = Router = (function(_super) {
   };
 
   Router.prototype.displayView = function(view) {
-    var _ref1,
+    var _ref1, _ref2, _ref3,
       _this = this;
 
     if (this.currentContact) {
@@ -1829,8 +1862,10 @@ module.exports = Router = (function(_super) {
       app.contactview.remove();
     }
     app.contactview = view;
-    app.contactview.$el.appendTo($('body'));
-    return app.contactview.render();
+    if ((_ref2 = app.contactview) != null) {
+      _ref2.$el.appendTo($('body'));
+    }
+    return (_ref3 = app.contactview) != null ? _ref3.render() : void 0;
   };
 
   Router.prototype.displayViewFor = function(contact) {
@@ -1917,7 +1952,13 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</th><th>');
 var __val__ = t('log date')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</th></thead><tbody></tbody></table></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
+buf.push('</th></thead><tbody></tbody></table></div><div id="import-confirm" class="modal-body"><p>');
+var __val__ = t('importing this file')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><p>');
+var __val__ = t('may take a while')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
 var __val__ = t("cancel")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
@@ -1947,10 +1988,10 @@ else
 buf.push('<img src="img/defaultpicture.png" class="picture"/>');
 }
 buf.push('<div id="uploadnotice">');
-var __val__ = t("Change")
+var __val__ = t("change")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</div><input id="uploader" type="file"/></div><div id="wrap-name-notes"><input');
-buf.push(attrs({ 'id':('name'), 'placeholder':(t("Name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
+buf.push(attrs({ 'id':('name'), 'placeholder':(t("name")), 'value':("" + (fn) + "") }, {"placeholder":true,"value":true}));
 buf.push('/><input');
 buf.push(attrs({ 'id':('tags'), 'value':(tags.join(',')), "class": ('tagit') }, {"value":true}));
 buf.push('/></div><span id="save-info">');
@@ -1960,19 +2001,22 @@ buf.push('<a id="undo">');
 var __val__ = t('undo')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a></span><a');
-buf.push(attrs({ 'id':('delete'), 'title':(t("delete the contact")) }, {"title":true}));
+buf.push(attrs({ 'id':('delete'), 'title':(t("delete contact")) }, {"title":true}));
 buf.push('>');
 var __val__ = t('delete')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a><div id="right"><ul class="nav nav-tabs"><li class="active"><a href="#notes-zone" data-toggle="tab">');
+buf.push('</a><div id="right"><ul class="nav nav-tabs"><li><a id="infotab" href="#info" data-toggle="tab">');
+var __val__ = t('info')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a></li><li class="active"><a href="#notes-zone" data-toggle="tab">');
 var __val__ = t('notes')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></li><li><a href="#history" data-toggle="tab">');
+buf.push('</a></li><li><a href="#history" data-toggle="tab" class="tab">');
 var __val__ = t('history')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a></li></ul><div class="tab-content"><div id="notes-zone" class="tab-pane active"><textarea');
-buf.push(attrs({ 'rows':("3"), 'placeholder':(t('Take notes here')), 'id':('notes') }, {"rows":true,"placeholder":true}));
-buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="history" class="tab-pane"></div></div></div><div id="left"><div id="abouts" class="zone"><h2>');
+buf.push(attrs({ 'rows':("3"), 'placeholder':(t('notes placeholder')), 'id':('notes') }, {"rows":true,"placeholder":true}));
+buf.push('>' + escape((interp = note) == null ? '' : interp) + '</textarea></div><div id="history" class="tab-pane"></div><div id="info" class="tab-pane"></div></div></div><div id="left"><div id="abouts" class="zone"><h2>');
 var __val__ = t("about")
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h2><ul></ul><a class="btn add addabout">');
@@ -2022,6 +2066,9 @@ var __val__ = t("title") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addcozy">');
 var __val__ = t("cozy url") + ' '
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</a><a class="addtwitter">');
+var __val__ = t("twitter") + ' '
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</a><a class="addtel">');
 var __val__ = t("phone") + ' '
@@ -2160,42 +2207,18 @@ return buf.join("");
 };
 });
 
-;require.register("templates/history", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
-var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<thead><tr><th></th><th></th><th>Date</th><th>Action</th></tr></thead><tbody><tr class="injector"><td colspan="4"><a id="inject-note">');
-var __val__ = t('add note')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</a></td></tr></tbody>');
-}
-return buf.join("");
-};
-});
-
 ;require.register("templates/history_item", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<td>');
-if ( directionIcon != false)
-{
-buf.push('<i');
-buf.push(attrs({ "class": (directionIcon) }, {"class":true}));
-buf.push('></i>');
-}
-buf.push('</td><td><i');
+buf.push('<div class="wrap"><div class="details"><i');
 buf.push(attrs({ "class": (typeIcon) }, {"class":true}));
-buf.push('></i></td><td>');
-var __val__ = new Date(date).format('long')
+buf.push('></i>' + escape((interp = date) == null ? '' : interp) + '</div><div class="content">');
+var __val__ = content
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</td><td class="details"><input');
-buf.push(attrs({ 'type':("text"), 'placeholder':(t("type here")), "class": ('editor') }, {"type":true,"placeholder":true}));
-buf.push('/><a class="notedelete"><i class="icon-remove"></i></a></td>');
+buf.push('</div></div>');
 }
 return buf.join("");
 };
@@ -2226,7 +2249,7 @@ return buf.join("");
 });
 
 ;require.register("views/callimporter", function(exports, require, module) {
-var BaseView, CallImporterView, CallLogReader, app, _ref,
+var BaseView, CallImporterView, CallLogReader, ContactLogCollection, app, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2235,12 +2258,16 @@ BaseView = require('lib/base_view');
 
 CallLogReader = require('lib/call_log_reader');
 
+ContactLogCollection = require('collections/contactlog');
+
 app = require('application');
 
 module.exports = CallImporterView = (function(_super) {
   __extends(CallImporterView, _super);
 
   function CallImporterView() {
+    this.close = __bind(this.close, this);
+    this.showFaillure = __bind(this.showFaillure, this);
     this.onLogFileParsed = __bind(this.onLogFileParsed, this);
     this.onLogFileProgress = __bind(this.onLogFileProgress, this);    _ref = CallImporterView.__super__.constructor.apply(this, arguments);
     return _ref;
@@ -2273,6 +2300,7 @@ module.exports = CallImporterView = (function(_super) {
     this.country = this.$('#phonecountry');
     this.file_step = this.$('#import-file');
     this.parse_step = this.$('#import-config').hide();
+    this.confirm_step = this.$('#import-confirm').hide();
     return this.confirmBtn = this.$('#confirm-btn');
   };
 
@@ -2309,7 +2337,7 @@ module.exports = CallImporterView = (function(_super) {
   };
 
   CallImporterView.prototype.onLogFileParsed = function(err, toImport) {
-    var html, log, _i, _len;
+    var content, html, log, _i, _len;
 
     if (err) {
       console.log(error.stack);
@@ -2321,20 +2349,69 @@ module.exports = CallImporterView = (function(_super) {
     this.parse_step.show();
     for (_i = 0, _len = toImport.length; _i < _len; _i++) {
       log = toImport[_i];
+      content = log.content.message || this.formatDuration(log.content.duration);
       html = '<tr>';
       html += "<td> " + log.direction + " </td>";
-      html += "<td> +" + log.remote.tel + " </td>";
+      html += "<td> " + log.remote.tel + " </td>";
       html += "<td> " + (Date.create(log.timestamp).format()) + " </td>";
+      html += "<td> " + content + " </td>";
       html += '</tr>';
       this.$('tbody').append($(html));
     }
+    this.toImport = toImport;
     return this.confirmBtn.removeClass('disabled');
   };
 
-  CallImporterView.prototype.doImport = function() {};
+  CallImporterView.prototype.formatDuration = function(duration) {
+    var hours, minutes, out, seconds;
+
+    seconds = duration % 60;
+    minutes = (duration - seconds) % 3600;
+    hours = duration - minutes - seconds;
+    out = seconds + t('seconds');
+    if (minutes) {
+      out = minutes / 60 + t('minutes') + ' ' + out;
+    }
+    if (hours) {
+      out = hours / 3600 + t('hours') + ' ' + out;
+    }
+    return out;
+  };
+
+  CallImporterView.prototype.doImport = function() {
+    var req,
+      _this = this;
+
+    if (this.confirmBtn.hasClass('disabled')) {
+      return;
+    }
+    this.parse_step.remove();
+    this.confirm_step.show();
+    this.confirmBtn.addClass('disabled');
+    req = $.ajax('logs', {
+      type: 'POST',
+      data: JSON.stringify(new ContactLogCollection(this.toImport).toJSON()),
+      contentType: 'application/json',
+      dataType: 'json'
+    });
+    req.done(function(data) {
+      if (data.success) {
+        return _this.close();
+      } else {
+        return _this.showFaillure();
+      }
+    });
+    return req.fail(this.showFaillure);
+  };
+
+  CallImporterView.prototype.showFaillure = function() {
+    this.$('.modal-body').html('<p>' + t('import fail') + '</p>');
+    return this.confirmBtn.remove();
+  };
 
   CallImporterView.prototype.close = function() {
     this.$el.modal('hide');
+    app.router.navigate('');
     return this.remove();
   };
 
@@ -2373,6 +2450,7 @@ module.exports = ContactView = (function(_super) {
       'click .addorg': this.addClicked('about', 'org'),
       'click .addtitle': this.addClicked('about', 'title'),
       'click .addcozy': this.addClicked('about', 'cozy'),
+      'click .addtwitter': this.addClicked('about', 'twitter'),
       'click .addabout': this.addClicked('about'),
       'click .addtel': this.addClicked('tel'),
       'click .addemail': this.addClicked('email'),
@@ -2381,37 +2459,44 @@ module.exports = ContactView = (function(_super) {
       'click .addurl': this.addClicked('url'),
       'click #undo': 'undo',
       'click #delete': 'delete',
-      'keyup .type': 'onKeyUp',
-      'keyup .value': 'onKeyUp',
-      'keyup #notes': 'resizeNote',
       'change #uploader': 'photoChanged',
-      'keypress .type': 'changeOccured',
-      'keypress #name': 'changeOccured',
-      'change #name': 'changeOccured',
-      'keypress #notes': 'changeOccured',
-      'change #notes': 'changeOccured'
+      'keyup .type': 'addBelowIfEnter',
+      'keyup input.value': 'addBelowIfEnter',
+      'keydown #notes': 'resizeNote',
+      'keypress #notes': 'resizeNote',
+      'keyup #name': 'doNeedSaving',
+      'keyup #notes': 'doNeedSaving',
+      'blur #name': 'changeOccured',
+      'blur #notes': 'changeOccured'
     };
   };
 
   function ContactView(options) {
     this.photoChanged = __bind(this.photoChanged, this);
+    this.resizeNiceScroll = __bind(this.resizeNiceScroll, this);
     this.modelChanged = __bind(this.modelChanged, this);
     this.undo = __bind(this.undo, this);
     this.save = __bind(this.save, this);
-    this.changeOccured = __bind(this.changeOccured, this);    options.collection = options.model.dataPoints;
-    this.saveLater = _.debounce(this.save, 3000);
+    this.changeOccured = __bind(this.changeOccured, this);
+    this.doNeedSaving = __bind(this.doNeedSaving, this);    options.collection = options.model.dataPoints;
     ContactView.__super__.constructor.apply(this, arguments);
   }
 
   ContactView.prototype.initialize = function() {
+    var _this = this;
+
     ContactView.__super__.initialize.apply(this, arguments);
     this.listenTo(this.model, 'change', this.modelChanged);
-    this.listenTo(this.model, 'request', this.onRequest);
-    this.listenTo(this.model, 'error', this.onError);
     this.listenTo(this.model, 'sync', this.onSuccess);
-    this.listenTo(this.collection, 'change', this.changeOccured);
-    this.listenTo(this.collection, 'add', this.changeOccured);
-    return this.listenTo(this.collection, 'remove', this.changeOccured);
+    this.listenTo(this.model.history, 'add', this.resizeNiceScroll);
+    this.listenTo(this.collection, 'change', function() {
+      _this.needSaving = true;
+      return _this.changeOccured();
+    });
+    return this.listenTo(this.collection, 'remove', function() {
+      _this.needSaving = true;
+      return _this.changeOccured();
+    });
   };
 
   ContactView.prototype.getRenderData = function() {
@@ -2421,7 +2506,8 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype.afterRender = function() {
-    var type, _i, _len, _ref;
+    var type, _i, _len, _ref,
+      _this = this;
 
     this.zones = {};
     _ref = ['about', 'email', 'adr', 'tel', 'url', 'other'];
@@ -2430,7 +2516,6 @@ module.exports = ContactView = (function(_super) {
       this.zones[type] = this.$('#' + type + 's ul');
     }
     this.hideEmptyZones();
-    this.spinner = this.$('#spinOverlay');
     this.savedInfo = this.$('#save-info').hide();
     this.needSaving = false;
     this.namefield = this.$('#name');
@@ -2440,7 +2525,7 @@ module.exports = ContactView = (function(_super) {
     this.tags = new TagsView({
       el: this.$('#tags'),
       model: this.model,
-      contactView: this
+      onChange: this.changeOccured
     });
     ContactView.__super__.afterRender.apply(this, arguments);
     this.$el.niceScroll();
@@ -2449,7 +2534,17 @@ module.exports = ContactView = (function(_super) {
     this.history = new HistoryView({
       collection: this.model.history
     });
-    return this.history.render().$el.appendTo(this.$('#history'));
+    this.history.render().$el.appendTo(this.$('#history'));
+    this.$('a[data-toggle="tab"]').on('shown', function() {
+      if ($(window).width() < 900) {
+        _this.$('#left').hide();
+      }
+      return _this.resizeNiceScroll();
+    });
+    return this.$('a#infotab').on('shown', function() {
+      _this.$('#left').show();
+      return _this.resizeNiceScroll();
+    });
   };
 
   ContactView.prototype.remove = function() {
@@ -2474,7 +2569,7 @@ module.exports = ContactView = (function(_super) {
       this.$("#adder .add" + name).toggle(!hasOne);
     }
     this.$('#adder h2').toggle(this.$('#adder a:visible').length !== 0);
-    return this.$el.getNiceScroll().resize();
+    return this.resizeNiceScroll();
   };
 
   ContactView.prototype.appendView = function(dataPointView) {
@@ -2490,7 +2585,7 @@ module.exports = ContactView = (function(_super) {
 
   ContactView.prototype.addClicked = function(name, type) {
     return function(event) {
-      var point, typeField;
+      var point, toFocus, typeField;
 
       event.preventDefault();
       point = new Datapoint({
@@ -2499,24 +2594,43 @@ module.exports = ContactView = (function(_super) {
       if (type != null) {
         point.set('type', type);
       }
+      if (type === 'twitter') {
+        point.set('value', '@');
+      }
       this.model.dataPoints.add(point);
-      typeField = this.zones[name].children().last().find('.type');
+      toFocus = type != null ? '.value' : '.type';
+      typeField = this.zones[name].children().last().find(toFocus);
       typeField.focus();
       return typeField.select();
     };
   };
 
-  ContactView.prototype.changeOccured = function() {
-    this.model.set({
-      fn: this.namefield.val(),
-      note: this.notesfield.val()
-    });
-    if (_.isEqual(this.currentState, this.model.toJSON())) {
-      return;
-    }
+  ContactView.prototype.doNeedSaving = function() {
     this.needSaving = true;
-    this.savedInfo.hide();
-    return this.saveLater();
+    return true;
+  };
+
+  ContactView.prototype.changeOccured = function() {
+    var _this = this;
+
+    return setTimeout(function() {
+      if (_this.$('input:focus, textarea:focus').length) {
+        return;
+      }
+      console.log("Nothing focused");
+      _this.model.set({
+        fn: _this.namefield.val(),
+        note: _this.notesfield.val()
+      });
+      if (_.isEqual(_this.currentState, _this.model.toJSON())) {
+        console.log("Nothing has changed");
+        return _this.needSaving = false;
+      } else {
+        console.log("do save");
+        _this.savedInfo.hide();
+        return _this.save();
+      }
+    }, 10);
   };
 
   ContactView.prototype["delete"] = function() {
@@ -2526,6 +2640,7 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype.save = function() {
+    console.log("save", this.needSaving);
     if (!this.needSaving) {
       return;
     }
@@ -2547,7 +2662,37 @@ module.exports = ContactView = (function(_super) {
     return this.resizeNote();
   };
 
-  ContactView.prototype.onKeyUp = function(event) {
+  ContactView.prototype.onSuccess = function(model, result, options) {
+    var undo,
+      _this = this;
+
+    if (options.undo) {
+      this.savedInfo.text(t('undone') + ' ');
+      this.lastState = null;
+      setTimeout(function() {
+        return _this.savedInfo.fadeOut();
+      }, 1000);
+    } else {
+      this.savedInfo.text(t('changes saved') + ' ');
+      undo = $("<a id='undo'>" + (t('undo')) + "</a>");
+      this.savedInfo.append(undo);
+      this.lastState = this.currentState;
+    }
+    return this.currentState = this.model.toJSON();
+  };
+
+  ContactView.prototype.modelChanged = function() {
+    var _ref;
+
+    this.notesfield.val(this.model.get('note'));
+    this.namefield.val(this.model.get('fn'));
+    if ((_ref = this.tags) != null) {
+      _ref.refresh();
+    }
+    return this.resizeNote();
+  };
+
+  ContactView.prototype.addBelowIfEnter = function(event) {
     var name, point, typeField, zone;
 
     if ((event.which || event.keyCode) !== 13) {
@@ -2574,46 +2719,11 @@ module.exports = ContactView = (function(_super) {
       rows++;
     }
     this.notesfield.prop('rows', rows + 2);
+    return this.resizeNiceScroll();
+  };
+
+  ContactView.prototype.resizeNiceScroll = function(event) {
     return this.$el.getNiceScroll().resize();
-  };
-
-  ContactView.prototype.onRequest = function() {
-    return this.spinner.show();
-  };
-
-  ContactView.prototype.onSuccess = function(model, result, options) {
-    var undo,
-      _this = this;
-
-    this.spinner.hide();
-    if (options.undo) {
-      this.savedInfo.text(t('undone') + ' ');
-      this.lastState = null;
-      setTimeout(function() {
-        return _this.savedInfo.fadeOut();
-      }, 1000);
-    } else {
-      this.savedInfo.text(t('changes saved') + ' ');
-      undo = $("<a id='undo'>" + (t('undo')) + "</a>");
-      this.savedInfo.append(undo);
-      this.lastState = this.currentState;
-    }
-    return this.currentState = this.model.toJSON();
-  };
-
-  ContactView.prototype.onError = function() {
-    return this.spinner.hide();
-  };
-
-  ContactView.prototype.modelChanged = function() {
-    var _ref;
-
-    this.notesfield.val(this.model.get('note'));
-    this.namefield.val(this.model.get('fn'));
-    if ((_ref = this.tags) != null) {
-      _ref.refresh();
-    }
-    return this.resizeNote();
   };
 
   ContactView.prototype.photoChanged = function() {
@@ -2692,14 +2802,14 @@ module.exports = TagsView = (function(_super) {
   TagsView.prototype.tagAdded = function(e, ui) {
     if (!(this.myOperation || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
-      return this.options.contactView.changeOccured();
+      return this.options.onChange();
     }
   };
 
   TagsView.prototype.tagRemoved = function(er, ui) {
     if (!(this.myOperation || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
-      return this.options.contactView.changeOccured();
+      return this.options.onChange();
     }
   };
 
@@ -2724,6 +2834,7 @@ module.exports = TagsView = (function(_super) {
 
 ;require.register("views/contactslist", function(exports, require, module) {
 var App, ContactsList, ViewCollection, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2735,7 +2846,8 @@ module.exports = ContactsList = (function(_super) {
   __extends(ContactsList, _super);
 
   function ContactsList() {
-    _ref = ContactsList.__super__.constructor.apply(this, arguments);
+    this.keyUpCallback = __bind(this.keyUpCallback, this);
+    this.getTags = __bind(this.getTags, this);    _ref = ContactsList.__super__.constructor.apply(this, arguments);
     return _ref;
   }
 
@@ -2746,7 +2858,7 @@ module.exports = ContactsList = (function(_super) {
   ContactsList.prototype.template = require('templates/contactslist');
 
   ContactsList.prototype.events = {
-    'keyup #filterfield': 'keyUpCallback',
+    'change #filterfield': 'keyUpCallback',
     'click #filterClean': 'cleanFilter'
   };
 
@@ -2757,7 +2869,11 @@ module.exports = ContactsList = (function(_super) {
     this.filterClean = this.$('#filterClean');
     this.filterClean.hide();
     this.filterfield.focus();
-    return this.list.niceScroll();
+    this.list.niceScroll();
+    this.filterfield.keyup(this.keyUpCallback);
+    return this.filterfield.typeahead({
+      source: this.getTags
+    });
   };
 
   ContactsList.prototype.remove = function() {
@@ -2798,6 +2914,10 @@ module.exports = ContactsList = (function(_super) {
       _results.push(view.$el.show());
     }
     return _results;
+  };
+
+  ContactsList.prototype.getTags = function() {
+    return this.collection.getTags();
   };
 
   ContactsList.prototype.keyUpCallback = function(event) {
@@ -2894,6 +3014,7 @@ module.exports = DataPointView = (function(_super) {
   __extends(DataPointView, _super);
 
   function DataPointView() {
+    this.onKeyup = __bind(this.onKeyup, this);
     this.getPossibleTypes = __bind(this.getPossibleTypes, this);    _ref = DataPointView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
@@ -2936,6 +3057,8 @@ module.exports = DataPointView = (function(_super) {
         return ['org', 'birthday', 'title'];
       case 'other':
         return ['skype', 'jabber', 'irc'];
+      case 'url':
+        return ['facebook', 'google', 'website'];
       default:
         return ['main', 'home', 'work', 'assistant'];
     }
@@ -2958,7 +3081,7 @@ module.exports = DataPointView = (function(_super) {
   };
 
   DataPointView.prototype.makeActionLink = function() {
-    var action, value,
+    var action, href, value,
       _this = this;
 
     action = function(icon, title, href, noblank) {
@@ -2981,16 +3104,31 @@ module.exports = DataPointView = (function(_super) {
       case 'email':
         return action('envelope', 'send mail', "mailto:" + value, true);
       case 'tel':
-        return action('headphones', 'call', "tel:" + value, true);
+        href = this.callProtocol() + ':+' + value;
+        return action('headphones', 'call', href, true);
       case 'url':
-        return action('share', 'go to this url', "" + value);
+        return action('share', 'go to this url', "" + value, true);
+      case 'other':
+        if (this.model.get('type') === 'skype') {
+          return action('headphones', 'call', "callto:" + value);
+        }
+        break;
       default:
         return this.actionLink.detach();
     }
   };
 
+  DataPointView.prototype.callProtocol = function() {
+    if (navigator.userAgent.match(/(mobile)/gi)) {
+      return 'tel';
+    } else {
+      return 'callto';
+    }
+  };
+
   DataPointView.prototype.onKeyup = function(event) {
-    var backspace, empty;
+    var backspace, empty,
+      _this = this;
 
     empty = $(event.target).val().length === 0;
     backspace = (event.which || event.keyCode) === 8;
@@ -3002,20 +3140,22 @@ module.exports = DataPointView = (function(_super) {
       return true;
     }
     if (this.secondBack) {
-      return this.removeModel();
+      return function() {
+        var prev;
+
+        prev = _this.$el.prev('li').find('.value');
+        _this.removeModel();
+        if (prev) {
+          return prev.focus().select();
+        }
+      };
     } else {
       return this.secondBack = true;
     }
   };
 
   DataPointView.prototype.removeModel = function() {
-    var prev;
-
-    prev = this.$el.prev('li').find('.value');
-    this.model.collection.remove(this.model);
-    if (prev) {
-      return prev.focus().select();
-    }
+    return this.model.collection.remove(this.model);
   };
 
   DataPointView.prototype.store = function() {
@@ -3073,11 +3213,7 @@ module.exports = HistoryView = (function(_super) {
     return _ref;
   }
 
-  HistoryView.prototype.tagName = 'table';
-
-  HistoryView.prototype.className = 'table-striped table-condensed table-bordered';
-
-  HistoryView.prototype.template = require('templates/history');
+  HistoryView.prototype.tagName = 'div';
 
   HistoryView.prototype.itemView = require('views/history_item');
 
@@ -3091,12 +3227,9 @@ module.exports = HistoryView = (function(_super) {
   };
 
   HistoryView.prototype.afterRender = function() {
+    HistoryView.__super__.afterRender.apply(this, arguments);
     this.collection.fetch();
     return this.injector = this.$('.injector').hide();
-  };
-
-  HistoryView.prototype.appendView = function(view) {
-    return this.$('tbody').append(view.$el);
   };
 
   HistoryView.prototype.showInjector = function() {
@@ -3164,10 +3297,16 @@ module.exports = HistoryItemView = (function(_super) {
 
   HistoryItemView.prototype.template = require('templates/history_item');
 
-  HistoryItemView.prototype.tagName = 'tr';
-
   HistoryItemView.prototype.className = function() {
-    return 'history_item ' + (this.isAnnotable() ? 'annotable' : void 0);
+    var classes;
+
+    classes = ['history_item'];
+    classes.push(this.model.get('direction').toLowerCase());
+    classes.push(this.model.get('type').toLowerCase());
+    if (this.isAnnotable()) {
+      classes.push('annotable');
+    }
+    return classes.join(' ');
   };
 
   HistoryItemView.prototype.events = {
@@ -3176,27 +3315,18 @@ module.exports = HistoryItemView = (function(_super) {
   };
 
   HistoryItemView.prototype.getRenderData = function() {
+    var format;
+
+    format = '{Mon} {d}, {h}:{m} : ';
     return {
-      directionIcon: this.getDirectionIcon(),
       typeIcon: this.getTypeIcon(),
-      details: this.getDetails(),
-      date: this.model.get('timestamp')
+      content: this.getContent(),
+      date: Date.create(this.model.get('timestamp')).format(format)
     };
   };
 
-  HistoryItemView.prototype.afterRender = function() {
-    this.editor = this.$('.editor');
-    if (this.model.get('type') === 'NOTE') {
-      this.editor.val(this.model.get('content'));
-      return this.editor.focus();
-    } else {
-      this.editor.remove();
-      return this.$('.details').text(this.getDetails());
-    }
-  };
-
   HistoryItemView.prototype.isAnnotable = function() {
-    return 'NOTE' !== this.model.get('type');
+    return this.model.get('type') === 'VOICE';
   };
 
   HistoryItemView.prototype.save = function() {
@@ -3223,28 +3353,45 @@ module.exports = HistoryItemView = (function(_super) {
   HistoryItemView.prototype.getTypeIcon = function() {
     switch (this.model.get('type')) {
       case 'VOICE':
-        return 'icon-headphones';
+        return 'icon-voice';
       case 'MAIL':
-        return 'icon-enveloppe';
-      case 'NOTE':
-        return 'icon-edit';
+        return 'icon-mail';
+      case 'SMS':
+        return 'icon-sms';
       default:
         return 'icon-stop';
     }
   };
 
-  HistoryItemView.prototype.getDetails = function() {
-    var details;
+  HistoryItemView.prototype.getContent = function() {
+    var content, details;
 
     details = this.model.get('content');
     switch (this.model.get('type')) {
       case 'VOICE':
-        return t('duration') + ' : ' + details.duration;
-      case 'NOTE':
-        return details;
+        content = this.model.get('direction') === 'OUTGOING' ? t('you called') : t('you were called');
+        return content + (" (" + (this.formatDuration(details.duration)) + ")");
+      case 'SMS':
+        return details.message;
       default:
         return '???';
     }
+  };
+
+  HistoryItemView.prototype.formatDuration = function(duration) {
+    var hours, minutes, out, seconds;
+
+    seconds = duration % 60;
+    minutes = (duration - seconds) % 3600;
+    hours = duration - minutes - seconds;
+    out = seconds + t('seconds');
+    if (minutes) {
+      out = minutes / 60 + t('minutes') + ' ' + out;
+    }
+    if (hours) {
+      out = hours / 3600 + t('hours') + ' ' + out;
+    }
+    return out;
   };
 
   return HistoryItemView;
