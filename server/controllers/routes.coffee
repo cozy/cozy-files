@@ -10,6 +10,8 @@ module.exports =
         delete: files.destroy
     'files/:id/attach/:name':
         get: files.getAttachment
+    'files/:id/download/:name':
+        get: files.downloadAttachment
     'folders':
         post: folders.create
     'folders/:id':

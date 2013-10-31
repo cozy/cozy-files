@@ -17,6 +17,9 @@ module.exports = {
   'files/:id/attach/:name': {
     get: files.getAttachment
   },
+  'files/:id/download/:name': {
+    get: files.downloadAttachment
+  },
   'folders': {
     post: folders.create
   },

@@ -40,21 +40,24 @@ module.exports.find = (req, res) ->
         else
             res.send file
 
-module.exports.getAttachment = (req, res) ->
+processAttachement = (req, res, download) ->
     id = req.params.id
     findFile id, (err, file) =>
         if err
             res.send error: true, msg: err, 404
         else
-            res.setHeader 'Content-Disposition' , "inline"
-            res.setHeader 'content-type' , "mime/type"
+            res.setHeader 'Content-Disposition', (if download then "attachment; filename=" + file.name else "inline")
             stream = file.getBinary "file", (err, resp, body) =>
                 if err
                     res.send error: true, msg: err, 500
-            
-            res.setHeader 'content-type' , "mime/type"
-            stream.setHeader 'content-type' , "mime/type"
             stream.pipe(res)
+
+module.exports.getAttachment = (req, res) ->
+    processAttachement req, res, false
+
+module.exports.downloadAttachment = (req, res) ->
+    processAttachement req, res, true
+
 
 module.exports.destroy = (req, res) ->
     findFile req.params.id, (err, file) ->
