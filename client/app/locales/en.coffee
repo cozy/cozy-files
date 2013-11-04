@@ -1,7 +1,5 @@
 module.exports =
 
-
-
 # ContactView
   "saving"                : "Saving ..."
   "saved"                 : "Saved"
@@ -17,7 +15,6 @@ module.exports =
   "postal"                : "Postal"
   "url"                   : "Url"
   "other"                 : "Other"
-  "delete"                : "Delete"
   "add"                   : "Add"
   "notes"                 : "Notes"
   "about"                 : "About"
@@ -25,13 +22,11 @@ module.exports =
   "change"                : "Change"
   "notes placeholder"     : "Take notes here"
   "type here"             : "Type here"
-  "about"                 : "About"
   "phones"                : "Phones"
   "emails"                : "Emails"
   "postal"                : "Postal"
   "links"                 : "Links"
   "others"                : "Others"
-  "Saved"                 : "Saved"
 
   "save changes alert"    : "Save changes ?"
   "not an image"          : "This is not an image"
@@ -63,13 +58,25 @@ module.exports =
   "import"                : "Import"
 
   "import call log help"  : "If you are a FING and Orange user, do not use this"
-  "import ios calls"      : "If you use an iOS phone, follow this tutorial : "
   "choose log file"       : "Then upload your generated log file"
+  "import ios calls"      : """
+    Support for iOS is not available yet. If you want to contribute, have a look at """
   "import.ready-msg"      : """
     Ready to import %{smart_count} contact ||||
     Ready to import %{smart_count} contacts"""
   "import android calls"  : """
-    If you use an android phone, use the following application : """
+    If you use an android phone, use the following application to import your calls : """
+  "import android sms"  : """
+    If you use an android phone, use the following application to import your sms : """
+
+  "choose phone country" : "Choose the country of the phone"
+  "ready to import"      : "Ready to import"
+  "log direction"        : "Direction"
+  "log number"           : "Number"
+  "log date"             : "Date"
+  "importing this file"  : "We are importing this file"
+  "may take a while"     : "It may take a while"
+  "progress"             : "Progress"
 
 # doc
   "click left to display" : "Click on a contact in the left panel to display"

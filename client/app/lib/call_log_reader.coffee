@@ -27,7 +27,7 @@ parseDuration = (duration) ->
 
 #char by char csv parser
 parseCSV = (csv, progress, callback, result = [[]], state = {}) ->
-    console.log state
+    # console.log state
     i = state.i or -1
     field = state.field or ''
     quoted = state.quoted or false
