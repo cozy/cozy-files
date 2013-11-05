@@ -64,8 +64,8 @@ module.exports.destroy = (req, res) ->
         if err
             res.send error: true, msg: err, 404
         else
-            file.removeBinary "file", (err, res, body) =>
-                file.destroy (err) ->
+            file.removeBinary "file", (err, resp, body) =>
+                file.destroy (err) =>
                     if err
                         compound.logger.write err
                         res.send error: 'Cannot destroy file', 500
