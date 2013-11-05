@@ -2,13 +2,16 @@ app = require 'application'
 FolderView = require 'views/folder'
 Folder = require 'models/folder'
 
+MockupView = require 'views/mockup'
 
 # We'll cover the router in another tutorial.
 module.exports = class Router extends Backbone.Router
 
     routes:
-        '': 'main'        
+        #'': 'main'        
+        '': 'mockup'
         'folders/:folderid' : 'folder'
+        'mockup' : 'mockup'
 
     main: ->
         folder = new Folder id:"root", path:"", name:""
@@ -36,3 +39,8 @@ module.exports = class Router extends Backbone.Router
         @mainView = view 
         el = @mainView.render().$el
         $('body').append el
+
+    mockup: ->
+        @mainView.remove() if @mainView
+        @mainView = new MockupView()
+        @mainView.render()

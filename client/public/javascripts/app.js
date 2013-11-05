@@ -37,28 +37,29 @@
     return function(name) {
       var dir = dirname(path);
       var absolute = expand(dir, name);
-      return globals.require(absolute);
+      return globals.require(absolute, path);
     };
   };
 
   var initModule = function(name, definition) {
     var module = {id: name, exports: {}};
+    cache[name] = module;
     definition(module.exports, localRequire(name), module);
-    var exports = cache[name] = module.exports;
-    return exports;
+    return module.exports;
   };
 
-  var require = function(name) {
+  var require = function(name, loaderPath) {
     var path = expand(name, '.');
+    if (loaderPath == null) loaderPath = '/';
 
-    if (has(cache, path)) return cache[path];
+    if (has(cache, path)) return cache[path].exports;
     if (has(modules, path)) return initModule(path, modules[path]);
 
     var dirIndex = expand(path, './index');
-    if (has(cache, dirIndex)) return cache[dirIndex];
+    if (has(cache, dirIndex)) return cache[dirIndex].exports;
     if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
-    throw new Error('Cannot find module "' + name + '"');
+    throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
   };
 
   var define = function(bundle, fn) {
@@ -112,7 +113,7 @@ module.exports = {
 
 });
 
-require.register("collections/file", function(exports, require, module) {
+;require.register("collections/file", function(exports, require, module) {
 var File, FileCollection, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -158,7 +159,7 @@ module.exports = FileCollection = (function(_super) {
 
 });
 
-require.register("collections/folder", function(exports, require, module) {
+;require.register("collections/folder", function(exports, require, module) {
 var Folder, FolderCollection, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -183,7 +184,7 @@ module.exports = FolderCollection = (function(_super) {
 
 });
 
-require.register("helpers/client", function(exports, require, module) {
+;require.register("helpers/client", function(exports, require, module) {
 exports.request = function(type, url, data, callbacks) {
   return $.ajax({
     type: type,
@@ -212,7 +213,7 @@ exports.del = function(url, callbacks) {
 
 });
 
-require.register("initialize", function(exports, require, module) {
+;require.register("initialize", function(exports, require, module) {
 var app;
 
 app = require('application');
@@ -277,7 +278,7 @@ $(function() {
 
 });
 
-require.register("lib/app_helpers", function(exports, require, module) {
+;require.register("lib/app_helpers", function(exports, require, module) {
 (function() {
   return (function() {
     var console, dummy, method, methods, _results;
@@ -297,7 +298,7 @@ require.register("lib/app_helpers", function(exports, require, module) {
 
 });
 
-require.register("lib/base_view", function(exports, require, module) {
+;require.register("lib/base_view", function(exports, require, module) {
 var BaseView, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -345,7 +346,7 @@ module.exports = BaseView = (function(_super) {
 
 });
 
-require.register("lib/view_collection", function(exports, require, module) {
+;require.register("lib/view_collection", function(exports, require, module) {
 var BaseView, ViewCollection, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -455,7 +456,7 @@ module.exports = ViewCollection = (function(_super) {
 
 });
 
-require.register("models/file", function(exports, require, module) {
+;require.register("models/file", function(exports, require, module) {
 var Bookmark, client, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -513,7 +514,7 @@ module.exports = Bookmark = (function(_super) {
 
 });
 
-require.register("models/folder", function(exports, require, module) {
+;require.register("models/folder", function(exports, require, module) {
 var Bookmark, client, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -595,8 +596,8 @@ module.exports = Bookmark = (function(_super) {
 
 });
 
-require.register("router", function(exports, require, module) {
-var Folder, FolderView, Router, app, _ref,
+;require.register("router", function(exports, require, module) {
+var Folder, FolderView, MockupView, Router, app, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -606,6 +607,8 @@ app = require('application');
 FolderView = require('views/folder');
 
 Folder = require('models/folder');
+
+MockupView = require('views/mockup');
 
 module.exports = Router = (function(_super) {
   __extends(Router, _super);
@@ -617,8 +620,9 @@ module.exports = Router = (function(_super) {
   }
 
   Router.prototype.routes = {
-    '': 'main',
-    'folders/:folderid': 'folder'
+    '': 'mockup',
+    'folders/:folderid': 'folder',
+    'mockup': 'mockup'
   };
 
   Router.prototype.main = function() {
@@ -667,13 +671,21 @@ module.exports = Router = (function(_super) {
     return $('body').append(el);
   };
 
+  Router.prototype.mockup = function() {
+    if (this.mainView) {
+      this.mainView.remove();
+    }
+    this.mainView = new MockupView();
+    return this.mainView.render();
+  };
+
   return Router;
 
 })(Backbone.Router);
 
 });
 
-require.register("views/fileslist", function(exports, require, module) {
+;require.register("views/fileslist", function(exports, require, module) {
 var BaseView, File, FileView, FilesListView, ViewCollection, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -753,7 +765,7 @@ module.exports = FilesListView = (function(_super) {
 
 });
 
-require.register("views/fileslist_item", function(exports, require, module) {
+;require.register("views/fileslist_item", function(exports, require, module) {
 var BaseView, FileListsItemView, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -803,7 +815,7 @@ module.exports = FileListsItemView = (function(_super) {
 
 });
 
-require.register("views/folder", function(exports, require, module) {
+;require.register("views/folder", function(exports, require, module) {
 var AppView, BaseView, FileCollection, FilesList, Folder, FolderCollection, FoldersList, app, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -923,7 +935,7 @@ module.exports = AppView = (function(_super) {
 
 });
 
-require.register("views/folderslist", function(exports, require, module) {
+;require.register("views/folderslist", function(exports, require, module) {
 var BaseView, FileView, FilesListView, Folder, FolderView, ViewCollection, app, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -990,7 +1002,7 @@ module.exports = FilesListView = (function(_super) {
 
 });
 
-require.register("views/folderslist_item", function(exports, require, module) {
+;require.register("views/folderslist_item", function(exports, require, module) {
 var BaseView, FolderListsItemView, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1045,7 +1057,32 @@ module.exports = FolderListsItemView = (function(_super) {
 
 });
 
-require.register("views/templates/fileslist", function(exports, require, module) {
+;require.register("views/mockup", function(exports, require, module) {
+var BaseView, MockupView, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+module.exports = MockupView = (function(_super) {
+  __extends(MockupView, _super);
+
+  function MockupView() {
+    _ref = MockupView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  MockupView.prototype.template = require('./templates/mockup');
+
+  MockupView.prototype.el = "body";
+
+  return MockupView;
+
+})(BaseView);
+
+});
+
+;require.register("views/templates/fileslist", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1057,7 +1094,7 @@ return buf.join("");
 };
 });
 
-require.register("views/templates/fileslist_item", function(exports, require, module) {
+;require.register("views/templates/fileslist_item", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1073,7 +1110,7 @@ return buf.join("");
 };
 });
 
-require.register("views/templates/folder", function(exports, require, module) {
+;require.register("views/templates/folder", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1085,7 +1122,7 @@ return buf.join("");
 };
 });
 
-require.register("views/templates/folderslist", function(exports, require, module) {
+;require.register("views/templates/folderslist", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1097,7 +1134,7 @@ return buf.join("");
 };
 });
 
-require.register("views/templates/folderslist_item", function(exports, require, module) {
+;require.register("views/templates/folderslist_item", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1111,7 +1148,19 @@ return buf.join("");
 };
 });
 
-require.register("views/templates/uploader", function(exports, require, module) {
+;require.register("views/templates/mockup", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<nav role="navigation" class="navbar navbar-inverse navbar-fixed-top"><div class="container"><!-- Brand and toggle get grouped for better mobile display--><div class="navbar-header"><button type="button" data-toggle="collapse" data-target=".navbar-collapse" class="navbar-toggle"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><span class="navbar-brand">Cozy Files</span></div><!-- Collect the nav links, forms, and other content for toggling--><div class="collapse navbar-collapse"><ul class="nav navbar-nav"></ul><ul class="nav navbar-nav navbar-right"><p><a style="margin-top: 7px" class="btn btn-cozy">Upload a file to "silly cats"</a></p></ul></div></div></nav><div id="content" class="container"><div class="row content-background"><div class="col-lg-12 content-right-column"><div id="crumbs"><ul><li><a><span class="glyphicon glyphicon-folder-open"> </span></a></li><li><a>personal</a></li><li><a>photos</a></li><li><a>silly cats</a></li></ul></div><table id="table-operations" class="table table-hover"><tbody><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr></tbody></table></div></div></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/uploader", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
@@ -1123,5 +1172,5 @@ return buf.join("");
 };
 });
 
-
-//@ sourceMappingURL=app.js.map
+;
+//# sourceMappingURL=app.js.map
