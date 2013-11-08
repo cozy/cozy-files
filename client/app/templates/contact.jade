@@ -16,7 +16,7 @@ div#picture
 span#save-info= t('changes saved') + ' '
   a#undo=t('undo')
 
-a#delete(title= t("delete contact"))= t('delete')
+a.button#delete(title= t("delete contact"))= t('delete')
 
 #right
 
@@ -68,13 +68,13 @@ a#delete(title= t("delete contact"))= t('delete')
 
   #adder.zone
     h2= t("add")
-    a.addbirthday= t("birthday") + ' '
-    a.addorg=      t("company") + ' '
-    a.addtitle=    t("title") + ' '
-    a.addcozy=     t("cozy url") + ' '
-    a.addtwitter=  t("twitter") + ' '
-    a.addtel=      t("phone") + ' '
-    a.addemail=    t("email") + ' '
-    a.addadr=      t("postal") + ' '
-    a.addurl=      t("url") + ' '
-    a.addother=    t("other")
+    a.button.addbirthday= t("birthday") + ' '
+    a.button.addorg=      t("company") + ' '
+    a.button.addtitle=    t("title") + ' '
+    a.button.addcozy=     t("cozy url") + ' '
+    a.button.addtwitter=  t("twitter") + ' '
+    a.button.addtel=      t("phone") + ' '
+    a.button.addemail=    t("email") + ' '
+    a.button.addadr=      t("postal") + ' '
+    a.button.addurl=      t("url") + ' '
+    a.button.addother=    t("other")

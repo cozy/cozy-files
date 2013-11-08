@@ -31,6 +31,9 @@ highlightcolor = #FFC47F
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
 almostblack = #555555
+orange = #fe8800
+blue = #34A6FF
+
 
 html
   height 100%
@@ -54,7 +57,8 @@ h1, h2, h3, h4, #name
   right 0px
 
   #toolbar
-    height 40px
+    background-color: #AABACB + 70%
+    height 60px
     padding 1px
     overflow hidden
     padding 10px
@@ -78,6 +82,9 @@ h1, h2, h3, h4, #name
       i
         margin-top 2px
 
+    #filterfield
+      font-family: styled
+
     #filterClean
       display inline-block
       position relative
@@ -85,7 +92,6 @@ h1, h2, h3, h4, #name
       line-height 13px
       text-align center
       width 26px
-      background-color red
       padding 0px
       box-sizing border-box
       vertical-align middle
@@ -94,8 +100,11 @@ h1, h2, h3, h4, #name
       border-radius 13px
       z-index 2
 
+      .icon-remove
+        margin-top: 0
+
     #new, #gohelp
-      background-color buttoncolor
+      margin-top: 3px
       display inline-block
       float left
       margin-left 2.127659574468085%
@@ -123,15 +132,17 @@ h1, h2, h3, h4, #name
       img
         float left
         line-height 100%
-        height 64px
-        width 64px
+        height 48px
+        width 48px
 
       h2
         padding 0px
         margin 0px
-        margin-left 70px
-        font-size 1.6em
+        margin-left 54px
+        font-size 20px
+        line-height: 28px
         overflow hidden
+        margin-top: 1px
 
       span
         display block
@@ -143,7 +154,7 @@ h1, h2, h3, h4, #name
       background-color white
 
     .contact-thumb.activated
-      background-color buttoncolor + 40%
+      background-color buttoncolor + 60%
 
     .contact-thumb:hover
       text-decoration none
@@ -199,7 +210,7 @@ h1, h2, h3, h4, #name
   #picture
     display block
     position absolute
-    border 3px solid buttoncolor
+    border 1px solid buttoncolor
     left 8px
     top 20px
     width 64px
@@ -265,20 +276,25 @@ h1, h2, h3, h4, #name
     padding 0px 5px
     color white
     text-decoration none
-    background-color red + 40%
     height 30px
     text-align center
     line-height 30px
+    font-size: 12px
+
+  #delete:hover
+    background-color red + 40%
 
   #wrap-name-notes
     position absolute
     top 20px
-    left 77px
+    left 74px
     right 10px
 
 
   ul.tagit
     border 0px
+    padding-left: 15px
+
     .tagit-choice
       border-radius 0px
       background-color buttoncolor
@@ -286,11 +302,31 @@ h1, h2, h3, h4, #name
       .tagit-label, .tagit-close .text-icon
         color white
 
+    .tagit-choice
+        border: 0
+        background: blue
+        color: white
+        box-shadow: none
+        text-shadow: none
+        border-radius: 0
+        font-family: main
+
+    .tagit-choice:hover
+        background: orange
+        border: 0
+        color: white
+        cursor: pointer
+
+    .tagit-choice:active
+        background: orange - 3%
+        border: 0
+        box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+        color: white
+
+
+
     input
-      &:hover
-        border 0px
       &:focus
-        border 0px
         background-color transparent
         outline none
 
@@ -334,12 +370,13 @@ h1, h2, h3, h4, #name
     padding 0px 5px
     font-weight normal
     border-bottom 1px solid lightgrey
+    margin-top: 0px
 
 #right
   right 0px
 
   .nav-tabs
-    margin-top 10px
+    margin-top: 0px
     margin-bottom 0px
 
   #infotab
@@ -426,10 +463,10 @@ h1, h2, h3, h4, #name
 
 
 #left
-  left 0px
+  left 2%
 
   .zone
-    width 98%
+    width 93%
     margin 0% 1%
     padding 0px
     float left
@@ -479,37 +516,6 @@ h1, h2, h3, h4, #name
           display inline-block
 
 
-
-// .btn
-//   background none
-//   text-shadow none
-//   background-color buttoncolor
-//   border-radius 0px !important
-//   border 0px
-//   color white
-
-//   .caret
-//     border-top 4px solid white
-
-// .btn.disabled
-//   border 1px solid buttoncolor
-//   background-color lightgrey
-
-// .btn:not(.disabled):hover
-//   background-color highlightcolor
-//   text-decoration none
-//   color white
-
-// .btn:not(.disabled):active
-// .btn:not(.disabled):focus
-//   background-color buttoncolor
-//   color white
-//   text-decoration none
-
-// .btn:not(.disabled):active, .btn.pressed
-//     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 0 0
-//     background: highlightcolor - 5%
-
 #importer
   border-radius 0px
   .btn.disabled
@@ -520,6 +526,44 @@ h1, h2, h3, h4, #name
 
 a
   cursor pointer
+
+.button
+    border: 0
+    background: blue
+    color: white
+    box-shadow: none
+    text-shadow: none
+    border-radius: 0
+    font-family: main
+    font-weight: bold
+    padding: 0px
+
+.button:hover
+    background: orange
+    border: 0
+    color: white
+
+.button:active
+    background: orange - 3%
+    border: 0
+    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+    color: white
+
+#adder
+    .button
+        padding: 3px
+        margin-right: 10px
+        color: #999
+        background: #ECECEC
+        font-weight: normal
+        line-height: 30px
+
+    .button:hover
+        text-decoration: none
+        color: white
+        background: orange
+        transition: all 0.3s ease
+
 
 @media (max-width: 900px)
 

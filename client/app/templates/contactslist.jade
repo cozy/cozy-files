@@ -3,12 +3,12 @@ form#toolbar.form-search
         span.add-on: i.icon-search.icon-white
         input#filterfield.search-query.input-large(
             type="text", placeholder=t("search placeholder"))
-        a#filterClean: i.icon-remove.icon-white
+        a.button#filterClean: i.icon-remove.icon-white
 
-    a#new(href="#contact/new", title=t("add contact"))
+    a#new.button(href="#contact/new", title=t("add contact"))
       i.icon-plus.icon-white
 
-    a#gohelp(href="#settings", title=t("go to settings"))
+    a#gohelp.button(href="#settings", title=t("go to settings"))
       i.icon-cog.icon-white
 
 #contacts

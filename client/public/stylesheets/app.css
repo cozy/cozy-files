@@ -47,7 +47,8 @@ h4,
   right: 0px;
 }
 #contacts-list #toolbar {
-  height: 40px;
+  background-color: #e5eaef;
+  height: 60px;
   padding: 1px;
   overflow: hidden;
   padding: 10px;
@@ -73,6 +74,9 @@ h4,
 #contacts-list #toolbar .add-on i {
   margin-top: 2px;
 }
+#contacts-list #toolbar #filterfield {
+  font-family: styled;
+}
 #contacts-list #toolbar #filterClean {
   display: inline-block;
   position: relative;
@@ -80,7 +84,6 @@ h4,
   line-height: 13px;
   text-align: center;
   width: 26px;
-  background-color: #f00;
   padding: 0px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -91,9 +94,12 @@ h4,
   border-radius: 13px;
   z-index: 2;
 }
+#contacts-list #toolbar #filterClean .icon-remove {
+  margin-top: 0;
+}
 #contacts-list #toolbar #new,
 #contacts-list #toolbar #gohelp {
-  background-color: #34a6ff;
+  margin-top: 3px;
   display: inline-block;
   float: left;
   margin-left: 2.127659574468085%;
@@ -125,15 +131,17 @@ h4,
 #contacts-list #contacts .contact-thumb img {
   float: left;
   line-height: 100%;
-  height: 64px;
-  width: 64px;
+  height: 48px;
+  width: 48px;
 }
 #contacts-list #contacts .contact-thumb h2 {
   padding: 0px;
   margin: 0px;
-  margin-left: 70px;
-  font-size: 1.6em;
+  margin-left: 54px;
+  font-size: 20px;
+  line-height: 28px;
   overflow: hidden;
+  margin-top: 1px;
 }
 #contacts-list #contacts .contact-thumb span {
   display: block;
@@ -144,7 +152,7 @@ h4,
   background-color: #fff;
 }
 #contacts-list #contacts .contact-thumb.activated {
-  background-color: #85caff;
+  background-color: #aedbff;
 }
 #contacts-list #contacts .contact-thumb:hover {
   text-decoration: none;
@@ -203,7 +211,7 @@ h4,
 #contact #picture {
   display: block;
   position: absolute;
-  border: 3px solid #34a6ff;
+  border: 1px solid #34a6ff;
   left: 8px;
   top: 20px;
   width: 64px;
@@ -271,19 +279,23 @@ h4,
   padding: 0px 5px;
   color: #fff;
   text-decoration: none;
-  background-color: #f66;
   height: 30px;
   text-align: center;
   line-height: 30px;
+  font-size: 12px;
+}
+#contact #delete:hover {
+  background-color: #f66;
 }
 #contact #wrap-name-notes {
   position: absolute;
   top: 20px;
-  left: 77px;
+  left: 74px;
   right: 10px;
 }
 #contact ul.tagit {
   border: 0px;
+  padding-left: 15px;
 }
 #contact ul.tagit .tagit-choice {
   border-radius: 0px;
@@ -294,11 +306,28 @@ h4,
 #contact ul.tagit .tagit-choice .tagit-close .text-icon {
   color: #fff;
 }
-#contact ul.tagit input:hover {
-  border: 0px;
+#contact ul.tagit .tagit-choice {
+  border: 0;
+  background: #34a6ff;
+  color: #fff;
+  box-shadow: none;
+  text-shadow: none;
+  border-radius: 0;
+  font-family: main;
+}
+#contact ul.tagit .tagit-choice:hover {
+  background: #fe8800;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+}
+#contact ul.tagit .tagit-choice:active {
+  background: #f68400;
+  border: 0;
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  color: #fff;
 }
 #contact ul.tagit input:focus {
-  border: 0px;
   background-color: transparent;
   outline: none;
 }
@@ -347,12 +376,13 @@ h4,
   padding: 0px 5px;
   font-weight: normal;
   border-bottom: 1px solid #d3d3d3;
+  margin-top: 0px;
 }
 #right {
   right: 0px;
 }
 #right .nav-tabs {
-  margin-top: 10px;
+  margin-top: 0px;
   margin-bottom: 0px;
 }
 #right #infotab {
@@ -452,10 +482,10 @@ h4,
   background-color: #ffc47f;
 }
 #left {
-  left: 0px;
+  left: 2%;
 }
 #left .zone {
-  width: 98%;
+  width: 93%;
   margin: 0% 1%;
   padding: 0px;
   float: left;
@@ -519,6 +549,42 @@ h4,
 a {
   cursor: pointer;
 }
+.button {
+  border: 0;
+  background: #34a6ff;
+  color: #fff;
+  box-shadow: none;
+  text-shadow: none;
+  border-radius: 0;
+  font-family: main;
+  font-weight: bold;
+  padding: 0px;
+}
+.button:hover {
+  background: #fe8800;
+  border: 0;
+  color: #fff;
+}
+.button:active {
+  background: #f68400;
+  border: 0;
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  color: #fff;
+}
+#adder .button {
+  padding: 3px;
+  margin-right: 10px;
+  color: #999;
+  background: #ececec;
+  font-weight: normal;
+  line-height: 30px;
+}
+#adder .button:hover {
+  text-decoration: none;
+  color: #fff;
+  background: #fe8800;
+  transition: all 0.3s ease;
+}
 @media (max-width: 900px) {
   #contacts-list,
   #doc,
@@ -550,6 +616,3 @@ a {
     top: 53px;
   }
 }
-
-
-/*@ sourceMappingURL=app.css.map*/

@@ -83,12 +83,10 @@ var createSinonServer;
 
 createSinonServer = function() {
   var createAutoResponse, server;
-
   this.server = server = sinon.fakeServer.create();
   createAutoResponse = function(method, url, code, JSONResponder) {
     return server.respondWith(method, url, function(req) {
       var body, headers, res;
-
       body = JSON.parse(req.requestBody);
       res = JSONResponder(req, body);
       headers = {
@@ -99,7 +97,6 @@ createSinonServer = function() {
   };
   this.server.checkLastRequestIs = function(method, url) {
     var req;
-
     req = server.requests[server.requests.length - 1];
     expect(req.url).to.equal(url);
     return expect(req.method).to.equal(method);
@@ -138,7 +135,6 @@ var __hasProp = {}.hasOwnProperty,
 
 describe('lib/base_view', function() {
   var BaseView, options, spyRenderData, spyTemplate, testView, _ref;
-
   BaseView = require('lib/base_view');
   testView = (function(_super) {
     __extends(testView, _super);
@@ -179,7 +175,6 @@ describe('lib/base_view', function() {
   });
   it('should have called template with renderData and options', function() {
     var arg;
-
     expect(spyTemplate.calledOnce).to.be["true"];
     arg = spyTemplate.firstCall.args[0];
     expect(arg).to.have.property('key', 'value');
@@ -195,7 +190,6 @@ var __hasProp = {}.hasOwnProperty,
 
 describe('lib/view_collection', function() {
   var BaseView, ViewCollection, myCollection, myCollectionView, myModel, myView, options, spyItemRemove, spyItemRender, spyItemTemplate, spyRender, spyTemplate, _ref, _ref1, _ref2, _ref3;
-
   BaseView = require('lib/base_view');
   ViewCollection = require('lib/view_collection');
   myModel = (function(_super) {
@@ -284,7 +278,6 @@ describe('lib/view_collection', function() {
   });
   it('should render a subview when I add a model to the collection', function() {
     var arg;
-
     this.model = new myModel({
       attribute1: 'value1'
     });
@@ -298,7 +291,6 @@ describe('lib/view_collection', function() {
   });
   it('should not touch subviews on render', function() {
     var i, _i;
-
     for (i = _i = 1; _i <= 100; i = ++_i) {
       this.view.render();
     }
@@ -318,12 +310,10 @@ describe('lib/view_collection', function() {
 ;
 describe('vCard Import', function() {
   var Contact, ContactView, VCFS;
-
   Contact = require('models/contact');
   ContactView = require('views/contact');
   before(function() {
     var polyglot;
-
     polyglot = new Polyglot();
     polyglot.extend(require('locales/en'));
     return window.t = polyglot.t.bind(polyglot);
@@ -336,7 +326,6 @@ describe('vCard Import', function() {
   return _.each(VCFS, function(vcf, vendor) {
     it("should parse a " + vendor + " vCard", function() {
       var contacts, dp;
-
       contacts = Contact.fromVCF(vcf);
       expect(contacts.length).to.equal(1);
       this.contact = contacts.at(0);
@@ -362,7 +351,6 @@ describe('vCard Import', function() {
     });
     return it('and the generated contact should not bug ContactView', function() {
       var view;
-
       view = new ContactView({
         model: this.contact
       });

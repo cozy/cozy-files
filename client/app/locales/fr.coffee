@@ -95,4 +95,5 @@ module.exports =
     Cliquez ici pour exporter tous vos contacts dans un fichier vCard :"""
 
   "carddav info"          : """
-    Pour synchroniser vos contacts sur votre mobile, installez l'application cozy-webdav"""
+    Pour synchroniser vos contacts sur votre mobile, installez l'application
+    Webdav depuis le market place."""

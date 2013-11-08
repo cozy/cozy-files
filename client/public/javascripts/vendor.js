@@ -37,7 +37,7 @@
     return function(name) {
       var dir = dirname(path);
       var absolute = expand(dir, name);
-      return globals.require(absolute, path);
+      return globals.require(absolute);
     };
   };
 
@@ -48,9 +48,8 @@
     return exports;
   };
 
-  var require = function(name, loaderPath) {
+  var require = function(name) {
     var path = expand(name, '.');
-    if (loaderPath == null) loaderPath = '/';
 
     if (has(cache, path)) return cache[path];
     if (has(modules, path)) return initModule(path, modules[path]);
@@ -59,7 +58,7 @@
     if (has(cache, dirIndex)) return cache[dirIndex];
     if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
-    throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
+    throw new Error('Cannot find module "' + name + '"');
   };
 
   var define = function(bundle, fn) {
@@ -74,22 +73,12 @@
     }
   };
 
-  var list = function() {
-    var result = [];
-    for (var item in modules) {
-      if (has(modules, item)) {
-        result.push(item);
-      }
-    }
-    return result;
-  };
-
   globals.require = require;
   globals.require.define = define;
   globals.require.register = define;
-  globals.require.list = list;
   globals.require.brunch = true;
 })();
+
 /*!
  * jQuery JavaScript Library v1.9.1
  * http://jquery.com/
@@ -9687,8 +9676,8 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 }
 
 })( window );
-
-;// Underscore.js 1.4.4
+;
+// Underscore.js 1.4.4
 // ===================
 
 // > http://underscorejs.org
@@ -10915,8 +10904,8 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   });
 
 }).call(this);
-
-;//     Backbone.js 1.0.0
+;
+//     Backbone.js 1.0.0
 
 //     (c) 2010-2013 Jeremy Ashkenas, DocumentCloud Inc.
 //     Backbone may be freely distributed under the MIT license.
@@ -12487,8 +12476,8 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   };
 
 }).call(this);
-
-;/* ===================================================
+;
+/* ===================================================
  * bootstrap-transition.js v2.3.1
  * http://twitter.github.com/bootstrap/javascript.html#transitions
  * ===================================================
@@ -14763,8 +14752,8 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   })
 
 
-}(window.jQuery);
-;
+}(window.jQuery);;
+
 jade = (function(exports){
 /*!
  * Jade - runtime
@@ -14943,8 +14932,8 @@ exports.rethrow = function rethrow(err, filename, lineno){
   return exports;
 
 })({});
-
-;/*! jQuery UI - v1.10.3 - 2013-10-18
+;
+/*! jQuery UI - v1.10.3 - 2013-10-18
 * http://jqueryui.com
 * Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.position.js, jquery.ui.autocomplete.js, jquery.ui.menu.js, jquery.ui.effect.js, jquery.ui.effect-blind.js, jquery.ui.effect-highlight.js
 * Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
@@ -18842,8 +18831,8 @@ $.effects.effect.highlight = function( o, done ) {
 };
 
 })(jQuery);
-
-;/* jquery.nicescroll
+;
+/* jquery.nicescroll
 -- version 3.4.0
 -- copyright 2011-12-13 InuYaksa*2013
 -- licensed under the MIT
@@ -21998,8 +21987,8 @@ $.effects.effect.highlight = function( o, done ) {
   }
 
 })( jQuery );
-
-;//     (c) 2012 Airbnb, Inc.
+;
+//     (c) 2012 Airbnb, Inc.
 //
 //     polyglot.js may be freely distributed under the terms of the BSD
 //     license. For all licensing information, details, and documention:
@@ -22252,8 +22241,8 @@ $.effects.effect.highlight = function( o, done ) {
 
 }(this);
 
-
-;/*
+;
+/*
  *  Sugar Library v1.3.9
  *
  *  Freely distributable and licensed under the MIT-style license.
@@ -26807,8 +26796,8 @@ Date.addLocale('zh-TW', {
 
   });
 
-})();
-;/*
+})();;
+/*
 * jQuery UI Tag-it!
 *
 * @version v2.0 (06/2011)
@@ -27399,6 +27388,4 @@ Date.addLocale('zh-TW', {
     });
 })(jQuery);
 
-
 ;
-//@ sourceMappingURL=vendor.js.map

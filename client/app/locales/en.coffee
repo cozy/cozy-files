@@ -65,9 +65,9 @@ module.exports =
     Ready to import %{smart_count} contact ||||
     Ready to import %{smart_count} contacts"""
   "import android calls"  : """
-    If you use an android phone, use the following application to import your calls : """
+    If you use an android phone, use the following application to import your calls: """
   "import android sms"  : """
-    If you use an android phone, use the following application to import your sms : """
+    If you use an android phone, use the following application to import your sms: """
 
   "choose phone country" : "Choose the country of the phone"
   "ready to import"      : "Ready to import"
@@ -79,12 +79,12 @@ module.exports =
   "progress"             : "Progress"
 
 # doc
-  "click left to display" : "Click on a contact in the left panel to display"
+  "click left to display" : "Click on a contact in the left panel to display it."
 
   "import export"         : "Import / Export"
-  "call log info"         : "Click here to import your mobile's call log :"
+  "call log info"         : "Click here to import your mobile's call log:"
   "import call log"       : "Import call Log"
-  "vcard import info"     : "Click here to import a vCard file :"
+  "vcard import info"     : "Click here to import a vCard file:"
   "import vcard"          : "Import vCard"
   "export all vcard"      : "Export vCard file"
   "export vcard"          : "Export vCard file"
@@ -92,8 +92,8 @@ module.exports =
   "help"                  : "Help"
 
   "vcard export info"     : """
-    Click here to export all your contacts as a vCard file :"""
+    Click here to export all your contacts as a vCard file:"""
 
   "carddav info"          : """
-    To sync your contacts with your mobile, install the cozy-webdav
-    application"""
+    To sync your contacts with your mobile, install the Webdav
+    application from the market place."""
