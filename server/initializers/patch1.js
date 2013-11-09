@@ -20,10 +20,12 @@ module.exports = function(next) {
       data = {};
       data.fn = contact.name;
       data.note = contact.notes + "\n";
-      _ref = contact.datapoints;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dp = _ref[_i];
-        data.note += dp.name + " " + dp.type + " " + dp.value + "\n";
+      if (contact.datapoints) {
+        _ref = contact.datapoints;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dp = _ref[_i];
+          data.note += dp.name + " " + dp.type + " " + dp.value + "\n";
+        }
       }
       return Contact.create(data, function(err) {
         if (err) {

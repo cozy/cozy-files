@@ -21,8 +21,9 @@ module.exports = (next) ->
             data.note = contact.notes + "\n"
 
             # just save the data in note
-            for dp in contact.datapoints
-                data.note += dp.name + " " + dp.type + " " + dp.value + "\n"
+            if contact.datapoints
+                for dp in contact.datapoints
+                    data.note += dp.name + " " + dp.type + " " + dp.value + "\n"
 
             # create new contact, delete old
             Contact.create data, (err) ->
