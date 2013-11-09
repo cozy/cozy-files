@@ -3069,7 +3069,7 @@ window.require.register("views/datapoint", function(exports, require, module) {
           href = this.callProtocol() + ':+' + value;
           return action('headphones', 'call', href, true);
         case 'url':
-          return action('share', 'go to this url', "" + value, true);
+          return action('share', 'go to this url', "" + value, false);
         case 'other':
           if (this.model.get('type') === 'skype') {
             return action('headphones', 'call', "callto:" + value);
