@@ -1,3 +1,28 @@
+.button {
+  border: 0;
+  background: #34a6ff;
+  color: #fff;
+  box-shadow: none;
+  text-shadow: none;
+  border-radius: 0;
+  font-family: main;
+  font-weight: bold;
+  padding: 0px;
+}
+.button:hover {
+  background: #fe8800;
+  border: 0;
+  color: #fff;
+}
+.button:active {
+  background: #f68400;
+  border: 0;
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  color: #fff;
+}
+input:hover {
+  border: 1px solid #fe8800;
+}
 @font-face {
   font-family: styled;
   src: url("/fonts/maven-pro-light-300.otf");
@@ -173,6 +198,10 @@ h4,
   background-image: url("../img/background-right.jpg");
   box-shadow: 6px 0px 3px -2px #e5e5e5 inset;
 }
+#contact h3,
+#doc h3 {
+  font-size: 16px;
+}
 #contact #close,
 #doc #close {
   display: none;
@@ -211,12 +240,15 @@ h4,
 #contact #picture {
   display: block;
   position: absolute;
-  border: 1px solid #34a6ff;
+  border: 1px solid #ccc;
   left: 8px;
   top: 20px;
   width: 64px;
   height: 64px;
   overflow: hidden;
+}
+#contact #picture:hover {
+  border: 1px solid #fe8800;
 }
 #contact #picture img.picture {
   position: absolute;
@@ -263,7 +295,7 @@ h4,
 }
 #contact input:hover,
 #contact textarea:hover {
-  border: 1px solid #34a6ff;
+  border: 1px solid #fe8800;
 }
 #contact input:focus,
 #contact textarea:focus {
@@ -272,20 +304,10 @@ h4,
   outline: none;
 }
 #contact #delete {
-  display: block;
-  position: absolute;
-  right: 10px;
-  top: 20px;
-  padding: 0px 5px;
-  color: #fff;
   text-decoration: none;
-  height: 30px;
-  text-align: center;
-  line-height: 30px;
-  font-size: 12px;
 }
 #contact #delete:hover {
-  background-color: #f66;
+  background-color: #f00;
 }
 #contact #wrap-name-notes {
   position: absolute;
@@ -345,7 +367,10 @@ h4,
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 0px;
-  border-bottom: 1px solid #34a6ff;
+  border-bottom: 1px solid #ccc;
+}
+#contact #name:hover {
+  border-bottom: 1px solid #fe8800;
 }
 #contact #name:focus {
   outline: none;
@@ -414,7 +439,7 @@ h4,
   display: inline;
 }
 #right #history .history_item .wrap .content {
-  color: #808080;
+  color: #ccc;
 }
 #right #history .history_item.incoming .wrap {
   float: left;
@@ -549,28 +574,6 @@ h4,
 a {
   cursor: pointer;
 }
-.button {
-  border: 0;
-  background: #34a6ff;
-  color: #fff;
-  box-shadow: none;
-  text-shadow: none;
-  border-radius: 0;
-  font-family: main;
-  font-weight: bold;
-  padding: 0px;
-}
-.button:hover {
-  background: #fe8800;
-  border: 0;
-  color: #fff;
-}
-.button:active {
-  background: #f68400;
-  border: 0;
-  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
-  color: #fff;
-}
 #adder .button {
   padding: 3px;
   margin-right: 10px;
@@ -583,7 +586,6 @@ a {
   text-decoration: none;
   color: #fff;
   background: #fe8800;
-  transition: all 0.3s ease;
 }
 @media (max-width: 900px) {
   #contacts-list,

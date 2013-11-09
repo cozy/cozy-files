@@ -1251,7 +1251,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "saving": "Saving ...",
     "saved": "Saved",
     "delete": "Delete",
-    "delete contact": "Delete the contact",
+    "delete contact": "Delete the contact permanently",
     "add contact": "Create a new contact",
     "company": "Company",
     "title": "Title",
@@ -1273,6 +1273,8 @@ window.require.register("locales/en", function(exports, require, module) {
     "postal": "Postal",
     "links": "Links",
     "others": "Others",
+    "actions": "Actions",
+    "add": "Add fields",
     "save changes alert": "Save changes ?",
     "not an image": "This is not an image",
     "remove datapoint": "Remove",
@@ -1353,6 +1355,8 @@ window.require.register("locales/fr", function(exports, require, module) {
     "postal": "Adresses",
     "links": "Liens",
     "others": "Autres",
+    "actions": "Actions",
+    "add": "Ajouter des champs",
     "save changes alert": "Sauvegarder ?",
     "not an image": "Ceci n'est pas une image",
     "remove datapoint": "Enlever",
@@ -1992,12 +1996,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push('<a id="undo">');
   var __val__ = t('undo')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a></span><a');
-  buf.push(attrs({ 'id':('delete'), 'title':(t("delete contact")), "class": ('button') }, {"title":true}));
-  buf.push('>');
-  var __val__ = t('delete')
-  buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a><div id="right"><ul class="nav nav-tabs"><li><a id="infotab" href="#info" data-toggle="tab">');
+  buf.push('</a></span><div id="right"><ul class="nav nav-tabs"><li><a id="infotab" href="#info" data-toggle="tab">');
   var __val__ = t('info')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></li><li class="active"><a href="#notes-zone" data-toggle="tab">');
@@ -2045,9 +2044,12 @@ window.require.register("templates/contact", function(exports, require, module) 
   var __val__ = t('add')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div><div id="adder" class="zone"><h2>');
+  var __val__ = t("actions")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</h2><h3>');
   var __val__ = t("add")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</h2><a class="button addbirthday">');
+  buf.push('</h3><a class="button addbirthday">');
   var __val__ = t("birthday") + ' '
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a><a class="button addorg">');
@@ -2076,6 +2078,14 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a><a class="button addother">');
   var __val__ = t("other")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a><h3>');
+  var __val__ = t("delete")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</h3><a');
+  buf.push(attrs({ 'id':('delete'), 'title':(t("delete contact")), "class": ('button') }, {"title":true}));
+  buf.push('>');
+  var __val__ = t('delete contact')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div></div>');
   }

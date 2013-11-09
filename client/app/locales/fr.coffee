@@ -27,6 +27,8 @@ module.exports =
   "postal"                : "Adresses"
   "links"                 : "Liens"
   "others"                : "Autres"
+  "actions"               : "Actions"
+  "add"                   : "Ajouter des champs"
 
   "save changes alert"    : "Sauvegarder ?"
   "not an image"          : "Ceci n'est pas une image"

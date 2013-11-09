@@ -1,3 +1,5 @@
+@import '_cozy'
+
 @font-face
     font-family: styled
     src: url('/fonts/maven-pro-light-300.otf');
@@ -31,8 +33,7 @@ highlightcolor = #FFC47F
 buttoncolor = #34a6ff
 uploadcolor = #34a6ff
 almostblack = #555555
-orange = #fe8800
-blue = #34A6FF
+grey = #CCC
 
 
 html
@@ -177,6 +178,10 @@ h1, h2, h3, h4, #name
   background-image url('../img/background-right.jpg')
   box-shadow: 6px 0px 3px -2px basecolor inset
 
+  h3
+    font-size: 16px
+    
+
   #close
     display none
     position absolute
@@ -210,12 +215,16 @@ h1, h2, h3, h4, #name
   #picture
     display block
     position absolute
-    border 1px solid buttoncolor
+    border 1px solid grey
     left 8px
     top 20px
     width 64px
     height 64px
     overflow hidden
+
+    &:hover
+        border 1px solid orange
+
 
     img.picture
       position absolute
@@ -261,28 +270,18 @@ h1, h2, h3, h4, #name
     border 1px solid transparent
 
     &:hover
-      border 1px solid buttoncolor
+      border 1px solid orange
 
     &:focus
-      border 1px solid buttoncolor
+      border 1px solid blue
       background-color white
       outline none
 
   #delete
-    display block
-    position absolute
-    right 10px
-    top 20px
-    padding 0px 5px
-    color white
     text-decoration none
-    height 30px
-    text-align center
-    line-height 30px
-    font-size: 12px
 
   #delete:hover
-    background-color red + 40%
+    background-color red
 
   #wrap-name-notes
     position absolute
@@ -342,7 +341,10 @@ h1, h2, h3, h4, #name
     font-size 30px
     font-weight bold
     margin-bottom 0px
-    border-bottom 1px solid buttoncolor
+    border-bottom 1px solid grey
+
+    &:hover
+        border-bottom 1px solid orange
 
   #name:focus
     outline none
@@ -527,28 +529,6 @@ h1, h2, h3, h4, #name
 a
   cursor pointer
 
-.button
-    border: 0
-    background: blue
-    color: white
-    box-shadow: none
-    text-shadow: none
-    border-radius: 0
-    font-family: main
-    font-weight: bold
-    padding: 0px
-
-.button:hover
-    background: orange
-    border: 0
-    color: white
-
-.button:active
-    background: orange - 3%
-    border: 0
-    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
-    color: white
-
 #adder
     .button
         padding: 3px
@@ -562,7 +542,6 @@ a
         text-decoration: none
         color: white
         background: orange
-        transition: all 0.3s ease
 
 
 @media (max-width: 900px)

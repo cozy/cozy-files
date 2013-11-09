@@ -4,7 +4,7 @@ module.exports =
   "saving"                : "Saving ..."
   "saved"                 : "Saved"
   "delete"                : "Delete"
-  "delete contact"        : "Delete the contact"
+  "delete contact"        : "Delete the contact permanently"
   "add contact"           : "Create a new contact"
 
   "company"               : "Company"
@@ -27,6 +27,8 @@ module.exports =
   "postal"                : "Postal"
   "links"                 : "Links"
   "others"                : "Others"
+  "actions"               : "Actions"
+  "add"                   : "Add fields"
 
   "save changes alert"    : "Save changes ?"
   "not an image"          : "This is not an image"

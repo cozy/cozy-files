@@ -16,7 +16,6 @@ div#picture
 span#save-info= t('changes saved') + ' '
   a#undo=t('undo')
 
-a.button#delete(title= t("delete contact"))= t('delete')
 
 #right
 
@@ -67,7 +66,8 @@ a.button#delete(title= t("delete contact"))= t('delete')
     a.btn.add.addother= t('add')
 
   #adder.zone
-    h2= t("add")
+    h2= t("actions")
+    h3= t("add")
     a.button.addbirthday= t("birthday") + ' '
     a.button.addorg=      t("company") + ' '
     a.button.addtitle=    t("title") + ' '
@@ -78,3 +78,5 @@ a.button#delete(title= t("delete contact"))= t('delete')
     a.button.addadr=      t("postal") + ' '
     a.button.addurl=      t("url") + ' '
     a.button.addother=    t("other")
+    h3= t("delete")
+    a.button#delete(title= t("delete contact"))= t('delete contact')
