@@ -22,6 +22,7 @@ module.exports = class ContactView extends ViewCollection
         'click .addadr'     : @addClicked 'adr'
         'click .addother'   : @addClicked 'other'
         'click .addurl'     : @addClicked 'url'
+        'click #more-options': 'onMoreOptionsClicked'
         'click #undo'       : 'undo'
         'click #delete'     : 'delete'
         'change #uploader'  : 'photoChanged'
@@ -171,6 +172,11 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = false
         @savedInfo.show().text 'saving changes'
         @model.save()
+
+    onMoreOptionsClicked: =>
+        @$("#more-options").fadeOut =>
+            @$("#adder h2").show()
+            @$("#adder").fadeIn()
 
     undo: =>
         return unless @lastState

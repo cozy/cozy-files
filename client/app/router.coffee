@@ -25,6 +25,8 @@ module.exports = class Router extends Backbone.Router
         app.contactslist.activate null
 
     help: ->
+        $(".toggled").removeClass 'toggled'
+        $("#gohelp").addClass 'toggled'
         $(".activated").removeClass 'activated'
         @displayView new DocView()
 
@@ -39,6 +41,8 @@ module.exports = class Router extends Backbone.Router
         $('body').append @importer.render().$el
 
     newcontact: ->
+        $(".toggled").removeClass 'toggled'
+        $("#new").addClass 'toggled'
         $(".activated").removeClass 'activated'
         contact = new Contact()
         contact.dataPoints.add name: 'tel', type: 'main', value: ''
@@ -46,10 +50,11 @@ module.exports = class Router extends Backbone.Router
         contact.once 'change:id', =>
             app.contacts.add contact
             @navigate "contact/#{contact.id}", false
-        @displayViewFor contact
+        @displayViewFor contact, true
         $('#name').focus()
 
     showcontact: (id) ->
+        $(".toggled").removeClass 'toggled'
         # may be wait for contacts to load
         if app.contacts.length is 0
             app.contacts.once 'sync', => @showcontact id
@@ -67,7 +72,7 @@ module.exports = class Router extends Backbone.Router
 
 
     # helpers
-    displayView: (view) ->
+    displayView: (view, creation) ->
         @stopListening @currentContact if @currentContact
 
         if app.contactview?.needSaving and confirm t 'Save changes ?'
@@ -83,7 +88,12 @@ module.exports = class Router extends Backbone.Router
         app.contactview?.$el.appendTo $('body')
         app.contactview?.render()
 
-    displayViewFor: (contact) ->
+        if creation
+            view?.$("#more-options").hide()
+            view?.$("#adder").show()
+            view?.$("#adder h2").show()
+
+    displayViewFor: (contact, creation) ->
         @currentContact = contact
-        @displayView new ContactView model: contact
+        @displayView new ContactView(model: contact), creation
         @listenTo contact, 'destroy', -> @navigate '', true

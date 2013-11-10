@@ -1784,6 +1784,8 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.help = function() {
+      $(".toggled").removeClass('toggled');
+      $("#gohelp").addClass('toggled');
       $(".activated").removeClass('activated');
       return this.displayView(new DocView());
     };
@@ -1803,6 +1805,8 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.newcontact = function() {
       var contact,
         _this = this;
+      $(".toggled").removeClass('toggled');
+      $("#new").addClass('toggled');
       $(".activated").removeClass('activated');
       contact = new Contact();
       contact.dataPoints.add({
@@ -1819,13 +1823,14 @@ window.require.register("router", function(exports, require, module) {
         app.contacts.add(contact);
         return _this.navigate("contact/" + contact.id, false);
       });
-      this.displayViewFor(contact);
+      this.displayViewFor(contact, true);
       return $('#name').focus();
     };
 
     Router.prototype.showcontact = function(id) {
       var contact,
         _this = this;
+      $(".toggled").removeClass('toggled');
       if (app.contacts.length === 0) {
         app.contacts.once('sync', function() {
           return _this.showcontact(id);
@@ -1842,7 +1847,7 @@ window.require.register("router", function(exports, require, module) {
       }
     };
 
-    Router.prototype.displayView = function(view) {
+    Router.prototype.displayView = function(view, creation) {
       var _ref1, _ref2, _ref3,
         _this = this;
       if (this.currentContact) {
@@ -1866,14 +1871,25 @@ window.require.register("router", function(exports, require, module) {
       if ((_ref2 = app.contactview) != null) {
         _ref2.$el.appendTo($('body'));
       }
-      return (_ref3 = app.contactview) != null ? _ref3.render() : void 0;
+      if ((_ref3 = app.contactview) != null) {
+        _ref3.render();
+      }
+      if (creation) {
+        if (view != null) {
+          view.$("#more-options").hide();
+        }
+        if (view != null) {
+          view.$("#adder").show();
+        }
+        return view != null ? view.$("#adder h2").show() : void 0;
+      }
     };
 
-    Router.prototype.displayViewFor = function(contact) {
+    Router.prototype.displayViewFor = function(contact, creation) {
       this.currentContact = contact;
       this.displayView(new ContactView({
         model: contact
-      }));
+      }), creation);
       return this.listenTo(contact, 'destroy', function() {
         return this.navigate('', true);
       });
@@ -2048,6 +2064,9 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</h2><ul></ul><a class="btn add addother">');
   var __val__ = t('add')
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a></div><div class="zone clearfix">&nbsp;</div><div class="zone clearfix"><a id="more-options" class="button">');
+  var __val__ = t('more options')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div><div id="adder" class="zone"><h2>');
   var __val__ = t("actions")
@@ -2455,6 +2474,7 @@ window.require.register("views/contact", function(exports, require, module) {
         'click .addadr': this.addClicked('adr'),
         'click .addother': this.addClicked('other'),
         'click .addurl': this.addClicked('url'),
+        'click #more-options': 'onMoreOptionsClicked',
         'click #undo': 'undo',
         'click #delete': 'delete',
         'change #uploader': 'photoChanged',
@@ -2474,6 +2494,7 @@ window.require.register("views/contact", function(exports, require, module) {
       this.resizeNiceScroll = __bind(this.resizeNiceScroll, this);
       this.modelChanged = __bind(this.modelChanged, this);
       this.undo = __bind(this.undo, this);
+      this.onMoreOptionsClicked = __bind(this.onMoreOptionsClicked, this);
       this.save = __bind(this.save, this);
       this.changeOccured = __bind(this.changeOccured, this);
       this.doNeedSaving = __bind(this.doNeedSaving, this);
@@ -2645,6 +2666,14 @@ window.require.register("views/contact", function(exports, require, module) {
       this.needSaving = false;
       this.savedInfo.show().text('saving changes');
       return this.model.save();
+    };
+
+    ContactView.prototype.onMoreOptionsClicked = function() {
+      var _this = this;
+      return this.$("#more-options").fadeOut(function() {
+        _this.$("#adder h2").show();
+        return _this.$("#adder").fadeIn();
+      });
     };
 
     ContactView.prototype.undo = function() {
