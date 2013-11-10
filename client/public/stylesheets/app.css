@@ -162,6 +162,7 @@ h4,
 }
 #contacts-list #toolbar #new,
 #contacts-list #toolbar #gohelp {
+  padding: 0;
   margin-top: 3px;
   display: inline-block;
   float: left;
