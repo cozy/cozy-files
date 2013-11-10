@@ -1285,7 +1285,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "info": "Info",
     "cozy url": "Cozy",
     "twitter": "Twitter",
-    "add tags": "Add tags",
+    "add tags": "add tags",
     "add note": "Add a note",
     "duration": "Duration",
     "seconds": "s",

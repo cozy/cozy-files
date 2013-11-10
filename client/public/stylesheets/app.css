@@ -374,7 +374,7 @@ a {
 }
 #contact ul.tagit {
   border: 0px;
-  padding-left: 15px;
+  padding-left: 0px;
 }
 #contact ul.tagit .tagit-choice {
   border-radius: 0px;
@@ -423,7 +423,7 @@ a {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
-  padding-left: 15px;
+  padding-left: 0px;
   font-size: 30px;
   font-weight: bold;
   margin-bottom: 0px;

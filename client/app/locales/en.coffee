@@ -39,7 +39,7 @@ module.exports =
   "info"                  : "Info"
   "cozy url"              : "Cozy"
   "twitter"               : "Twitter"
-  "add tags"              : "Add tags"
+  "add tags"              : "add tags"
   "add note"              : "Add a note"
   "duration"              : "Duration"
   "seconds"               : "s"
