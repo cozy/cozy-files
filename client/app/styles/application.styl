@@ -1,13 +1,5 @@
 @import '_cozy'
 
-@font-face
-    font-family: styled
-    src: url('/fonts/maven-pro-light-300.otf');
-
-@font-face
-    font-family: main
-    src: url('/fonts/signika-regular.ttf');
-
 .icon-sms, .icon-voice, .icon-mail
   background-position 0px 0px
   width 16px
@@ -148,11 +140,13 @@ h1, h2, h3, h4, #name
         line-height: 28px
         overflow hidden
         margin-top: 1px
+        font-weight: normal
 
       span
         display block
         float left
         margin-left 6px
+        font-size: 13px
 
 
     .contact-thumb:nth-child(even)
@@ -171,7 +165,6 @@ h1, h2, h3, h4, #name
 
 
 #contact, #doc
-  // width 50%
   position absolute
   z-index 3
   left 450px
@@ -209,9 +202,13 @@ h1, h2, h3, h4, #name
     background: highlightcolor - 5%
 
 #doc
-  padding-left 20px
-  padding-top 50px
+  padding 40px
   box-sizing border-box
+
+  h2
+      margin-top: 30px
+      font-weight: normal
+      border-bottom: 1px solid #CCC
 
 #contact
 
@@ -289,7 +286,7 @@ h1, h2, h3, h4, #name
   #wrap-name-notes
     position absolute
     top 30px
-    left 94px
+    left 114px
     right 3%
 
 
@@ -509,10 +506,11 @@ h1, h2, h3, h4, #name
 
         .type
           width 25%
-          font-weight bold
+          font-family styled
 
         .value
           width 55%
+          font-family main
 
         .dpremove, .dpaction
           width 5%
@@ -537,6 +535,20 @@ h1, h2, h3, h4, #name
 
 a
   cursor pointer
+
+#contact
+    #adder
+        display: none
+        
+        h2
+            display: none
+
+#contact:hover
+    #adder
+        display: block
+
+        h2
+            display: block
 
 #adder
     .button
@@ -586,3 +598,6 @@ a
 
       #picture
         top 33px
+
+      #adder
+        display: block

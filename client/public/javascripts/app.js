@@ -1753,7 +1753,7 @@ window.require.register("router", function(exports, require, module) {
 
     Router.prototype.routes = {
       '': 'list',
-      'settings': 'help',
+      'help': 'help',
       'import': 'import',
       'callimport': 'callimport',
       'contact/new': 'newcontact',
@@ -2105,7 +2105,7 @@ window.require.register("templates/contactslist", function(exports, require, mod
   buf.push('/><a id="filterClean" class="button"><i class="icon-remove icon-white"></i></a></div><a');
   buf.push(attrs({ 'id':('new'), 'href':("#contact/new"), 'title':(t("add contact")), "class": ('button') }, {"href":true,"title":true}));
   buf.push('><i class="icon-plus icon-white"></i></a><a');
-  buf.push(attrs({ 'id':('gohelp'), 'href':("#settings"), 'title':(t("go to settings")), "class": ('button') }, {"href":true,"title":true}));
+  buf.push(attrs({ 'id':('gohelp'), 'href':("#help"), 'title':(t("go to settings")), "class": ('button') }, {"href":true,"title":true}));
   buf.push('><i class="icon-cog icon-white"></i></a></form><div id="contacts"></div>');
   }
   return buf.join("");
@@ -2167,21 +2167,21 @@ window.require.register("templates/doc", function(exports, require, module) {
   with (locals || {}) {
   var interp;
   buf.push('<a id="close" href="#">&lt;</a><h2>');
-  var __val__ = t('settings')
-  buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</h2><h3>');
   var __val__ = t('help')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</h3><p>');
+  buf.push('</h2><p>');
   var __val__ = t("click left to display")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</p><p>');
+  var __val__ = t("creation info")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</p><p>');
   var __val__ = t("carddav info")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</p><h3>');
+  buf.push('</p><h2>');
   var __val__ = t('import export')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</h3><p>');
+  buf.push('</h2><p>');
   var __val__ = t("call log info") + ' '
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('<a href="#callimport">');

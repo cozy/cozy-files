@@ -1,3 +1,11 @@
+@font-face {
+  font-family: styled;
+  src: url("/fonts/maven-pro-light-300.otf");
+}
+@font-face {
+  font-family: main;
+  src: url("/fonts/signika-regular.ttf");
+}
 .button {
   border: 0;
   background: #34a6ff;
@@ -22,14 +30,6 @@
 }
 input:hover {
   border: 1px solid #fe8800;
-}
-@font-face {
-  font-family: styled;
-  src: url("/fonts/maven-pro-light-300.otf");
-}
-@font-face {
-  font-family: main;
-  src: url("/fonts/signika-regular.ttf");
 }
 .icon-sms,
 .icon-voice,
@@ -171,11 +171,13 @@ h4,
   line-height: 28px;
   overflow: hidden;
   margin-top: 1px;
+  font-weight: normal;
 }
 #contacts-list #contacts .contact-thumb span {
   display: block;
   float: left;
   margin-left: 6px;
+  font-size: 13px;
 }
 #contacts-list #contacts .contact-thumb:nth-child(even) {
   background-color: #fff;
@@ -233,11 +235,15 @@ h4,
   background: #ffbb6c;
 }
 #doc {
-  padding-left: 20px;
-  padding-top: 50px;
+  padding: 40px;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
+}
+#doc h2 {
+  margin-top: 30px;
+  font-weight: normal;
+  border-bottom: 1px solid #ccc;
 }
 #contact #picture {
   display: block;
@@ -314,7 +320,7 @@ h4,
 #contact #wrap-name-notes {
   position: absolute;
   top: 30px;
-  left: 94px;
+  left: 114px;
   right: 3%;
 }
 #contact ul.tagit {
@@ -553,10 +559,11 @@ h4,
 }
 #left .zone ul li .type {
   width: 25%;
-  font-weight: bold;
+  font-family: styled;
 }
 #left .zone ul li .value {
   width: 55%;
+  font-family: main;
 }
 #left .zone ul li .dpremove,
 #left .zone ul li .dpaction {
@@ -583,6 +590,18 @@ h4,
 }
 a {
   cursor: pointer;
+}
+#contact #adder {
+  display: none;
+}
+#contact #adder h2 {
+  display: none;
+}
+#contact:hover #adder {
+  display: block;
+}
+#contact:hover #adder h2 {
+  display: block;
 }
 #adder .button {
   padding: 3px;
@@ -634,5 +653,8 @@ a {
   }
   #contact #picture {
     top: 33px;
+  }
+  #contact #adder {
+    display: block;
   }
 }

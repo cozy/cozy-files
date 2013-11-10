@@ -8,7 +8,7 @@ Contact          = require 'models/contact'
 module.exports = class Router extends Backbone.Router
     routes:
         ''                    : 'list'
-        'settings'            : 'help'
+        'help'            : 'help'
         'import'              : 'import'
         'callimport'          : 'callimport'
         'contact/new'         : 'newcontact'
