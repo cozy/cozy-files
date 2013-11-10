@@ -102,6 +102,10 @@ h4,
 #contacts-list #toolbar #filterfield {
   font-family: styled;
 }
+#contacts-list #toolbar #filterfield:active,
+#contacts-list #toolbar #filterfield:focus {
+  border: 1px solid #34a6ff;
+}
 #contacts-list #toolbar #filterClean {
   display: inline-block;
   position: relative;

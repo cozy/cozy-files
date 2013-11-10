@@ -2611,6 +2611,7 @@ window.require.register("views/contact", function(exports, require, module) {
           return _this.needSaving = false;
         } else {
           console.log("do save");
+          _this.currentState = _this.model.toJSON();
           _this.savedInfo.hide();
           return _this.save();
         }

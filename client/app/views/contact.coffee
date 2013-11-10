@@ -147,6 +147,7 @@ module.exports = class ContactView extends ViewCollection
                 @needSaving = false
             else
                 console.log "do save"
+                @currentState = @model.toJSON()
                 @savedInfo.hide()
                 @save()
         , 10
