@@ -2768,7 +2768,7 @@ window.require.register("views/contact_tags", function(exports, require, module)
 
     TagsView.prototype.initialize = function() {
       this.$el.tagit({
-        availableTags: ['test', 'toast'],
+        availableTags: [],
         placeholderText: t('add tags'),
         afterTagAdded: this.tagAdded,
         afterTagRemoved: this.tagRemoved
@@ -2778,10 +2778,18 @@ window.require.register("views/contact_tags", function(exports, require, module)
     };
 
     TagsView.prototype.tagAdded = function(e, ui) {
+      var _this = this;
       if (!(this.myOperation || ui.duringInitialization)) {
         this.model.set('tags', this.$el.tagit('assignedTags'));
-        return this.options.onChange();
+        this.options.onChange();
       }
+      return ui.tag.click(function() {
+        var tagLabel;
+        tagLabel = ui.tag.find('.tagit-label').text();
+        $("#filterfield").val(tagLabel);
+        $("#filterfield").trigger('keyup');
+        return $(".dropdown-menu").hide();
+      });
     };
 
     TagsView.prototype.tagRemoved = function(er, ui) {

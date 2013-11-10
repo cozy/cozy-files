@@ -4,7 +4,7 @@ module.exports = class TagsView extends BaseView
 
     initialize: ->
         @$el.tagit
-            availableTags: ['test', 'toast']
+            availableTags: []
             placeholderText: t 'add tags'
             afterTagAdded  : @tagAdded
             afterTagRemoved : @tagRemoved
@@ -18,6 +18,11 @@ module.exports = class TagsView extends BaseView
         unless @myOperation or ui.duringInitialization
             @model.set 'tags', @$el.tagit 'assignedTags'
             @options.onChange()
+        ui.tag.click =>
+            tagLabel = ui.tag.find('.tagit-label').text()
+            $("#filterfield").val tagLabel
+            $("#filterfield").trigger 'keyup'
+            $(".dropdown-menu").hide()
 
     tagRemoved: (er, ui) =>
         unless @myOperation or ui.duringInitialization
