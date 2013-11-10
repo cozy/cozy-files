@@ -127,25 +127,19 @@ module.exports = class ContactView extends ViewCollection
         typeField.select()
 
     doNeedSaving: (event) =>
-        console.log "need saving"
-        console.log event
-
         isEnter = event.keyCode is 13 or event.which is 13
-        console.log event.target.attributes['id']
-
-        if isEnter and event.target.id is 'name'
-            @changeOccured()
+        @changeOccured true if isEnter and event.target.id is 'name'
         @needSaving = true
         return true
 
-    changeOccured: =>
+    changeOccured: (isTitleChanged) =>
         # wait 10 ms, for newly focused to be focused
         setTimeout =>
             # there is still something focused
             # we wait for it to lose focus, changeOccured will be called again
             # when the newly focused blur
-            #return if @$('input:focus, textarea:focus').length
-            #console.log "Nothing focused"
+            if @$('input:focus, textarea:focus').length and not isTitleChanged
+                return true
 
             @model.set
                 fn:  @namefield.val()
@@ -167,7 +161,6 @@ module.exports = class ContactView extends ViewCollection
         @model.destroy() if @model.isNew() or confirm t 'Are you sure ?'
 
     save: =>
-        console.log "save", @needSaving
         return unless @needSaving
         @needSaving = false
         @savedInfo.show().text 'saving changes'

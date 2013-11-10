@@ -2622,20 +2622,20 @@ window.require.register("views/contact", function(exports, require, module) {
 
     ContactView.prototype.doNeedSaving = function(event) {
       var isEnter;
-      console.log("need saving");
-      console.log(event);
       isEnter = event.keyCode === 13 || event.which === 13;
-      console.log(event.target.attributes['id']);
       if (isEnter && event.target.id === 'name') {
-        this.changeOccured();
+        this.changeOccured(true);
       }
       this.needSaving = true;
       return true;
     };
 
-    ContactView.prototype.changeOccured = function() {
+    ContactView.prototype.changeOccured = function(isTitleChanged) {
       var _this = this;
       return setTimeout(function() {
+        if (_this.$('input:focus, textarea:focus').length && !isTitleChanged) {
+          return true;
+        }
         _this.model.set({
           fn: _this.namefield.val(),
           note: _this.notesfield.val()
@@ -2659,7 +2659,6 @@ window.require.register("views/contact", function(exports, require, module) {
     };
 
     ContactView.prototype.save = function() {
-      console.log("save", this.needSaving);
       if (!this.needSaving) {
         return;
       }
