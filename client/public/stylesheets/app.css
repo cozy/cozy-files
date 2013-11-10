@@ -297,7 +297,7 @@ a {
 #contact #picture {
   display: block;
   position: absolute;
-  border: 1px solid #ccc;
+  border: 1px solid transparent;
   left: 3%;
   top: 30px;
   width: 64px;
