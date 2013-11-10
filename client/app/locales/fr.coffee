@@ -28,7 +28,7 @@ module.exports =
   "links"                 : "Liens"
   "others"                : "Autres"
   "actions"               : "Actions"
-  "add"                   : "Ajouter des champs"
+  "add fields"            : "Ajouter des champs"
 
   "save changes alert"    : "Sauvegarder ?"
   "not an image"          : "Ceci n'est pas une image"
