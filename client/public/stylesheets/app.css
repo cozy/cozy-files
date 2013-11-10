@@ -387,6 +387,10 @@ h4,
 #contact #name:hover {
   border-bottom: 1px solid #fe8800;
 }
+#contact #name:focus,
+#contact #name:active {
+  border-bottom: 1px solid #34a6ff;
+}
 #contact #name:focus {
   outline: none;
 }
