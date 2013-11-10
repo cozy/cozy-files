@@ -104,6 +104,9 @@ h4,
 #name {
   font-family: styled;
 }
+a {
+  cursor: pointer;
+}
 #contacts-list {
   width: 450px;
   position: absolute;
@@ -464,6 +467,20 @@ h4,
   border-bottom: 1px solid #d3d3d3;
   margin-top: 0px;
 }
+#right .nav-tabs li a:hover,
+#left .nav-tabs li a:hover {
+  background-color: #ffb865;
+}
+#right .nav-tabs li a:focus,
+#left .nav-tabs li a:focus,
+#right .nav-tabs li a:active,
+#left .nav-tabs li a:active {
+  outline: none;
+}
+#right .nav-tabs li.active a,
+#left .nav-tabs li.active a {
+  background-color: #eee;
+}
 #right {
   right: 3%;
 }
@@ -669,6 +686,10 @@ h4,
   }
   #contact {
     background: #fff;
+  }
+  #contact .nav-tabs,
+  #contact .tab-content {
+    width: 94%;
   }
   #contact #right {
     left: 3%;

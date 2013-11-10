@@ -42,6 +42,9 @@ body
 h1, h2, h3, h4, #name
   font-family styled
 
+a
+    cursor: pointer
+
 // CONTACT LIST
 
 #contacts-list
@@ -369,7 +372,6 @@ h1, h2, h3, h4, #name
     padding 0px 5px
     background-color #f9edbe
 
-
 #right, #left
   position absolute
   top 120px
@@ -384,6 +386,16 @@ h1, h2, h3, h4, #name
     font-weight normal
     border-bottom 1px solid lightgrey
     margin-top: 0px
+
+  .nav-tabs li a:hover
+    background-color: orange + 40%
+
+  .nav-tabs li a:focus
+  .nav-tabs li a:active
+      outline: none
+
+  .nav-tabs li.active a
+    background-color: #EEE
 
 #right
   right 3%
@@ -575,6 +587,10 @@ h1, h2, h3, h4, #name
 
     #contact
       background: white
+
+      .nav-tabs
+      .tab-content
+          width: 94%
 
       #right
         left 3%
