@@ -207,17 +207,6 @@ h4,
   font-size: 16px;
   font-weight: normal;
 }
-#contact #contact-container,
-#doc #contact-container {
-  position: absolute;
-  background-color: #fcfcfc;
-  border: 1px solid #ccc;
-  box-shadow: 1px 1px 3px #ccc;
-  left: 20px;
-  right: 20px;
-  top: 20px;
-  bottom: 20px;
-}
 #contact #close,
 #doc #close {
   display: none;
@@ -619,12 +608,6 @@ a {
   #doc #close,
   #contact #close {
     display: block;
-  }
-  #contact-container {
-    background-color: transparent;
-    border: 0;
-    box-shadow: none;
-    box-shadow: 0;
   }
   #contact {
     background: #fff;
