@@ -86,6 +86,9 @@ select:hover {
 .icon-mail {
   background-image: url("../img/mail.png");
 }
+* {
+  outline: none;
+}
 html {
   height: 100%;
 }
@@ -217,6 +220,10 @@ h4,
   float: left;
   margin-left: 6px;
   font-size: 13px;
+}
+#contacts-list #contacts .contact-thumb:active,
+#contacts-list #contacts .contact-thumb:focus {
+  outline: none;
 }
 #contacts-list #contacts .contact-thumb:nth-child(even) {
   background-color: #fff;
