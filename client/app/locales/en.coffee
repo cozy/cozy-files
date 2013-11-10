@@ -81,7 +81,7 @@ module.exports =
   "progress"             : "Progress"
 
 # doc
-  "click left to display" : "Click on a contact in the left panel to display it."
+  "click left to display" : "Browse: Click on a contact in the left panel to display it."
 
   "import export"         : "Import / Export"
   "call log info"         : "Click here to import your mobile's call log:"
@@ -97,5 +97,15 @@ module.exports =
     Click here to export all your contacts as a vCard file:"""
 
   "carddav info"          : """
-    To sync your contacts with your mobile, install the Webdav
+    Synchronization: To sync your contacts with your mobile, install the Webdav
     application from the market place."""
+  "search info"           : """
+    Search: Use the search field located on the top left
+    corner to perform a search on all the fields of your contacts. If you
+    type a tag name, results will contain all people tagged with it.
+  """
+  "creation info"           : """
+    Creation: Click on the plus button located aside the search field to
+    display a new contact page. Fill the name field and your contact will
+    be created.
+  """

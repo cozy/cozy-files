@@ -1313,7 +1313,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "importing this file": "We are importing this file",
     "may take a while": "It may take a while",
     "progress": "Progress",
-    "click left to display": "Click on a contact in the left panel to display it.",
+    "click left to display": "Browse: Click on a contact in the left panel to display it.",
     "import export": "Import / Export",
     "call log info": "Click here to import your mobile's call log:",
     "import call log": "Import call Log",
@@ -1324,7 +1324,9 @@ window.require.register("locales/en", function(exports, require, module) {
     "settings": "Settings",
     "help": "Help",
     "vcard export info": "Click here to export all your contacts as a vCard file:",
-    "carddav info": "To sync your contacts with your mobile, install the Webdav\napplication from the market place."
+    "carddav info": "Synchronization: To sync your contacts with your mobile, install the Webdav\napplication from the market place.",
+    "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
+    "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created."
   };
   
 });
@@ -1395,7 +1397,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "importing this file": "Nous importons ce fichier",
     "may take a while": "Cela peut prendre quelques minutes",
     "progress": "Progression",
-    "click left to display": "Cliquez sur un contact dans le panneau de gauche pour l'afficher",
+    "click left to display": "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher",
     "import export": "Import / Export",
     "call log info": "Cliquez ici pour importer votre historique mobile :",
     "import call log": "Importer l'historique",
@@ -1406,7 +1408,9 @@ window.require.register("locales/fr", function(exports, require, module) {
     "settings": "Paramètres",
     "help": "Aide",
     "vcard export info": "Cliquez ici pour exporter tous vos contacts dans un fichier vCard :",
-    "carddav info": "Pour synchroniser vos contacts sur votre mobile, installez l'application\nWebdav depuis le market place."
+    "carddav info": "Synchronization : Pour synchroniser vos contacts sur votre mobile,\ninstallez l'application Webdav depuis le market place.",
+    "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
+    "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé."
   };
   
 });
@@ -2170,6 +2174,9 @@ window.require.register("templates/doc", function(exports, require, module) {
   var __val__ = t('help')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</h2><p>');
+  var __val__ = t("search info")
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</p><p>');
   var __val__ = t("click left to display")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</p><p>');
