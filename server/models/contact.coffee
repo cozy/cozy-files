@@ -23,7 +23,6 @@ Contact::toVCF = ->
 
     model = @toJSON()
 
-
     out = "BEGIN:VCARD\n"
     out += "VERSION:3.0\n"
     out += "NOTE:#{model.note}\n" if model.note
@@ -50,6 +49,5 @@ Contact::toVCF = ->
                 value = value.replace(/(\r\n|\n\r|\r|\n)/g, ";") if key is 'ADR'
                 type = "TYPE=#{dp.type.toUpperCase()}"
                 out += "#{key};#{type}:#{value}\n"
-
 
     out += "END:VCARD\n"

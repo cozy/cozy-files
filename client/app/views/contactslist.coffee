@@ -10,6 +10,9 @@ module.exports = class ContactsList extends ViewCollection
     itemView: require 'views/contactslist_item'
     template: require 'templates/contactslist'
 
+    subscriptions:
+        'contact:changed': 'onContactChanged'
+
     events:
         'change #filterfield': 'keyUpCallback'
         'click #filterClean': 'cleanFilter'
@@ -51,6 +54,10 @@ module.exports = class ContactsList extends ViewCollection
         view.$el.show() for id, view of @views
 
     getTags: => @collection.getTags()
+
+    onContactChanged: (model) =>
+        @views[model.cid].render()
+        @activate model
 
     keyUpCallback: (event) =>
 

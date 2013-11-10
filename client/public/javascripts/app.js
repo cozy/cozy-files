@@ -139,8 +139,9 @@ window.require.register("collections/contact", function(exports, require, module
     ContactCollection.prototype.initialize = function() {
       var _this = this;
       ContactCollection.__super__.initialize.apply(this, arguments);
-      return this.on('change:fn', function() {
-        return _this.sort();
+      return this.on('change:fn', function(model) {
+        _this.sort();
+        return Backbone.Mediator.publish('contact:changed', model);
       });
     };
 
@@ -2664,7 +2665,8 @@ window.require.register("views/contact", function(exports, require, module) {
       }
       this.needSaving = false;
       this.savedInfo.show().text('saving changes');
-      return this.model.save();
+      this.model.save();
+      return Backbone.Mediator.publish('contact:changed', this.model);
     };
 
     ContactView.prototype.onMoreOptionsClicked = function() {
@@ -2873,6 +2875,7 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     function ContactsList() {
       this.keyUpCallback = __bind(this.keyUpCallback, this);
+      this.onContactChanged = __bind(this.onContactChanged, this);
       this.getTags = __bind(this.getTags, this);
       _ref = ContactsList.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -2883,6 +2886,10 @@ window.require.register("views/contactslist", function(exports, require, module)
     ContactsList.prototype.itemView = require('views/contactslist_item');
 
     ContactsList.prototype.template = require('templates/contactslist');
+
+    ContactsList.prototype.subscriptions = {
+      'contact:changed': 'onContactChanged'
+    };
 
     ContactsList.prototype.events = {
       'change #filterfield': 'keyUpCallback',
@@ -2943,6 +2950,11 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     ContactsList.prototype.getTags = function() {
       return this.collection.getTags();
+    };
+
+    ContactsList.prototype.onContactChanged = function(model) {
+      this.views[model.cid].render();
+      return this.activate(model);
     };
 
     ContactsList.prototype.keyUpCallback = function(event) {

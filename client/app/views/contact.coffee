@@ -165,6 +165,7 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = false
         @savedInfo.show().text 'saving changes'
         @model.save()
+        Backbone.Mediator.publish 'contact:changed', @model
 
     onMoreOptionsClicked: =>
         @$("#more-options").fadeOut =>

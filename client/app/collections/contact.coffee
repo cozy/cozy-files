@@ -10,10 +10,12 @@ module.exports = class ContactCollection extends Backbone.Collection
     #sort by names
     comparator: 'fn'
 
-    #auto resort when contact name change
+    # auto resort when contact name change
     initialize: ->
         super
-        @on 'change:fn', => @sort()
+        @on 'change:fn', (model) =>
+            @sort()
+            Backbone.Mediator.publish 'contact:changed', model
 
     getTags: ->
         out = []

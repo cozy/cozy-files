@@ -17,7 +17,6 @@ module.exports = class ViewCollection extends BaseView
 
     itemView: null
 
-
     itemViewOptions: ->
 
     # add 'empty' class to view when there is no subview
@@ -71,6 +70,3 @@ module.exports = class ViewCollection extends BaseView
         @views[model.cid].remove()
         delete @views[model.cid]
         @checkIfEmpty @views
-
-
-
