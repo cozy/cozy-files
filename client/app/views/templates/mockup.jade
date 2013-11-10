@@ -1,41 +1,70 @@
-nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
+#dialog-upload-file.modal.fade
+    .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+            h4.modal-title Upload a new file
+          .modal-body
+            form
+              fieldset
+                .form-group
+                  label(for='uploader')
+                    | Choose the file to upload:
+                  input#uploader.form-control(type="file")
+          .modal-footer
+            button.btn.btn-link(type='button', data-dismiss='modal') Close
+            button.btn.btn-cozy-contrast(type='button') Send
+
+#dialog-new-folder.modal.fade
+    .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+            h4.modal-title Modal title
+          .modal-body
+            form
+              fieldset
+                .form-group
+                  label(for='inputName')
+                    | Enter the folder's name: 
+                  input#inputName.form-control(type="text")
+          .modal-footer
+            button.btn.btn-link(type='button', data-dismiss='modal') Close
+            button.btn.btn-cozy(type='button') Send
+
+#affixbar(data-spy="affix", data-offset-top="1")
   .container
-    // Brand and toggle get grouped for better mobile display
-    .navbar-header
-      button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
-        span.sr-only Toggle navigation
-        span.icon-bar
-        span.icon-bar
-        span.icon-bar
-      span.navbar-brand Cozy Files
-    // Collect the nav links, forms, and other content for toggling
-    .collapse.navbar-collapse
-      ul.nav.navbar-nav
+    .row
+      .col-lg-12
+        p.pull-right
+          a.btn.btn-cozy-contrast(href="#dialog-upload-file",data-toggle="modal",data-target="#dialog-upload-file")
+            span.glyphicon.glyphicon-upload
+            |  Upload a file to "silly cats"
+          | 
+          a.btn.btn-cozy(href="#dialog-new-folder",data-toggle="modal",data-target="#dialog-new-folder")
+            span.glyphicon.glyphicon-plus-sign
+            |  Create a new folder
 
-      ul.nav.navbar-nav.navbar-right
-        p
-          a.btn.btn-cozy(style="margin-top: 7px")
-            | Upload a file to "silly cats"
-
-#content.container
-  .row.content-background
-
-    .col-lg-12.content-right-column
-
+.container
+  .row.content-shadow
+    .col-lg-12#content
       #crumbs
         ul
           li
-            a
+            a(href="#")
               span.glyphicon.glyphicon-folder-open  
           li
-            a personal
+            a(href="#") personal
           li
-            a photos
+            a(href="#") photos
           li
-            a silly cats
+            a(href="#") very long folder name it is indeed
+          li
+            a(href="#") another one
+          li
+            a(href="#") silly cats
 
-
-      table#table-operations.table.table-hover
+      table#table-items.table.table-hover
         tbody
           tr.folder-row
             td
@@ -193,6 +222,126 @@ nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
               span.glyphicon.glyphicon-file  
               a.btn.btn-link
                 | sweet kitty on a bicycle.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
+              .operations
+                a
+                  span.glyphicon.glyphicon-remove-circle  
+                a
+                  span.glyphicon.glyphicon-edit  
+                a
+                  span.glyphicon.glyphicon-cloud-download  
+            td.operation-title
+            td.operation-amount
+              span.pull-right 12:00 12/10/2013
+          tr.folder-row
+            td
+              span.glyphicon.glyphicon-file  
+              a.btn.btn-link
+                | super sweet kitty.jpg
               .operations
                 a
                   span.glyphicon.glyphicon-remove-circle  

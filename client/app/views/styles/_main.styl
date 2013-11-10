@@ -2,84 +2,54 @@
 @import '_colors'
 
 
+/*      FONTS        */
 @font-face
-    font-family: styled
-    src: url('/fonts/maven-pro-light-300.otf');
+  font-family: styled
+  src: url('/fonts/maven-pro-light-300.otf')
 
 @font-face
-    font-family: main
-    src: url('/fonts/signika-regular.ttf');
+  font-family: main
+  src: url('/fonts/signika-regular.ttf')
 
 html, body
-    height: 100%
+  height: 100%
 
 body
-    font-family: styled, helvetica
-    background-image: url('../images/Melamine-wood-003.png');
+  font-family: styled, helvetica
+  background-image: url('../images/Melamine-wood-004.png');
 
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
-    font-family: styled, helvetica
+  font-family: styled, helvetica
 
 
-// the actual styling
-#content
-    //height: 100%
-    //padding-top: 50px;
-
-.modal-backdrop
-    background-color: rgba(0,0,0,0.8)
+/*      FIXING BOOTSTRAP */
+body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
+  margin-right: 0
 
 
 
-// buttons
-.btn.btn-cozy
+/*      COZY BUTTONS    */
+.btn
+  &.btn-cozy
     background-color: basecolor
     border-color: basecolor
     color: white
 
-.btn.btn-cozy:hover
-    background-color: actioncolor
-    border-color: actioncolor
-
-
-
-legend
-    border: 0
-
-.clear
-    clear: both
-
-.loading, .loading-bank
-    margin: 25px
-
-.arrow
-    margin-right: 10px
-
-#total-display
+    &:hover
+      background-color: actioncolor
+      border-color: actioncolor
+  &.btn-cozy-contrast
+    background-color: contrastcolor
+    border-color: contrastcolor
     color: white
 
-.important-notice
-    color: basecolor
-
-.euro-sign
-    color: #acacac
-
-.positive-balance
-    color: green
-
-.loader-operations
-    margin-top: 100px
-
-.account-details
-    color: darkgray
-    font-size: 14px
-
-h2 .account-details
-    font-size: 16px
+    &:hover
+      background-color: actioncolor
+      border-color: actioncolor
 
 
-// inputs
+/*      INPUTS          */
 input
     border: 1px solid #ccc
     color: #ccc
@@ -87,170 +57,89 @@ input:focus
     color: #333
     border-color: basecolor
 
-orange = #ffa60b
-
 ::selection
-  background: orange
+  background: actioncolor
 ::-moz-selection
-  background: orange
-//input:hover
-//    border: 1px orange
+  background: actioncolor
 
-// for the active element
-.row.accounts-top.active .euro-sign, .row.accounts-sub.active .euro-sign
-    color: white
 
-.content-background
-    background-color: #eeeeee
+/*      SHADOWS         */
+.content-shadow
+    background-color: white
     -moz-box-shadow:    3px 0 5px 0 rgba(0,0,0,0.2);
     -webkit-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
     box-shadow:         3px 0 5px 0 rgba(0,0,0,0.2);
     height: 100%
-    padding-top: 50px
 
-.content-right-column
-    padding-top: 0px
-    //height: 100%
-
-.content-left-column
-    border-right: 1px solid #bdbdbd
-    border-left: 1px solid #dfdddd
-    -moz-box-shadow:    inset -3px 0 3px rgba(0,0,0,0.1);
-    -webkit-box-shadow: inset -3px 0 3px rgba(0,0,0,0.1);
-    box-shadow:         inset -3px 0 3px rgba(0,0,0,0.1);
-    padding-left: 0
-    padding-right: 0
-
-.content-right-column, .content-left-column
-    overflow-y: scroll
-    //overflow-y: hidden
-    background-color: white
-    border-right: 1px solid #bdbdbd
-
-.content-left-column
-    background-color: #FCFCFC
-
-.form-search
-    margin-top: 10px
-    .form-group
-        margin-bottom: 10px;
-
-input.reports-limit
-    width: 100px
-
-
-.navbar
+.shadow-down
     -moz-box-shadow:    0px 3px 5px 0 rgba(0,0,0,0.2);
     -webkit-box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
     box-shadow:         0px 3px 5px 0 rgba(0,0,0,0.2);
 
-.navbar-nav > li > a
-    font-size: 16px
 
-#menu-pos-new-bank
-    color: actioncolor
+/*      AFFIX           */
+div#affixbar
+  height: 45px
+  z-index: 100
+  width: 100%
+  position: fixed
 
-#menu-pos-new-bank:hover
-    color: white
+  .row
+    background-color: white
+    padding-top: 5px
 
-.navbar-text
-    margin-top: 10px
-    margin-bottom: 10px
+    p
+      margin-bottom: 5px
 
-.navbar-inverse .container .navbar-brand:hover, .navbar-brand:focus
-    color: #999999
+  a.btn
+    height: 35px
 
-#total-amount
-    color: basecolor
-    font-size: 20px
+.affix-top
+  color: blue
+
+.affix
+  position: fixed
+  color: yellow
+
+  .row
+    -moz-box-shadow:    0 5px 10px 0 rgba(0,0,0,0.3);
+    -webkit-box-shadow: 0 5px 10px 0 rgba(0,0,0,0.3);
+    box-shadow:         0 5px 10px 0 rgba(0,0,0,0.3);
+
+#content
+  padding-top: 45px
 
 
-// MENU
-.row.accounts-top p, .row.accounts-sub p
-    margin: 0
+/*      ITEMS           */
+table#table-items
+  margin-top: 20px
 
-.row.accounts-top
+tr.folder-row
+  font-size: 18px
+
+  // colors change on hover
+  color: mediumcolor
+  &:hover
+    color: mediumcolor-contrast
+
+  // the filename
+  td a.btn
     font-size: 18px
-    //margin: 10px 0 10px 0px
-    margin: 0
-    padding: 10px 0 5px 0
 
-.row.accounts-sub:hover
-    background-color: basecolor-alpha
-    -moz-box-shadow:    inset -3px 0 3px rgba(0,0,0,0.1);
-    -webkit-box-shadow: inset -3px 0 3px rgba(0,0,0,0.1);
-    box-shadow:         inset -3px 0 3px rgba(0,0,0,0.1);
-    cursor: pointer
-
-    .account-details
-        color: #eee
-
-.row.accounts-top.active, .row.accounts-sub.active
-    background-color: basecolor
-    color: white
-    -moz-box-shadow:    inset -3px 0px 3px rgba(0,0,0,0.1);
-    -webkit-box-shadow: inset -3px 0px 3px rgba(0,0,0,0.1);
-    box-shadow:         inset -3px 0px 3px rgba(0,0,0,0.1);
-
-    .account-details
-        color: #e0e0e0
-
-.row.accounts-sub
-    font-size: 14px
-    margin: 0
-    padding: 5px 0 5px 15px
-
-
-
-// TABLE OPERATIONS
-table#table-operations
-    margin-top: 20px
-
-td.operation-date
-    color: gray
-
-td.operation-title
-    font-size: 14px
-    font-weight: bold
-
-td.operation-amount
-    font-size: 15px
-
-
-// TABLE ACCOUNTS
-td.account-title
-    font-size: 16px
-    font-weight: bold
-
-.group-bank
-    padding-top: 15px
-
-.table-accounts > tbody > tr > td
-    border: 0
-
-
-.folder-row .operations
+  // the toolbox - delete, rename, etc
+  .operations
     visibility: hidden
     display: inline
-
     a
-        padding-left: 5px
+      padding-left: 5px
 
-.folder-row
-    font-size: 18px
-
-    td a.btn
-        font-size: 18px
-
-.folder-row:hover .operations
+  &:hover .operations
     visibility: visible
 
-.operation-amount
-    color: lightgray
 
-
+/*      BREADCRUMBS     */
 #crumbs
-  padding-top: 25px
+  overflow: hidden
   ul
     padding-left: 0
     list-style none
@@ -260,29 +149,29 @@ td.account-title
       a
         display block
         float left
-        height 40px
+        height 35px
         background basecolor
         text-align center
-        padding 8px 10px 0 30px
+        padding 8px 5px 0 22px
         position relative
-        margin 0 10px 0 0
-        font-size 18px
+        margin 5px 10px 0 0
+        font-size 15px
         text-decoration none
         color #fff
         &:after
           content ""
-          border-top 20px solid transparent
-          border-bottom 20px solid transparent
-          border-left 20px solid basecolor
+          border-top 17px solid transparent
+          border-bottom 17px solid transparent
+          border-left 17px solid basecolor
           position absolute
-          right -20px
+          right -17px
           top 0
           z-index 1
         &:before
           content ""
-          border-top 20px solid transparent
-          border-bottom 20px solid transparent
-          border-left 20px solid white
+          border-top 17px solid transparent
+          border-bottom 17px solid transparent
+          border-left 17px solid white
           position absolute
           left 0
           top 0
@@ -304,5 +193,3 @@ td.account-title
           border-bottom-right-radius 10px
           &:after
             display none
-
-
