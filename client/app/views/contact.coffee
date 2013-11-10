@@ -125,7 +125,15 @@ module.exports = class ContactView extends ViewCollection
         typeField.focus()
         typeField.select()
 
-    doNeedSaving: =>
+    doNeedSaving: (event) =>
+        console.log "need saving"
+        console.log event
+
+        isEnter = event.keyCode is 13 or event.which is 13
+        console.log event.target.attributes['id']
+
+        if isEnter and event.target.id is 'name'
+            @changeOccured()
         @needSaving = true
         return true
 
@@ -135,12 +143,13 @@ module.exports = class ContactView extends ViewCollection
             # there is still something focused
             # we wait for it to lose focus, changeOccured will be called again
             # when the newly focused blur
-            return if @$('input:focus, textarea:focus').length
-            console.log "Nothing focused"
+            #return if @$('input:focus, textarea:focus').length
+            #console.log "Nothing focused"
 
             @model.set
                 fn:  @namefield.val()
                 note: @notesfield.val()
+
             # no need to save in this case
             if _.isEqual @currentState, @model.toJSON()
                 console.log "Nothing has changed"

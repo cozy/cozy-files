@@ -1961,10 +1961,10 @@ window.require.register("templates/callimporter", function(exports, require, mod
   buf.push('</p><p>');
   var __val__ = t('may take a while')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</p></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
+  buf.push('</p></div><div class="modal-footer"><a id="cancel-btn" href="#" class="minor-button">');
   var __val__ = t("cancel")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
+  buf.push('</a><a id="confirm-btn" class="button disabled">');
   var __val__ = t("import")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div>');
@@ -2241,10 +2241,10 @@ window.require.register("templates/importer", function(exports, require, module)
   buf.push('</div><div class="modal-body"><div class="control-group"><label for="vcfupload" class="control-label">');
   var __val__ = t("choose vcard file")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</label><div class="controls"><input id="vcfupload" type="file"/><span class="help-inline"></span></div></div></div><div class="modal-footer"><a id="cancel-btn" href="#" class="btn">');
+  buf.push('</label><div class="controls"><input id="vcfupload" type="file"/><span class="help-inline"></span></div></div></div><div class="modal-footer"><a id="cancel-btn" href="#" class="minor-button">');
   var __val__ = t("cancel")
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a><a id="confirm-btn" class="btn disabled btn-primary">');
+  buf.push('</a><a id="confirm-btn" class="button disabled">');
   var __val__ = t("import")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div>');
@@ -2599,7 +2599,15 @@ window.require.register("views/contact", function(exports, require, module) {
       };
     };
 
-    ContactView.prototype.doNeedSaving = function() {
+    ContactView.prototype.doNeedSaving = function(event) {
+      var isEnter;
+      console.log("need saving");
+      console.log(event);
+      isEnter = event.keyCode === 13 || event.which === 13;
+      console.log(event.target.attributes['id']);
+      if (isEnter && event.target.id === 'name') {
+        this.changeOccured();
+      }
       this.needSaving = true;
       return true;
     };
@@ -2607,10 +2615,6 @@ window.require.register("views/contact", function(exports, require, module) {
     ContactView.prototype.changeOccured = function() {
       var _this = this;
       return setTimeout(function() {
-        if (_this.$('input:focus, textarea:focus').length) {
-          return;
-        }
-        console.log("Nothing focused");
         _this.model.set({
           fn: _this.namefield.val(),
           note: _this.notesfield.val()

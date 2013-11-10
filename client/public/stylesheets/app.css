@@ -6,6 +6,20 @@
   font-family: main;
   src: url("/fonts/signika-regular.ttf");
 }
+a {
+  color: #34a6ff;
+}
+a:hover {
+  color: #fe8800;
+}
+input,
+select {
+  border: 1px solid #34a6ff;
+}
+input:hover,
+select:hover {
+  border: 1px solid #fe8800;
+}
 .button {
   border: 0;
   background: #34a6ff;
@@ -15,12 +29,14 @@
   border-radius: 0;
   font-family: main;
   font-weight: bold;
-  padding: 0px;
+  padding: 10px;
+  cursor: pointer;
 }
 .button:hover {
   background: #fe8800;
   border: 0;
   color: #fff;
+  text-decoration: none;
 }
 .button:active {
   background: #f68400;
@@ -28,8 +44,26 @@
   box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
   color: #fff;
 }
-input:hover {
-  border: 1px solid #fe8800;
+.button.disabled,
+.button.disabled:hover,
+.button.disabled:active,
+.button.disabled:focus {
+  background-color: #808080;
+  padding: 10px;
+  cursor: default;
+  text-decoration: none;
+}
+.minor-button {
+  padding: 10px;
+}
+.modal-header {
+  background-color: #34a6bb;
+  color: #fff;
+  font-family: styled;
+  font-size: 26px;
+  padding: 20px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 .icon-sms,
 .icon-voice,
@@ -577,19 +611,6 @@ h4,
 }
 #left .zone ul li:hover .dpremove {
   display: inline-block;
-}
-#importer {
-  border-radius: 0px;
-}
-#importer .btn.disabled {
-  color: #333;
-}
-#importer .modal-header {
-  background-color: #34a6ff;
-  color: #fff;
-}
-a {
-  cursor: pointer;
 }
 #contact #adder {
   display: none;

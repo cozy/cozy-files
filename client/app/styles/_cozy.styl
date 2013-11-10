@@ -1,5 +1,6 @@
 orange = #fe8800
 blue = #34A6FF
+bluegreen = #34A6BB
 
 @font-face
     font-family: styled
@@ -9,6 +10,19 @@ blue = #34A6FF
     font-family: main
     src: url('/fonts/signika-regular.ttf');
 
+a
+    color: blue
+
+a:hover
+    color: orange
+
+input
+select
+    border: 1px solid blue
+
+input:hover
+select:hover
+    border: 1px solid orange
 
 .button
     border: 0
@@ -19,12 +33,14 @@ blue = #34A6FF
     border-radius: 0
     font-family: main
     font-weight: bold
-    padding: 0px
+    padding: 10px
+    cursor: pointer
 
 .button:hover
     background: orange
     border: 0
     color: white
+    text-decoration: none
 
 .button:active
     background: orange - 3%
@@ -32,5 +48,23 @@ blue = #34A6FF
     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
     color: white
 
-input:hover
-    border: 1px solid orange
+.button.disabled
+.button.disabled:hover
+.button.disabled:active
+.button.disabled:focus
+    background-color: grey
+    padding: 10px
+    cursor: default
+    text-decoration: none
+
+.minor-button
+    padding: 10px
+
+.modal-header
+    background-color: bluegreen
+    color: white
+    font-family: styled
+    font-size: 26px
+    padding: 20px
+    border-top-left-radius: 5px
+    border-top-right-radius: 5px
