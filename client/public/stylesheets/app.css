@@ -323,30 +323,33 @@ h4,
   border-radius: 0px;
   background-color: #34a6ff;
   border-color: #34a6ff;
-}
-#contact ul.tagit .tagit-choice .tagit-label,
-#contact ul.tagit .tagit-choice .tagit-close .text-icon {
-  color: #fff;
-}
-#contact ul.tagit .tagit-choice {
   border: 0;
-  background: #34a6ff;
-  color: #fff;
   box-shadow: none;
   text-shadow: none;
   border-radius: 0;
   font-family: main;
+  background: #ececec;
+}
+#contact ul.tagit .tagit-choice .tagit-label,
+#contact ul.tagit .tagit-choice .tagit-close .text-icon {
+  color: #888;
 }
 #contact ul.tagit .tagit-choice:hover {
   background: #fe8800;
   border: 0;
-  color: #fff;
   cursor: pointer;
+}
+#contact ul.tagit .tagit-choice:hover .tagit-label,
+#contact ul.tagit .tagit-choice:hover .tagit-close .text-icon {
+  color: #fff;
 }
 #contact ul.tagit .tagit-choice:active {
   background: #f68400;
   border: 0;
   box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+}
+#contact ul.tagit .tagit-label,
+#contact ul.tagit .tagit-close .text-icon {
   color: #fff;
 }
 #contact ul.tagit input:focus {
@@ -527,12 +530,13 @@ h4,
   border-radius: 0px;
   line-height: 30px;
   opacity: 0;
+  text-shadow: none;
 }
 #left .zone a.btn.add:hover {
-  background-color: #dcdcdc;
+  background-color: #fe8800;
+  color: #fff;
 }
 #left .zone:hover a.btn.add {
-  transition: 0.5s;
   opacity: 1;
 }
 #left .zone ul {

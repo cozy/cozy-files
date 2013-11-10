@@ -1274,7 +1274,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "links": "Links",
     "others": "Others",
     "actions": "Actions",
-    "add": "Add fields",
+    "add fields": "Add fields",
     "save changes alert": "Save changes ?",
     "not an image": "This is not an image",
     "remove datapoint": "Remove",
@@ -1356,7 +1356,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "links": "Liens",
     "others": "Autres",
     "actions": "Actions",
-    "add": "Ajouter des champs",
+    "add fields": "Ajouter des champs",
     "save changes alert": "Sauvegarder ?",
     "not an image": "Ceci n'est pas une image",
     "remove datapoint": "Enlever",
@@ -2047,7 +2047,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   var __val__ = t("actions")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</h2><h3>');
-  var __val__ = t("add")
+  var __val__ = t("add fields")
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</h3><a class="button addbirthday">');
   var __val__ = t("birthday") + ' '

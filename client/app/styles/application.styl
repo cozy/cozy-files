@@ -298,31 +298,32 @@ h1, h2, h3, h4, #name
       border-radius 0px
       background-color buttoncolor
       border-color buttoncolor
-      .tagit-label, .tagit-close .text-icon
-        color white
+      border: 0
+      box-shadow: none
+      text-shadow: none
+      border-radius: 0
+      font-family: main
+      background: #ECECEC
 
-    .tagit-choice
-        border: 0
-        background: blue
-        color: white
-        box-shadow: none
-        text-shadow: none
-        border-radius: 0
-        font-family: main
+      .tagit-label, .tagit-close .text-icon
+          color: #888
 
     .tagit-choice:hover
         background: orange
         border: 0
-        color: white
         cursor: pointer
+
+    .tagit-choice:hover .tagit-label
+    .tagit-choice:hover .tagit-close .text-icon
+          color: white
 
     .tagit-choice:active
         background: orange - 3%
         border: 0
         box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
-        color: white
 
-
+       .tagit-label, .tagit-close .text-icon
+          color: white
 
     input
       &:focus
@@ -485,12 +486,13 @@ h1, h2, h3, h4, #name
       border-radius 0px
       line-height 30px
       opacity 0
+      text-shadow: none
 
       &:hover
-        background-color lightgrey + 20%
+        background-color orange
+        color: white
 
     &:hover a.btn.add
-        transition 0.5s
         opacity 1
 
     ul
