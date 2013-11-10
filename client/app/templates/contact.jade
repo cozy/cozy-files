@@ -1,82 +1,83 @@
-a#close(href="#") &lt;
+#contact-container
+    a#close(href="#") &lt;
 
-div#picture
-  if hasPicture
-    img.picture(src="contacts/#{id}/picture.png")
-  else
-    img.picture(src="img/defaultpicture.png")
+    div#picture
+      if hasPicture
+        img.picture(src="contacts/#{id}/picture.png")
+      else
+        img.picture(src="img/defaultpicture.png")
 
-  #uploadnotice= t("change")
-  input#uploader(type="file")
+      #uploadnotice= t("change")
+      input#uploader(type="file")
 
-#wrap-name-notes
-  input#name(placeholder=t("name"), value="#{fn}")
-  input#tags.tagit(value=tags.join(','))
+    #wrap-name-notes
+      input#name(placeholder=t("name"), value="#{fn}")
+      input#tags.tagit(value=tags.join(','))
 
-span#save-info= t('changes saved') + ' '
-  a#undo=t('undo')
-
-
-#right
-
-  ul.nav.nav-tabs
-    li: a#infotab(href="#info", data-toggle="tab")= t('info')
-    li.active: a(href="#notes-zone", data-toggle="tab")= t('notes')
-    li: a.tab(href="#history", data-toggle="tab")= t('history')
-
-  .tab-content
-    #notes-zone.tab-pane.active
-      textarea(rows="3", placeholder=t('notes placeholder'))#notes #{note}
-
-    #history.tab-pane
-
-    #info.tab-pane
-
-#left
+    span#save-info= t('changes saved') + ' '
+      a#undo=t('undo')
 
 
-  #abouts.zone
-    h2= t("about")
-    ul
-    a.btn.add.addabout= t('add')
+    #right
 
-  #tels.zone
-    h2= t("phones")
-    ul
-    a.btn.add.addtel= t('add')
+      ul.nav.nav-tabs
+        li: a#infotab(href="#info", data-toggle="tab")= t('info')
+        li.active: a(href="#notes-zone", data-toggle="tab")= t('notes')
+        li: a.tab(href="#history", data-toggle="tab")= t('history')
 
-  #emails.zone
-    h2= t("emails")
-    ul
-    a.btn.add.addemail= t('add')
+      .tab-content
+        #notes-zone.tab-pane.active
+          textarea(rows="3", placeholder=t('notes placeholder'))#notes #{note}
 
-  #adrs.zone
-    h2= t("postal")
-    ul
-    a.btn.add.addadr= t('add')
+        #history.tab-pane
 
-  #urls.zone
-    h2= t("links")
-    ul
-    a.btn.add.addurl= t('add')
+        #info.tab-pane
 
-  #others.zone
-    h2= t("others")
-    ul
-    a.btn.add.addother= t('add')
+    #left
 
-  #adder.zone
-    h2= t("actions")
-    h3= t("add fields")
-    a.button.addbirthday= t("birthday") + ' '
-    a.button.addorg=      t("company") + ' '
-    a.button.addtitle=    t("title") + ' '
-    a.button.addcozy=     t("cozy url") + ' '
-    a.button.addtwitter=  t("twitter") + ' '
-    a.button.addtel=      t("phone") + ' '
-    a.button.addemail=    t("email") + ' '
-    a.button.addadr=      t("postal") + ' '
-    a.button.addurl=      t("url") + ' '
-    a.button.addother=    t("other")
-    h3= t("delete")
-    a.button#delete(title= t("delete contact"))= t('delete contact')
+
+      #abouts.zone
+        h2= t("about")
+        ul
+        a.btn.add.addabout= t('add')
+
+      #tels.zone
+        h2= t("phones")
+        ul
+        a.btn.add.addtel= t('add')
+
+      #emails.zone
+        h2= t("emails")
+        ul
+        a.btn.add.addemail= t('add')
+
+      #adrs.zone
+        h2= t("postal")
+        ul
+        a.btn.add.addadr= t('add')
+
+      #urls.zone
+        h2= t("links")
+        ul
+        a.btn.add.addurl= t('add')
+
+      #others.zone
+        h2= t("others")
+        ul
+        a.btn.add.addother= t('add')
+
+      #adder.zone
+        h2= t("actions")
+        h3= t("add fields")
+        a.button.addbirthday= t("birthday") + ' '
+        a.button.addorg=      t("company") + ' '
+        a.button.addtitle=    t("title") + ' '
+        a.button.addcozy=     t("cozy url") + ' '
+        a.button.addtwitter=  t("twitter") + ' '
+        a.button.addtel=      t("phone") + ' '
+        a.button.addemail=    t("email") + ' '
+        a.button.addadr=      t("postal") + ' '
+        a.button.addurl=      t("url") + ' '
+        a.button.addother=    t("other")
+        h3= t("delete")
+        a.button#delete(title= t("delete contact"))= t('delete contact')

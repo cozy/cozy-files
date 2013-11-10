@@ -181,12 +181,22 @@ h1, h2, h3, h4, #name
   h3
     font-size: 16px
     
+  #contact-container
+    position absolute
+    background-color #FCFCFC
+    border 1px solid #CCC
+    box-shadow: 1px 1px 3px #CCC
+    left 20px
+    right 20px
+    top 20px
+    bottom 20px
+ 
 
   #close
     display none
     position absolute
     top 8px
-    left 8px
+    right 8px
     width 30px
     height 30px
     text-align center
@@ -210,14 +220,12 @@ h1, h2, h3, h4, #name
 
 #contact
 
-  padding-top 50px
-
   #picture
     display block
     position absolute
     border 1px solid grey
-    left 8px
-    top 20px
+    left 3%
+    top 30px
     width 64px
     height 64px
     overflow hidden
@@ -285,9 +293,9 @@ h1, h2, h3, h4, #name
 
   #wrap-name-notes
     position absolute
-    top 20px
-    left 74px
-    right 10px
+    top 30px
+    left 94px
+    right 3%
 
 
   ul.tagit
@@ -363,7 +371,7 @@ h1, h2, h3, h4, #name
 #right, #left
   position absolute
   top 120px
-  width 50%
+  width 47%
 
   h2, .nav-tabs li a
     font-family styled
@@ -376,7 +384,7 @@ h1, h2, h3, h4, #name
     margin-top: 0px
 
 #right
-  right 0px
+  right 3%
 
   .nav-tabs
     margin-top: 0px
@@ -555,7 +563,19 @@ a
         #close
           display block
 
+    #contact-container
+      background-color: transparent
+      border: 0
+      box-shadow: none
+      box-shadow: 0
+
     #contact
+      background: white
+
+      #right
+        left 3%
+        top 120px
+        width 94%
 
       #infotab
         display block
@@ -572,4 +592,4 @@ a
         display none
 
       #picture
-        top 53px
+        top 33px

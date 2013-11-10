@@ -1972,7 +1972,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<a id="close" href="#">&lt;</a><div id="picture">');
+  buf.push('<div id="contact-container"><a id="close" href="#">&lt;</a><div id="picture">');
   if ( hasPicture)
   {
   buf.push('<img');
@@ -2087,7 +2087,7 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push('>');
   var __val__ = t('delete contact')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a></div></div>');
+  buf.push('</a></div></div></div>');
   }
   return buf.join("");
   };

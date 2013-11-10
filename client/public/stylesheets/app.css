@@ -202,12 +202,23 @@ h4,
 #doc h3 {
   font-size: 16px;
 }
+#contact #contact-container,
+#doc #contact-container {
+  position: absolute;
+  background-color: #fcfcfc;
+  border: 1px solid #ccc;
+  box-shadow: 1px 1px 3px #ccc;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  bottom: 20px;
+}
 #contact #close,
 #doc #close {
   display: none;
   position: absolute;
   top: 8px;
-  left: 8px;
+  right: 8px;
   width: 30px;
   height: 30px;
   text-align: center;
@@ -234,15 +245,12 @@ h4,
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-#contact {
-  padding-top: 50px;
-}
 #contact #picture {
   display: block;
   position: absolute;
   border: 1px solid #ccc;
-  left: 8px;
-  top: 20px;
+  left: 3%;
+  top: 30px;
   width: 64px;
   height: 64px;
   overflow: hidden;
@@ -311,9 +319,9 @@ h4,
 }
 #contact #wrap-name-notes {
   position: absolute;
-  top: 20px;
-  left: 74px;
-  right: 10px;
+  top: 30px;
+  left: 94px;
+  right: 3%;
 }
 #contact ul.tagit {
   border: 0px;
@@ -391,7 +399,7 @@ h4,
 #left {
   position: absolute;
   top: 120px;
-  width: 50%;
+  width: 47%;
 }
 #right h2,
 #left h2,
@@ -407,7 +415,7 @@ h4,
   margin-top: 0px;
 }
 #right {
-  right: 0px;
+  right: 3%;
 }
 #right .nav-tabs {
   margin-top: 0px;
@@ -603,6 +611,20 @@ a {
   #contact #close {
     display: block;
   }
+  #contact-container {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    box-shadow: 0;
+  }
+  #contact {
+    background: #fff;
+  }
+  #contact #right {
+    left: 3%;
+    top: 120px;
+    width: 94%;
+  }
   #contact #infotab {
     display: block;
   }
@@ -619,6 +641,6 @@ a {
     display: none;
   }
   #contact #picture {
-    top: 53px;
+    top: 33px;
   }
 }
