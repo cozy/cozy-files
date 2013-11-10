@@ -1780,6 +1780,7 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.help = function() {
+      $(".activated").removeClass('activated');
       return this.displayView(new DocView());
     };
 
@@ -1798,6 +1799,7 @@ window.require.register("router", function(exports, require, module) {
     Router.prototype.newcontact = function() {
       var contact,
         _this = this;
+      $(".activated").removeClass('activated');
       contact = new Contact();
       contact.dataPoints.add({
         name: 'tel',

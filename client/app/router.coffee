@@ -25,6 +25,7 @@ module.exports = class Router extends Backbone.Router
         app.contactslist.activate null
 
     help: ->
+        $(".activated").removeClass 'activated'
         @displayView new DocView()
 
     import: ->
@@ -38,6 +39,7 @@ module.exports = class Router extends Backbone.Router
         $('body').append @importer.render().$el
 
     newcontact: ->
+        $(".activated").removeClass 'activated'
         contact = new Contact()
         contact.dataPoints.add name: 'tel', type: 'main', value: ''
         contact.dataPoints.add name: 'email', type: 'main', value: ''
