@@ -1,70 +1,89 @@
 BaseView = require '../lib/base_view'
-FilesList = require './fileslist'
-FileCollection = require '../collections/file'
-FolderCollection = require '../collections/folder'
-FoldersList = require './folderslist'
-Folder = require '../models/folder'
-app = require 'application'
+FilesView = require './files'
+BreadcrumbsView = require "./breadcrumbs"
+
+File = require '../models/file'
+FileCollection = require '../collections/files'
 
 
-module.exports = class AppView extends BaseView
+module.exports = class FolderView extends BaseView
 
-    template: require('./templates/folder')
-    id: 'folder'   
-    className: 'container-fluid'
-
+    template: require './templates/folder'
 
     events: ->  
-        'click .add': 'onAddFolder'
-        'change #uploader': 'onAddFile'
+        'click #new-folder-send': 'onAddFolder'
+        'click #upload-file-send': 'onAddFile'
+
+    constructor: (@model, @breadcrumbs) ->
+        super()
+        @breadcrumbs.setRoot @model
+
+    render: ->
+        @beforeRender()
+        @$el.html @template model:@model
+        @afterRender()
+        @
 
     afterRender: ->
-        super
-        @name = @$('#name')
-        @uploader = @$('#uploader')[0]
-        @repository = @model.attributes.path + '/' + @model.attributes.name
-        if @repository is '/'
-            @repository = ""
+        super()
 
-        @model.findFiles 
+        # add breadcrumbs view
+        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
+        @$("#crumbs").append @breadcrumbsView.render().$el
+
+
+    changeActiveFolder: (folder) ->
+
+        # save the model
+        @model = folder
+        # update breadcrumbs
+        @breadcrumbs.push folder
+        # files
+        @displayChildren()
+
+
+    displayChildren: ->
+
+        # add files view
+        @model.findFiles
             success: (files) =>
-                app.files.add files 
-                collection = new FileCollection files
-                data = 
-                    collection: collection 
-                    repository: @repository
-                @filesList = new FilesList data
-                @$('#files').append @filesList.$el
-                @filesList.render()  
-            error: (error) =>
-                console.log error
 
-        @model.findFolders 
-            success: (folders) =>
-                app.folders.add folders
-                collection = new FolderCollection folders
-                data = 
-                    collection: collection 
-                    repository: @repository
-                @foldersList = new FoldersList data
-                @$('#folders').append @foldersList.$el 
-                @foldersList.render()
+                @model.findFolders
+                    success: (folders) =>
+
+                        # mark folders as folders
+                        for folder in folders
+                            folder.isFolder = true
+
+                        # render the collection
+                        @filesCollection = new FileCollection files.concat(folders)
+                        @filesList = new FilesView @filesCollection, @model
+
+                        
+                        @$('#files').html @filesList.$el
+                        @filesList.render()
+
+                    error: (error) =>
+                        console.log error
             error: (error) =>
                 console.log error
 
 
     onAddFolder: =>
         folder =
-            name: @name.val()
-            path: @repository
-        folder = new Folder folder
+            name: @$('#inputName').val()
+            path: @model.repository()
+            isFolder: true
+        folder = new File folder
         err = folder.validate folder.attributes
         if err
             alert "The folder name is empty"
         else
-            @foldersList.onAddFolder folder.attributes
-
+            @filesList.addFolder folder.attributes
+            # hide modal
+            $('#dialog-new-folder').modal('hide')
 
     onAddFile: =>
-        for attach in @uploader.files
+        for attach in @$('#uploader')[0].files
             @filesList.addFile attach
+        $('#dialog-upload-file').modal('hide')

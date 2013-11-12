@@ -1,0 +1,195 @@
+@import 'nib'
+@import '_colors'
+
+
+/*      FONTS        */
+@font-face
+  font-family: styled
+  src: url('/fonts/maven-pro-light-300.otf')
+
+@font-face
+  font-family: main
+  src: url('/fonts/signika-regular.ttf')
+
+html, body
+  height: 100%
+
+body
+  font-family: styled, helvetica
+  background-image: url('../images/Melamine-wood-004.png');
+
+
+h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
+  font-family: styled, helvetica
+
+
+/*      FIXING BOOTSTRAP */
+body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
+  margin-right: 0
+
+
+
+/*      COZY BUTTONS    */
+.btn
+  &.btn-cozy
+    background-color: basecolor
+    border-color: basecolor
+    color: white
+
+    &:hover
+      background-color: actioncolor
+      border-color: actioncolor
+  &.btn-cozy-contrast
+    background-color: contrastcolor
+    border-color: contrastcolor
+    color: white
+
+    &:hover
+      background-color: actioncolor
+      border-color: actioncolor
+
+
+/*      INPUTS          */
+input
+    border: 1px solid #ccc
+    color: #ccc
+input:focus
+    color: #333
+    border-color: basecolor
+
+::selection
+  background: actioncolor
+::-moz-selection
+  background: actioncolor
+
+
+/*      SHADOWS         */
+.content-shadow
+    background-color: white
+    -moz-box-shadow:    3px 0 5px 0 rgba(0,0,0,0.2);
+    -webkit-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
+    box-shadow:         3px 0 5px 0 rgba(0,0,0,0.2);
+    height: 100%
+
+.shadow-down
+    -moz-box-shadow:    0px 3px 5px 0 rgba(0,0,0,0.2);
+    -webkit-box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
+    box-shadow:         0px 3px 5px 0 rgba(0,0,0,0.2);
+
+
+/*      AFFIX           */
+div#affixbar
+  height: 45px
+  z-index: 100
+  width: 100%
+  position: fixed
+
+  .row
+    background-color: white
+    padding-top: 5px
+
+    p
+      margin-bottom: 5px
+
+  a.btn
+    height: 35px
+
+.affix-top
+  color: blue
+
+.affix
+  position: fixed
+  color: yellow
+
+  .row
+    -moz-box-shadow:    0 5px 10px 0 rgba(0,0,0,0.3);
+    -webkit-box-shadow: 0 5px 10px 0 rgba(0,0,0,0.3);
+    box-shadow:         0 5px 10px 0 rgba(0,0,0,0.3);
+
+#content
+  padding-top: 45px
+
+
+/*      ITEMS           */
+table#table-items
+  margin-top: 20px
+
+tr.folder-row
+  font-size: 18px
+
+  // colors change on hover
+  color: mediumcolor
+  &:hover
+    color: mediumcolor-contrast
+
+  // the filename
+  td a.btn
+    font-size: 18px
+
+  // the toolbox - delete, rename, etc
+  .operations
+    visibility: hidden
+    display: inline
+    a
+      padding-left: 5px
+
+  &:hover .operations
+    visibility: visible
+
+
+/*      BREADCRUMBS     */
+#crumbs
+  overflow: hidden
+  ul
+    padding-left: 0
+    list-style none
+    display inline-table
+    li
+      display inline
+      a
+        display block
+        float left
+        height 35px
+        background basecolor
+        text-align center
+        padding 8px 5px 0 22px
+        position relative
+        margin 5px 10px 0 0
+        font-size 15px
+        text-decoration none
+        color #fff
+        &:after
+          content ""
+          border-top 17px solid transparent
+          border-bottom 17px solid transparent
+          border-left 17px solid basecolor
+          position absolute
+          right -17px
+          top 0
+          z-index 1
+        &:before
+          content ""
+          border-top 17px solid transparent
+          border-bottom 17px solid transparent
+          border-left 17px solid white
+          position absolute
+          left 0
+          top 0
+        &:hover
+          background actioncolor
+          &:after
+            border-left-color actioncolor
+      &:first-child
+        a
+          padding-left: 20px
+          border-top-left-radius 10px
+          border-bottom-left-radius 10px
+          &:before
+            display none
+      &:last-child
+        a
+          padding-right 20px
+          border-top-right-radius 10px
+          border-bottom-right-radius 10px
+          &:after
+            display none

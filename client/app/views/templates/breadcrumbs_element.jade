@@ -1,0 +1,8 @@
+if model.id == "root"
+    li
+        a(href="#")
+            span.glyphicon.glyphicon-folder-open
+else
+    li
+        a(href="#folders/#{model.id}")
+            | #{model.attributes.name}

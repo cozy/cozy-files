@@ -3,13 +3,13 @@
 Cozy Files manages files in your Cozy platform. 
 
 ![Build
-Status](https://travis-ci.org/poupotte/cozy-files.png?branch=master)
+Status](https://travis-ci.org/seeker89/cozy-files.png?branch=master)
 
 # Run
 
 Clone this repository, install dependencies and run server.
 
-    git clone https://github.com/poupotte/cozy-files.git
+    git clone https://github.com/seeker89/cozy-files.git
     cd cozy-files
     npm install
     cd client/ && npm install && cd ..
