@@ -73,7 +73,9 @@ module.exports = class ContactView extends ViewCollection
         @tags = new TagsView
             el: @$('#tags')
             model: @model
-            onChange: @changeOccured
+            onChange: =>
+                @needSaving = true
+                @changeOccured true
         super
         @$el.niceScroll()
         @resizeNote()
@@ -132,13 +134,13 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = true
         return true
 
-    changeOccured: (isTitleChanged) =>
+    changeOccured: (forceImmediate) =>
         # wait 10 ms, for newly focused to be focused
         setTimeout =>
             # there is still something focused
             # we wait for it to lose focus, changeOccured will be called again
             # when the newly focused blur
-            if @$('input:focus, textarea:focus').length and not isTitleChanged
+            if @$('input:focus, textarea:focus').length and not forceImmediate
                 return true
 
             @model.set

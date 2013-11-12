@@ -3,19 +3,20 @@ BaseView = require 'lib/base_view'
 module.exports = class TagsView extends BaseView
 
     initialize: ->
+        super
         @$el.tagit
-            availableTags: []
+            availableTags: @model.collection?.getTags?() or []
             placeholderText: t 'add tags'
             afterTagAdded  : @tagAdded
             afterTagRemoved : @tagRemoved
 
         # hack to prevent tagit events
-        @myOperation = false
+        @duringRefresh = false
 
         return this
 
     tagAdded: (e, ui) =>
-        unless @myOperation or ui.duringInitialization
+        unless @duringRefresh or ui.duringInitialization
             @model.set 'tags', @$el.tagit 'assignedTags'
             @options.onChange()
         ui.tag.click =>
@@ -25,16 +26,16 @@ module.exports = class TagsView extends BaseView
             $(".dropdown-menu").hide()
 
     tagRemoved: (er, ui) =>
-        unless @myOperation or ui.duringInitialization
+        unless @duringRefresh or ui.duringInitialization
             @model.set 'tags', @$el.tagit 'assignedTags'
             @options.onChange()
 
     refresh: =>
-        @myOperation = true
+        @duringRefresh = true
         @$el.tagit 'removeAll'
         for tag in @model.get('tags')
             @$el.tagit 'createTag', tag
-        @myOperation = false
+        @duringRefresh = false
 
 
 
