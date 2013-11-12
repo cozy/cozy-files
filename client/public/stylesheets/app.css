@@ -689,7 +689,7 @@ li[class^="icon-"].icon-large:before, li[class*=" icon-"].icon-large:before {
 .icon-user-md:before              { content: "\f200"; }
 
 body {
-    background: rgb(229,229,229);
+    background: rgb(255,255,255);
     background: -moz-linear-gradient(top,  rgba(229,229,229,1) 0%, rgba(255,255,255,1) 100%);
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(229,229,229,1)), color-stop(100%,rgba(255,255,255,1)));
     background: -webkit-linear-gradient(top,  rgba(229,229,229,1) 0%,rgba(255,255,255,1) 100%);
@@ -833,6 +833,9 @@ tr.folder-row .operations a {
 }
 tr.folder-row:hover .operations {
   visibility: visible;
+}
+tr.folder-row .file-date {
+  padding-top: 16px;
 }
 #crumbs {
   overflow: hidden;

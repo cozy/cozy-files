@@ -8,8 +8,8 @@ if model.isFolder
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
         span.glyphicon.glyphicon-edit  
-  td.operation-title
-  td.operation-amount
+  td
+  td.file-date
     span.pull-right 12:00 12/10/2013
 else
   td
@@ -23,6 +23,6 @@ else
         span.glyphicon.glyphicon-edit  
       a(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")
         span.glyphicon.glyphicon-cloud-download  
-  td.operation-title
-  td.operation-amount
+  td
+  td.file-date
     span.pull-right 12:00 12/10/2013
