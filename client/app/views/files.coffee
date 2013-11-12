@@ -33,7 +33,7 @@ module.exports = class FilesView extends ViewCollection
             @collection.add file
             @upload file
         else
-            alert "Sorry, the file already exists"
+            alert "Sorry, could not upload the file: it already exists"
 
     upload: (file) =>
         formdata = new FormData()
