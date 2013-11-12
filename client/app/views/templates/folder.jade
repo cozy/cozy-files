@@ -1,8 +1,55 @@
-#bar
-    input.flatbtn#uploader(type="file") 
-    input.input-block-level(type="text", value="", id="name", placeholder="Folder name")
-    button.add.flatbtn Create new folder
-#content
-    #h4 #{model.path + '/' + model.name}
-    #folders
-    #files
+#dialog-upload-file.modal.fade
+    .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+            h4.modal-title Upload a new file
+          .modal-body
+            form
+              fieldset
+                .form-group
+                  label(for='uploader')
+                    | Choose the file to upload:
+                  input#uploader.form-control(type="file")
+          .modal-footer
+            button.btn.btn-link(type='button', data-dismiss='modal') Close
+            button.btn.btn-cozy-contrast#upload-file-send(type='button') Send
+
+#dialog-new-folder.modal.fade
+    .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+            h4.modal-title Add a new folder
+          .modal-body
+            form
+              fieldset
+                .form-group
+                  label(for='inputName')
+                    | Enter the folder's name: 
+                  input#inputName.form-control(type="text")
+          .modal-footer
+            button.btn.btn-link(type='button', data-dismiss='modal') Close
+            button.btn.btn-cozy#new-folder-send(type='button') Send
+
+#affixbar(data-spy="affix", data-offset-top="1")
+  .container
+    .row
+      .col-lg-12
+        p.pull-right
+          a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
+            span.glyphicon.glyphicon-upload
+            if model.id == "root"
+              |  Upload a file here
+            else
+              |  Upload a file to "#{model.get("name")}"
+          | 
+          a.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
+            span.glyphicon.glyphicon-plus-sign
+            |  Create a new folder
+
+.container
+  .row.content-shadow
+    .col-lg-12#content
+      #crumbs
+      #files

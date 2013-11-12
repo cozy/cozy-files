@@ -1,46 +1,28 @@
 app = require 'application'
-FolderView = require 'views/folder'
-Folder = require 'models/folder'
 
-MockupView = require 'views/mockup'
+FolderView = require './views/folder'
+MockupView = require './views/mockup'
+File = require './models/file'
 
-# We'll cover the router in another tutorial.
+
 module.exports = class Router extends Backbone.Router
 
     routes:
-        #'': 'main'        
-        '': 'mockup'
+        '': 'main'
         'folders/:folderid' : 'folder'
         'mockup' : 'mockup'
 
     main: ->
-        folder = new Folder id:"root", path:"", name:""
-        @displayView new FolderView
-            model: folder
+        app.folderView.changeActiveFolder app.root
 
     folder: (id) ->
-        initView = (folder) =>
-            @displayView new FolderView
-                model: folder
-
-        if app.folders.get(id)
-            folder = app.folders.get(id)
-            initView folder
-        else
-            folder = new Folder id:id
-            folder.get 
-                success: (data) =>
-                    folder.set data
-                    initView folder
-
-    # display a page properly (remove previous page)
-    displayView: (view) =>
-        @mainView.remove() if @mainView
-        @mainView = view 
-        el = @mainView.render().$el
-        $('body').append el
+        folder = new File id:id, isFolder:true
+        folder.find 
+            success: (data) =>
+                folder.set data
+                app.folderView.changeActiveFolder folder
 
     mockup: ->
-        @mainView.remove() if @mainView
-        @mainView = new MockupView()
-        @mainView.render()
+        @displayedView.remove() if @displayedView
+        @displayedView = new MockupView()
+        @displayedView.render()
