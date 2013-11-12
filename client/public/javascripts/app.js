@@ -765,10 +765,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.initialize = function() {
-    var _this = this;
-    return this.listenTo(this.model, 'change:id', function() {
-      return _this.render();
-    });
+    return this.listenTo(this.model, 'change:id', this.render);
   };
 
   FileView.prototype.onDeleteClicked = function() {
@@ -850,7 +847,7 @@ module.exports = FilesView = (function(_super) {
       this.collection.add(file);
       return this.upload(file);
     } else {
-      return alert("Sorry, the file already exists");
+      return alert("Sorry, could not upload the file: it already exists");
     }
   };
 
