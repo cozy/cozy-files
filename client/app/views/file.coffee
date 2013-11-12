@@ -10,7 +10,7 @@ module.exports = class FileView extends BaseView
         'click a.file-delete': 'onDeleteClicked'
 
     initialize: ->
-        @listenTo @model, 'change:id', => @render()
+        @listenTo @model, 'change:id', @render
 
     onDeleteClicked: ->
         if confirm 'Are you sure ?'
