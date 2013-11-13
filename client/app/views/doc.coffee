@@ -8,12 +8,15 @@ module.exports = class DocView extends BaseView
     events:
         'change #nameFormat': 'saveNameFormat'
 
+    afterRender: ->
+        @$('#nameFormat').val app.config.get 'nameOrder'
+
     saveNameFormat: ->
-        field = @$('#nameFormat')
-        field.spin('small')
-        app.config.save nameOrder: field.val(),
+        help = @$('.help-inline').show().text t 'saving'
+        app.config.save nameOrder: @$('#nameFormat').val(),
             wait: true
+            success: ->
+                help.text(t 'saved').fadeOut()
+
             error: ->
-                alert('server error occured');
-            always: ->
-                field.spin()
+                help.addClass('error').text t 'server error occured'
