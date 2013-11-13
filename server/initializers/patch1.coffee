@@ -11,9 +11,9 @@ module.exports = (next) ->
 
             contact = contact.value
 
-            return cb null if contact.fn
+            return cb null if contact.fn or contact.n
 
-            console.log "converting #{contact.name}"
+            console.log "patch1 on contact", contact.id
 
             # this is an old contact
             data = {}

@@ -8,7 +8,7 @@ ContactLog = require('./contact_log');
 module.exports = Config = americano.getModel('ContactConfig', {
   nameOrder: {
     type: String,
-    "default": 'given-familly'
+    "default": 'not-set'
   }
 });
 
