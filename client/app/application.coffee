@@ -16,12 +16,15 @@ module.exports =
 
         ContactsCollection = require('collections/contact')
         ContactsList = require('views/contactslist')
+        Config = require('models/config')
         Router = require('router')
 
         @contacts = new ContactsCollection()
         @contactslist = new ContactsList collection: @contacts
         @contactslist.$el.appendTo $('body')
         @contactslist.render()
+
+        @config = new Config window.config or {}
 
         if window.initcontacts?
             @contacts.reset window.initcontacts, parse: true
@@ -30,5 +33,7 @@ module.exports =
             @contacts.fetch()
 
         @router = new Router()
+
+        window.app = @
 
         Backbone.history.start()
