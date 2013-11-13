@@ -35,7 +35,20 @@ Contact.prototype.remoteKeys = function() {
   return out;
 };
 
-Contact.prototype.toVCF = function() {
+Contact.prototype.getComputedFN = function(config) {
+  var familly, given, middle, prefix, suffix, _ref;
+  _ref = this.n.split(';'), familly = _ref[0], given = _ref[1], middle = _ref[2], prefix = _ref[3], suffix = _ref[4];
+  switch (config.nameOrder) {
+    case 'given-familly':
+      return "" + given + " " + middle + " " + familly;
+    case 'familly-given':
+      return "" + familly + ", " + given + " " + middle;
+    case 'given-middleinitial-familly':
+      return "" + given + " " + (initial(middle)) + " " + familly;
+  }
+};
+
+Contact.prototype.toVCF = function(config) {
   var dp, i, key, model, out, type, value, _ref;
   model = this.toJSON();
   out = "BEGIN:VCARD\n";
@@ -43,11 +56,11 @@ Contact.prototype.toVCF = function() {
   if (model.note) {
     out += "NOTE:" + model.note + "\n";
   }
-  if (model.fn) {
-    out += "FN:" + model.fn + "\n";
-  }
   if (model.n) {
     out += "N:" + model.n + "\n";
+    out += "FN:" + (this.getComputedFN(config)) + "\n";
+  } else if (model.fn) {
+    out += "FN:" + model.fn + "\n";
   }
   _ref = model.datapoints;
   for (i in _ref) {
