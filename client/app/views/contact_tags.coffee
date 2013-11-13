@@ -5,7 +5,7 @@ module.exports = class TagsView extends BaseView
     initialize: ->
         super
         @$el.tagit
-            availableTags: @model.collection?.getTags?() or []
+            availableTags: app.contacts.getTags() or []
             placeholderText: t 'add tags'
             afterTagAdded  : @tagAdded
             afterTagRemoved : @tagRemoved
