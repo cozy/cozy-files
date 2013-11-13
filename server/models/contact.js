@@ -8,6 +8,7 @@ ContactLog = require('./contact_log');
 module.exports = Contact = americano.getModel('Contact', {
   id: String,
   fn: String,
+  n: String,
   datapoints: function(x) {
     return x;
   },
@@ -42,7 +43,12 @@ Contact.prototype.toVCF = function() {
   if (model.note) {
     out += "NOTE:" + model.note + "\n";
   }
-  out += "FN:" + model.fn + "\n";
+  if (model.fn) {
+    out += "FN:" + model.fn + "\n";
+  }
+  if (model.n) {
+    out += "N:" + model.n + "\n";
+  }
   _ref = model.datapoints;
   for (i in _ref) {
     dp = _ref[i];

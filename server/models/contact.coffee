@@ -3,7 +3,9 @@ ContactLog = require './contact_log'
 
 module.exports = Contact = americano.getModel 'Contact',
     id            : String
-    fn            : String
+    fn            : String # vCard FullName = display name
+    n             : String # vCard Name = splitted
+    # (Familly;Given;Middle;Prefix;Suffix)
     datapoints    : (x) -> x
     note          : String
     tags          : (x) -> x # DAMN IT JUGGLING
@@ -26,7 +28,8 @@ Contact::toVCF = ->
     out = "BEGIN:VCARD\n"
     out += "VERSION:3.0\n"
     out += "NOTE:#{model.note}\n" if model.note
-    out += "FN:#{model.fn}\n"
+    out += "FN:#{model.fn}\n" if model.fn
+    out += "N:#{model.n}\n" if model.n
 
 
     for i, dp of model.datapoints
