@@ -95,6 +95,7 @@ module.exports = {
   initialize: function() {
     var Config, ContactsCollection, ContactsList, Router, e, locales;
 
+    window.app = this;
     this.locale = window.locale;
     delete window.locale;
     this.polyglot = new Polyglot();
@@ -117,6 +118,7 @@ module.exports = {
     this.contactslist.$el.appendTo($('body'));
     this.contactslist.render();
     this.config = new Config(window.config || {});
+    delete window.config;
     if (window.initcontacts != null) {
       this.contacts.reset(window.initcontacts, {
         parse: true
@@ -126,7 +128,6 @@ module.exports = {
       this.contacts.fetch();
     }
     this.router = new Router();
-    window.app = this;
     return Backbone.history.start();
   }
 };
@@ -150,15 +151,23 @@ module.exports = ContactCollection = (function(_super) {
 
   ContactCollection.prototype.url = 'contacts';
 
-  ContactCollection.prototype.comparator = 'fn';
+  ContactCollection.prototype.comparator = function(a, b) {
+    var nameA, nameB, out;
+
+    nameA = a.getFN().toLowerCase();
+    nameB = b.getFN().toLowerCase();
+    return out = nameA > nameB ? 1 : nameA < nameB ? -1 : 0;
+  };
 
   ContactCollection.prototype.initialize = function() {
     var _this = this;
 
     ContactCollection.__super__.initialize.apply(this, arguments);
-    return this.on('change:fn', function(model) {
-      _this.sort();
-      return Backbone.Mediator.publish('contact:changed', model);
+    this.on('change:fn', function() {
+      return _this.sort();
+    });
+    return this.on('change:n', function() {
+      return _this.sort();
     });
   };
 
@@ -492,36 +501,6 @@ module.exports.parse = function(log, context, callback, progress) {
   } else {
     throw new Error("Format not parsable");
   }
-};
-
-});
-
-;require.register("lib/name_manager", function(exports, require, module) {
-var initials;
-
-initials = function(middle) {
-  var i, _ref;
-
-  if (i = (_ref = value.split(/[ \,]/)[0][0]) != null ? _ref.toUpperCase() : void 0) {
-    return i + '.';
-  } else {
-    return '';
-  }
-};
-
-module.exports = {
-  ContactN2FN: function(n) {
-    var familly, given, middle, prefix, suffix;
-
-    familly = n[0], given = n[1], middle = n[2], prefix = n[3], suffix = n[4];
-    switch (app.config.get('nameOrder')) {
-      case 'firstname':
-        return "" + given + " " + (initial(middle)) + " " + familly;
-      case 'lastname':
-        return "" + familly + ", " + given + " " + middle;
-    }
-  },
-  ContactFN2N: function(n) {}
 };
 
 });
@@ -1354,6 +1333,7 @@ module.exports = {
   "remove datapoint": "Remove",
   "changes saved": "Changes saved",
   "undo": "Undo",
+  "undone": "Undone",
   "history": "History",
   "info": "Info",
   "cozy url": "Cozy",
@@ -1411,10 +1391,11 @@ module.exports = {
   "export vcard": "Export vCard file",
   "settings": "Settings",
   "help": "Help",
-  "name format info": "Select display name format.",
+  "name format info": "Select display name format (will not change contacts already imported)",
   "format given familly": "Given Familly (John Johnson)",
   "format familly given": "Prénom Nom (Johnson John)",
   "format given mid familly": "Full (John J. Johnson)",
+  "do this now": "Select the format your contacts have now.",
   "vcard export info": "Click here to export all your contacts as a vCard file:",
   "carddav info": "Synchronization: To sync your contacts with your mobile, install the Webdav\napplication from the market place.",
   "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
@@ -1458,6 +1439,7 @@ module.exports = {
   "remove datapoint": "Enlever",
   "changes saved": "Changements sauvegardés",
   "undo": "Annuler",
+  "undone": "Annulé",
   "history": "Historique",
   "info": "Info",
   "cozy url": "Cozy",
@@ -1515,10 +1497,11 @@ module.exports = {
   "export vcard": "Exporter un fichier vCard file",
   "settings": "Paramètres",
   "help": "Aide",
-  "name format info": "Selectionnez le format d'affichage des noms.",
+  "name format info": "Selectionnez le format d'affichage des noms (Cela n'influera pas les contacts déjà importés)",
   "format given familly": "Prénom Nom (Pierre Dupont)",
   "format familly given": "Nom Prénom (Dupont Pierre)",
   "format given mid familly": "Format américain (John J. Johnson)",
+  "do this now": "Indiquez le format qu'ont actuellement vos contacts.",
   "vcard export info": "Cliquez ici pour exporter tous vos contacts dans un fichier vCard :",
   "carddav info": "Synchronization : Pour synchroniser vos contacts sur votre mobile,\ninstallez l'application Webdav depuis le market place.",
   "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
@@ -1541,6 +1524,10 @@ module.exports = Config = (function(_super) {
   }
 
   Config.prototype.url = 'config';
+
+  Config.prototype.isNew = function() {
+    return true;
+  };
 
   Config.prototype.defaults = {
     'nameOrder': 'given-familly'
@@ -1567,6 +1554,8 @@ ContactLogCollection = require('collections/contactlog');
 ANDROID_RELATION_TYPES = ['custom', 'assistant', 'brother', 'child', 'domestic partner', 'father', 'friend', 'manager', 'mother', 'parent', 'partner', 'referred by', 'relative', 'sister', 'spouse'];
 
 module.exports = Contact = (function(_super) {
+  var initial;
+
   __extends(Contact, _super);
 
   Contact.prototype.urlRoot = 'contacts';
@@ -1598,8 +1587,6 @@ module.exports = Contact = (function(_super) {
 
   Contact.prototype.defaults = function() {
     return {
-      fn: '',
-      n: [],
       note: '',
       tags: []
     };
@@ -1618,8 +1605,9 @@ module.exports = Contact = (function(_super) {
     }
     if (typeof attrs.n === 'string') {
       attrs.n = attrs.n.split(';');
-    } else if (!Array.isArray(attrs.n)) {
-      attrs.n = [];
+    }
+    if (!Array.isArray(attrs.n)) {
+      attrs.n = void 0;
     }
     return attrs;
   };
@@ -1669,22 +1657,90 @@ module.exports = Contact = (function(_super) {
   };
 
   Contact.prototype.match = function(filter) {
-    return filter.test(this.get('fn')) || filter.test(this.get('note')) || filter.test(this.get('tags').join(' ')) || this.dataPoints.match(filter);
+    return filter.test(this.get('n')) || filter.test(this.get('fn')) || filter.test(this.get('note')) || filter.test(this.get('tags').join(' ')) || this.dataPoints.match(filter);
   };
 
   Contact.prototype.toJSON = function() {
     var json;
 
     json = Contact.__super__.toJSON.apply(this, arguments);
-    console.log("toJSON", json === this.attributes);
     json.datapoints = this.dataPoints.toJSON();
-    if (json.n.length === 0) {
-      delete json.n;
-    } else {
+    if (Array.isArray(json.n)) {
       json.n = json.n.join(';');
+    }
+    if (!json.n) {
+      delete json.n;
     }
     delete json.picture;
     return json;
+  };
+
+  Contact.prototype.setFN = function(value) {
+    if (this.has('n')) {
+      this.set('n', this.getComputedN(value));
+      return this.set('fn', '');
+    } else {
+      return this.set('fn', value);
+    }
+  };
+
+  Contact.prototype.getFN = function() {
+    return this.get('fn') || this.getComputedFN();
+  };
+
+  initial = function(middle) {
+    var i, _ref;
+
+    if (i = (_ref = middle.split(/[ \,]/)[0][0]) != null ? _ref.toUpperCase() : void 0) {
+      return i + '.';
+    } else {
+      return '';
+    }
+  };
+
+  Contact.prototype.getComputedFN = function(n) {
+    var familly, given, middle, prefix, suffix, _ref;
+
+    if (n == null) {
+      n = this.get('n');
+    }
+    if (!(n && n.length > 0)) {
+      return '';
+    }
+    _ref = n || this.get('n'), familly = _ref[0], given = _ref[1], middle = _ref[2], prefix = _ref[3], suffix = _ref[4];
+    switch (app.config.get('nameOrder')) {
+      case 'given-familly':
+        return "" + given + " " + middle + " " + familly;
+      case 'familly-given':
+        return "" + familly + ", " + given + " " + middle;
+      case 'given-middleinitial-familly':
+        return "" + given + " " + (initial(middle)) + " " + familly;
+    }
+  };
+
+  Contact.prototype.getComputedN = function(fn) {
+    var familly, given, middle, parts, prefix, suffix;
+
+    familly = given = middle = prefix = suffix = "";
+    if (fn == null) {
+      fn = this.get('fn');
+    }
+    parts = fn.split(/[ \,]/).filter(function(part) {
+      return part !== "";
+    });
+    switch (app.config.get('nameOrder')) {
+      case 'given-familly':
+      case 'given-middleinitial-familly':
+        given = parts[0];
+        familly = parts[parts.length - 1];
+        middle = parts.slice(1, +(parts.length - 2) + 1 || 9e9).join(' ');
+        break;
+      case 'familly-given':
+        familly = parts[0];
+        given = parts[1];
+        middle = parts.slice(2).join(' ');
+    }
+    return [familly, given, middle, prefix, suffix];
   };
 
   return Contact;
@@ -1738,6 +1794,9 @@ Contact.fromVCF = function(vcf) {
         current.dataPoints.add(currentdp);
       }
       imported.add(current);
+      if (current.has('n')) {
+        current.unset('fn');
+      }
       currentdp = null;
       current = null;
       currentidx = null;
@@ -2383,10 +2442,16 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</p><h2>');
 var __val__ = t('settings')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</h2><p><label for="nameFormat">');
+buf.push('</h2><p id="config-now" class="important">');
+var __val__ = t('do this now')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><label for="nameFormat" class="control-label">');
 var __val__ = t('name format info')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</label><select id="nameFormat" class="span5 large"><option value="given-familly" selected="selected">');
+buf.push('</label><div class="control"><select id="nameFormat" class="span5 large"><option value="">');
+var __val__ = t('name format info')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</option><option value="given-familly">');
 var __val__ = t('format given familly')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</option><option value="familly-given">');
@@ -2395,7 +2460,7 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</option><option value="given-middleinitial-familly">');
 var __val__ = t('format given mid familly')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</option></select></p><h2>');
+buf.push('</option></select><span class="help-inline"></span></div><h2>');
 var __val__ = t('import export')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</h2><p>');
@@ -2775,7 +2840,8 @@ module.exports = ContactView = (function(_super) {
 
   ContactView.prototype.getRenderData = function() {
     return _.extend({}, this.model.toJSON(), {
-      hasPicture: this.model.hasPicture || false
+      hasPicture: this.model.hasPicture || false,
+      fn: this.model.getFN()
     });
   };
 
@@ -2900,16 +2966,13 @@ module.exports = ContactView = (function(_super) {
       if (_this.$('input:focus, textarea:focus').length && !forceImmediate) {
         return true;
       }
+      _this.model.setFN(_this.namefield.val());
       _this.model.set({
-        fn: _this.namefield.val(),
         note: _this.notesfield.val()
       });
       if (_.isEqual(_this.currentState, _this.model.toJSON())) {
-        console.log("Nothing has changed");
         return _this.needSaving = false;
       } else {
-        console.log("do save");
-        _this.currentState = _this.model.toJSON();
         _this.savedInfo.hide();
         return _this.save();
       }
@@ -2928,8 +2991,7 @@ module.exports = ContactView = (function(_super) {
     }
     this.needSaving = false;
     this.savedInfo.show().text('saving changes');
-    this.model.save();
-    return Backbone.Mediator.publish('contact:changed', this.model);
+    return this.model.save();
   };
 
   ContactView.prototype.showNameModal = function() {
@@ -2939,7 +3001,8 @@ module.exports = ContactView = (function(_super) {
     modal = new NameModal({
       model: this.model,
       onChange: function() {
-        return _this.changeOccured();
+        _this.needSaving = true;
+        return _this.save();
       }
     });
     $('body').append(modal.$el);
@@ -2992,7 +3055,7 @@ module.exports = ContactView = (function(_super) {
     var _ref;
 
     this.notesfield.val(this.model.get('note'));
-    this.namefield.val(this.model.get('fn'));
+    this.namefield.val(this.model.getFN());
     if ((_ref = this.tags) != null) {
       _ref.refresh();
     }
@@ -3066,7 +3129,9 @@ module.exports = ContactView = (function(_super) {
           type: 'image/jpeg'
         });
         _this.model.picture = blob;
-        return _this.changeOccured();
+        return _this.model.save(null, {
+          undo: true
+        });
       };
     };
   };
@@ -3092,8 +3157,6 @@ ContactLogCollection = require('collections/contactlog');
 app = require('application');
 
 module.exports = CallImporterView = (function(_super) {
-  var initials;
-
   __extends(CallImporterView, _super);
 
   function CallImporterView() {
@@ -3120,23 +3183,30 @@ module.exports = CallImporterView = (function(_super) {
   };
 
   CallImporterView.prototype.getRenderData = function() {
-    return _.extend({}, this.model.attributes, this.getNames());
+    return _.extend({}, this.model.attributes, {
+      fn: this.model.getFN(),
+      n: this.model.get('n') || this.model.getComputedN()
+    });
   };
 
-  CallImporterView.prototype.save = function() {
+  CallImporterView.prototype.getStructuredName = function() {
     var fields;
 
     fields = ['last', 'first', 'middle', 'prefix', 'suffix'];
-    this.model.set('n', fields.map(function(field) {
+    return fields.map(function(field) {
       return $('#' + field).val();
-    }));
-    this.model.set('fn', this.getComputedFN());
+    });
+  };
+
+  CallImporterView.prototype.save = function() {
+    this.model.set('n', this.getStructuredName());
+    this.model.set('fn', '');
     this.options.onChange();
     return this.close();
   };
 
   CallImporterView.prototype.refreshFN = function() {
-    return this.$('#full').val(this.getComputedFN());
+    return this.$('#full').val(this.model.getComputedFN(this.getStructuredName()));
   };
 
   CallImporterView.prototype.close = function() {
@@ -3146,64 +3216,6 @@ module.exports = CallImporterView = (function(_super) {
     return this.$el.on('hidden', function() {
       return _this.remove();
     });
-  };
-
-  initials = function(middle) {
-    var i, _ref1;
-
-    if (i = (_ref1 = value.split(/[ \,]/)[0][0]) != null ? _ref1.toUpperCase() : void 0) {
-      return i + '.';
-    } else {
-      return '';
-    }
-  };
-
-  CallImporterView.prototype.getNames = function() {
-    var out;
-
-    out = this.model.pick('n', 'fn');
-    if (out.fn && !out.n.length) {
-      out.n = this.getComputedN();
-    } else if (out.n.length && !out.fn) {
-      out.fn = this.getComputedFN();
-    }
-    return out;
-  };
-
-  CallImporterView.prototype.getComputedFN = function(n) {
-    var familly, given, middle, prefix, suffix, _ref1;
-
-    _ref1 = this.model.get('n'), familly = _ref1[0], given = _ref1[1], middle = _ref1[2], prefix = _ref1[3], suffix = _ref1[4];
-    switch (app.config.get('nameOrder')) {
-      case 'given-familly':
-        return "" + given + " " + middle + " " + familly;
-      case 'given-middleinitial-familly':
-        return "" + given + " " + (initial(middle)) + " " + familly;
-      case 'familly-given':
-        return "" + familly + ", " + given + " " + middle;
-    }
-  };
-
-  CallImporterView.prototype.getComputedN = function(n) {
-    var familly, given, middle, parts, prefix, suffix;
-
-    familly = given = middle = prefix = suffix = "";
-    parts = this.model.get('fn').split(/[ \,]/).filter(function(part) {
-      return part !== "";
-    });
-    switch (app.config.get('nameOrder')) {
-      case 'given-familly':
-      case 'given-middleinitial-familly':
-        given = parts[0];
-        familly = parts[parts.length - 1];
-        middle = parts.slice(1, +(parts.length - 2) + 1 || 9e9).join(' ');
-        break;
-      case 'familly-given':
-        familly = parts[0];
-        given = parts[1];
-        middle = parts.slice(2).join(' ');
-    }
-    return [familly, given, middle, prefix, suffix];
   };
 
   return CallImporterView;
@@ -3311,13 +3323,14 @@ module.exports = ContactsList = (function(_super) {
 
   ContactsList.prototype.template = require('templates/contactslist');
 
-  ContactsList.prototype.subscriptions = {
-    'contact:changed': 'onContactChanged'
-  };
-
   ContactsList.prototype.events = {
     'change #filterfield': 'keyUpCallback',
     'click #filterClean': 'cleanFilter'
+  };
+
+  ContactsList.prototype.initialize = function() {
+    ContactsList.__super__.initialize.apply(this, arguments);
+    return this.listenTo(this.collection, 'change', this.onContactChanged);
   };
 
   ContactsList.prototype.afterRender = function() {
@@ -3453,7 +3466,8 @@ module.exports = ContactsListItemView = (function(_super) {
     return _.extend({}, this.model.attributes, {
       hasPicture: this.model.hasPicture || false,
       bestmail: this.model.getBest('email'),
-      besttel: this.model.getBest('tel')
+      besttel: this.model.getBest('tel'),
+      fn: this.model.get('fn') || this.model.getComputedFN()
     });
   };
 
@@ -3657,20 +3671,29 @@ module.exports = DocView = (function(_super) {
     'change #nameFormat': 'saveNameFormat'
   };
 
-  DocView.prototype.saveNameFormat = function() {
-    var field;
+  DocView.prototype.afterRender = function() {
+    if (app.config.get('nameOrder') !== 'not-set') {
+      this.$('#config-now').hide();
+      return this.$('#nameFormat').val(app.config.get('nameOrder'));
+    } else if (app.contacts.length === 0) {
+      return this.$('#config-now').hide();
+    }
+  };
 
-    field = this.$('#nameFormat');
-    field.spin('small');
+  DocView.prototype.saveNameFormat = function() {
+    var help;
+
+    help = this.$('.help-inline').show().text(t('saving'));
     return app.config.save({
-      nameOrder: field.val()
+      nameOrder: this.$('#nameFormat').val()
     }, {
       wait: true,
-      error: function() {
-        return alert('server error occured');
+      success: function() {
+        help.text(t('saved')).fadeOut();
+        return window.location.reload();
       },
-      always: function() {
-        return field.spin();
+      error: function() {
+        return help.addClass('error').text(t('server error occured'));
       }
     });
   };
@@ -3949,7 +3972,10 @@ module.exports = ImporterView = (function(_super) {
       });
       txt = "<p>" + txt + " :</p><ul>";
       _this.toImport.each(function(contact) {
-        return txt += "<li>" + (contact.get('fn')) + "</li>";
+        var name;
+
+        name = contact.get('fn') || contact.getComputedFN();
+        return txt += "<li>" + name + "</li>";
       });
       txt += '</ul>';
       _this.content.html(txt);

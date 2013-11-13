@@ -294,6 +294,10 @@ a {
   font-weight: normal;
   border-bottom: 1px solid #ccc;
 }
+#doc .important {
+  color: #f00;
+  font-size: 2em;
+}
 #contact #picture {
   display: block;
   position: absolute;
@@ -713,6 +717,9 @@ a {
   }
   #contact #picture {
     top: 33px;
+  }
+  #contact #adder {
+    display: block;
   }
 }
 
