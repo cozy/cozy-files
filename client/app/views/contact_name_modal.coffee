@@ -14,6 +14,7 @@ module.exports = class CallImporterView extends BaseView
     events:
         'click #cancel-btn': 'close'
         'click #confirm-btn': 'save'
+        'change input': 'refreshFN'
 
     afterRender: ->
         @$el.modal 'show'
@@ -25,8 +26,13 @@ module.exports = class CallImporterView extends BaseView
         fields = ['last', 'first', 'middle', 'prefix', 'suffix']
 
         @model.set 'n', fields.map (field) -> $('#' + field).val()
+        @model.set 'fn', @getComputedFN()
         @options.onChange()
         @close()
+
+    refreshFN: ->
+        @$('#full').val @getComputedFN()
+
 
     close: =>
         @$el.modal 'hide'
@@ -39,12 +45,11 @@ module.exports = class CallImporterView extends BaseView
         if i = value.split(/[ \,]/)[0][0]?.toUpperCase() then i + '.'
         else ''
 
-
     getNames: ->
         out = @model.pick 'n', 'fn'
-        if out.fn and not out.n
+        if out.fn and not out.n.length
             out.n = @getComputedN()
-        else if out.n and not out.fn
+        else if out.n.length and not out.fn
             out.fn = @getComputedFN()
 
         return out
@@ -53,7 +58,7 @@ module.exports = class CallImporterView extends BaseView
         [familly, given, middle, prefix, suffix] = @model.get 'n'
         switch app.config.get 'nameOrder'
             when 'given-familly'
-                "#{given} #{familly}"
+                "#{given} #{middle} #{familly}"
 
             when 'given-middleinitial-familly'
                 "#{given} #{initial(middle)} #{familly}"
@@ -63,18 +68,16 @@ module.exports = class CallImporterView extends BaseView
 
     getComputedN: (n) ->
         familly = given = middle = prefix = suffix = ""
-        parts = fn.split(/[ \,]/).filter (part) -> part isnt ""
+        parts = @model.get('fn').split(/[ \,]/)
+            .filter (part) -> part isnt ""
         switch app.config.get 'nameOrder'
-            when 'given-familly'
-                given = fn[0]
-                familly = fn[1]
-            when 'given-middleinitial-familly'
-                given = fn[0]
-                familly = fn[fn.length-1]
-                middle = fn[1..fn.length-2].join(' ')
+            when 'given-familly', 'given-middleinitial-familly'
+                given = parts[0]
+                familly = parts[parts.length-1]
+                middle = parts[1..parts.length-2].join(' ')
             when 'familly-given'
-                familly = fn[0]
-                given = fn[1]
-                middle = fn[2..].join(' ')
+                familly = parts[0]
+                given = parts[1]
+                middle = parts[2..].join(' ')
 
         return [familly, given, middle, prefix, suffix]

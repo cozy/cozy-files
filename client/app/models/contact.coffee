@@ -32,6 +32,7 @@ module.exports = class Contact extends Backbone.Model
 
     defaults: ->
         fn: ''
+        n: []
         note: ''
         tags: []
 
@@ -44,8 +45,10 @@ module.exports = class Contact extends Backbone.Model
             @hasPicture = true
             delete attrs._attachments
 
-        if attrs.n and not Array.isArray attrs.n
+        if typeof attrs.n is 'string'
             attrs.n = attrs.n.split ';'
+        else unless Array.isArray(attrs.n)
+            attrs.n = []
 
         return attrs
 
@@ -88,8 +91,12 @@ module.exports = class Contact extends Backbone.Model
 
     toJSON: () ->
         json = super
+        console.log "toJSON", json == @attributes
         json.datapoints = @dataPoints.toJSON()
-        json.n = json.n.join ';'
+        if json.n.length is 0
+            delete json.n
+        else
+            json.n = json.n.join ';'
         delete json.picture
         return json
 
