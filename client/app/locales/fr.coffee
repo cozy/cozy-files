@@ -49,6 +49,22 @@ module.exports =
   "you called"            : "Vous avez appelé"
   "you were called"       : "Vous avez été appelé"
 
+# Name modal
+  "edit name"             : "Modifier le nom"
+  "name editor"           : "Editeur de nom"
+  "prefix"                : "Préfixe"
+  "placeholder prefix"    : "M."
+  "first name"            : "Prénom courrant"
+  "placeholder first"     : "Pierre"
+  "middle name"           : "Autres prénoms"
+  "placeholder middle"    : "Marie Jacque"
+  "last name"             : "Nom"
+  "placeholder last"      : "Dupont"
+  "suffix"                : "Suffixe"
+  "placeholder suffix"    : "III"
+  "full name"             : "Nom complet"
+  "save"                  : "Enregister"
+
 # ContactList
   "search placeholder"    : "Recherche ..."
   "new contact"           : "Nouveau Contact"
@@ -93,6 +109,10 @@ module.exports =
   "export vcard"          : "Exporter un fichier vCard file"
   "settings"              : "Paramètres"
   "help"                  : "Aide"
+  "name format info"      : "Selectionnez le format d'affichage des noms."
+  "format given familly"  : "Prénom Nom (Pierre Dupont)"
+  "format familly given"  : "Nom Prénom (Dupont Pierre)"
+  "format given mid familly": "Format américain (John J. Johnson)"
 
   "vcard export info"     : """
     Cliquez ici pour exporter tous vos contacts dans un fichier vCard :"""

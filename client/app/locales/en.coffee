@@ -49,6 +49,22 @@ module.exports =
   "you called"            : "You called"
   "you were called"       : "You were called"
 
+# Name modal
+  "edit name"             : "Edit Name"
+  "name editor"           : "Name Editor"
+  "prefix"                : "Prefix"
+  "placeholder prefix"    : "Sir"
+  "first name"            : "Given Name"
+  "placeholder first"     : "John"
+  "middle name"           : "Middel Name"
+  "placeholder middle"    : "D."
+  "last name"             : "Familly Name"
+  "placeholder last"      : "Doe"
+  "suffix"                : "Suffix"
+  "placeholder suffix"    : "III"
+  "full name"             : "Full name"
+  "save"                  : "Save"
+
 # ContactList
   "search placeholder"    : "Search ..."
   "new contact"           : "New Contact"
@@ -93,6 +109,10 @@ module.exports =
   "export vcard"          : "Export vCard file"
   "settings"              : "Settings"
   "help"                  : "Help"
+  "name format info"      : "Select display name format."
+  "format given familly"  : "Given Familly (John Johnson)"
+  "format familly given"  : "Prénom Nom (Johnson John)"
+  "format given mid familly": "Full (John J. Johnson)"
 
   "vcard export info"     : """
     Click here to export all your contacts as a vCard file:"""

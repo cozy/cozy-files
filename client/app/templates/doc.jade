@@ -10,6 +10,14 @@ p= t("creation info")
 
 p= t("carddav info")
 
+h2= t('settings')
+p
+    label(for="nameFormat")= t('name format info')
+    select.span5.large#nameFormat
+        option(value="given-familly", selected="selected")= t('format given familly')
+        option(value="familly-given")= t('format familly given')
+        option(value="given-middleinitial-familly")= t('format given mid familly')
+
 
 h2= t('import export')
 p= t("call log info") + ' '
