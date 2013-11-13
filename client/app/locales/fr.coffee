@@ -29,6 +29,7 @@ module.exports =
   "others"                : "Autres"
   "actions"               : "Actions"
   "add fields"            : "Ajouter des champs"
+  "more options"          : "Plus d'options"
 
   "save changes alert"    : "Sauvegarder ?"
   "not an image"          : "Ceci n'est pas une image"
