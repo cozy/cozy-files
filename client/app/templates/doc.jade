@@ -11,14 +11,16 @@ p= t("creation info")
 p= t("carddav info")
 
 h2= t('settings')
-p
-    label.control-label(for="nameFormat")= t('name format info')
-    .control
-        select.span5.large#nameFormat
-            option(value="given-familly", selected="selected")= t('format given familly')
-            option(value="familly-given")= t('format familly given')
-            option(value="given-middleinitial-familly")= t('format given mid familly')
-        span.help-inline
+p#config-now.important= t('do this now')
+
+label.control-label(for="nameFormat")= t('name format info')
+.control
+    select.span5.large#nameFormat
+        option(value="")= t('name format info')
+        option(value="given-familly")= t('format given familly')
+        option(value="familly-given")= t('format familly given')
+        option(value="given-middleinitial-familly")= t('format given mid familly')
+    span.help-inline
 
 
 h2= t('import export')

@@ -2,6 +2,8 @@ module.exports =
 
     initialize: ->
 
+        window.app = @
+
         @locale = window.locale
         delete window.locale
 
@@ -24,7 +26,8 @@ module.exports =
         @contactslist.$el.appendTo $('body')
         @contactslist.render()
 
-        @config = new Config window.config or {}
+        @config = new Config(window.config or {})
+        delete window.config
 
         if window.initcontacts?
             @contacts.reset window.initcontacts, parse: true
@@ -34,6 +37,5 @@ module.exports =
 
         @router = new Router()
 
-        window.app = @
 
         Backbone.history.start()

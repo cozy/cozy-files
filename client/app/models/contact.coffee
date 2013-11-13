@@ -31,8 +31,6 @@ module.exports = class Contact extends Backbone.Model
             @history.url = @url() + '/logs'
 
     defaults: ->
-        fn: ''
-        n: []
         note: ''
         tags: []
 
@@ -47,8 +45,9 @@ module.exports = class Contact extends Backbone.Model
 
         if typeof attrs.n is 'string'
             attrs.n = attrs.n.split ';'
-        else unless Array.isArray(attrs.n)
-            attrs.n = []
+
+        unless Array.isArray attrs.n
+            attrs.n = undefined
 
         return attrs
 
@@ -76,7 +75,6 @@ module.exports = class Contact extends Backbone.Model
 
         return result
 
-
     addDP: (name, type, value)=>
         @dataPoints.add
             type: type
@@ -84,6 +82,7 @@ module.exports = class Contact extends Backbone.Model
             value: value
 
     match: (filter) =>
+        filter.test(@get('n')) or
         filter.test(@get('fn')) or
         filter.test(@get('note')) or
         filter.test(@get('tags').join ' ') or
@@ -91,14 +90,52 @@ module.exports = class Contact extends Backbone.Model
 
     toJSON: () ->
         json = super
-        console.log "toJSON", json == @attributes
         json.datapoints = @dataPoints.toJSON()
-        if json.n.length is 0
-            delete json.n
-        else
-            json.n = json.n.join ';'
+        json.n = json.n.join(';') if Array.isArray json.n
+        delete json.n unless json.n
         delete json.picture
         return json
+
+    setFN: (value) ->
+        if @has('n')
+            @set 'n', @getComputedN value
+            @set 'fn', ''
+        else @set 'fn', value
+
+    getFN: -> @get('fn') or @getComputedFN()
+
+
+    initial =  (middle) ->
+        if i = middle.split(/[ \,]/)[0][0]?.toUpperCase() then i + '.'
+        else ''
+
+    getComputedFN: (n) ->
+        n ?= @get 'n'
+        return '' unless n and n.length > 0
+        [familly, given, middle, prefix, suffix] = n or @get 'n'
+        switch app.config.get 'nameOrder'
+            when 'given-familly' then "#{given} #{middle} #{familly}"
+            when 'familly-given' then "#{familly}, #{given} #{middle}"
+            when 'given-middleinitial-familly'
+                "#{given} #{initial(middle)} #{familly}"
+
+
+    getComputedN: (fn) ->
+        familly = given = middle = prefix = suffix = ""
+        fn ?= @get 'fn'
+        parts = fn.split(/[ \,]/)
+            .filter (part) -> part isnt ""
+        switch app.config.get 'nameOrder'
+            when 'given-familly', 'given-middleinitial-familly'
+                given = parts[0]
+                familly = parts[parts.length-1]
+                middle = parts[1..parts.length-2].join(' ')
+            when 'familly-given'
+                familly = parts[0]
+                given = parts[1]
+                middle = parts[2..].join(' ')
+
+        return [familly, given, middle, prefix, suffix]
 
 
 AndroidToDP = (contact, raw) ->
@@ -147,6 +184,7 @@ Contact.fromVCF = (vcf) ->
         else if regexps.end.test line
             current.dataPoints.add currentdp if currentdp
             imported.add current
+            current.unset 'fn' if current.has 'n'
             currentdp = null
             current = null
             currentidx = null

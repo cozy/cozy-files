@@ -9,7 +9,12 @@ module.exports = class DocView extends BaseView
         'change #nameFormat': 'saveNameFormat'
 
     afterRender: ->
-        @$('#nameFormat').val app.config.get 'nameOrder'
+        if app.config.get('nameOrder') isnt 'not-set'
+            @$('#config-now').hide()
+            @$('#nameFormat').val app.config.get 'nameOrder'
+
+        else if app.contacts.length is 0
+            @$('#config-now').hide()
 
     saveNameFormat: ->
         help = @$('.help-inline').show().text t 'saving'
@@ -17,6 +22,7 @@ module.exports = class DocView extends BaseView
             wait: true
             success: ->
                 help.text(t 'saved').fadeOut()
+                window.location.reload()
 
             error: ->
                 help.addClass('error').text t 'server error occured'
