@@ -22,13 +22,13 @@ module.exports =
 
 
     logs1: [
-        makeLog '2007-05-13T16:49:01.000Z', 'INCOMING', '+331234567', '00:05:00'
-        makeLog '2007-06-13T16:49:01.000Z', 'OUTGOING', '+331234567', '00:02:00'
-        makeLog '2007-07-13T16:49:01.000Z', 'INCOMING', '+331234500', '01:05:00'
+        makeLog '2007-05-13T16:49:01.000Z', 'INCOMING', '331234567', '00:05:00'
+        makeLog '2007-06-13T16:49:01.000Z', 'OUTGOING', '331234567', '00:02:00'
+        makeLog '2007-07-13T16:49:01.000Z', 'INCOMING', '331234500', '01:05:00'
         ]
 
 module.exports.logs2 = module.exports.logs1.concat [
-        makeLog '2007-08-13T16:49:01.000Z', 'OUTGOING', '+331234567', '00:02:00'
+        makeLog '2007-08-13T16:49:01.000Z', 'OUTGOING', '331234567', '00:02:00'
         ]
 
 module.exports.logsOrange = [

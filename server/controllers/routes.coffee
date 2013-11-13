@@ -1,13 +1,17 @@
 contact = require './contact'
 contactLog = require './contact_log'
+application = require './application'
 
 module.exports =
 
     '':
-        get: contact.index
+        get: application.index
 
     'widget':
-        get: contact.widget
+        get: application.widget
+
+    'config':
+        post: application.setConfig
 
     'contactid':
         param: contact.fetch

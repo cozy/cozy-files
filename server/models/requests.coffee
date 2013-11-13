@@ -5,6 +5,9 @@ module.exports =
     contact:
         all       : americano.defaultRequests.all
 
+    config:
+        all       : americano.defaultRequests.all
+
     contact_log:
         all       : americano.defaultRequests.all
         bySnippet : (doc) ->

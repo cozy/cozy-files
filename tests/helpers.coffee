@@ -2,6 +2,7 @@ TESTPORT = process.env.PORT or 8013
 Contact = require '../server/models/contact'
 PCLog = require '../server/models/phone_communication_log'
 ContactLog = require '../server/models/contact_log'
+Config = require '../server/models/config'
 Client = require('request-json').JsonClient
 
 module.exports =
@@ -17,9 +18,10 @@ module.exports =
         @server.close()
 
     clearDb: (done) ->
-        Contact.requestDestroy "all", ->
-            PCLog.requestDestroy "all", ->
-                ContactLog.requestDestroy "all", done
+        Config.requestDestroy "all", ->
+            Contact.requestDestroy "all", ->
+                PCLog.requestDestroy "all", ->
+                    ContactLog.requestDestroy "all", done
 
     createContact: (data) -> (done) ->
         baseContact = new Contact(data)

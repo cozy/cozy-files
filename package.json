@@ -33,6 +33,9 @@
     "CozyInstance": {
       "description": "Read language setting"
     },
+    "ContactConfig": {
+      "description": "Store your settings for contacts"
+    },
     "PhoneCommunicationLog": {
       "description": "FING/Orange retrieve calls log from your invoice"
     },

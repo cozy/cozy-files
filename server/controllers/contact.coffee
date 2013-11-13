@@ -1,37 +1,8 @@
 Contact = require '../models/contact'
-i18n    = require 'cozy-i18n-helper'
 path    = require 'path'
 fs      = require 'fs'
 
 module.exports =
-
-    index: (req, res) ->
-        Contact.request 'all', (err, contacts) ->
-            return res.error 500, 'An error occured', err if err
-
-            i18n.getLocale null, (err, locale) ->
-                console.log err if err
-
-                imports = """
-                    window.locale = "#{locale}";
-                    window.initcontacts = #{JSON.stringify(contacts)};
-                """
-
-                res.render 'index.jade', imports: imports
-
-    widget: (req, res) ->
-        Contact.request 'all', (err, contacts) ->
-            return res.error 500, 'An error occured', err if err
-
-            i18n.getLocale null, (err, locale) ->
-                console.log err if err
-
-                imports = """
-                    window.locale = "#{locale}";
-                    window.initcontacts = #{JSON.stringify(contacts)};
-                """
-
-                res.render 'widget.jade', imports: imports
 
 
     fetch: (req, res, next, id) ->
