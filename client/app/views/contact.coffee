@@ -1,6 +1,7 @@
 ViewCollection = require 'lib/view_collection'
 HistoryView = require 'views/history'
 TagsView = require 'views/contact_tags'
+NameModal = require 'views/contact_name_modal'
 Datapoint = require 'models/datapoint'
 
 
@@ -23,6 +24,7 @@ module.exports = class ContactView extends ViewCollection
         'click .addother'   : @addClicked 'other'
         'click .addurl'     : @addClicked 'url'
         'click #more-options': 'onMoreOptionsClicked'
+        'click #name-edit'  : 'showNameModal'
         'click #undo'       : 'undo'
         'click #delete'     : 'delete'
         'change #uploader'  : 'photoChanged'
@@ -169,10 +171,19 @@ module.exports = class ContactView extends ViewCollection
         @model.save()
         Backbone.Mediator.publish 'contact:changed', @model
 
+    showNameModal: =>
+        modal = new NameModal
+            model: @model
+            onChange: => @changeOccured()
+
+        $('body').append modal.$el
+        modal.render()
+
     onMoreOptionsClicked: =>
         @$("#more-options").fadeOut =>
             @$("#adder h2").show()
             @$("#adder").fadeIn()
+            @resizeNiceScroll()
 
     undo: =>
         return unless @lastState

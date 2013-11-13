@@ -12,6 +12,7 @@
 
     #wrap-name-notes
       input#name(placeholder=t("name"), value="#{fn}")
+      a#name-edit= t('edit name')
       input#tags.tagit(value=tags.join(','))
 
     span#save-info= t('changes saved') + ' '

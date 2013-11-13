@@ -44,6 +44,9 @@ module.exports = class Contact extends Backbone.Model
             @hasPicture = true
             delete attrs._attachments
 
+        if attrs.n and not Array.isArray attrs.n
+            attrs.n = attrs.n.split ';'
+
         return attrs
 
     sync: (method, model, options) ->
@@ -86,9 +89,9 @@ module.exports = class Contact extends Backbone.Model
     toJSON: () ->
         json = super
         json.datapoints = @dataPoints.toJSON()
+        json.n = json.n.join ';'
         delete json.picture
         return json
-
 
 
 AndroidToDP = (contact, raw) ->
@@ -115,7 +118,7 @@ Contact.fromVCF = (vcf) ->
     regexps =
         begin:       /^BEGIN:VCARD$/i
         end:         /^END:VCARD$/i
-        simple:      /^(version|fn|title|org|note)\:(.+)$/i
+        simple:      /^(version|fn|n|title|org|note)\:(.+)$/i
         android:     /^x-android-custom\:(.+)$/i
         composedkey: /^item(\d{1,2})\.([^\:]+):(.+)$/
         complex:     /^([^\:\;]+);([^\:]+)\:(.+)$/
@@ -153,6 +156,8 @@ Contact.fromVCF = (vcf) ->
                     current.addDP 'about', key, value
                 when 'fn', 'note'
                     current.set key, value
+                when 'n'
+                    current.set key, value.split ';'
                 when 'bday'
                     current.addDP 'about', 'birthday', value
 

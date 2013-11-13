@@ -2,7 +2,7 @@ americano = require 'americano-cozy'
 ContactLog = require './contact_log'
 
 module.exports = Config = americano.getModel 'ContactConfig',
-    nameOrder: type: String, default: 'firstname'
+    nameOrder: type: String, default: 'given-familly'
 
 Config.getInstance = (callback) ->
     Config.request 'all', (err, configs) ->

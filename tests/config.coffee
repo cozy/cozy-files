@@ -15,21 +15,34 @@ describe 'Config', ->
         it 'If no config exists, getInstance return the default config', ->
             Config.getInstance (err, config) ->
                 expect(@err).to.not.exist
-                expect(config.nameOrder).to.eql 'firstname'
+                expect(config.nameOrder).to.eql 'given-familly'
 
-    describe 'Change config - POST /config', ->
+    describe 'Change config (first) - POST /config', ->
 
         it 'should allow requests', (done) ->
-            # getLocale is very long, this need to be fixed
-            @timeout 5000
-            @client.post 'config', nameOrder: 'lastname', done
+            @client.post 'config', nameOrder: 'given-initial-familly', done
 
         it 'should reply with updated config', ->
             expect(@err).to.not.exist
-            expect(@body).to.have.property 'nameOrder', 'lastname'
+            expect(@body).to.have.property 'nameOrder', 'given-initial-familly'
 
         it 'and the update has been stored in db', (done) ->
             Config.getInstance (err, config) ->
                 expect(@err).to.not.exist
-                expect(config.nameOrder).to.eql 'lastname'
+                expect(config.nameOrder).to.eql 'given-initial-familly'
+                done()
+
+    describe 'Change config (again) - POST /config', ->
+
+        it 'should allow requests', (done) ->
+            @client.post 'config', nameOrder: 'familly-given', done
+
+        it 'should reply with updated config', ->
+            expect(@err).to.not.exist
+            expect(@body).to.have.property 'nameOrder', 'familly-given'
+
+        it 'and the update has been stored in db', (done) ->
+            Config.getInstance (err, config) ->
+                expect(@err).to.not.exist
+                expect(config.nameOrder).to.eql 'familly-given'
                 done()
