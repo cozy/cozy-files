@@ -6156,7 +6156,6 @@ a.badge:focus {
 .affix {
   position: fixed;
 }
-
 /*!
  * Bootstrap Responsive v2.3.1
  *
@@ -7266,7 +7265,6 @@ a.badge:focus {
     overflow: visible !important;
   }
 }
-
 /*! jQuery UI - v1.10.3 - 2013-10-18
 * http://jqueryui.com
 * Includes: jquery.ui.core.css, jquery.ui.autocomplete.css, jquery.ui.menu.css
@@ -7429,7 +7427,6 @@ a.badge:focus {
 	position: static;
 	float: right;
 }
-
 ul.tagit {
     padding: 1px 5px;
     overflow: auto;
@@ -7499,7 +7496,6 @@ ul.tagit input[type="text"] {
     background-color: inherit;
     outline: none;
 }
-
 
 /* Optional scoped theme for tag-it which mimics the zendesk widget. */
 
@@ -7598,6 +7594,3 @@ ul.tagit input[type="text"] {
 .tagit .ui-helper-hidden-accessible { position: absolute !important; clip: rect(1px,1px,1px,1px); }
 
 
-
-
-/*@ sourceMappingURL=vendor.css.map*/

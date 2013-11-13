@@ -10,10 +10,10 @@ module.exports = class DocView extends BaseView
 
     saveNameFormat: ->
         field = @$('#nameFormat')
-        field.spin('small')
+        #field.spin('small')
         app.config.save nameOrder: field.val(),
             wait: true
             error: ->
-                alert('server error occured');
+                alert('server error occured')
             always: ->
-                field.spin()
+                #field.spin()

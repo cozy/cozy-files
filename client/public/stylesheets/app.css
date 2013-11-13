@@ -372,6 +372,13 @@ a {
   left: 114px;
   right: 3%;
 }
+#contact #wrap-name-notes #name-edit {
+  display: none;
+  float: right;
+}
+#contact #wrap-name-notes:hover #name-edit {
+  display: inline-block;
+}
 #contact ul.tagit {
   border: 0px;
   padding-left: 0px;
@@ -594,18 +601,19 @@ a {
   float: left;
 }
 #left .zone a.btn.add {
-  display: block;
-  width: 100%;
-  height: 30px;
-  background-color: #f2f2f2;
+  display: inline-block;
+  background-color: #eee;
+  color: #a9a9a9;
+  font-weight: bold;
   background-image: none;
   border: 0px;
-  padding: 0px;
+  padding: 0px 10px;
   margin: 5px 0px 0px 0px;
   border-radius: 0px;
   line-height: 30px;
   opacity: 0;
   text-shadow: none;
+  width: auto;
 }
 #left .zone a.btn.add:hover {
   background-color: #fe8800;
@@ -714,7 +722,7 @@ a {
   #contact #picture {
     top: 33px;
   }
+  #contact #adder {
+    display: block;
+  }
 }
-
-
-/*@ sourceMappingURL=app.css.map*/
