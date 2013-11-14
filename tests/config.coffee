@@ -15,7 +15,7 @@ describe 'Config', ->
         it 'If no config exists, getInstance return the default config', ->
             Config.getInstance (err, config) ->
                 expect(@err).to.not.exist
-                expect(config.nameOrder).to.eql 'given-familly'
+                expect(config.nameOrder).to.eql 'not-set'
 
     describe 'Change config (first) - POST /config', ->
 

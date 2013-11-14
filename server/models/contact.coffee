@@ -21,16 +21,27 @@ Contact::remoteKeys = ->
             out.push dp.value.toLowerCase()
     return out
 
-Contact::toVCF = ->
+Contact::getComputedFN = (config) ->
+    [familly, given, middle, prefix, suffix] = @n.split ';'
+    switch config.nameOrder
+        when 'given-familly' then "#{given} #{middle} #{familly}"
+        when 'familly-given' then "#{familly}, #{given} #{middle}"
+        when 'given-middleinitial-familly'
+            "#{given} #{initial(middle)} #{familly}"
+
+Contact::toVCF = (config) ->
 
     model = @toJSON()
 
     out = "BEGIN:VCARD\n"
     out += "VERSION:3.0\n"
     out += "NOTE:#{model.note}\n" if model.note
-    out += "FN:#{model.fn}\n" if model.fn
-    out += "N:#{model.n}\n" if model.n
 
+    if model.n
+        out += "N:#{model.n}\n"
+        out += "FN:#{@getComputedFN(config)}\n"
+    else if model.fn
+        out += "FN:#{model.fn}\n"
 
     for i, dp of model.datapoints
 

@@ -37,7 +37,8 @@ module.exports = class ImporterView extends BaseView
             txt = t 'import.ready-msg', smart_count: @toImport
             txt = "<p>#{txt} :</p><ul>"
             @toImport.each (contact) ->
-                txt += "<li>#{contact.get 'fn'}</li>"
+                name = contact.get('fn') or contact.getComputedFN()
+                txt += "<li>#{name}</li>"
             txt += '</ul>'
             @content. html txt
             @confirmBtn.removeClass 'disabled'

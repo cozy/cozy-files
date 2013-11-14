@@ -14,5 +14,6 @@ module.exports = class ContactsListItemView extends BaseView
           hasPicture: @model.hasPicture or false
           bestmail:   @model.getBest 'email'
           besttel:    @model.getBest 'tel'
+          fn:         @model.get('fn') or @model.getComputedFN()
 
     template: require 'templates/contactslist_item'

@@ -8,14 +8,18 @@ module.exports = class ContactCollection extends Backbone.Collection
     url: 'contacts'
 
     #sort by names
-    comparator: 'fn'
+    comparator: (a,b) ->
+        nameA = a.getFN().toLowerCase()
+        nameB = b.getFN().toLowerCase()
+        out = if nameA > nameB then 1
+        else if nameA < nameB then -1
+        else 0
 
     # auto resort when contact name change
     initialize: ->
         super
-        @on 'change:fn', (model) =>
-            @sort()
-            Backbone.Mediator.publish 'contact:changed', model
+        @on 'change:fn', => @sort()
+        @on 'change:n' , => @sort()
 
     getTags: ->
         out = []

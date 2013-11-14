@@ -13,10 +13,10 @@ module.exports = function(next) {
     return async.forEachSeries(contacts, function(contact, cb) {
       var data, dp, _i, _len, _ref;
       contact = contact.value;
-      if (contact.fn) {
+      if (contact.fn || contact.n) {
         return cb(null);
       }
-      console.log("converting " + contact.name);
+      console.log("patch1 on contact", contact.id);
       data = {};
       data.fn = contact.name;
       data.note = contact.notes + "\n";

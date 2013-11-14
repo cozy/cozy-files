@@ -58,7 +58,9 @@ module.exports = class ContactView extends ViewCollection
             @changeOccured()
 
     getRenderData: ->
-        _.extend {}, @model.toJSON(), hasPicture: @model.hasPicture or false
+        _.extend {}, @model.toJSON(),
+            hasPicture: @model.hasPicture or false
+            fn: @model.getFN()
 
     afterRender: ->
         @zones = {}
@@ -145,17 +147,13 @@ module.exports = class ContactView extends ViewCollection
             if @$('input:focus, textarea:focus').length and not forceImmediate
                 return true
 
-            @model.set
-                fn:  @namefield.val()
-                note: @notesfield.val()
+            @model.setFN @namefield.val()
+            @model.set note: @notesfield.val()
 
             # no need to save in this case
             if _.isEqual @currentState, @model.toJSON()
-                console.log "Nothing has changed"
                 @needSaving = false
             else
-                console.log "do save"
-                @currentState = @model.toJSON()
                 @savedInfo.hide()
                 @save()
         , 10
@@ -169,12 +167,13 @@ module.exports = class ContactView extends ViewCollection
         @needSaving = false
         @savedInfo.show().text 'saving changes'
         @model.save()
-        Backbone.Mediator.publish 'contact:changed', @model
 
     showNameModal: =>
         modal = new NameModal
             model: @model
-            onChange: => @changeOccured()
+            onChange: =>
+                @needSaving = true
+                @save()
 
         $('body').append modal.$el
         modal.render()
@@ -208,7 +207,7 @@ module.exports = class ContactView extends ViewCollection
 
     modelChanged: =>
         @notesfield.val @model.get 'note'
-        @namefield.val  @model.get 'fn'
+        @namefield.val  @model.getFN()
         @tags?.refresh()
         @resizeNote()
 
@@ -270,6 +269,4 @@ module.exports = class ContactView extends ViewCollection
                 blob = new Blob [new Uint8Array(array)], type: 'image/jpeg'
 
                 @model.picture = blob
-                @changeOccured()
-
-
+                @model.save null, undo: true # hacky, prevent undoing

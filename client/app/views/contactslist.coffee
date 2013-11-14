@@ -10,12 +10,14 @@ module.exports = class ContactsList extends ViewCollection
     itemView: require 'views/contactslist_item'
     template: require 'templates/contactslist'
 
-    subscriptions:
-        'contact:changed': 'onContactChanged'
 
     events:
         'change #filterfield': 'keyUpCallback'
         'click #filterClean': 'cleanFilter'
+
+    initialize: ->
+        super
+        @listenTo @collection, 'change', @onContactChanged
 
     afterRender: ->
         super

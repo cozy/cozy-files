@@ -1,4 +1,5 @@
 Contact = require '../models/contact'
+Config  = require '../models/config'
 path    = require 'path'
 fs      = require 'fs'
 
@@ -81,17 +82,18 @@ module.exports =
             res.sendfile path.resolve __dirname, '../assets/defaultpicture.png'
 
     vCard: (req, res) ->
-        Contact.request 'all', (err, contacts) ->
-            return res.error 500, 'An error occured', err if err
+        Config.getInstance (err, config) ->
+            Contact.request 'all', (err, contacts) ->
+                return res.error 500, 'An error occured', err if err
 
-            out = ""
-            out += contact.toVCF() for contact in contacts
+                out = ""
+                out += contact.toVCF(config) for contact in contacts
 
-            date = new Date()
-            date = "#{date.getYear()}-#{date.getMonth()}-#{date.getDate()}"
-            res.attachment "cozy-contacts-#{date}.vcf"
-            res.set 'Content-Type', 'text/x-vcard'
-            res.send out
+                date = new Date()
+                date = "#{date.getYear()}-#{date.getMonth()}-#{date.getDate()}"
+                res.attachment "cozy-contacts-#{date}.vcf"
+                res.set 'Content-Type', 'text/x-vcard'
+                res.send out
 
 
 
