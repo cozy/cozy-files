@@ -1,6 +1,6 @@
 {
   "name": "cozy-contacts",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A cozy application to manage your contacts.",
   "main": "server.coffee",
   "dependencies": {
