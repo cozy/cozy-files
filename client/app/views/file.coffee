@@ -28,6 +28,7 @@ module.exports = class FileView extends BaseView
         width = @$(".caption").width() + 10
         @$el.html @templateEdit(model: @model.toJSON())
         @$(".file-edit-name").width(width)
+        @$(".file-edit-name").focus()
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()

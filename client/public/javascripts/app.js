@@ -794,7 +794,8 @@ module.exports = FileView = (function(_super) {
     this.$el.html(this.templateEdit({
       model: this.model.toJSON()
     }));
-    return this.$(".file-edit-name").width(width);
+    this.$(".file-edit-name").width(width);
+    return this.$(".file-edit-name").focus();
   };
 
   FileView.prototype.onSaveClicked = function() {
