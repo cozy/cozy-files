@@ -133,6 +133,7 @@ module.exports.destroy = (req, res) ->
             directory = currentFolder.path + '/' + currentFolder.name
             destroyIfIsSubdirectory = (file, cb) ->
                 if (file.path.indexOf(directory) is 0)
+                    console.log "Deleting '#{file.name}'"
                     file.destroy cb
                 else
                     cb null
