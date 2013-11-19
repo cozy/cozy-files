@@ -22,7 +22,7 @@
   }
 , "scripts":
   { "test": "cake tests"
-  , "start": "node server.js"
+  , "start": "coffee server.coffee"
   }
 , "cozy-permissions":
   {
