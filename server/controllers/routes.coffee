@@ -17,6 +17,7 @@ module.exports =
         post: folders.create
     'folders/:id':
         get: folders.find
+        patch: folders.modify
         delete: folders.destroy
     'folders/:id/files':
         get: folders.findFiles
