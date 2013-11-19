@@ -1,6 +1,6 @@
 Folder = require '../models/folder'
 File = require '../models/file'
-
+async = require 'async'
 
 ## Helpers ##
 
@@ -11,23 +11,43 @@ findFolder = (id, callback) ->
         else
             callback null, file 
 
+getFolderPath = (id, cb) ->
+    if id is 'root'
+        cb null, ""
+    else
+        findFolder id, (err, folder) ->
+            if err
+                cb err
+            else
+                cb null, folder.path + '/' + folder.name
+
 ## Actions ##
 
 module.exports.create = (req, res) ->
-    newFolderFullPath = req.body.path + '/' + req.body.name
-    Folder.all (err, folders) =>
-        conflict = false
-        for folder in folders
-            fullPath = folder.path + '/' + folder.name
-            if fullPath is newFolderFullPath
-                conflict = true
-                res.send error:true, msg: "This folder already exists", 400
-        if not conflict
-            Folder.create req.body, (err, newFolder) ->
-                if err
-                    res.send error: true, msg: "Server error while creating file.", 500
-                else    
-                    res.send newFolder, 200
+    if (not req.body.name) or (req.body.name == "")
+        res.send error:true, msg: "Invalid arguments", 500
+    else
+        Folder.all (err, folders) =>
+
+            hasntTheSamePath = (folder, cb) ->
+                cb ((req.body.path + '/' + req.body.name) isnt (folder.path + '/' + folder.name))
+
+            # check that the name is not already taken
+            async.every folders, hasntTheSamePath, (available) ->
+                if not available
+                    res.send error:true, msg: "This folder already exists", 400
+                else                    
+                    Folder.create req.body, (err, newFolder) ->
+                        if err
+                            console.log err
+                            res.send error: true, msg: "Server error while creating file: #{err}", 500
+                        else
+                            newFolder.index ["name"], (err) ->
+                                if err
+                                    console.log err
+                                    res.send error: true, msg: "Couldn't index: : #{err}", 500
+                                else
+                                    res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
@@ -36,146 +56,134 @@ module.exports.find = (req, res) ->
         else   
             res.send folder, 200
 
-module.exports.findFiles = (req, res) ->
-    if req.params.id is 'root'
-        File.byFolder key: "" ,(err, files) ->
-            if err
-                res.send error: true, msg: "Server error occured", 500
-            else
-                res.send files, 200 
-    else
-        findFolder req.params.id, (err, folder) ->
-            if err
-                res.send error: true, msg: err, 404
-            else
-                File.byFolder key: folder.path + '/' + folder.name ,(err, files) ->
-                    if err
-                        res.send error: true, msg: "Server error occured", 500
-                    else
-                        res.send files, 200 
-
 module.exports.modify = (req, res) ->
-    if not req.body.name or req.body.name == ""
-        res.send error: true, msg: "No filename specified", 404
+    if (not req.body.name) or (req.body.name == "")
+        res.send error: true, msg: "No filename specified", 500
     else
-        newName = req.body.name
 
-        findFolder req.params.id, (err, folderUpdated) ->
-            # test if the folder name is available
-            conflict = false
-            Folder.all (err, folders) =>
-
-                conflict = false
-                for folder in folders
-                    # it's not the same folder
-                    if not (folderUpdated.id is folder.id)
-                        # but has the same path and the desired name
-                        if (folderUpdated.path is folder.path) and (newName is folder.name)
-                            conflict = true
-                            res.send error:true, msg: "This foldername is already in use", 400
-
-                if not conflict
-
-                    # update all files and folders this folder contains
-                    File.all (err, files) =>
-                        if err
-                            res.send error: true, msg:  "Server error occured", 500
-                        else
-                            for file in files
-
-                                oldPath = folderUpdated.path + '/' + folderUpdated.name
-                                # check if their path contains the folder being updated
-                                if (file.path.indexOf(oldPath) is 0)
-
-                                    newPath = folderUpdated.path + '/' + newName
-                                    modifiedPath = file.path.replace oldPath, newPath
-
-                                    console.log "Updating sub file: #{oldPath} -> #{newPath}"
-
-                                    file.updateAttributes path: modifiedPath, (err) =>
-                                        if err
-                                            compound.logger.write err
-                                            console.log err
-
-                            Folder.all (err, folders) =>
-                                if err
-                                    res.send error: true, msg:  "Server error occured", 500
-                                else
-                                    for folder in folders
-
-                                        oldPath = folderUpdated.path + '/' + folderUpdated.name
-                                        # check if their path contains the folder being updated
-                                        if (folder.path.indexOf(oldPath) is 0)
-
-                                            newPath = folderUpdated.path + '/' + newName
-                                            modifiedPath = folder.path.replace oldPath, newPath
-
-                                            console.log "Updating sub folder: #{oldPath} -> #{newPath}"
-
-                                            folder.updateAttributes path: modifiedPath, (err) =>
-                                                if err
-                                                    compound.logger.write err
-                                                    console.log err
-
-                                    # update the folder itself
-                                    folderUpdated.updateAttributes name: newName, (err) =>
-                                        if err
-                                            compound.logger.write err
-                                            res.send error: 'Cannot modify file', 500
-                                        else
-                                            res.send success: 'File succesfuly modified', 200
-
-
-module.exports.findFolders = (req, res) ->
-    if req.params.id is 'root'
-        Folder.byFolder key: "" ,(err, folders) ->
+        findFolder req.params.id, (err, folderToModify) ->
             if err
-                res.send error: true, msg: "Server error occured", 500
+                res.send error: true, msg:  "Server error occured: #{err}", 500
             else
-                res.send folders, 200
-    else
-        findFolder req.params.id, (err, folder) ->
-            if err
-                res.send error: true, msg: err, 404
-            else
-                Folder.byFolder key: folder.path + '/' + folder.name, (err, folders) ->
-                    if err
-                        res.send error: true, msg: "Server error occured", 500
+                newName = req.body.name
+                oldPath = folderToModify.path + '/' + folderToModify.name
+                newPath = folderToModify.path + '/' + newName
+
+                hasntTheSamePathOrIsTheSame = (folder, cb) ->
+                    if (folderToModify.id is folder.id)
+                        cb true
                     else
-                        res.send folders, 200
+                        cb (newPath isnt (folder.path + '/' + folder.name))
 
+                updateIfIsSubFolder = (file, cb) ->
+                    if (file.path.indexOf(oldPath) is 0)
+                        console.log "Moving '#{file.name}': '#{oldPath}/#{file.name}'' -> '#{newPath}/#{file.name}'"
+                        modifiedPath = file.path.replace oldPath, newPath
+                        file.updateAttributes path: modifiedPath, cb
+                    else
+                        cb null
+
+                # check that the new name isn't taken
+                Folder.all (err, folders) =>
+                    if err
+                        res.send error: true, msg:  "Server error occured: #{err}", 500
+                    else
+                        async.every folders, hasntTheSamePathOrIsTheSame, (available) ->
+                            if not available
+                                res.send error: true, msg: "The name already in use", 400
+                            else
+
+                                # update all files
+                                File.all (err, files) =>
+                                    if err
+                                        res.send error: true, msg:  "Server error occured: #{err}", 500
+                                    else
+                                        async.each files, updateIfIsSubFolder, (err) ->
+                                            if err
+                                                res.send error: true, msg: "Error updating files: #{err}", 500
+                                            else
+
+                                                # update all folders
+                                                Folder.all (err, folders) =>
+                                                    if err
+                                                        res.send error: true, msg:  "Server error occured: #{err}", 500
+                                                    else
+                                                        async.each folders, updateIfIsSubFolder, (err) ->
+                                                            if err
+                                                                res.send error: true, msg: "Error updating folders: #{err}", 500
+                                                            else
+                                                                # update the folder itself
+                                                                folderToModify.updateAttributes name: newName, (err) =>
+                                                                    if err
+                                                                        res.send error: 'Cannot modify file: #{err}', 500
+                                                                    else
+                                                                        # index the new data
+                                                                        folderToModify.index ["name"], (err) ->
+                                                                            if err
+                                                                                console.log err
+                                                                                res.send error: true, msg: "Couldn't index: : #{err}", 500
+                                                                            else
+                                                                                res.send success: 'File succesfuly modified', 200
 
 module.exports.destroy = (req, res) ->
     findFolder req.params.id, (err, currentFolder) ->
         if err
             res.send error: true, msg: err, 404
         else
-            # Remove folders in the current folder
+            directory = currentFolder.path + '/' + currentFolder.name
+            destroyIfIsSubdirectory = (file, cb) ->
+                if (file.path.indexOf(directory) is 0)
+                    file.destroy cb
+                else
+                    cb null
+            
             Folder.all (err, folders) =>
                 if err
-                    res.send error: true, msg:  "Server error occured", 500
+                    res.send error: true, msg: "Server error occured: #{err}", 500
                 else
-                    for folder in folders
-                        directory = currentFolder.path + '/' + currentFolder.name
-                        if (folder.path.indexOf(directory) is 0)
-                            folder.destroy (err) ->
-                                console.log err if err
-                    # Remove files in the current folder
-                    File.all (err, files) =>
+                    # Remove folders in the current folder
+                    async.each folders, destroyIfIsSubdirectory, (err) ->
                         if err
-                            res.send error: true, msg:  "Server error occured", 500
+                            console.log err
+                            res.send error: true, msg: "Server error occured while deleting subdirectories: #{err}", 500
                         else
-                            for file in files
-                                directory = currentFolder.path + '/' + currentFolder.name
-                                if (file.path.indexOf(directory) is 0)
-                                    file.removeBinary "file", (err) ->
-                                        console.log err if err
-                                        file.destroy (err) ->
-                                            console.log err if err
-                             # Remove the current folder
-                            currentFolder.destroy (err) ->
+                            
+                            File.all (err, files) =>
                                 if err
-                                    compound.logger.write err
-                                    res.send error: 'Cannot destroy folder', 500
+                                    res.send error: true, msg:  "Server error occured: #{err}", 500
                                 else
-                                    res.send success: 'Folder succesfuly deleted', 200
+                                    # Remove files in this directory
+                                    async.each files, destroyIfIsSubdirectory, (err) ->
+                                        if err
+                                            console.log err
+                                            res.send error: true, msg: "Server error occured when deleting sub files: #{err}", 500
+                                        else
+                                             # Remove the current folder
+                                            currentFolder.destroy (err) ->
+                                                if err
+                                                    console.log err
+                                                    res.send error: "Cannot destroy folder: #{err}", 500
+                                                else
+                                                    res.send success: "Folder succesfuly deleted: #{err}", 200
+
+module.exports.findFiles = (req, res) ->
+    getFolderPath req.params.id, (err, key) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            File.byFolder key: key ,(err, files) ->
+                if err
+                    res.send error: true, msg: "Server error occured: #{err}", 500
+                else
+                    res.send files, 200 
+
+module.exports.findFolders = (req, res) ->
+    getFolderPath req.params.id, (err, key) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            Folder.byFolder key: key ,(err, files) ->
+                if err
+                    res.send error: true, msg: "Server error occured: #{err}", 500
+                else
+                    res.send files, 200 
