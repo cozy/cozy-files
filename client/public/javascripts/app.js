@@ -212,27 +212,6 @@ module.exports = FileCollection = (function(_super) {
 
   FileCollection.prototype.url = 'files';
 
-  FileCollection.prototype.sync = function(method, model, options) {
-    var progress;
-    progress = function(e) {
-      return model.trigger('progress', e);
-    };
-    _.extend(options, {
-      xhr: function() {
-        var xhr;
-        xhr = $.ajaxSettings.xhr();
-        if (xhr instanceof window.XMLHttpRequest) {
-          xhr.addEventListener('progress', progress, false);
-        }
-        if (xhr.upload) {
-          xhr.upload.addEventListener('progress', progress, false);
-        }
-        return xhr;
-      }
-    });
-    return Backbone.sync.apply(this, arguments);
-  };
-
   FileCollection.prototype.comparator = function(o1, o2) {
     var n1, n2, sort, t1, t2;
     n1 = o1.get("name").toLocaleLowerCase();
@@ -548,6 +527,27 @@ module.exports = File = (function(_super) {
     return _ref;
   }
 
+  File.prototype.sync = function(method, model, options) {
+    var progress;
+    progress = function(e) {
+      return model.trigger('progress', e);
+    };
+    _.extend(options, {
+      xhr: function() {
+        var xhr;
+        xhr = $.ajaxSettings.xhr();
+        if (xhr instanceof window.XMLHttpRequest) {
+          xhr.addEventListener('progress', progress, false);
+        }
+        if (xhr.upload) {
+          xhr.upload.addEventListener('progress', progress, false);
+        }
+        return xhr;
+      }
+    });
+    return Backbone.sync.apply(this, arguments);
+  };
+
   File.prototype.urlRoot = function() {
     if (this.get("isFolder")) {
       return 'folders/';
@@ -556,10 +556,10 @@ module.exports = File = (function(_super) {
     }
   };
 
-  File.prototype.validate = function(attrs, options) {
+  File.prototype.validate = function() {
     var errors;
     errors = [];
-    if (!attrs.name || attrs.name === "") {
+    if (!this.get("name") || this.get("name") === "") {
       errors.push({
         field: 'name',
         value: "A name must be set."
@@ -740,11 +740,13 @@ module.exports = BreadcrumbsView = (function(_super) {
 });
 
 ;require.register("views/file", function(exports, require, module) {
-var BaseView, FileView, _ref,
+var BaseView, FileView, ModalView, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 BaseView = require('../lib/base_view');
+
+ModalView = require("./modal");
 
 module.exports = FileView = (function(_super) {
   __extends(FileView, _super);
@@ -760,8 +762,13 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.template = require('./templates/file');
 
+  FileView.prototype.templateEdit = require('./templates/file_edit');
+
   FileView.prototype.events = {
-    'click a.file-delete': 'onDeleteClicked'
+    'click a.file-delete': 'onDeleteClicked',
+    'click a.file-edit': 'onEditClicked',
+    'click a.file-edit-save': 'onSaveClicked',
+    'click a.file-edit-cancel': 'render'
   };
 
   FileView.prototype.initialize = function() {
@@ -769,12 +776,46 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onDeleteClicked = function() {
-    if (confirm('Are you sure ?')) {
-      return this.model.destroy({
+    var _this = this;
+    return new ModalView("Are you sure ?", "Deleting cannot be undone", "Delete", "cancel", function(confirm) {
+      if (confirm) {
+        return _this.model.destroy({
+          error: function() {
+            return new ModalView("Error", "Server error occured, file was not deleted", "OK");
+          }
+        });
+      }
+    });
+  };
+
+  FileView.prototype.onEditClicked = function() {
+    var width;
+    width = this.$(".caption").width() + 10;
+    this.$el.html(this.templateEdit({
+      model: this.model.toJSON()
+    }));
+    return this.$(".file-edit-name").width(width);
+  };
+
+  FileView.prototype.onSaveClicked = function() {
+    var name,
+      _this = this;
+    name = this.$('.file-edit-name').val();
+    if (name && name !== "") {
+      this.model.set("name", name);
+      return this.model.save(null, {
+        patch: true,
+        success: function(data) {
+          console.log("File name changes successfully");
+          return _this.render();
+        },
         error: function() {
-          return alert("Server error occured, file was not deleted.");
+          console.log("error");
+          return new ModalView("Error", "Name could not be changed", "OK");
         }
       });
+    } else {
+      return new ModalView("Error", "The name can't be empty", "OK");
     }
   };
 
@@ -785,7 +826,7 @@ module.exports = FileView = (function(_super) {
 });
 
 ;require.register("views/files", function(exports, require, module) {
-var File, FileCollection, FileView, FilesView, ViewCollection, _ref,
+var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, ViewCollection, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -793,6 +834,10 @@ var File, FileCollection, FileView, FilesView, ViewCollection, _ref,
 ViewCollection = require('../lib/view_collection');
 
 FileView = require('./file');
+
+ProgressbarView = require("./progressbar");
+
+ModalView = require("./modal");
 
 File = require('../models/file');
 
@@ -828,12 +873,12 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.addFile = function(attach) {
-    var file, fileAttributes, found, _i, _len, _ref1;
+    var file, fileAttributes, found, progress, _i, _len, _ref1;
     found = false;
     _ref1 = this.collection.models;
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       file = _ref1[_i];
-      if (file.get("name") === attach.name) {
+      if ((file.get("name") === attach.name) && !file.get("isFolder")) {
         found = true;
       }
     }
@@ -845,9 +890,11 @@ module.exports = FilesView = (function(_super) {
       file = new File(fileAttributes);
       file.file = attach;
       this.collection.add(file);
+      progress = new ProgressbarView(file);
+      $("#dialog-upload-file .modal-body").append(progress.render().el);
       return this.upload(file);
     } else {
-      return alert("Sorry, could not upload the file: it already exists");
+      return new ModalView("Error", "Sorry, could not upload the file: it already exists", "OK");
     }
   };
 
@@ -859,24 +906,45 @@ module.exports = FilesView = (function(_super) {
     formdata.append('name', file.get('name'));
     formdata.append('path', file.get('path'));
     formdata.append('file', file.file);
-    return Backbone.sync('create', file, {
+    return file.save(null, {
       contentType: false,
       data: formdata,
       success: function(data) {
+        console.log("File sent successfully");
         return file.set(data);
+      },
+      error: function() {
+        console.log("error");
+        return new ModalView("Error", "File could not be sent to server", "OK");
       }
     });
   };
 
   FilesView.prototype.addFolder = function(folder) {
-    var _this = this;
-    return this.collection.create(folder, {
-      success: function(data) {},
-      error: function(error) {
-        _this.collection.reset(folder);
-        return alert(error.msg);
+    var file, found, _i, _len, _ref1,
+      _this = this;
+    found = false;
+    _ref1 = this.collection.models;
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      file = _ref1[_i];
+      if ((file.get("name") === folder.get("name")) && file.get("isFolder")) {
+        found = true;
       }
-    });
+    }
+    if (!found) {
+      return folder.save(null, {
+        success: function(data) {
+          console.log("Folder created successfully");
+          return _this.collection.add(folder);
+        },
+        error: function(error) {
+          console.log(error);
+          return new ModalView("Error", "Folder could not be created", "OK");
+        }
+      });
+    } else {
+      return new ModalView("Error", "Sorry, could not create the folder: it already exists", "OK");
+    }
   };
 
   return FilesView;
@@ -886,7 +954,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -896,6 +964,10 @@ BaseView = require('../lib/base_view');
 FilesView = require('./files');
 
 BreadcrumbsView = require("./breadcrumbs");
+
+ProgressbarView = require("./progressbar");
+
+ModalView = require("./modal");
 
 File = require('../models/file');
 
@@ -909,7 +981,8 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.events = function() {
     return {
       'click #new-folder-send': 'onAddFolder',
-      'click #upload-file-send': 'onAddFile'
+      'click #upload-file-send': 'onAddFile',
+      'click a#button-new-folder': 'prepareNewFolder'
     };
   };
 
@@ -921,6 +994,8 @@ module.exports = FolderView = (function(_super) {
     FolderView.__super__.constructor.call(this);
     this.breadcrumbs.setRoot(this.model);
   }
+
+  FolderView.prototype.initialize = function() {};
 
   FolderView.prototype.render = function() {
     this.beforeRender();
@@ -954,47 +1029,61 @@ module.exports = FolderView = (function(_super) {
               folder = folders[_i];
               folder.isFolder = true;
             }
+            _this.stopListening(_this.filesCollection, "progress:done");
             _this.filesCollection = new FileCollection(files.concat(folders));
+            _this.listenTo(_this.filesCollection, "progress:done", _this.hideUploadForm);
             _this.filesList = new FilesView(_this.filesCollection, _this.model);
             _this.$('#files').html(_this.filesList.$el);
             return _this.filesList.render();
           },
           error: function(error) {
-            return console.log(error);
+            console.log(error);
+            return new ModalView("Error", "Error getting folders from server", "OK");
           }
         });
       },
       error: function(error) {
-        return console.log(error);
+        console.log(error);
+        return new ModalView("Error", "Error getting files from server", "OK");
       }
     });
   };
 
   FolderView.prototype.onAddFolder = function() {
-    var err, folder;
-    folder = {
+    var folder;
+    folder = new File({
       name: this.$('#inputName').val(),
       path: this.model.repository(),
       isFolder: true
-    };
-    folder = new File(folder);
-    err = folder.validate(folder.attributes);
-    if (err) {
-      return alert("The folder name is empty");
+    });
+    if (folder.validate()) {
+      return new ModalView("Error", "Folder name can't be empty", "OK");
     } else {
-      this.filesList.addFolder(folder.attributes);
+      this.filesList.addFolder(folder);
       return $('#dialog-new-folder').modal('hide');
     }
   };
 
   FolderView.prototype.onAddFile = function() {
-    var attach, _i, _len, _ref;
+    var attach, _i, _len, _ref, _results;
     _ref = this.$('#uploader')[0].files;
+    _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       attach = _ref[_i];
-      this.filesList.addFile(attach);
+      _results.push(this.filesList.addFile(attach));
     }
+    return _results;
+  };
+
+  FolderView.prototype.hideUploadForm = function() {
     return $('#dialog-upload-file').modal('hide');
+  };
+
+  FolderView.prototype.prepareNewFolder = function() {
+    var _this = this;
+    return setTimeout(function() {
+      return _this.$("#inputName").focus();
+    }, 500);
   };
 
   return FolderView;
@@ -1023,6 +1112,130 @@ module.exports = MockupView = (function(_super) {
   MockupView.prototype.el = "body";
 
   return MockupView;
+
+})(BaseView);
+
+});
+
+;require.register("views/modal", function(exports, require, module) {
+var BaseView, ModalView,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+module.exports = ModalView = (function(_super) {
+  __extends(ModalView, _super);
+
+  ModalView.prototype.template = require('./templates/modal');
+
+  ModalView.prototype.value = 0;
+
+  ModalView.prototype.events = {
+    "click #modal-dialog-no": "onNo",
+    "click #modal-dialog-yes": "onYes"
+  };
+
+  function ModalView(title, msg, yes, no, cb) {
+    this.title = title;
+    this.msg = msg;
+    this.yes = yes;
+    this.no = no;
+    this.cb = cb;
+    ModalView.__super__.constructor.call(this);
+  }
+
+  ModalView.prototype.initialize = function() {
+    this.render();
+    return this.$('#modal-dialog').modal('show');
+  };
+
+  ModalView.prototype.onYes = function() {
+    var _this = this;
+    if (this.cb) {
+      this.cb(true);
+    }
+    this.$('#modal-dialog').modal('hide');
+    return setTimeout(function() {
+      return _this.destroy();
+    }, 1000);
+  };
+
+  ModalView.prototype.onNo = function() {
+    var _this = this;
+    if (this.cb) {
+      this.cb(false);
+    }
+    this.$('#modal-dialog').modal('hide');
+    return setTimeout(function() {
+      return _this.destroy();
+    }, 1000);
+  };
+
+  ModalView.prototype.render = function() {
+    this.$el.append(this.template({
+      title: this.title,
+      msg: this.msg,
+      yes: this.yes,
+      no: this.no
+    }));
+    $("body").append(this.el);
+    return this;
+  };
+
+  return ModalView;
+
+})(BaseView);
+
+});
+
+;require.register("views/progressbar", function(exports, require, module) {
+var BaseView, ProgressbarView,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+module.exports = ProgressbarView = (function(_super) {
+  __extends(ProgressbarView, _super);
+
+  ProgressbarView.prototype.className = 'progress';
+
+  ProgressbarView.prototype.template = require('./templates/progressbar');
+
+  ProgressbarView.prototype.value = 0;
+
+  function ProgressbarView(model) {
+    this.model = model;
+    ProgressbarView.__super__.constructor.call(this);
+  }
+
+  ProgressbarView.prototype.initialize = function() {
+    return this.listenTo(this.model, 'progress', this.update);
+  };
+
+  ProgressbarView.prototype.update = function(e) {
+    var pc;
+    pc = parseInt(e.loaded / e.total * 100);
+    console.log("[Progress bar] : " + pc + " %");
+    if (pc === 100) {
+      this.model.trigger("progress:done");
+      this.remove();
+      return this.destroy();
+    } else {
+      this.value = pc;
+      return this.render();
+    }
+  };
+
+  ProgressbarView.prototype.render = function() {
+    this.$el.html(this.template({
+      value: this.value
+    }));
+    return this;
+  };
+
+  return ProgressbarView;
 
 })(BaseView);
 
@@ -1057,17 +1270,40 @@ with (locals || {}) {
 var interp;
 if ( model.isFolder)
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close"> </span><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('btn') + ' ' + ('btn-linka') }, {"href":true}));
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><a');
+buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 else
 {
-buf.push('<td><span class="glyphicon glyphicon-file"> </span><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('btn') + ' ' + ('btn-linka') }, {"href":true,"target":true}));
+buf.push('<td><span class="glyphicon glyphicon-file no-hover"></span><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+}
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/file_edit", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+if ( model.isFolder)
+{
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><input');
+buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
+buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+}
+else
+{
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><input');
+buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
+buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 }
 return buf.join("");
@@ -1092,7 +1328,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Send</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name: </label><input id="inputName" type="text" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Send</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span>');
+buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name: </label><input id="inputName" type="text" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
 if ( model.id == "root")
 {
 buf.push(' Upload a file here');
@@ -1101,7 +1337,7 @@ else
 {
 buf.push(' Upload a file to "' + escape((interp = model.get("name")) == null ? '' : interp) + '"');
 }
-buf.push('</a> <a data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span> Create a new folder</a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+buf.push('</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> Create a new folder</span></a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
@@ -1114,6 +1350,41 @@ var buf = [];
 with (locals || {}) {
 var interp;
 buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button type="button" class="btn btn-cozy-contrast">Send</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name: </label><input id="inputName" type="text" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button type="button" class="btn btn-cozy">Send</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><a href="#dialog-upload-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span> Upload a file to "silly cats"</a> <a href="#dialog-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span> Create a new folder</a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"><ul><li><a href="#"><span class="glyphicon glyphicon-folder-open"> </span></a></li><li><a href="#">personal</a></li><li><a href="#">photos</a></li><li><a href="#">very long folder name it is indeed</a></li><li><a href="#">another one</a></li><li><a href="#">silly cats</a></li></ul></div><table id="table-items" class="table table-hover"><tbody><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr></tbody></table></div></div></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/modal", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div id="modal-dialog" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = title) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = msg) == null ? '' : interp) + '</p></div><div class="modal-footer">');
+if ( no)
+{
+buf.push('<button id="modal-dialog-no" type="button" class="btn btn-link">' + escape((interp = no) == null ? '' : interp) + '</button>');
+}
+if ( yes)
+{
+buf.push('<button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = yes) == null ? '' : interp) + '</button>');
+}
+buf.push('</div></div></div></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/progressbar", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div class="progress progress-striped active"><div');
+buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-success') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
+buf.push('></div></div>');
 }
 return buf.join("");
 };

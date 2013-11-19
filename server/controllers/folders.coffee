@@ -67,7 +67,7 @@ module.exports.findFolders = (req, res) ->
             if err
                 res.send error: true, msg: err, 404
             else
-                Folder.byFolder key: folder.path + '/' + folder.name ,(err, folders) ->
+                Folder.byFolder key: folder.path + '/' + folder.name, (err, folders) ->
                     if err
                         res.send error: true, msg: "Server error occured", 500
                     else
@@ -98,6 +98,7 @@ module.exports.destroy = (req, res) ->
                                 directory = currentFolder.path + '/' + currentFolder.name
                                 if (file.path.indexOf(directory) is 0)
                                     file.removeBinary "file", (err) ->
+                                        console.log err if err
                                         file.destroy (err) ->
                                             console.log err if err
                              # Remove the current folder

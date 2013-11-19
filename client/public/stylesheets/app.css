@@ -733,6 +733,9 @@ body.modal-open,
 .modal-open .navbar-fixed-bottom {
   margin-right: 0;
 }
+a:hover {
+  cursor: pointer;
+}
 .btn.btn-cozy {
   background-color: #34a6ff;
   border-color: #34a6ff;
@@ -815,16 +818,22 @@ table#table-items {
   margin-top: 20px;
 }
 tr.folder-row {
-  font-size: 18px;
   color: #bdbdbd;
 }
 tr.folder-row:hover {
   color: #428bca;
 }
-tr.folder-row td a.btn {
+tr.folder-row:hover .glyphicon.no-hover {
+  color: #bdbdbd;
+}
+tr.folder-row .caption {
   font-size: 18px;
+  padding: 0;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 tr.folder-row .operations {
+  font-size: 18px;
   visibility: hidden;
   display: inline;
 }
@@ -836,6 +845,9 @@ tr.folder-row:hover .operations {
 }
 tr.folder-row .file-date {
   padding-top: 16px;
+}
+.visible-lg.visible-md.visible-inline {
+  display: inline !important;
 }
 #crumbs {
   overflow: hidden;
@@ -901,6 +913,23 @@ tr.folder-row .file-date {
 }
 #crumbs ul li:last-child a:after {
   display: none;
+}
+@media screen and (max-width: 480px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+}
+@media screen and (max-width: 767px) {
+  body {
+    text-rendering: optimizeSpeed;
+  }
+  .button-title-reponsive {
+    display: none;
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 992px) {
+}
+@media screen and (min-width: 992px) {
 }
 /*
 .flatbtn

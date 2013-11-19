@@ -70,6 +70,32 @@ module.exports.find = function(req, res) {
   });
 };
 
+module.exports.modify = function(req, res) {
+  return findFile(req.params.id, function(err, file) {
+    var _this = this;
+    if (err) {
+      return res.send({
+        error: true,
+        msg: err
+      }, 404);
+    } else {
+      file.name = req.body.name;
+      return file.save(function(err) {
+        if (err) {
+          compound.logger.write(err);
+          return res.send({
+            error: 'Cannot modify file'
+          }, 500);
+        } else {
+          return res.send({
+            success: 'File succesfuly modified'
+          }, 200);
+        }
+      });
+    }
+  });
+};
+
 processAttachement = function(req, res, download) {
   var id,
     _this = this;

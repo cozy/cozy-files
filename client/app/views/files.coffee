@@ -1,6 +1,9 @@
 ViewCollection = require '../lib/view_collection'
 
 FileView = require './file'
+ProgressbarView = require "./progressbar"
+ModalView = require "./modal"
+
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
@@ -21,7 +24,7 @@ module.exports = class FilesView extends ViewCollection
     addFile: (attach) =>
         found = false
         for file in @collection.models
-            if file.get("name") == attach.name
+            if (file.get("name") == attach.name) and not file.get("isFolder")
                 found = true
         
         if not found
@@ -31,9 +34,14 @@ module.exports = class FilesView extends ViewCollection
             file = new File fileAttributes
             file.file = attach
             @collection.add file
+
+            # add a progress bar
+            progress = new ProgressbarView file
+            $("#dialog-upload-file .modal-body").append progress.render().el
+
             @upload file
         else
-            alert "Sorry, could not upload the file: it already exists"
+            new ModalView "Error", "Sorry, could not upload the file: it already exists", "OK"
 
     upload: (file) =>
         formdata = new FormData()
@@ -41,16 +49,30 @@ module.exports = class FilesView extends ViewCollection
         formdata.append 'name', file.get 'name'
         formdata.append 'path', file.get 'path'
         formdata.append 'file', file.file
-        Backbone.sync 'create', file,
+        file.save null,
             contentType: false
             data: formdata
             success: (data) =>
+                console.log "File sent successfully"
                 file.set data
+                #new ModalView "Success", "File transfered successfully", "OK"
+            error: =>
+                console.log "error"
+                new ModalView "Error", "File could not be sent to server", "OK"
 
     addFolder: (folder) ->
-        @collection.create folder,
-            success: (data) =>
-                #app.folders.add data
-            error: (error) =>
-                @collection.reset folder
-                alert error.msg
+        found = false
+        for file in @collection.models
+            if (file.get("name") == folder.get("name")) and file.get("isFolder")
+                found = true
+
+        if not found
+            folder.save null,
+                success: (data) =>
+                    console.log "Folder created successfully"
+                    @collection.add folder
+                error: (error) =>
+                    console.log error
+                    new ModalView "Error", "Folder could not be created", "OK"
+        else
+            new ModalView "Error", "Sorry, could not create the folder: it already exists", "OK"

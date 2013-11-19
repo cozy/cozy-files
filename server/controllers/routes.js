@@ -12,6 +12,7 @@ module.exports = {
   },
   'files/:id': {
     get: files.find,
+    patch: files.modify,
     "delete": files.destroy
   },
   'files/:id/attach/:name': {

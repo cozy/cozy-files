@@ -13,7 +13,7 @@
                   input#uploader.form-control(type="file")
           .modal-footer
             button.btn.btn-link(type='button', data-dismiss='modal') Close
-            button.btn.btn-cozy-contrast#upload-file-send(type='button') Send
+            button.btn.btn-cozy-contrast#upload-file-send(type='button') Add
 
 #dialog-new-folder.modal.fade
     .modal-dialog
@@ -30,7 +30,7 @@
                   input#inputName.form-control(type="text")
           .modal-footer
             button.btn.btn-link(type='button', data-dismiss='modal') Close
-            button.btn.btn-cozy#new-folder-send(type='button') Send
+            button.btn.btn-cozy#new-folder-send(type='button') Create
 
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
@@ -39,14 +39,16 @@
         p.pull-right
           a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
             span.glyphicon.glyphicon-upload
-            if model.id == "root"
-              |  Upload a file here
-            else
-              |  Upload a file to "#{model.get("name")}"
+            span.button-title-reponsive
+              if model.id == "root"
+                |  Upload a file here
+              else
+                |  Upload a file to "#{model.get("name")}"
           | 
-          a.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
+          a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
             span.glyphicon.glyphicon-plus-sign
-            |  Create a new folder
+            span.button-title-reponsive
+              |  Create a new folder
 
 .container
   .row.content-shadow

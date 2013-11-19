@@ -181,6 +181,9 @@ module.exports.destroy = function(req, res) {
                 directory = currentFolder.path + '/' + currentFolder.name;
                 if (file.path.indexOf(directory) === 0) {
                   file.removeBinary("file", function(err) {
+                    if (err) {
+                      console.log(err);
+                    }
                     return file.destroy(function(err) {
                       if (err) {
                         return console.log(err);

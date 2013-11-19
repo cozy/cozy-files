@@ -40,6 +40,19 @@ module.exports.find = (req, res) ->
         else
             res.send file
 
+module.exports.modify = (req, res) ->
+     findFile req.params.id, (err, file) ->
+        if err
+            res.send error: true, msg: err, 404
+        else
+            file.name = req.body.name
+            file.save (err) =>
+                if err
+                    compound.logger.write err
+                    res.send error: 'Cannot modify file', 500
+                else
+                    res.send success: 'File succesfuly modified', 200
+
 processAttachement = (req, res, download) ->
     id = req.params.id
     findFile id, (err, file) =>

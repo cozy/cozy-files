@@ -1,6 +1,8 @@
 BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
+ProgressbarView = require "./progressbar"
+ModalView = require "./modal"
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
@@ -13,10 +15,14 @@ module.exports = class FolderView extends BaseView
     events: ->  
         'click #new-folder-send': 'onAddFolder'
         'click #upload-file-send': 'onAddFile'
+        'click a#button-new-folder': 'prepareNewFolder'
 
     constructor: (@model, @breadcrumbs) ->
         super()
         @breadcrumbs.setRoot @model
+
+    initialize: ->
+        
 
     render: ->
         @beforeRender()
@@ -55,8 +61,12 @@ module.exports = class FolderView extends BaseView
                         for folder in folders
                             folder.isFolder = true
 
-                        # render the collection
+                        # new collection
+                        @stopListening @filesCollection, "progress:done"
                         @filesCollection = new FileCollection files.concat(folders)
+                        @listenTo @filesCollection, "progress:done", @hideUploadForm
+
+                        # render the collection
                         @filesList = new FilesView @filesCollection, @model
 
                         
@@ -65,25 +75,32 @@ module.exports = class FolderView extends BaseView
 
                     error: (error) =>
                         console.log error
+                        new ModalView "Error", "Error getting folders from server", "OK"
             error: (error) =>
                 console.log error
+                new ModalView "Error", "Error getting files from server", "OK"
 
 
     onAddFolder: =>
-        folder =
+        folder = new File
             name: @$('#inputName').val()
             path: @model.repository()
             isFolder: true
-        folder = new File folder
-        err = folder.validate folder.attributes
-        if err
-            alert "The folder name is empty"
+        if folder.validate()
+            new ModalView "Error", "Folder name can't be empty", "OK"
         else
-            @filesList.addFolder folder.attributes
+            @filesList.addFolder folder
             # hide modal
             $('#dialog-new-folder').modal('hide')
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
+
+    hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')
+
+    prepareNewFolder: ->
+        setTimeout () =>
+            @$("#inputName").focus()
+        , 500
