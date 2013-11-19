@@ -803,16 +803,22 @@ module.exports = FileView = (function(_super) {
       _this = this;
     name = this.$('.file-edit-name').val();
     if (name && name !== "") {
-      this.model.set("name", name);
-      return this.model.save(null, {
+      return this.model.save({
+        name: name
+      }, {
         patch: true,
+        wait: true,
         success: function(data) {
           console.log("File name changes successfully");
           return _this.render();
         },
-        error: function() {
-          console.log("error");
-          return new ModalView("Error", "Name could not be changed", "OK");
+        error: function(model, err) {
+          console.log(err);
+          if (err.status === 400) {
+            return new ModalView("Error", "Name already in use", "OK");
+          } else {
+            return new ModalView("Error", "Name could not be changed", "OK");
+          }
         }
       });
     } else {

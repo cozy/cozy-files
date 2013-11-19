@@ -41,17 +41,35 @@ module.exports.find = (req, res) ->
             res.send file
 
 module.exports.modify = (req, res) ->
-     findFile req.params.id, (err, file) ->
-        if err
-            res.send error: true, msg: err, 404
-        else
-            file.name = req.body.name
-            file.save (err) =>
-                if err
-                    compound.logger.write err
-                    res.send error: 'Cannot modify file', 500
-                else
-                    res.send success: 'File succesfuly modified', 200
+    if not req.body.name or req.body.name == ""
+        res.send error: true, msg: "No filename specified", 404
+    else
+        newName = req.body.name
+
+        findFile req.params.id, (err, fileUpdated) ->
+            if err
+                res.send error: true, msg: err, 404
+            else
+                # test if the filename is available
+                conflict = false
+                File.all (err, files) =>
+
+                    conflict = false
+                    for file in files
+                        # it's not the same file
+                        if not (fileUpdated.id is file.id)
+                            # but has the same path and the desired name
+                            if (fileUpdated.path is file.path) and (newName is file.name)
+                                conflict = true
+                                res.send error:true, msg: "This filename is already in use", 400
+
+                    if not conflict
+                        fileUpdated.updateAttributes name: newName, (err) =>
+                            if err
+                                compound.logger.write err
+                                res.send error: 'Cannot modify file', 500
+                            else
+                                res.send success: 'File succesfuly modified', 200
 
 processAttachement = (req, res, download) ->
     id = req.params.id

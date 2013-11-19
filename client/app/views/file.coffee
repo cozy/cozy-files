@@ -35,14 +35,17 @@ module.exports = class FileView extends BaseView
 
         if name and name != ""
 
-            @model.set("name", name)
-            @model.save null,
+            @model.save name: name,
                 patch: true
+                wait: true
                 success: (data) =>
                     console.log "File name changes successfully"
                     @render()
-                error: =>
-                    console.log "error"
-                    new ModalView "Error", "Name could not be changed", "OK"
+                error: (model, err)=>
+                    console.log err
+                    if err.status is 400
+                        new ModalView "Error", "Name already in use", "OK"
+                    else
+                        new ModalView "Error", "Name could not be changed", "OK"
         else
             new ModalView "Error", "The name can't be empty", "OK"
