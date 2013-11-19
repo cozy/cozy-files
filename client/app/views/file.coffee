@@ -13,6 +13,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit': 'onEditClicked'
         'click a.file-edit-save': 'onSaveClicked'
         'click a.file-edit-cancel': 'render'
+        'keydown input' : "onKeyPress"
 
     initialize: ->
         @listenTo @model, 'change:id', @render
@@ -49,3 +50,7 @@ module.exports = class FileView extends BaseView
                         new ModalView "Error", "Name could not be changed", "OK"
         else
             new ModalView "Error", "The name can't be empty", "OK"
+
+    onKeyPress: (e) =>
+        if e.keyCode is 13
+            @onSaveClicked()

@@ -16,13 +16,11 @@ module.exports = class FolderView extends BaseView
         'click #new-folder-send': 'onAddFolder'
         'click #upload-file-send': 'onAddFile'
         'click a#button-new-folder': 'prepareNewFolder'
+        'keydown input#inputName' : "onKeyPress"
 
     constructor: (@model, @breadcrumbs) ->
         super()
         @breadcrumbs.setRoot @model
-
-    initialize: ->
-        
 
     render: ->
         @beforeRender()
@@ -86,6 +84,8 @@ module.exports = class FolderView extends BaseView
             name: @$('#inputName').val()
             path: @model.repository()
             isFolder: true
+        console.log "creating folder #{folder}"
+
         if folder.validate()
             new ModalView "Error", "Folder name can't be empty", "OK"
         else
@@ -96,6 +96,10 @@ module.exports = class FolderView extends BaseView
     onAddFile: =>
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
+
+    onKeyPress: (e) =>
+        if e.keyCode is 13
+            @onAddFolder()
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')

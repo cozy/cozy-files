@@ -741,6 +741,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 
 ;require.register("views/file", function(exports, require, module) {
 var BaseView, FileView, ModalView, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -752,6 +753,7 @@ module.exports = FileView = (function(_super) {
   __extends(FileView, _super);
 
   function FileView() {
+    this.onKeyPress = __bind(this.onKeyPress, this);
     _ref = FileView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
@@ -768,7 +770,8 @@ module.exports = FileView = (function(_super) {
     'click a.file-delete': 'onDeleteClicked',
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
-    'click a.file-edit-cancel': 'render'
+    'click a.file-edit-cancel': 'render',
+    'keydown input': "onKeyPress"
   };
 
   FileView.prototype.initialize = function() {
@@ -823,6 +826,12 @@ module.exports = FileView = (function(_super) {
       });
     } else {
       return new ModalView("Error", "The name can't be empty", "OK");
+    }
+  };
+
+  FileView.prototype.onKeyPress = function(e) {
+    if (e.keyCode === 13) {
+      return this.onSaveClicked();
     }
   };
 
@@ -989,20 +998,20 @@ module.exports = FolderView = (function(_super) {
     return {
       'click #new-folder-send': 'onAddFolder',
       'click #upload-file-send': 'onAddFile',
-      'click a#button-new-folder': 'prepareNewFolder'
+      'click a#button-new-folder': 'prepareNewFolder',
+      'keydown input#inputName': "onKeyPress"
     };
   };
 
   function FolderView(model, breadcrumbs) {
     this.model = model;
     this.breadcrumbs = breadcrumbs;
+    this.onKeyPress = __bind(this.onKeyPress, this);
     this.onAddFile = __bind(this.onAddFile, this);
     this.onAddFolder = __bind(this.onAddFolder, this);
     FolderView.__super__.constructor.call(this);
     this.breadcrumbs.setRoot(this.model);
   }
-
-  FolderView.prototype.initialize = function() {};
 
   FolderView.prototype.render = function() {
     this.beforeRender();
@@ -1063,6 +1072,7 @@ module.exports = FolderView = (function(_super) {
       path: this.model.repository(),
       isFolder: true
     });
+    console.log("creating folder " + folder);
     if (folder.validate()) {
       return new ModalView("Error", "Folder name can't be empty", "OK");
     } else {
@@ -1080,6 +1090,12 @@ module.exports = FolderView = (function(_super) {
       _results.push(this.filesList.addFile(attach));
     }
     return _results;
+  };
+
+  FolderView.prototype.onKeyPress = function(e) {
+    if (e.keyCode === 13) {
+      return this.onAddFolder();
+    }
   };
 
   FolderView.prototype.hideUploadForm = function() {
