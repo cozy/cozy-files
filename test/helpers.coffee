@@ -7,7 +7,6 @@ clientDS = new Client 'http://localhost:9101'
 # Bring models in context
 File = require '../server/models/file'
 Folder = require '../server/models/folder'
-Remote = require '../server/models/remote'
 
 process.env.NAME = "files"
 process.env.TOKEN = "token"
@@ -29,9 +28,7 @@ helpers.cleanDb = (callback) ->
     Folder.destroyAll (err) ->
         return callback err if err
         File.destroyAll (err) ->
-            return callback err if err
-            Remote.destroyAll (err) ->
-                return callback err
+            return callback err
 
 helpers.setup = (port) ->
     (done) ->

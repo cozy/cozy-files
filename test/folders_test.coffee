@@ -31,7 +31,6 @@ describe "Folders management", ->
                 folder =
                     name: "test"
                     path: "/root"
-                    slug: "/root/test"
                 client.post "folders/", folder, (err, res, body) =>
                     @err = err
                     @res = res
@@ -49,7 +48,6 @@ describe "Folders management", ->
                 folder =
                     name: "test"
                     path: "/root"
-                    slug: "/root/test"
                 client.post "folders/", folder, (err, res, body) =>
                     @err = err
                     @res = res
@@ -65,7 +63,6 @@ describe "Folders management", ->
             folder =
                 name: "test2"
                 path: "/root"
-                slug: "/root/test2"
             client.post "folders/", folder, (err, res, body) =>
                 @id = body.id
                 done()
@@ -84,17 +81,15 @@ describe "Folders management", ->
             @res.statusCode.should.be.equal 200
 
         it "And folder should be returned", ->
-        	@body.name.should.be.equal "test2"
-        	@body.path.should.be.equal "/root"
-        	@body.slug.should.be.equal "/root/test2"
+            @body.name.should.be.equal "test2"
+            @body.path.should.be.equal "/root"
 
     describe "Find folders in a specific folder", => 
 
         it "When I send a request to create a root folder", (done) ->
             folder =
                 name: "root"
-                path: "/"
-                slug: "/root"
+                path: ""
             client.post "folders/", folder, (err, res, body) =>
                 @id = body.id
                 done()
@@ -123,8 +118,7 @@ describe "Folders management", ->
         it "When I send a request to create a root folder", (done) ->
             folder =
                 name: "root2"
-                path: "/"
-                slug: "/root2"
+                path: ""
             client.post "folders/", folder, (err, res, body) =>
                 @rootId = body.id
                 done()        
@@ -133,7 +127,6 @@ describe "Folders management", ->
             folder =
                 name: "test3"
                 path: "/root2"
-                slug: "/root2/test3"
             client.post "folders/", folder, (err, res, body) =>
                 @testId = body.id
                 done()
