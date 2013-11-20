@@ -1,0 +1,22 @@
+if model.isFolder
+  td
+    span.glyphicon.glyphicon-folder-close.no-hover
+    input.caption.file-edit-name(value=model.name)
+    a.btn.btn-sm.btn-cozy.file-edit-save
+      | Save
+    a.btn.btn-sm.btn-link.file-edit-cancel
+      | cancel
+  td
+  td.file-date
+    span.pull-right 12:00 12/10/2013
+else
+  td
+    span.glyphicon.glyphicon-folder-close.no-hover
+    input.caption.file-edit-name(value=model.name)
+    a.btn.btn-sm.btn-cozy.file-edit-save
+      | Save
+    a.btn.btn-sm.btn-link.file-edit-cancel
+      | cancel
+  td
+  td.file-date
+    span.pull-right 12:00 12/10/2013

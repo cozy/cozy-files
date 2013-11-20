@@ -1,0 +1,14 @@
+#modal-dialog.modal.fade
+  .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+          h4.modal-title #{title}
+        .modal-body
+          p
+            | #{msg}
+        .modal-footer
+          if no
+            button.btn.btn-link#modal-dialog-no(type='button') #{no}
+          if yes
+            button.btn.btn-cozy#modal-dialog-yes(type='button') #{yes}

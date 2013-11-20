@@ -7,6 +7,7 @@ module.exports =
         post: files.create
     'files/:id':
         get: files.find
+        patch: files.modify
         delete: files.destroy
     'files/:id/attach/:name':
         get: files.getAttachment
@@ -16,6 +17,7 @@ module.exports =
         post: folders.create
     'folders/:id':
         get: folders.find
+        patch: folders.modify
         delete: folders.destroy
     'folders/:id/files':
         get: folders.findFiles

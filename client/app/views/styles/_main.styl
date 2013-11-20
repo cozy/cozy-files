@@ -26,6 +26,8 @@ h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
 body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
   margin-right: 0
 
+a:hover
+  cursor:pointer
 
 
 /*      COZY BUTTONS    */
@@ -114,19 +116,25 @@ table#table-items
   margin-top: 20px
 
 tr.folder-row
-  font-size: 18px
 
   // colors change on hover
   color: mediumcolor
   &:hover
     color: mediumcolor-contrast
 
+    .glyphicon.no-hover
+      color: mediumcolor
+
   // the filename
-  td a.btn
+  .caption
     font-size: 18px
+    padding: 0
+    margin-left: 10px
+    margin-right: 10px
 
   // the toolbox - delete, rename, etc
   .operations
+    font-size: 18px
     visibility: hidden
     display: inline
     a
@@ -137,6 +145,9 @@ tr.folder-row
 
   .file-date
     padding-top: 16px
+
+.visible-lg.visible-md.visible-inline
+  display: inline!important
 
 
 /*      BREADCRUMBS     */
