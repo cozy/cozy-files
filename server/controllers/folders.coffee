@@ -97,38 +97,34 @@ module.exports.modify = (req, res) ->
                                 else
                                     res.send success: 'File succesfuly modified', 200
 
-                updateFoldersAndFiles = ->
-                    # update all files
-                    File.all (err, files) =>
+                updateFoldersAndFiles = (folders)->
+                    # update all folders
+                    async.each folders, updateIfIsSubFolder, (err) ->
                         if err
-                            res.send error: true, msg: "Server error occured: #{err}", 500
+                            res.send error: true, msg: "Error updating folders: #{err}", 500
                         else
-                            async.each files, updateIfIsSubFolder, (err) ->
+                            # update all files
+                            File.all (err, files) =>
                                 if err
-                                    res.send error: true, msg: "Error updating files: #{err}", 500
+                                    res.send error: true, msg: "Server error occured: #{err}", 500
                                 else
-
-                                    # update all folders
-                                    Folder.all (err, folders) =>
+                                    async.each files, updateIfIsSubFolder, (err) ->
                                         if err
-                                            res.send error: true, msg:  "Server error occured: #{err}", 500
+                                            res.send error: true, msg: "Error updating files: #{err}", 500
                                         else
-                                            async.each folders, updateIfIsSubFolder, (err) ->
-                                                if err
-                                                    res.send error: true, msg: "Error updating folders: #{err}", 500
-                                                else
-                                                    updateTheFolder()
+                                            updateTheFolder()
                 
-                # check that the new name isn't taken
+                
                 Folder.all (err, folders) =>
                     if err
                         res.send error: true, msg:  "Server error occured: #{err}", 500
                     else
+                        # check that the new name isn't taken
                         async.every folders, hasntTheSamePathOrIsTheSame, (available) ->
                             if not available
                                 res.send error: true, msg: "The name already in use", 400
                             else
-                                updateFoldersAndFiles()
+                                updateFoldersAndFiles folders
 
 
 module.exports.destroy = (req, res) ->
