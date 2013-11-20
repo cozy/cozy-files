@@ -131,10 +131,18 @@ module.exports.destroy = (req, res) ->
             res.send error: true, msg: err, 404
         else
             directory = currentFolder.path + '/' + currentFolder.name
+
             destroyIfIsSubdirectory = (file, cb) ->
                 if (file.path.indexOf(directory) is 0)
                     console.log "Deleting '#{file.name}'"
-                    file.destroy cb
+                    if file.file
+                        file.removeBinary "file", (err) ->
+                            if err
+                                cb err
+                            else
+                                file.destroy cb
+                    else
+                        file.destroy cb
                 else
                     cb null
             
