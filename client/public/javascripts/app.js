@@ -221,8 +221,8 @@ module.exports = FileCollection = (function(_super) {
     var n1, n2, sort, t1, t2;
     n1 = o1.get("name").toLocaleLowerCase();
     n2 = o2.get("name").toLocaleLowerCase();
-    t1 = o1.get("isFolder");
-    t2 = o2.get("isFolder");
+    t1 = o1.get("type");
+    t2 = o2.get("type");
     sort = this.order === "asc" ? -1 : 1;
     if (t1 === t2) {
       if (n1 > n2) {
@@ -232,10 +232,10 @@ module.exports = FileCollection = (function(_super) {
         return sort;
       }
       return 0;
-    } else if (t1) {
-      return -1;
+    } else if (t1 === "file") {
+      return -sort;
     } else {
-      return 1;
+      return sort;
     }
   };
 
@@ -684,6 +684,7 @@ module.exports = Router = (function(_super) {
     return folder.find({
       success: function(data) {
         folder.set(data);
+        console.log(folder);
         return app.folderView.changeActiveFolder(folder);
       }
     });
@@ -912,14 +913,15 @@ module.exports = FilesView = (function(_super) {
     _ref1 = this.collection.models;
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       file = _ref1[_i];
-      if ((file.get("name") === attach.name) && !file.get("isFolder")) {
+      if ((file.get("name") === attach.name) && file.get("type") === "file") {
         found = true;
       }
     }
     if (!found) {
       fileAttributes = {
         name: attach.name,
-        path: this.model.repository()
+        path: this.model.repository(),
+        type: "file"
       };
       file = new File(fileAttributes);
       file.file = attach;
@@ -961,7 +963,7 @@ module.exports = FilesView = (function(_super) {
     _ref1 = this.collection.models;
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       file = _ref1[_i];
-      if ((file.get("name") === folder.get("name")) && file.get("isFolder")) {
+      if ((file.get("name") === folder.get("name")) && file.get("type") === "folder") {
         found = true;
       }
     }
@@ -1017,15 +1019,17 @@ module.exports = FolderView = (function(_super) {
       'click #new-folder-send': 'onAddFolder',
       'click #upload-file-send': 'onAddFile',
       'click a#button-new-folder': 'prepareNewFolder',
-      'keyup input#search-box': "onKeyPress"
+      'keyup input#search-box': "onSeachKeyPress",
+      'keyup input#inputName': "onAddFolderEnter"
     };
   };
 
   function FolderView(model, breadcrumbs) {
     this.model = model;
     this.breadcrumbs = breadcrumbs;
-    this.onKeyPress = __bind(this.onKeyPress, this);
+    this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
     this.onAddFile = __bind(this.onAddFile, this);
+    this.onAddFolderEnter = __bind(this.onAddFolderEnter, this);
     this.onAddFolder = __bind(this.onAddFolder, this);
     FolderView.__super__.constructor.call(this);
     this.breadcrumbs.setRoot(this.model);
@@ -1056,17 +1060,20 @@ module.exports = FolderView = (function(_super) {
     var _this = this;
     return this.model.findFiles({
       success: function(files) {
+        var file, _i, _len;
+        for (_i = 0, _len = files.length; _i < _len; _i++) {
+          file = files[_i];
+          file.type = "file";
+        }
         return _this.model.findFolders({
           success: function(folders) {
-            var folder, _i, _len;
-            for (_i = 0, _len = folders.length; _i < _len; _i++) {
-              folder = folders[_i];
+            var folder, _j, _len1;
+            for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
+              folder = folders[_j];
               folder.type = "folder";
             }
             _this.stopListening(_this.filesCollection, "progress:done");
-            _this.filesCollection = new FileCollection(folders.concat(files), {
-              sort: false
-            });
+            _this.filesCollection = new FileCollection(folders.concat(files));
             _this.listenTo(_this.filesCollection, "progress:done", _this.hideUploadForm);
             _this.filesList = new FilesView(_this.filesCollection, _this.model);
             _this.$('#files').html(_this.filesList.$el);
@@ -1090,7 +1097,7 @@ module.exports = FolderView = (function(_super) {
     folder = new File({
       name: this.$('#inputName').val(),
       path: this.model.repository(),
-      isFolder: true
+      type: "folder"
     });
     console.log("creating folder " + folder);
     if (folder.validate()) {
@@ -1098,6 +1105,12 @@ module.exports = FolderView = (function(_super) {
     } else {
       this.filesList.addFolder(folder);
       return $('#dialog-new-folder').modal('hide');
+    }
+  };
+
+  FolderView.prototype.onAddFolderEnter = function(e) {
+    if (e.keyCode === 13) {
+      return this.onAddFolder();
     }
   };
 
@@ -1112,7 +1125,7 @@ module.exports = FolderView = (function(_super) {
     return _results;
   };
 
-  FolderView.prototype.onKeyPress = function(e) {
+  FolderView.prototype.onSeachKeyPress = function(e) {
     var query;
     query = this.$('input#search-box').val();
     if (query !== "") {
@@ -1339,13 +1352,13 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><a');
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 else
 {
-buf.push('<td><span class="glyphicon glyphicon-file no-hover"></span><a');
+buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
@@ -1364,13 +1377,13 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><input');
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
 buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 else
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover"></span><input');
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
 buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }

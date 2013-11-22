@@ -1,6 +1,6 @@
 if model.type && model.type == "folder"
   td
-    span.glyphicon.glyphicon-folder-close.no-hover
+    span.glyphicon.glyphicon-folder-close.no-hover.icon
     input.caption.file-edit-name(value=model.name)
     a.btn.btn-sm.btn-cozy.file-edit-save
       | Save
@@ -11,7 +11,7 @@ if model.type && model.type == "folder"
     span.pull-right 12:00 12/10/2013
 else
   td
-    span.glyphicon.glyphicon-folder-close.no-hover
+    span.glyphicon.glyphicon-folder-close.no-hover.icon
     input.caption.file-edit-name(value=model.name)
     a.btn.btn-sm.btn-cozy.file-edit-save
       | Save

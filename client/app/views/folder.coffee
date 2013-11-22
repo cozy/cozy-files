@@ -16,7 +16,8 @@ module.exports = class FolderView extends BaseView
         'click #new-folder-send': 'onAddFolder'
         'click #upload-file-send': 'onAddFile'
         'click a#button-new-folder': 'prepareNewFolder'
-        'keyup input#search-box' : "onKeyPress"
+        'keyup input#search-box' : "onSeachKeyPress"
+        'keyup input#inputName' : "onAddFolderEnter"
 
     constructor: (@model, @breadcrumbs) ->
         super()
@@ -52,6 +53,9 @@ module.exports = class FolderView extends BaseView
         @model.findFiles
             success: (files) =>
 
+                for file in files
+                    file.type = "file"
+
                 @model.findFolders
                     success: (folders) =>
 
@@ -61,7 +65,7 @@ module.exports = class FolderView extends BaseView
 
                         # new collection
                         @stopListening @filesCollection, "progress:done"
-                        @filesCollection = new FileCollection folders.concat(files), sort:false
+                        @filesCollection = new FileCollection folders.concat(files)
                         @listenTo @filesCollection, "progress:done", @hideUploadForm
 
                         # render the collection
@@ -83,7 +87,7 @@ module.exports = class FolderView extends BaseView
         folder = new File
             name: @$('#inputName').val()
             path: @model.repository()
-            isFolder: true
+            type: "folder"
         console.log "creating folder #{folder}"
 
         if folder.validate()
@@ -93,11 +97,15 @@ module.exports = class FolderView extends BaseView
             # hide modal
             $('#dialog-new-folder').modal('hide')
 
+    onAddFolderEnter: (e) =>
+        if e.keyCode is 13
+            @onAddFolder()
+
     onAddFile: =>
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
 
-    onKeyPress: (e) =>
+    onSeachKeyPress: (e) =>
         query = @$('input#search-box').val()
         #if e.keyCode is 13
         if query isnt ""

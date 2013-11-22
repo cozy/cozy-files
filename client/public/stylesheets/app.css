@@ -849,11 +849,14 @@ tr.folder-row .operations {
 tr.folder-row .operations a {
   padding-left: 5px;
 }
+tr.folder-row .icon {
+  font-size: 14px;
+}
 tr.folder-row:hover .operations {
   visibility: visible;
 }
 tr.folder-row .file-date {
-  padding-top: 16px;
+  padding-top: 13px;
 }
 .visible-lg.visible-md.visible-inline {
   display: inline !important;

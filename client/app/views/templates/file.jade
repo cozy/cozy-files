@@ -1,6 +1,6 @@
 if model.type && model.type == "folder"
   td
-    span.glyphicon.glyphicon-folder-close.no-hover
+    span.glyphicon.glyphicon-folder-close.no-hover.icon
     a.caption.btn.btn-link(href="#folders/#{model.id}")
       | #{model.name}
     .operations
@@ -13,7 +13,7 @@ if model.type && model.type == "folder"
     span.pull-right 12:00 12/10/2013
 else
   td
-    span.glyphicon.glyphicon-file.no-hover
+    span.glyphicon.glyphicon-file.no-hover.icon
     a.caption.btn.btn-link(href="files/#{model.id}/attach/#{model.name}", target="_blank")
       | #{model.name}
     .operations
