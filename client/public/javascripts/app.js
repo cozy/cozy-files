@@ -1115,14 +1115,11 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.onKeyPress = function(e) {
     var query;
     query = this.$('input#search-box').val();
-    if (e.keyCode === 13) {
-      if (query !== "") {
-        console.log(query);
-        this.displaySearchResults(query);
-        return app.router.navigate("search/" + query);
-      } else {
-        return this.changeActiveFolder(this.breadcrumbs.root);
-      }
+    if (query !== "") {
+      this.displaySearchResults(query);
+      return app.router.navigate("search/" + query);
+    } else {
+      return this.changeActiveFolder(this.breadcrumbs.root);
     }
   };
 

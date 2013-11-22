@@ -99,13 +99,12 @@ module.exports = class FolderView extends BaseView
 
     onKeyPress: (e) =>
         query = @$('input#search-box').val()
-        if e.keyCode is 13
-            if query isnt ""
-                console.log query
-                @displaySearchResults query
-                app.router.navigate "search/#{query}"
-            else
-                @changeActiveFolder @breadcrumbs.root
+        #if e.keyCode is 13
+        if query isnt ""
+            @displaySearchResults query
+            app.router.navigate "search/#{query}"
+        else
+            @changeActiveFolder @breadcrumbs.root
 
     displaySearchResults: (query) ->
         @breadcrumbs.popAll()
