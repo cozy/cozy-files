@@ -45,7 +45,7 @@ module.exports.create = (req, res) ->
             async.every files, hasntTheSamePath, (available) ->
                 if not available
                     res.send error:true, msg: "This file already exists", 400
-                else                    
+                else
                     file = req.files["file"]
 
                     # create the file
@@ -58,12 +58,16 @@ module.exports.create = (req, res) ->
                                     console.log "[Error]: " + err
                                     res.send error: true, msg: "Error attaching binary: #{err}", 500
                                 else
-                                    fs.unlink file.path, (err) ->
+                                    newfile.index ["name"], (err) ->
                                         if err
-                                            console.log 'Could not delete', file.path
-                                            res.send error: true, msg: "Error removing uploaded file: #{err}", 500
+                                            res.send error: true, msg: "Error indexing: #{err}", 500
                                         else
-                                            res.send newfile, 200
+                                            fs.unlink file.path, (err) ->
+                                                if err
+                                                    console.log 'Could not delete', file.path
+                                                    res.send error: true, msg: "Error removing uploaded file: #{err}", 500
+                                                else
+                                                    res.send newfile, 200
 
 module.exports.find = (req, res) ->
      findFile req.params.id, (err, file) ->
@@ -101,7 +105,11 @@ module.exports.modify = (req, res) ->
                                     compound.logger.write err
                                     res.send error: 'Cannot modify file', 500
                                 else
-                                    res.send success: 'File successfully modified', 200
+                                    fileToModify.index ["name"], (err) ->
+                                        if err
+                                            res.send error: true, msg: "Error indexing: #{err}", 500
+                                        else
+                                            res.send success: 'File successfully modified', 200
 
 module.exports.destroy = (req, res) ->
     findFile req.params.id, (err, file) ->
@@ -121,3 +129,10 @@ module.exports.getAttachment = (req, res) ->
 
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
+
+module.exports.search = (req, res) ->
+    File.search "*#{req.params.query}*", (err, files) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            res.send files

@@ -768,6 +768,15 @@ input:focus {
 ::-moz-selection {
   background: #fe8800;
 }
+input#search-box {
+  height: 35px;
+  font-size: 16px;
+  padding-left: 37px;
+  width: 50%;
+  background-image: url("/images/iconmonstr-magnifier-icon-25.png");
+  background-repeat: no-repeat;
+  background-position: 5px 5px;
+}
 .content-shadow {
   background-color: #fff;
   -moz-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);

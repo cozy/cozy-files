@@ -19,8 +19,10 @@ module.exports = class File extends Backbone.Model
         Backbone.sync.apply @, arguments
 
     urlRoot: ->
-        if @get("isFolder") 
+        if @get("type") is "folder"
             'folders/'
+        else if @get("type") is "search"
+            'search/'
         else
             'files/'
 
@@ -58,20 +60,20 @@ module.exports = class File extends Backbone.Model
     # get the thing
     find: (callbacks) ->
         @prepareCallbacks callbacks
-        client.get "folders/#{@id}", callbacks
+        client.get "#{@urlRoot()}#{@id}", callbacks
 
     # Get application description
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
-        client.get "folders/#{@id}/files", callbacks
+        client.get "#{@urlRoot()}#{@id}/files", callbacks
 
     # Get application description
     findFolders: (callbacks) ->
         @prepareCallbacks callbacks
-        client.get "folders/#{@id}/folders", callbacks
+        client.get "#{@urlRoot()}#{@id}/folders", callbacks
 
     # FILE
     # get file attachement
     getAttachment: (file, callbacks) ->
         @prepareCallbacks callbacks
-        client.post "files/#{@id}/getAttachment/#{@name}", callbacks
+        client.post "#{@urlRoot()}#{@id}/getAttachment/#{@name}", callbacks

@@ -1,4 +1,4 @@
-if model.isFolder
+if model.type && model.type == "folder"
   td
     span.glyphicon.glyphicon-folder-close.no-hover
     input.caption.file-edit-name(value=model.name)

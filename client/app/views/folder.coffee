@@ -16,7 +16,7 @@ module.exports = class FolderView extends BaseView
         'click #new-folder-send': 'onAddFolder'
         'click #upload-file-send': 'onAddFile'
         'click a#button-new-folder': 'prepareNewFolder'
-        'keydown input#inputName' : "onKeyPress"
+        'keyup input#search-box' : "onKeyPress"
 
     constructor: (@model, @breadcrumbs) ->
         super()
@@ -57,11 +57,11 @@ module.exports = class FolderView extends BaseView
 
                         # mark folders as folders
                         for folder in folders
-                            folder.isFolder = true
+                            folder.type = "folder"
 
                         # new collection
                         @stopListening @filesCollection, "progress:done"
-                        @filesCollection = new FileCollection files.concat(folders)
+                        @filesCollection = new FileCollection folders.concat(files), sort:false
                         @listenTo @filesCollection, "progress:done", @hideUploadForm
 
                         # render the collection
@@ -98,8 +98,26 @@ module.exports = class FolderView extends BaseView
             @filesList.addFile attach
 
     onKeyPress: (e) =>
+        query = @$('input#search-box').val()
         if e.keyCode is 13
-            @onAddFolder()
+            if query isnt ""
+                console.log query
+                @displaySearchResults query
+                app.router.navigate "search/#{query}"
+            else
+                @changeActiveFolder @breadcrumbs.root
+
+    displaySearchResults: (query) ->
+        @breadcrumbs.popAll()
+
+        data = 
+            id: query
+            name: "Search '#{query}'"
+            type: "search"
+
+        search = new File data
+        @changeActiveFolder search
+
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')

@@ -1,4 +1,4 @@
-if model.isFolder
+if model.type && model.type == "folder"
   td
     span.glyphicon.glyphicon-folder-close.no-hover
     a.caption.btn.btn-link(href="#folders/#{model.id}")

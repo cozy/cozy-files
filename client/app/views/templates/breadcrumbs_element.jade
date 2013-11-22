@@ -3,6 +3,11 @@ if model.id == "root"
         a(href="#")
             span.glyphicon.glyphicon-folder-open
 else
-    li
-        a(href="#folders/#{model.id}")
-            | #{model.attributes.name}
+    if model.attributes.type == "search"
+        li
+            a(href="#search/#{model.id}")
+                | #{model.attributes.name}
+    else
+        li
+            a(href="#folders/#{model.id}")
+                | #{model.attributes.name}

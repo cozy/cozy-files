@@ -5,6 +5,8 @@ module.exports =
     'files':
         get: files.all
         post: files.create
+    'search/:query/files':
+        get: files.search
     'files/:id':
         get: files.find
         patch: files.modify
@@ -15,6 +17,8 @@ module.exports =
         get: files.downloadAttachment
     'folders':
         post: folders.create
+    'search/:query/folders':
+        get: folders.search
     'folders/:id':
         get: folders.find
         patch: folders.modify

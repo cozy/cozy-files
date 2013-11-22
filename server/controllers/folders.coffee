@@ -9,7 +9,7 @@ findFolder = (id, callback) ->
         if err or not file
             callback "File not found"
         else
-            callback null, file 
+            callback null, file
 
 getFolderPath = (id, cb) ->
     if id is 'root'
@@ -36,7 +36,7 @@ module.exports.create = (req, res) ->
             async.every folders, hasntTheSamePath, (available) ->
                 if not available
                     res.send error:true, msg: "This folder already exists", 400
-                else                    
+                else
                     Folder.create req.body, (err, newFolder) ->
                         if err
                             console.log err
@@ -53,7 +53,7 @@ module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
         if err
             res.send error: true, msg: err, 404
-        else   
+        else
             res.send folder, 200
 
 module.exports.modify = (req, res) ->
@@ -113,8 +113,8 @@ module.exports.modify = (req, res) ->
                                             res.send error: true, msg: "Error updating files: #{err}", 500
                                         else
                                             updateTheFolder()
-                
-                
+
+
                 Folder.all (err, folders) =>
                     if err
                         res.send error: true, msg:  "Server error occured: #{err}", 500
@@ -147,7 +147,7 @@ module.exports.destroy = (req, res) ->
                         file.destroy cb
                 else
                     cb null
-            
+
             Folder.all (err, folders) =>
                 if err
                     res.send error: true, msg: "Server error occured: #{err}", 500
@@ -158,7 +158,7 @@ module.exports.destroy = (req, res) ->
                             console.log err
                             res.send error: true, msg: "Server error occured while deleting subdirectories: #{err}", 500
                         else
-                            
+
                             File.all (err, files) =>
                                 if err
                                     res.send error: true, msg:  "Server error occured: #{err}", 500
@@ -186,7 +186,7 @@ module.exports.findFiles = (req, res) ->
                 if err
                     res.send error: true, msg: "Server error occured: #{err}", 500
                 else
-                    res.send files, 200 
+                    res.send files, 200
 
 module.exports.findFolders = (req, res) ->
     getFolderPath req.params.id, (err, key) ->
@@ -197,4 +197,11 @@ module.exports.findFolders = (req, res) ->
                 if err
                     res.send error: true, msg: "Server error occured: #{err}", 500
                 else
-                    res.send files, 200 
+                    res.send files, 200
+
+module.exports.search = (req, res) ->
+    Folder.search "*#{req.params.query}*", (err, files) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            res.send files
