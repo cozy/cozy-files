@@ -57,17 +57,14 @@ module.exports = class File extends Backbone.Model
         rep
 
     # FOLDER
-    # get the thing
     find: (callbacks) ->
         @prepareCallbacks callbacks
         client.get "#{@urlRoot()}#{@id}", callbacks
 
-    # Get application description
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
         client.get "#{@urlRoot()}#{@id}/files", callbacks
 
-    # Get application description
     findFolders: (callbacks) ->
         @prepareCallbacks callbacks
         client.get "#{@urlRoot()}#{@id}/folders", callbacks

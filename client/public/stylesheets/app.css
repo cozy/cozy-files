@@ -771,11 +771,11 @@ input:focus {
 input#search-box {
   height: 35px;
   font-size: 16px;
-  padding-left: 37px;
+  padding-left: 28px;
   width: 50%;
-  background-image: url("/images/iconmonstr-magnifier-icon-25.png");
+  background-image: url("/images/iconmonstr-magnifier-icon-18.png");
   background-repeat: no-repeat;
-  background-position: 5px 5px;
+  background-position: 5px 8px;
 }
 .content-shadow {
   background-color: #fff;
