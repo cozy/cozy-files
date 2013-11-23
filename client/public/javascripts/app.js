@@ -623,12 +623,16 @@ module.exports = File = (function(_super) {
 
   File.prototype.findFiles = function(callbacks) {
     this.prepareCallbacks(callbacks);
-    return client.get("" + (this.urlRoot()) + this.id + "/files", callbacks);
+    return client.post("" + (this.urlRoot()) + "files", {
+      id: this.id
+    }, callbacks);
   };
 
   File.prototype.findFolders = function(callbacks) {
     this.prepareCallbacks(callbacks);
-    return client.get("" + (this.urlRoot()) + this.id + "/folders", callbacks);
+    return client.post("" + (this.urlRoot()) + "folders", {
+      id: this.id
+    }, callbacks);
   };
 
   File.prototype.getAttachment = function(file, callbacks) {

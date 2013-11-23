@@ -21,13 +21,13 @@ module.exports =
         get: folders.find
         patch: folders.modify
         delete: folders.destroy
-    
-    'folders/:id/files':
-        get: folders.findFiles
-    'folders/:id/folders':
-        get: folders.findFolders
 
-    'search/:query/files':
-        get: files.search
-    'search/:query/folders':
-        get: folders.search
+    'folders/files':
+        post: folders.findFiles
+    'folders/folders':
+        post: folders.findFolders
+
+    'search/folders':
+        post: folders.search
+    'search/files':
+        post: files.search

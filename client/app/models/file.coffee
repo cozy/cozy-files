@@ -63,11 +63,11 @@ module.exports = class File extends Backbone.Model
 
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
-        client.get "#{@urlRoot()}#{@id}/files", callbacks
+        client.post "#{@urlRoot()}files", id: @id, callbacks
 
     findFolders: (callbacks) ->
         @prepareCallbacks callbacks
-        client.get "#{@urlRoot()}#{@id}/folders", callbacks
+        client.post "#{@urlRoot()}folders", id: @id, callbacks
 
     # FILE
     # get file attachement

@@ -33,6 +33,7 @@ module.exports.all = (req, res) ->
             res.send files
 
 module.exports.create = (req, res) ->
+    console.log "files.create"
     if not req.body.name or req.body.name == ""
         res.send error: true, msg: "Invalid arguments", 500
     else
@@ -131,7 +132,7 @@ module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
 module.exports.search = (req, res) ->
-    File.search "*#{req.params.query}*", (err, files) ->
+    File.search "*#{req.body.id}*", (err, files) ->
         if err
             res.send error: true, msg: "Server error occured: #{err}", 500
         else

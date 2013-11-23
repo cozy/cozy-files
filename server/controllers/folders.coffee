@@ -178,7 +178,7 @@ module.exports.destroy = (req, res) ->
                                                     res.send success: "Folder succesfuly deleted: #{err}", 200
 
 module.exports.findFiles = (req, res) ->
-    getFolderPath req.params.id, (err, key) ->
+    getFolderPath req.body.id, (err, key) ->
         if err
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
@@ -189,7 +189,7 @@ module.exports.findFiles = (req, res) ->
                     res.send files, 200
 
 module.exports.findFolders = (req, res) ->
-    getFolderPath req.params.id, (err, key) ->
+    getFolderPath req.body.id, (err, key) ->
         if err
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
@@ -200,7 +200,7 @@ module.exports.findFolders = (req, res) ->
                     res.send files, 200
 
 module.exports.search = (req, res) ->
-    Folder.search "*#{req.params.query}*", (err, files) ->
+    Folder.search "*#{req.body.id}*", (err, files) ->
         if err
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
