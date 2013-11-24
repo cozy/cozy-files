@@ -647,15 +647,13 @@ module.exports = File = (function(_super) {
 });
 
 ;require.register("router", function(exports, require, module) {
-var File, FolderView, MockupView, Router, app, _ref,
+var File, FolderView, Router, app, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 app = require('application');
 
 FolderView = require('./views/folder');
-
-MockupView = require('./views/mockup');
 
 File = require('./models/file');
 
@@ -670,8 +668,7 @@ module.exports = Router = (function(_super) {
   Router.prototype.routes = {
     '': 'main',
     'folders/:folderid': 'folder',
-    'search/:query': 'search',
-    'mockup': 'mockup'
+    'search/:query': 'search'
   };
 
   Router.prototype.main = function() {
@@ -702,14 +699,6 @@ module.exports = Router = (function(_super) {
       name: "Search '" + query + "'"
     });
     return app.folderView.changeActiveFolder(folder);
-  };
-
-  Router.prototype.mockup = function() {
-    if (this.displayedView) {
-      this.displayedView.remove();
-    }
-    this.displayedView = new MockupView();
-    return this.displayedView.render();
   };
 
   return Router;
@@ -1020,11 +1009,11 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.events = function() {
     return {
+      'click a#button-new-folder': 'prepareNewFolder',
       'click #new-folder-send': 'onAddFolder',
       'click #upload-file-send': 'onAddFile',
-      'click a#button-new-folder': 'prepareNewFolder',
-      'keyup input#search-box': "onSeachKeyPress",
-      'keyup input#inputName': "onAddFolderEnter"
+      'keyup input#search-box': 'onSeachKeyPress',
+      'keyup input#inputName': 'onAddFolderEnter'
     };
   };
 
@@ -1032,6 +1021,7 @@ module.exports = FolderView = (function(_super) {
     this.model = model;
     this.breadcrumbs = breadcrumbs;
     this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
+    this.onDragAndDrop = __bind(this.onDragAndDrop, this);
     this.onAddFile = __bind(this.onAddFile, this);
     this.onAddFolderEnter = __bind(this.onAddFolderEnter, this);
     this.onAddFolder = __bind(this.onAddFolder, this);
@@ -1049,10 +1039,26 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.afterRender = function() {
+    var prevent,
+      _this = this;
     FolderView.__super__.afterRender.call(this);
     this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
-    return this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+    this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+    prevent = function(e) {
+      e.preventDefault();
+      return e.stopPropagation();
+    };
+    this.$el.on("dragover", prevent);
+    this.$el.on("dragenter", prevent);
+    return this.$el.on("drop", function(e) {
+      return _this.onDragAndDrop(e);
+    });
   };
+
+  /*
+      Display and re-render the contents of the folder
+  */
+
 
   FolderView.prototype.changeActiveFolder = function(folder) {
     this.model = folder;
@@ -1096,6 +1102,11 @@ module.exports = FolderView = (function(_super) {
     });
   };
 
+  /*
+      Upload/ new folder
+  */
+
+
   FolderView.prototype.onAddFolder = function() {
     var folder;
     folder = new File({
@@ -1110,6 +1121,13 @@ module.exports = FolderView = (function(_super) {
       this.filesList.addFolder(folder);
       return $('#dialog-new-folder').modal('hide');
     }
+  };
+
+  FolderView.prototype.prepareNewFolder = function() {
+    var _this = this;
+    return setTimeout(function() {
+      return _this.$("#inputName").focus();
+    }, 500);
   };
 
   FolderView.prototype.onAddFolderEnter = function(e) {
@@ -1128,6 +1146,30 @@ module.exports = FolderView = (function(_super) {
     }
     return _results;
   };
+
+  FolderView.prototype.onDragAndDrop = function(e) {
+    var attach, _i, _len, _ref, _results;
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Drag and drop");
+    $("#dialog-upload-file").modal("show");
+    _ref = e.dataTransfer.files;
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      attach = _ref[_i];
+      _results.push(this.filesList.addFile(attach));
+    }
+    return _results;
+  };
+
+  FolderView.prototype.hideUploadForm = function() {
+    return $('#dialog-upload-file').modal('hide');
+  };
+
+  /*
+      Search
+  */
+
 
   FolderView.prototype.onSeachKeyPress = function(e) {
     var query;
@@ -1152,43 +1194,7 @@ module.exports = FolderView = (function(_super) {
     return this.changeActiveFolder(search);
   };
 
-  FolderView.prototype.hideUploadForm = function() {
-    return $('#dialog-upload-file').modal('hide');
-  };
-
-  FolderView.prototype.prepareNewFolder = function() {
-    var _this = this;
-    return setTimeout(function() {
-      return _this.$("#inputName").focus();
-    }, 500);
-  };
-
   return FolderView;
-
-})(BaseView);
-
-});
-
-;require.register("views/mockup", function(exports, require, module) {
-var BaseView, MockupView, _ref,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-BaseView = require('../lib/base_view');
-
-module.exports = MockupView = (function(_super) {
-  __extends(MockupView, _super);
-
-  function MockupView() {
-    _ref = MockupView.__super__.constructor.apply(this, arguments);
-    return _ref;
-  }
-
-  MockupView.prototype.template = require('./templates/mockup');
-
-  MockupView.prototype.el = "body";
-
-  return MockupView;
 
 })(BaseView);
 
@@ -1424,18 +1430,6 @@ else
 buf.push(' Upload a file to "' + escape((interp = model.get("name")) == null ? '' : interp) + '"');
 }
 buf.push('</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> Create a new folder</span></a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
-}
-return buf.join("");
-};
-});
-
-;require.register("views/templates/mockup", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
-var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button type="button" class="btn btn-cozy-contrast">Send</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name: </label><input id="inputName" type="text" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button type="button" class="btn btn-cozy">Send</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><a href="#dialog-upload-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span> Upload a file to "silly cats"</a> <a href="#dialog-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span> Create a new folder</a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"><ul><li><a href="#"><span class="glyphicon glyphicon-folder-open"> </span></a></li><li><a href="#">personal</a></li><li><a href="#">photos</a></li><li><a href="#">very long folder name it is indeed</a></li><li><a href="#">another one</a></li><li><a href="#">silly cats</a></li></ul></div><table id="table-items" class="table table-hover"><tbody><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-folder-close"> </span><a class="btn btn-link">little grumpy cat</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">sweet kitty on a bicycle.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr><tr class="folder-row"><td><span class="glyphicon glyphicon-file"> </span><a class="btn btn-link">super sweet kitty.jpg</a><div class="operations"><a><span class="glyphicon glyphicon-remove-circle"> </span></a><a><span class="glyphicon glyphicon-edit"> </span></a><a><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td class="operation-title"></td><td class="operation-amount"><span class="pull-right">12:00 12/10/2013</span></td></tr></tbody></table></div></div></div>');
 }
 return buf.join("");
 };

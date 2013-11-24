@@ -12,12 +12,12 @@ module.exports = class FolderView extends BaseView
 
     template: require './templates/folder'
 
-    events: ->  
-        'click #new-folder-send': 'onAddFolder'
-        'click #upload-file-send': 'onAddFile'
-        'click a#button-new-folder': 'prepareNewFolder'
-        'keyup input#search-box' : "onSeachKeyPress"
-        'keyup input#inputName' : "onAddFolderEnter"
+    events: ->
+        'click a#button-new-folder' : 'prepareNewFolder'
+        'click #new-folder-send'    : 'onAddFolder'
+        'click #upload-file-send'   : 'onAddFile'
+        'keyup input#search-box'    : 'onSeachKeyPress'
+        'keyup input#inputName'     : 'onAddFolderEnter'
 
     constructor: (@model, @breadcrumbs) ->
         super()
@@ -36,9 +36,21 @@ module.exports = class FolderView extends BaseView
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
 
+        # add drag and drop support
+        prevent = (e) ->
+            e.preventDefault()
+            e.stopPropagation()
+        @$el.on "dragover", prevent
+        @$el.on "dragenter", prevent
+        @$el.on "drop", (e) =>
+            @onDragAndDrop(e)
 
+        
+
+    ###
+        Display and re-render the contents of the folder
+    ###
     changeActiveFolder: (folder) ->
-
         # save the model
         @model = folder
         # update breadcrumbs
@@ -46,13 +58,13 @@ module.exports = class FolderView extends BaseView
         # files
         @displayChildren()
 
-
     displayChildren: ->
 
         # add files view
         @model.findFiles
             success: (files) =>
 
+                # mark files as files
                 for file in files
                     file.type = "file"
 
@@ -83,6 +95,9 @@ module.exports = class FolderView extends BaseView
                 new ModalView "Error", "Error getting files from server", "OK"
 
 
+    ###
+        Upload/ new folder
+    ###
     onAddFolder: =>
         folder = new File
             name: @$('#inputName').val()
@@ -97,6 +112,11 @@ module.exports = class FolderView extends BaseView
             # hide modal
             $('#dialog-new-folder').modal('hide')
 
+    prepareNewFolder: ->
+        setTimeout () =>
+            @$("#inputName").focus()
+        , 500
+
     onAddFolderEnter: (e) =>
         if e.keyCode is 13
             @onAddFolder()
@@ -105,6 +125,23 @@ module.exports = class FolderView extends BaseView
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
 
+    onDragAndDrop: (e) =>
+        e.preventDefault()
+        e.stopPropagation()
+        console.log "Drag and drop"
+        # show a status bar
+        $("#dialog-upload-file").modal("show")
+        # send file
+        for attach in e.dataTransfer.files
+            @filesList.addFile attach
+
+    hideUploadForm: ->
+        $('#dialog-upload-file').modal('hide')
+
+
+    ###
+        Search
+    ###
     onSeachKeyPress: (e) =>
         query = @$('input#search-box').val()
         #if e.keyCode is 13
@@ -124,12 +161,3 @@ module.exports = class FolderView extends BaseView
 
         search = new File data
         @changeActiveFolder search
-
-
-    hideUploadForm: ->
-        $('#dialog-upload-file').modal('hide')
-
-    prepareNewFolder: ->
-        setTimeout () =>
-            @$("#inputName").focus()
-        , 500
