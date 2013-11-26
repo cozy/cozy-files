@@ -1,7 +1,6 @@
 app = require 'application'
 
 FolderView = require './views/folder'
-MockupView = require './views/mockup'
 File = require './models/file'
 
 
@@ -10,19 +9,19 @@ module.exports = class Router extends Backbone.Router
     routes:
         '': 'main'
         'folders/:folderid' : 'folder'
-        'mockup' : 'mockup'
+        'search/:query' : 'search'
 
     main: ->
         app.folderView.changeActiveFolder app.root
 
     folder: (id) ->
-        folder = new File id:id, isFolder:true
+        folder = new File id:id, type:"folder"
         folder.find 
             success: (data) =>
                 folder.set data
+                console.log folder
                 app.folderView.changeActiveFolder folder
 
-    mockup: ->
-        @displayedView.remove() if @displayedView
-        @displayedView = new MockupView()
-        @displayedView.render()
+    search: (query) ->
+        folder = new File id:query, type:"search", name: "Search '#{query}'"
+        app.folderView.changeActiveFolder folder

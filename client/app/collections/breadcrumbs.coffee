@@ -30,4 +30,8 @@ module.exports = class BreadcrumbsManager extends Backbone.Collection
 
     setRoot: (root) ->
         @reset()
+        @root = root
         @add root
+
+    popAll: ->
+        @setRoot @root

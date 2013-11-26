@@ -24,13 +24,14 @@ module.exports = class FilesView extends ViewCollection
     addFile: (attach) =>
         found = false
         for file in @collection.models
-            if (file.get("name") == attach.name) and not file.get("isFolder")
+            if (file.get("name") == attach.name) and file.get("type") is "file"
                 found = true
         
         if not found
             fileAttributes = 
                 name: attach.name
                 path: @model.repository()
+                type: "file"
             file = new File fileAttributes
             file.file = attach
             @collection.add file
@@ -63,7 +64,7 @@ module.exports = class FilesView extends ViewCollection
     addFolder: (folder) ->
         found = false
         for file in @collection.models
-            if (file.get("name") == folder.get("name")) and file.get("isFolder")
+            if (file.get("name") == folder.get("name")) and file.get("type") is "folder"
                 found = true
 
         if not found

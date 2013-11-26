@@ -16,7 +16,7 @@ module.exports =
         @breadcrumbs = new BreadcrumbsManager()
 
         # the root
-        @root = new File id:"root", path:"", name:"", isFolder:true
+        @root = new File id:"root", path:"", name:"", type:"folder"
         # and the folder view
         @folderView = new FolderView @root, @breadcrumbs
 
