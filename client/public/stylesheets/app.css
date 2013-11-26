@@ -728,8 +728,16 @@ body.modal-open,
 .modal-open .navbar-fixed-bottom {
   margin-right: 0;
 }
-a:hover {
-  cursor: pointer;
+textarea:hover,
+input:hover,
+textarea:active,
+input:active,
+textarea:focus,
+input:focus,
+a:focus,
+.btn:focus {
+  outline: 0px !important;
+  -webkit-appearance: none;
 }
 .btn.btn-cozy {
   background-color: #34a6ff;
