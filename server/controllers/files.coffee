@@ -103,7 +103,7 @@ module.exports.modify = (req, res) ->
                         else
                             fileToModify.updateAttributes name: newName, (err) =>
                                 if err
-                                    compound.logger.write err
+                                    console.log err
                                     res.send error: 'Cannot modify file', 500
                                 else
                                     fileToModify.index ["name"], (err) ->
@@ -120,7 +120,7 @@ module.exports.destroy = (req, res) ->
             file.removeBinary "file", (err, resp, body) =>
                 file.destroy (err) =>
                     if err
-                        compound.logger.write err
+                        console.log err
                         res.send error: 'Cannot delete file', 500
                     else
                         res.send success: 'File successfully deleted', 200
@@ -131,9 +131,9 @@ module.exports.getAttachment = (req, res) ->
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
-module.exports.search = (req, res) ->
+module.exports.search = (req, res, next) ->
     File.search "*#{req.body.id}*", (err, files) ->
         if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
+            next err
         else
             res.send files
