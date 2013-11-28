@@ -17,15 +17,9 @@ module.exports = class FilesView extends ViewCollection
     initialize: (@collection, @model) ->
         super()
         @listenTo @collection, "sort", @render
-
-    afterRender: ->
-        super()
         
     addFile: (attach) =>
-        found = false
-        for file in @collection.models
-            if (file.get("name") == attach.name) and file.get("type") is "file"
-                found = true
+        found = @collection.findWhere(name: attach.name).length
         
         if not found
             fileAttributes = 
@@ -62,10 +56,10 @@ module.exports = class FilesView extends ViewCollection
                 new ModalView "Error", "File could not be sent to server", "OK"
 
     addFolder: (folder) ->
-        found = false
-        for file in @collection.models
-            if (file.get("name") == folder.get("name")) and file.get("type") is "folder"
-                found = true
+        found = @collection.findWhere(name: folder.get("name"))
+        console.log found
+
+        window.c = @collection
 
         if not found
             folder.save null,

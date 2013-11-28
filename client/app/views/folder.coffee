@@ -37,10 +37,10 @@ module.exports = class FolderView extends BaseView
         prevent = (e) ->
             e.preventDefault()
             e.stopPropagation()
-        @$el.on "dragover", prevent
-        @$el.on "dragenter", prevent
-        @$el.on "drop", (e) =>
-            @onDragAndDrop(e)
+        #@$el.on "dragover", prevent
+        #@$el.on "dragenter", prevent
+        #@$el.on "drop", (e) =>
+        #    @onDragAndDrop(e)
 
         
 
@@ -95,6 +95,18 @@ module.exports = class FolderView extends BaseView
     ###
         Upload/ new folder
     ###
+    prepareNewFolder: ->
+        setTimeout () =>
+            @$("#inputName").focus()
+        , 500
+
+    onAddFolderEnter: (e) ->
+        if e.keyCode is 13
+            e.preventDefault()
+            e.stopPropagation()
+            console.log "enter on add folder"
+            @onAddFolder()
+
     onAddFolder: =>
         folder = new File
             name: @$('#inputName').val()
@@ -108,15 +120,6 @@ module.exports = class FolderView extends BaseView
             @filesList.addFolder folder
             # hide modal
             $('#dialog-new-folder').modal('hide')
-
-    prepareNewFolder: ->
-        setTimeout () =>
-            @$("#inputName").focus()
-        , 500
-
-    onAddFolderEnter: (e) =>
-        if e.keyCode is 13
-            @onAddFolder()
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files

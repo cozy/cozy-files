@@ -899,20 +899,11 @@ module.exports = FilesView = (function(_super) {
     return this.listenTo(this.collection, "sort", this.render);
   };
 
-  FilesView.prototype.afterRender = function() {
-    return FilesView.__super__.afterRender.call(this);
-  };
-
   FilesView.prototype.addFile = function(attach) {
-    var file, fileAttributes, found, progress, _i, _len, _ref1;
-    found = false;
-    _ref1 = this.collection.models;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      file = _ref1[_i];
-      if ((file.get("name") === attach.name) && file.get("type") === "file") {
-        found = true;
-      }
-    }
+    var file, fileAttributes, found, progress;
+    found = this.collection.findWhere({
+      name: attach.name
+    }).length;
     if (!found) {
       fileAttributes = {
         name: attach.name,
@@ -953,16 +944,13 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.addFolder = function(folder) {
-    var file, found, _i, _len, _ref1,
+    var found,
       _this = this;
-    found = false;
-    _ref1 = this.collection.models;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      file = _ref1[_i];
-      if ((file.get("name") === folder.get("name")) && file.get("type") === "folder") {
-        found = true;
-      }
-    }
+    found = this.collection.findWhere({
+      name: folder.get("name")
+    });
+    console.log(found);
+    window.c = this.collection;
     if (!found) {
       return folder.save(null, {
         success: function(data) {
@@ -1012,7 +1000,6 @@ module.exports = FolderView = (function(_super) {
     this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
     this.onDragAndDrop = __bind(this.onDragAndDrop, this);
     this.onAddFile = __bind(this.onAddFile, this);
-    this.onAddFolderEnter = __bind(this.onAddFolderEnter, this);
     this.onAddFolder = __bind(this.onAddFolder, this);
     _ref = FolderView.__super__.constructor.apply(this, arguments);
     return _ref;
@@ -1042,20 +1029,14 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.afterRender = function() {
-    var prevent,
-      _this = this;
+    var prevent;
     FolderView.__super__.afterRender.call(this);
     this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
     this.$("#crumbs").append(this.breadcrumbsView.render().$el);
-    prevent = function(e) {
+    return prevent = function(e) {
       e.preventDefault();
       return e.stopPropagation();
     };
-    this.$el.on("dragover", prevent);
-    this.$el.on("dragenter", prevent);
-    return this.$el.on("drop", function(e) {
-      return _this.onDragAndDrop(e);
-    });
   };
 
   /*
@@ -1110,6 +1091,22 @@ module.exports = FolderView = (function(_super) {
   */
 
 
+  FolderView.prototype.prepareNewFolder = function() {
+    var _this = this;
+    return setTimeout(function() {
+      return _this.$("#inputName").focus();
+    }, 500);
+  };
+
+  FolderView.prototype.onAddFolderEnter = function(e) {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("enter on add folder");
+      return this.onAddFolder();
+    }
+  };
+
   FolderView.prototype.onAddFolder = function() {
     var folder;
     folder = new File({
@@ -1123,19 +1120,6 @@ module.exports = FolderView = (function(_super) {
     } else {
       this.filesList.addFolder(folder);
       return $('#dialog-new-folder').modal('hide');
-    }
-  };
-
-  FolderView.prototype.prepareNewFolder = function() {
-    var _this = this;
-    return setTimeout(function() {
-      return _this.$("#inputName").focus();
-    }, 500);
-  };
-
-  FolderView.prototype.onAddFolderEnter = function(e) {
-    if (e.keyCode === 13) {
-      return this.onAddFolder();
     }
   };
 
@@ -1423,7 +1407,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><form><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name:</label><input id="inputName" type="text" class="form-control"/></div></fieldset></form></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-6 pull-left"><input id="search-box" type="search"/></div><div class="col-lg-6"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
+buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name:</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-6 pull-left"><input id="search-box" type="search"/></div><div class="col-lg-6"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
 if ( model.id == "root")
 {
 buf.push(' Upload a file here');

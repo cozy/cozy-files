@@ -5,12 +5,11 @@
             button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
             h4.modal-title Upload a new file
           .modal-body
-            form
-              fieldset
-                .form-group
-                  label(for='uploader')
-                    | Choose the file to upload:
-                  input#uploader(type="file")
+            fieldset
+              .form-group
+                label(for='uploader')
+                  | Choose the file to upload:
+                input#uploader(type="file")
           .modal-footer
             button.btn.btn-link(type='button', data-dismiss='modal') Close
             button.btn.btn-cozy-contrast#upload-file-send(type='button') Add
@@ -22,12 +21,11 @@
             button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
             h4.modal-title Add a new folder
           .modal-body
-            form
-              fieldset
-                .form-group
-                  label(for='inputName')
-                    | Enter the folder's name:
-                  input#inputName.form-control(type="text")
+            fieldset
+              .form-group
+                label(for='inputName')
+                  | Enter the folder's name:
+                input#inputName.form-control(type="text")
           .modal-footer
             button.btn.btn-link(type='button', data-dismiss='modal') Close
             button.btn.btn-cozy#new-folder-send(type='button') Create
