@@ -19,7 +19,7 @@ module.exports = class FilesView extends ViewCollection
         @listenTo @collection, "sort", @render
         
     addFile: (attach) =>
-        found = @collection.findWhere(name: attach.name).length
+        found = @collection.findWhere(name: attach.name)
         
         if not found
             fileAttributes = 

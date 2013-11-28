@@ -73,9 +73,9 @@ module.exports = class FolderView extends BaseView
                             folder.type = "folder"
 
                         # new collection
-                        @stopListening @filesCollection, "progress:done"
+                        @stopListening @filesCollection, "sync"
                         @filesCollection = new FileCollection folders.concat(files)
-                        @listenTo @filesCollection, "progress:done", @hideUploadForm
+                        @listenTo @filesCollection, "sync", @hideUploadForm
 
                         # render the collection
                         @filesList = new FilesView @filesCollection, @model

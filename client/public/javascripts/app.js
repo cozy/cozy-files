@@ -903,7 +903,7 @@ module.exports = FilesView = (function(_super) {
     var file, fileAttributes, found, progress;
     found = this.collection.findWhere({
       name: attach.name
-    }).length;
+    });
     if (!found) {
       fileAttributes = {
         name: attach.name,
@@ -1072,9 +1072,9 @@ module.exports = FolderView = (function(_super) {
               folder = folders[_j];
               folder.type = "folder";
             }
-            _this.stopListening(_this.filesCollection, "progress:done");
+            _this.stopListening(_this.filesCollection, "sync");
             _this.filesCollection = new FileCollection(folders.concat(files));
-            _this.listenTo(_this.filesCollection, "progress:done", _this.hideUploadForm);
+            _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
             _this.filesList = new FilesView(_this.filesCollection, _this.model);
             _this.$('#files').html(_this.filesList.$el);
             return _this.filesList.render();
@@ -1287,21 +1287,16 @@ module.exports = ProgressbarView = (function(_super) {
   }
 
   ProgressbarView.prototype.initialize = function() {
-    return this.listenTo(this.model, 'progress', this.update);
+    this.listenTo(this.model, 'progress', this.update);
+    return this.listenTo(this.model, 'sync', this.destroy);
   };
 
   ProgressbarView.prototype.update = function(e) {
     var pc;
     pc = parseInt(e.loaded / e.total * 100);
     console.log("[Progress bar] : " + pc + " %");
-    if (pc === 100) {
-      this.model.trigger("progress:done");
-      this.remove();
-      return this.destroy();
-    } else {
-      this.value = pc;
-      return this.render();
-    }
+    this.value = pc;
+    return this.render();
   };
 
   ProgressbarView.prototype.getRenderData = function() {
