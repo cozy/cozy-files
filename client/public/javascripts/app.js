@@ -949,8 +949,6 @@ module.exports = FilesView = (function(_super) {
     found = this.collection.findWhere({
       name: folder.get("name")
     });
-    console.log(found);
-    window.c = this.collection;
     if (!found) {
       return folder.save(null, {
         success: function(data) {
@@ -1018,22 +1016,10 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.initialize = function(options) {
-    this.breadcrumbs = options.breadcrumbs;
-    return this.breadcrumbs.setRoot(this.model);
-  };
-
-  FolderView.prototype.getRenderData = function() {
-    return {
-      model: this.model
-    };
-  };
-
-  FolderView.prototype.afterRender = function() {
     var prevent,
       _this = this;
-    FolderView.__super__.afterRender.call(this);
-    this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
-    this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+    this.breadcrumbs = options.breadcrumbs;
+    this.breadcrumbs.setRoot(this.model);
     prevent = function(e) {
       e.preventDefault();
       return e.stopPropagation();
@@ -1043,6 +1029,17 @@ module.exports = FolderView = (function(_super) {
     return this.$el.on("drop", function(e) {
       return _this.onDragAndDrop(e);
     });
+  };
+
+  FolderView.prototype.getRenderData = function() {
+    return {
+      model: this.model
+    };
+  };
+
+  FolderView.prototype.afterRender = function() {
+    this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
+    return this.$("#crumbs").append(this.breadcrumbsView.render().$el);
   };
 
   /*

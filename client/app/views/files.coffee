@@ -57,9 +57,6 @@ module.exports = class FilesView extends ViewCollection
 
     addFolder: (folder) ->
         found = @collection.findWhere(name: folder.get("name"))
-        console.log found
-
-        window.c = @collection
 
         if not found
             folder.save null,

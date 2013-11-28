@@ -23,16 +23,6 @@ module.exports = class FolderView extends BaseView
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
 
-    getRenderData: ->
-        model: @model
-
-    afterRender: ->
-        super()
-
-        # add breadcrumbs view
-        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
-        @$("#crumbs").append @breadcrumbsView.render().$el
-
         # add drag and drop support
         prevent = (e) ->
             e.preventDefault()
@@ -42,7 +32,14 @@ module.exports = class FolderView extends BaseView
         @$el.on "drop", (e) =>
             @onDragAndDrop(e)
 
-        
+    getRenderData: ->
+        model: @model
+
+    afterRender: ->
+        # add breadcrumbs view
+        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
+        @$("#crumbs").append @breadcrumbsView.render().$el
+    
 
     ###
         Display and re-render the contents of the folder
