@@ -129,11 +129,20 @@ module.exports = class FolderView extends BaseView
         e.preventDefault()
         e.stopPropagation()
         console.log "Drag and drop"
-        # show a status bar
-        $("#dialog-upload-file").modal("show")
+        
         # send file
+        atLeastOne = false
         for attach in e.dataTransfer.files
-            @filesList.addFile attach
+            if attach.type is ""
+                new ModalView "Error", "#{attach.name} doesn't seem to be a valid file", "OK"
+            else
+                @filesList.addFile attach
+                atLeastOne = true
+
+        if atLeastOne
+            # show a status bar
+            $("#dialog-upload-file").modal("show")
+
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')

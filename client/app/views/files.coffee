@@ -36,7 +36,7 @@ module.exports = class FilesView extends ViewCollection
 
             @upload file
         else
-            new ModalView "Error", "Sorry, could not upload the file: it already exists", "OK"
+            new ModalView "Error", "Sorry, could not upload the file #{attach.name}: it already exists", "OK"
 
     upload: (file) =>
         formdata = new FormData()

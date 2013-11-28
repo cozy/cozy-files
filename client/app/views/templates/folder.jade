@@ -33,22 +33,23 @@
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
     .row
-      .col-lg-6.pull-left
-        input#search-box(type="search")
-      .col-lg-6
-        p.pull-right
-          a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
-            span.glyphicon.glyphicon-upload
-            span.button-title-reponsive
-              if model.id == "root"
-                |  Upload a file here
-              else
-                |  Upload a file to "#{model.get("name")}"
-          |  
-          a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
-            span.glyphicon.glyphicon-plus-sign
-            span.button-title-reponsive
-              |  Create a new folder
+      .col-lg-12
+        .pull-left
+          input#search-box(type="search")
+        .pull-right
+          p.pull-right
+            a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
+              span.glyphicon.glyphicon-upload
+              span.button-title-reponsive
+                if model.id == "root"
+                  |  Upload a file here
+                else
+                  |  Upload a file to "#{model.get("name")}"
+            |  
+            a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
+              span.glyphicon.glyphicon-plus-sign
+              span.button-title-reponsive
+                |  Create a new folder
 
 .container
   .row.content-shadow

@@ -917,7 +917,7 @@ module.exports = FilesView = (function(_super) {
       $("#dialog-upload-file .modal-body").append(progress.render().el);
       return this.upload(file);
     } else {
-      return new ModalView("Error", "Sorry, could not upload the file: it already exists", "OK");
+      return new ModalView("Error", "Sorry, could not upload the file " + attach.name + ": it already exists", "OK");
     }
   };
 
@@ -1141,18 +1141,24 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onDragAndDrop = function(e) {
-    var attach, _i, _len, _ref1, _results;
+    var atLeastOne, attach, _i, _len, _ref1;
     e.preventDefault();
     e.stopPropagation();
     console.log("Drag and drop");
-    $("#dialog-upload-file").modal("show");
+    atLeastOne = false;
     _ref1 = e.dataTransfer.files;
-    _results = [];
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       attach = _ref1[_i];
-      _results.push(this.filesList.addFile(attach));
+      if (attach.type === "") {
+        new ModalView("Error", "" + attach.name + " doesn't seem to be a valid file", "OK");
+      } else {
+        this.filesList.addFile(attach);
+        atLeastOne = true;
+      }
     }
-    return _results;
+    if (atLeastOne) {
+      return $("#dialog-upload-file").modal("show");
+    }
   };
 
   FolderView.prototype.hideUploadForm = function() {
@@ -1407,7 +1413,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name:</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-6 pull-left"><input id="search-box" type="search"/></div><div class="col-lg-6"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
+buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name:</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
 if ( model.id == "root")
 {
 buf.push(' Upload a file here');
@@ -1416,7 +1422,7 @@ else
 {
 buf.push(' Upload a file to "' + escape((interp = model.get("name")) == null ? '' : interp) + '"');
 }
-buf.push('</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> Create a new folder</span></a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+buf.push('</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> Create a new folder</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
