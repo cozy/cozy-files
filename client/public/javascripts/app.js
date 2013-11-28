@@ -1035,13 +1035,10 @@ module.exports = FolderView = (function(_super) {
     return this.breadcrumbs.setRoot(this.model);
   };
 
-  FolderView.prototype.render = function() {
-    this.beforeRender();
-    this.$el.html(this.template({
+  FolderView.prototype.getRenderData = function() {
+    return {
       model: this.model
-    }));
-    this.afterRender();
-    return this;
+    };
   };
 
   FolderView.prototype.afterRender = function() {

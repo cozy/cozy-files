@@ -18,16 +18,13 @@ module.exports = class FolderView extends BaseView
         'click #upload-file-send'   : 'onAddFile'
         'keyup input#search-box'    : 'onSeachKeyPress'
         'keyup input#inputName'     : 'onAddFolderEnter'
-    
+
     initialize: (options) -> 
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
 
-    render: ->
-        @beforeRender()
-        @$el.html @template model:@model
-        @afterRender()
-        @
+    getRenderData: ->
+        model: @model
 
     afterRender: ->
         super()
