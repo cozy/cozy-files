@@ -113,7 +113,10 @@ module.exports = {
       name: "",
       type: "folder"
     });
-    this.folderView = new FolderView(this.root, this.breadcrumbs);
+    this.folderView = new FolderView({
+      model: this.root,
+      breadcrumbs: this.breadcrumbs
+    });
     el = this.folderView.render().$el;
     $('body').append(el);
     Backbone.history.start();
@@ -983,7 +986,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1005,6 +1008,16 @@ FileCollection = require('../collections/files');
 module.exports = FolderView = (function(_super) {
   __extends(FolderView, _super);
 
+  function FolderView() {
+    this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
+    this.onDragAndDrop = __bind(this.onDragAndDrop, this);
+    this.onAddFile = __bind(this.onAddFile, this);
+    this.onAddFolderEnter = __bind(this.onAddFolderEnter, this);
+    this.onAddFolder = __bind(this.onAddFolder, this);
+    _ref = FolderView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
   FolderView.prototype.template = require('./templates/folder');
 
   FolderView.prototype.events = function() {
@@ -1017,17 +1030,10 @@ module.exports = FolderView = (function(_super) {
     };
   };
 
-  function FolderView(model, breadcrumbs) {
-    this.model = model;
-    this.breadcrumbs = breadcrumbs;
-    this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
-    this.onDragAndDrop = __bind(this.onDragAndDrop, this);
-    this.onAddFile = __bind(this.onAddFile, this);
-    this.onAddFolderEnter = __bind(this.onAddFolderEnter, this);
-    this.onAddFolder = __bind(this.onAddFolder, this);
-    FolderView.__super__.constructor.call(this);
-    this.breadcrumbs.setRoot(this.model);
-  }
+  FolderView.prototype.initialize = function(options) {
+    this.breadcrumbs = options.breadcrumbs;
+    return this.breadcrumbs.setRoot(this.model);
+  };
 
   FolderView.prototype.render = function() {
     this.beforeRender();
@@ -1137,26 +1143,26 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onAddFile = function() {
-    var attach, _i, _len, _ref, _results;
-    _ref = this.$('#uploader')[0].files;
+    var attach, _i, _len, _ref1, _results;
+    _ref1 = this.$('#uploader')[0].files;
     _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      attach = _ref[_i];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      attach = _ref1[_i];
       _results.push(this.filesList.addFile(attach));
     }
     return _results;
   };
 
   FolderView.prototype.onDragAndDrop = function(e) {
-    var attach, _i, _len, _ref, _results;
+    var attach, _i, _len, _ref1, _results;
     e.preventDefault();
     e.stopPropagation();
     console.log("Drag and drop");
     $("#dialog-upload-file").modal("show");
-    _ref = e.dataTransfer.files;
+    _ref1 = e.dataTransfer.files;
     _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      attach = _ref[_i];
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      attach = _ref1[_i];
       _results.push(this.filesList.addFile(attach));
     }
     return _results;
@@ -1385,18 +1391,18 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
+buf.push('<td>');
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><input');
-buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>');
 }
 else
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><input');
+buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>');
+}
+buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
 buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
-}
 }
 return buf.join("");
 };

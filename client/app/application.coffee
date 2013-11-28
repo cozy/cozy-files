@@ -18,7 +18,9 @@ module.exports =
         # the root
         @root = new File id:"root", path:"", name:"", type:"folder"
         # and the folder view
-        @folderView = new FolderView @root, @breadcrumbs
+        @folderView = new FolderView 
+            model: @root
+            breadcrumbs: @breadcrumbs
 
         el = @folderView.render().$el
         $('body').append el
