@@ -37,10 +37,10 @@ module.exports = class FolderView extends BaseView
         prevent = (e) ->
             e.preventDefault()
             e.stopPropagation()
-        #@$el.on "dragover", prevent
-        #@$el.on "dragenter", prevent
-        #@$el.on "drop", (e) =>
-        #    @onDragAndDrop(e)
+        @$el.on "dragover", prevent
+        @$el.on "dragenter", prevent
+        @$el.on "drop", (e) =>
+            @onDragAndDrop(e)
 
         
 

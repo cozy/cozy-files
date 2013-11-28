@@ -1029,14 +1029,20 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.afterRender = function() {
-    var prevent;
+    var prevent,
+      _this = this;
     FolderView.__super__.afterRender.call(this);
     this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
     this.$("#crumbs").append(this.breadcrumbsView.render().$el);
-    return prevent = function(e) {
+    prevent = function(e) {
       e.preventDefault();
       return e.stopPropagation();
     };
+    this.$el.on("dragover", prevent);
+    this.$el.on("dragenter", prevent);
+    return this.$el.on("drop", function(e) {
+      return _this.onDragAndDrop(e);
+    });
   };
 
   /*
@@ -1298,11 +1304,10 @@ module.exports = ProgressbarView = (function(_super) {
     }
   };
 
-  ProgressbarView.prototype.render = function() {
-    this.$el.html(this.template({
+  ProgressbarView.prototype.getRenderData = function() {
+    return {
       value: this.value
-    }));
-    return this;
+    };
   };
 
   return ProgressbarView;

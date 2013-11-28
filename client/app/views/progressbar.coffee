@@ -24,6 +24,5 @@ module.exports = class ProgressbarView extends BaseView
             @value = pc
             @render()
 
-    render: ->
-        @$el.html @template(value: @value)
-        @
+    getRenderData: ->
+        value: @value
