@@ -57,10 +57,6 @@ module.exports = class File extends Backbone.Model
         rep
 
     # FOLDER
-    find: (callbacks) ->
-        @prepareCallbacks callbacks
-        client.get "#{@urlRoot()}#{@id}", callbacks
-
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}files", id: @id, callbacks

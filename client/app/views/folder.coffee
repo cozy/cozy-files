@@ -39,7 +39,7 @@ module.exports = class FolderView extends BaseView
         # add breadcrumbs view
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
-    
+
 
     ###
         Display and re-render the contents of the folder
@@ -139,7 +139,6 @@ module.exports = class FolderView extends BaseView
         if atLeastOne
             # show a status bar
             $("#dialog-upload-file").modal("show")
-
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')

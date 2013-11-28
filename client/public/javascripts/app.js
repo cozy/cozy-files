@@ -619,11 +619,6 @@ module.exports = File = (function(_super) {
     return rep;
   };
 
-  File.prototype.find = function(callbacks) {
-    this.prepareCallbacks(callbacks);
-    return client.get("" + (this.urlRoot()) + this.id, callbacks);
-  };
-
   File.prototype.findFiles = function(callbacks) {
     this.prepareCallbacks(callbacks);
     return client.post("" + (this.urlRoot()) + "files", {
@@ -685,7 +680,7 @@ module.exports = Router = (function(_super) {
       id: id,
       type: "folder"
     });
-    return folder.find({
+    return folder.fetch({
       success: function(data) {
         folder.set(data);
         console.log(folder);
