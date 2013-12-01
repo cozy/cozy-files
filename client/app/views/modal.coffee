@@ -6,8 +6,8 @@ module.exports = class ModalView extends BaseView
     value: 0
 
     events:
-        "click #modal-dialog-no": "onNo"
-        "click #modal-dialog-yes": "onYes"
+        "click #modal-dialog-no"  : "onNo"
+        "click #modal-dialog-yes" : "onYes"
 
     constructor: (@title, @msg, @yes, @no, @cb) ->
         super()

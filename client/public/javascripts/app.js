@@ -772,16 +772,26 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.tagName = 'tr';
 
-  FileView.prototype.template = require('./templates/file');
+  FileView.prototype.templateNormal = require('./templates/file');
 
   FileView.prototype.templateEdit = require('./templates/file_edit');
+
+  FileView.prototype.templateSearch = require('./templates/file_search');
 
   FileView.prototype.events = {
     'click a.file-delete': 'onDeleteClicked',
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
     'click a.file-edit-cancel': 'render',
-    'keydown input': "onKeyPress"
+    'keydown input': 'onKeyPress'
+  };
+
+  FileView.prototype.template = function(args) {
+    if (app.folderView.model.get("type") === "search") {
+      return this.templateSearch(args);
+    } else {
+      return this.templateNormal(args);
+    }
   };
 
   FileView.prototype.initialize = function() {
@@ -822,7 +832,7 @@ module.exports = FileView = (function(_super) {
         patch: true,
         wait: true,
         success: function(data) {
-          console.log("File name changes successfully");
+          console.log("File name changed successfully");
           return _this.render();
         },
         error: function(model, err) {
@@ -1043,13 +1053,9 @@ module.exports = FolderView = (function(_super) {
 
 
   FolderView.prototype.changeActiveFolder = function(folder) {
+    var _this = this;
     this.model = folder;
     this.breadcrumbs.push(folder);
-    return this.displayChildren();
-  };
-
-  FolderView.prototype.displayChildren = function() {
-    var _this = this;
     return this.model.findFiles({
       success: function(files) {
         var file, _i, _len;
@@ -1059,14 +1065,21 @@ module.exports = FolderView = (function(_super) {
         }
         return _this.model.findFolders({
           success: function(folders) {
-            var folder, _j, _len1;
+            var _j, _len1, _ref1;
             for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
               folder = folders[_j];
               folder.type = "folder";
             }
-            _this.stopListening(_this.filesCollection, "sync");
+            if (_this.filesCollection) {
+              _this.stopListening(_this.filesCollection);
+            }
             _this.filesCollection = new FileCollection(folders.concat(files));
             _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
+            if (_this.filesList) {
+              if ((_ref1 = _this.filesList) != null) {
+                _ref1.destroy();
+              }
+            }
             _this.filesList = new FilesView(_this.filesCollection, _this.model);
             _this.$('#files').html(_this.filesList.$el);
             return _this.filesList.render();
@@ -1382,6 +1395,31 @@ buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>')
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
 buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/file_search", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+if ( model.type && model.type == "folder")
+{
+buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><a');
+buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
+buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><p>' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+}
+else
+{
+buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
+buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div><p>' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+}
 }
 return buf.join("");
 };

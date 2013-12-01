@@ -3,17 +3,24 @@ ModalView = require "./modal"
 
 module.exports = class FileView extends BaseView
 
-    className: 'folder-row'
-    tagName: 'tr'
-    template: require './templates/file'
-    templateEdit: require './templates/file_edit'
+    className      : 'folder-row'
+    tagName        : 'tr'
+    templateNormal : require './templates/file'
+    templateEdit   : require './templates/file_edit'
+    templateSearch : require './templates/file_search'
 
     events:
-        'click a.file-delete': 'onDeleteClicked'
-        'click a.file-edit': 'onEditClicked'
-        'click a.file-edit-save': 'onSaveClicked'
-        'click a.file-edit-cancel': 'render'
-        'keydown input' : "onKeyPress"
+        'click a.file-delete'      : 'onDeleteClicked'
+        'click a.file-edit'        : 'onEditClicked'
+        'click a.file-edit-save'   : 'onSaveClicked'
+        'click a.file-edit-cancel' : 'render'
+        'keydown input'            : 'onKeyPress'
+
+    template: (args) ->
+        if app.folderView.model.get("type") is "search"
+            @templateSearch args
+        else
+            @templateNormal args
 
     initialize: ->
         @listenTo @model, 'change:id', @render
@@ -40,7 +47,7 @@ module.exports = class FileView extends BaseView
                 patch: true
                 wait: true
                 success: (data) =>
-                    console.log "File name changes successfully"
+                    console.log "File name changed successfully"
                     @render()
                 error: (model, err)=>
                     console.log err

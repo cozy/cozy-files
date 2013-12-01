@@ -47,12 +47,9 @@ module.exports = class FolderView extends BaseView
     changeActiveFolder: (folder) ->
         # save the model
         @model = folder
+
         # update breadcrumbs
         @breadcrumbs.push folder
-        # files
-        @displayChildren()
-
-    displayChildren: ->
 
         # add files view
         @model.findFiles
@@ -70,14 +67,14 @@ module.exports = class FolderView extends BaseView
                             folder.type = "folder"
 
                         # new collection
-                        @stopListening @filesCollection, "sync"
+                        if @filesCollection
+                            @stopListening @filesCollection
                         @filesCollection = new FileCollection folders.concat(files)
                         @listenTo @filesCollection, "sync", @hideUploadForm
 
                         # render the collection
+                        @filesList?.destroy() if @filesList
                         @filesList = new FilesView @filesCollection, @model
-
-                        
                         @$('#files').html @filesList.$el
                         @filesList.render()
 
