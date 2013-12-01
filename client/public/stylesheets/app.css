@@ -772,7 +772,7 @@ input#search-box {
   height: 35px;
   font-size: 16px;
   padding-left: 28px;
-  width: 50%;
+  width: 200px;
   background-image: url("/images/iconmonstr-magnifier-icon-18.png");
   background-repeat: no-repeat;
   background-position: 5px 8px;
