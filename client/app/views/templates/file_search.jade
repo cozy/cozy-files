@@ -8,7 +8,7 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
         span.glyphicon.glyphicon-edit
-    p
+    p.file-path
       | #{model.path}/#{model.name}
   td
   td.file-date
@@ -25,7 +25,7 @@ else
         span.glyphicon.glyphicon-edit  
       a(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")
         span.glyphicon.glyphicon-cloud-download  
-    p
+    p.file-path
       | #{model.path}/#{model.name}
   td
   td.file-date

@@ -835,6 +835,9 @@ tr.folder-row:hover {
 tr.folder-row:hover .glyphicon.no-hover {
   color: #bdbdbd;
 }
+tr.folder-row:hover .file-path {
+  color: #bdbdbd;
+}
 tr.folder-row .caption {
   font-size: 18px;
   padding: 0;
