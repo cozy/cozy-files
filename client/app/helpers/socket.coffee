@@ -3,54 +3,67 @@ File = require '../models/file'
 module.exports = class SocketListener extends CozySocketListener
 
     models:
-        'file': File
-        'folder': File
+        'file'   : File
+        'folder' : File
 
     events: [
         'file.create'
         'file.update'
         'file.delete'
-        'folders.create'
+        'folder.create'
         'folder.update'
         'folder.delete'
     ]
 
+    isInCurrentFolder: (model) ->
+        cwd = app.folderView.model.repository()
+        mwd = model.get "path"
+        mwd is cwd
+
     onRemoteCreate: (model) ->
-        console.log "create: "
-        console.log model
+        if @isInCurrentFolder model
+            console.log "remote create"
+            console.log model
+
+            if not @collection.get model.id
+                @collection.add model, merge:true
 
     onRemoteDelete: (model) ->
-        console.log "delete: "
-        console.log model
+        if @isInCurrentFolder model
+            console.log "remote delete"
+            console.log model
+            @collection.remove model
 
-    # process: (event) ->
-    #     console.log "socket.process: #{event}"
-    #     {doctype, operation, id} = event
-    #     switch operation
-    #         when 'create'
-    #             model = new @models[doctype](id: id, type: doctype)
-    #             model.fetch
-    #                 success: (fetched) =>
-    #                     @onRemoteCreate fetched
+    onRemoteUpdate: (model, collection) ->
+        if @isInCurrentFolder model
+            console.log "remote update"
+            console.log model
+            collection.add model, merge:true
 
-    #         when 'update'
-    #             if model = @singlemodels.get id
-    #                 model.fetch
-    #                     success: (fetched) =>
-    #                         if fetched.changedAttributes()
-    #                             @onRemoteUpdate fetched, null
+    process: (event) ->
+        {doctype, operation, id} = event
 
-    #             @collections.forEach (collection) =>
-    #                 return unless model = collection.get id
-    #                 model.fetch
-    #                     success: (fetched) =>
-    #                         if fetched.changedAttributes()
-    #                             @onRemoteUpdate fetched, collection
+        console.log "received: #{operation}:#{doctype}"
 
-    #         when 'delete'
-    #             if model = @singlemodels.get id
-    #                 @onRemoteDelete model, @singlemodels
+        switch operation
+            when 'create'
+                model = new @models[doctype](id: id, type: doctype)
+                model.fetch
+                    success: (fetched) =>
+                        # set as a folder or a file
+                        fetched.set type: doctype
+                        @onRemoteCreate fetched
 
-    #             @collections.forEach (collection) =>
-    #                 return unless model = collection.get id
-    #                 @onRemoteDelete model, collection
+            when 'update'
+                @collections.forEach (collection) =>
+                    return unless model = collection.get id
+                    model.fetch
+                        success: (fetched) =>
+                            if fetched.changedAttributes()
+                                fetched.set type: doctype
+                                @onRemoteUpdate fetched, collection
+
+            when 'delete'
+                @collections.forEach (collection) =>
+                    return unless model = collection.get id
+                    @onRemoteDelete model, collection

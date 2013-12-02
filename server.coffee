@@ -10,6 +10,6 @@ americano.start name: 'cozy-files', port: port, (app, server) ->
         console.log "Socket.io event received: #{event} #{msg}"
 
     # notification events should be proxied to client
-    realtime = RealtimeAdapter server: server, ['notification.*']
+    realtime = RealtimeAdapter server: server, ['file.*', 'folder.*']
     realtime.on 'file.*', customCb
     realtime.on 'folder.*', customCb

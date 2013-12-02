@@ -23,7 +23,7 @@ module.exports = class FileView extends BaseView
             @templateNormal args
 
     initialize: ->
-        @listenTo @model, 'change:id', @render
+        @listenTo @model, 'change', @render
 
     onDeleteClicked: ->
         new ModalView "Are you sure ?", "Deleting cannot be undone", "Delete", "cancel", (confirm) =>

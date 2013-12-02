@@ -19,6 +19,8 @@ module.exports = class FilesView extends ViewCollection
     initialize: (@collection, @model) ->
         super()
         @listenTo @collection, "sort", @render
+        @listenTo @collection, "remove", @render
+        @listenTo @collection, "add", @render
         @socket = new SocketListener()
         @socket.watch @collection
         

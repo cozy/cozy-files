@@ -297,16 +297,88 @@ module.exports = SocketListener = (function(_super) {
     'folder': File
   };
 
-  SocketListener.prototype.events = ['file.create', 'file.update', 'file.delete', 'folders.create', 'folder.update', 'folder.delete'];
+  SocketListener.prototype.events = ['file.create', 'file.update', 'file.delete', 'folder.create', 'folder.update', 'folder.delete'];
+
+  SocketListener.prototype.isInCurrentFolder = function(model) {
+    var cwd, mwd;
+    cwd = app.folderView.model.repository();
+    mwd = model.get("path");
+    return mwd === cwd;
+  };
 
   SocketListener.prototype.onRemoteCreate = function(model) {
-    console.log("create: ");
-    return console.log(model);
+    if (this.isInCurrentFolder(model)) {
+      console.log("remote create");
+      console.log(model);
+      if (!this.collection.get(model.id)) {
+        return this.collection.add(model, {
+          merge: true
+        });
+      }
+    }
   };
 
   SocketListener.prototype.onRemoteDelete = function(model) {
-    console.log("delete: ");
-    return console.log(model);
+    if (this.isInCurrentFolder(model)) {
+      console.log("remote delete");
+      console.log(model);
+      return this.collection.remove(model);
+    }
+  };
+
+  SocketListener.prototype.onRemoteUpdate = function(model, collection) {
+    if (this.isInCurrentFolder(model)) {
+      console.log("remote update");
+      console.log(model);
+      return collection.add(model, {
+        merge: true
+      });
+    }
+  };
+
+  SocketListener.prototype.process = function(event) {
+    var doctype, id, model, operation,
+      _this = this;
+    doctype = event.doctype, operation = event.operation, id = event.id;
+    console.log("received: " + operation + ":" + doctype);
+    switch (operation) {
+      case 'create':
+        model = new this.models[doctype]({
+          id: id,
+          type: doctype
+        });
+        return model.fetch({
+          success: function(fetched) {
+            fetched.set({
+              type: doctype
+            });
+            return _this.onRemoteCreate(fetched);
+          }
+        });
+      case 'update':
+        return this.collections.forEach(function(collection) {
+          if (!(model = collection.get(id))) {
+            return;
+          }
+          return model.fetch({
+            success: function(fetched) {
+              if (fetched.changedAttributes()) {
+                fetched.set({
+                  type: doctype
+                });
+                return _this.onRemoteUpdate(fetched, collection);
+              }
+            }
+          });
+        });
+      case 'delete':
+        return this.collections.forEach(function(collection) {
+          if (!(model = collection.get(id))) {
+            return;
+          }
+          return _this.onRemoteDelete(model, collection);
+        });
+    }
   };
 
   return SocketListener;
@@ -832,7 +904,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.initialize = function() {
-    return this.listenTo(this.model, 'change:id', this.render);
+    return this.listenTo(this.model, 'change', this.render);
   };
 
   FileView.prototype.onDeleteClicked = function() {
@@ -941,6 +1013,8 @@ module.exports = FilesView = (function(_super) {
     this.model = model;
     FilesView.__super__.initialize.call(this);
     this.listenTo(this.collection, "sort", this.render);
+    this.listenTo(this.collection, "remove", this.render);
+    this.listenTo(this.collection, "add", this.render);
     this.socket = new SocketListener();
     return this.socket.watch(this.collection);
   };
