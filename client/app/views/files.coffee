@@ -7,6 +7,8 @@ ModalView = require "./modal"
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
+SocketListener = require '../helpers/socket'
+
 module.exports = class FilesView extends ViewCollection
 
     template: require('./templates/files')
@@ -17,6 +19,8 @@ module.exports = class FilesView extends ViewCollection
     initialize: (@collection, @model) ->
         super()
         @listenTo @collection, "sort", @render
+        @socket = new SocketListener()
+        @socket.watch @collection
         
     addFile: (attach) =>
         found = @collection.findWhere(name: attach.name)

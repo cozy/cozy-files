@@ -277,6 +277,44 @@ exports.del = function(url, callbacks) {
 
 });
 
+;require.register("helpers/socket", function(exports, require, module) {
+var File, SocketListener, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+File = require('../models/file');
+
+module.exports = SocketListener = (function(_super) {
+  __extends(SocketListener, _super);
+
+  function SocketListener() {
+    _ref = SocketListener.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  SocketListener.prototype.models = {
+    'file': File,
+    'folder': File
+  };
+
+  SocketListener.prototype.events = ['file.create', 'file.update', 'file.delete', 'folders.create', 'folder.update', 'folder.delete'];
+
+  SocketListener.prototype.onRemoteCreate = function(model) {
+    console.log("create: ");
+    return console.log(model);
+  };
+
+  SocketListener.prototype.onRemoteDelete = function(model) {
+    console.log("delete: ");
+    return console.log(model);
+  };
+
+  return SocketListener;
+
+})(CozySocketListener);
+
+});
+
 ;require.register("initialize", function(exports, require, module) {
 var app;
 
@@ -683,7 +721,6 @@ module.exports = Router = (function(_super) {
     return folder.fetch({
       success: function(data) {
         folder.set(data);
-        console.log(folder);
         return app.folderView.changeActiveFolder(folder);
       }
     });
@@ -862,7 +899,7 @@ module.exports = FileView = (function(_super) {
 });
 
 ;require.register("views/files", function(exports, require, module) {
-var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, ViewCollection, _ref,
+var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, SocketListener, ViewCollection, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -878,6 +915,8 @@ ModalView = require("./modal");
 File = require('../models/file');
 
 FileCollection = require('../collections/files');
+
+SocketListener = require('../helpers/socket');
 
 module.exports = FilesView = (function(_super) {
   __extends(FilesView, _super);
@@ -901,7 +940,9 @@ module.exports = FilesView = (function(_super) {
     this.collection = collection;
     this.model = model;
     FilesView.__super__.initialize.call(this);
-    return this.listenTo(this.collection, "sort", this.render);
+    this.listenTo(this.collection, "sort", this.render);
+    this.socket = new SocketListener();
+    return this.socket.watch(this.collection);
   };
 
   FilesView.prototype.addFile = function(attach) {
