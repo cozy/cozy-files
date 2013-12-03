@@ -3,32 +3,32 @@
         .modal-content
           .modal-header
             button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
-            h4.modal-title Upload a new file
+            h4.modal-title #{t("upload caption")}
           .modal-body
             fieldset
               .form-group
                 label(for='uploader')
-                  | Choose the file to upload:
+                  | #{t("upload msg")}
                 input#uploader(type="file", multiple)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') Close
-            button.btn.btn-cozy-contrast#upload-file-send(type='button') Add
+            button.btn.btn-link(type='button', data-dismiss='modal') #{t("upload close")}
+            button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade
     .modal-dialog
         .modal-content
           .modal-header
             button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
-            h4.modal-title Add a new folder
+            h4.modal-title #{t("new folder caption")}
           .modal-body
             fieldset
               .form-group
                 label(for='inputName')
-                  | Enter the folder's name:
+                  | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') Close
-            button.btn.btn-cozy#new-folder-send(type='button') Create
+            button.btn.btn-link(type='button', data-dismiss='modal') #{t("new folder close")}
+            button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
@@ -41,15 +41,12 @@
             a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
               span.glyphicon.glyphicon-upload
               span.button-title-reponsive
-                if model.id == "root"
-                  |  Upload a file here
-                else
-                  |  Upload a file to "#{model.get("name")}"
+                |  #{t("upload button")}
             |  
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
               span.glyphicon.glyphicon-plus-sign
               span.button-title-reponsive
-                |  Create a new folder
+                |  #{t("new folder button")}
 
 .container
   .row.content-shadow

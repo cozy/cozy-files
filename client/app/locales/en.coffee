@@ -27,3 +27,23 @@ module.exports =
     "modal error in use"     : "Name already in use"
     "modal error rename"     : "Name could not be changed"
     "modal error empty name" : "Name can't be ampty"
+
+    # file_edit template
+    "file edit save" : "Save"
+    "file edit cancel" : "cancel"
+
+    # folder template
+    "upload caption" : "Upload a new file"
+    "upload msg" : "Choose the file to upload:"
+    "upload close" : "Close"
+    "upload send" : "Add"
+
+    "upload button" : "Upload a file here"
+
+    "new folder caption" : "Add a new folder"
+    "new folder msg" : "Enter the folder's name:"
+    "new folder close" : "Close"
+    "new folder send" : "Create"
+
+    "new folder button" : "Create a new folder"
+

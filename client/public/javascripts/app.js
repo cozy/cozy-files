@@ -395,7 +395,6 @@ app = require('application');
 $(function() {
   var initializeLocale, locale;
   jQuery.event.props.push('dataTransfer');
-  app.initialize();
   $.fn.spin = function(opts, color) {
     var nullapp, presets;
     presets = {
@@ -470,7 +469,8 @@ $(function() {
     }
     polyglot = new Polyglot();
     polyglot.extend(locales);
-    return window.t = polyglot.t.bind(polyglot);
+    window.t = polyglot.t.bind(polyglot);
+    return app.initialize();
   };
 });
 
@@ -674,7 +674,19 @@ module.exports = {
   "modal delete error": "cancel",
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
-  "modal error empty name": "Name can't be ampty"
+  "modal error empty name": "Name can't be ampty",
+  "file edit save": "Save",
+  "file edit cancel": "cancel",
+  "upload caption": "Upload a new file",
+  "upload msg": "Choose the file to upload:",
+  "upload close": "Close",
+  "upload send": "Add",
+  "upload button": "Upload a file here",
+  "new folder caption": "Add a new folder",
+  "new folder msg": "Enter the folder's name:",
+  "new folder close": "Close",
+  "new folder send": "Create",
+  "new folder button": "Create a new folder"
 };
 
 });
@@ -1553,7 +1565,7 @@ buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>')
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">Save</a><a class="btn btn-sm btn-link file-edit-cancel">cancel</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 return buf.join("");
 };
@@ -1602,16 +1614,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Upload a new file</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">Choose the file to upload:</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">Add</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">Add a new folder</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">Enter the folder\'s name:</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">Close</button><button id="new-folder-send" type="button" class="btn btn-cozy">Create</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive">');
-if ( model.id == "root")
-{
-buf.push(' Upload a file here');
-}
-else
-{
-buf.push(' Upload a file to "' + escape((interp = model.get("name")) == null ? '' : interp) + '"');
-}
-buf.push('</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> Create a new folder</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive"> ' + escape((interp = t("upload button")) == null ? '' : interp) + '</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> ' + escape((interp = t("new folder button")) == null ? '' : interp) + '</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };

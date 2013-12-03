@@ -2,7 +2,6 @@ app = require 'application'
 
 $ ->
     jQuery.event.props.push 'dataTransfer'
-    app.initialize()
 
     # Initialize Spin JS the lib that displays loading indicators
     $.fn.spin = (opts, color) ->
@@ -75,3 +74,6 @@ $ ->
 
         # handy shortcut
         window.t = polyglot.t.bind(polyglot)
+
+        # launch the app
+        app.initialize()
