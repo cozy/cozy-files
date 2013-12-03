@@ -310,7 +310,7 @@ module.exports = SocketListener = (function(_super) {
     if (this.isInCurrentFolder(model)) {
       console.log("remote create");
       console.log(model);
-      if (!this.collection.get(model.id)) {
+      if (!(this.collection.get(model.get("id")))) {
         return this.collection.add(model, {
           merge: true
         });
@@ -393,9 +393,10 @@ var app;
 app = require('application');
 
 $(function() {
+  var initializeLocale, locale;
   jQuery.event.props.push('dataTransfer');
   app.initialize();
-  return $.fn.spin = function(opts, color) {
+  $.fn.spin = function(opts, color) {
     var nullapp, presets;
     presets = {
       tiny: {
@@ -447,6 +448,29 @@ $(function() {
       console.log("Spinner class not available.");
       return nullapp = require('application');
     }
+  };
+  locale = "en";
+  $.ajax("cozy-locale.json", {
+    success: function(data) {
+      locale = data.locale;
+      return initializeLocale(locale);
+    },
+    error: function() {
+      return initializeLocale(locale);
+    }
+  });
+  return initializeLocale = function(locale) {
+    var err, locales, polyglot;
+    locales = {};
+    try {
+      locales = require("locales/" + locale);
+    } catch (_error) {
+      err = _error;
+      locales = require("locales/en");
+    }
+    polyglot = new Polyglot();
+    polyglot.extend(locales);
+    return window.t = polyglot.t.bind(polyglot);
   };
 });
 
@@ -627,6 +651,19 @@ module.exports = ViewCollection = (function(_super) {
   return ViewCollection;
 
 })(BaseView);
+
+});
+
+;require.register("locales/en", function(exports, require, module) {
+module.exports = {
+  "modal error": "Error",
+  "modal ok": "OK",
+  "modal error get files": "Error getting files from server",
+  "modal error get folders": "Error getting folders from server",
+  "modal error empty name": "The name can't be empty",
+  "modal error file invalid": "doesn't seem to be a valid file",
+  "breadcrumbs search title": "Search"
+};
 
 });
 
@@ -1032,7 +1069,6 @@ module.exports = FilesView = (function(_super) {
       };
       file = new File(fileAttributes);
       file.file = attach;
-      this.collection.add(file);
       progress = new ProgressbarView(file);
       $("#dialog-upload-file .modal-body").append(progress.render().el);
       return this.upload(file);
@@ -1054,7 +1090,9 @@ module.exports = FilesView = (function(_super) {
       data: formdata,
       success: function(data) {
         console.log("File sent successfully");
-        return file.set(data);
+        return _this.collection.add(file, {
+          merge: true
+        });
       },
       error: function() {
         console.log("error");
@@ -1201,13 +1239,13 @@ module.exports = FolderView = (function(_super) {
           },
           error: function(error) {
             console.log(error);
-            return new ModalView("Error", "Error getting folders from server", "OK");
+            return new ModalView(t("modal error"), t("modal error get folders"), t("modal ok"));
           }
         });
       },
       error: function(error) {
         console.log(error);
-        return new ModalView("Error", "Error getting files from server", "OK");
+        return new ModalView(t("modal error"), t("modal error get files"), t("modal ok"));
       }
     });
   };
@@ -1228,7 +1266,6 @@ module.exports = FolderView = (function(_super) {
     if (e.keyCode === 13) {
       e.preventDefault();
       e.stopPropagation();
-      console.log("enter on add folder");
       return this.onAddFolder();
     }
   };
@@ -1242,7 +1279,7 @@ module.exports = FolderView = (function(_super) {
     });
     console.log("creating folder " + folder);
     if (folder.validate()) {
-      return new ModalView("Error", "Folder name can't be empty", "OK");
+      return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
     } else {
       this.filesList.addFolder(folder);
       return $('#dialog-new-folder').modal('hide');
@@ -1270,7 +1307,7 @@ module.exports = FolderView = (function(_super) {
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       attach = _ref1[_i];
       if (attach.type === "") {
-        new ModalView("Error", "" + attach.name + " doesn't seem to be a valid file", "OK");
+        new ModalView(t("modal error"), "" + attach.name + " " + (t('modal error file invalid')), t("modal ok"));
       } else {
         this.filesList.addFile(attach);
         atLeastOne = true;
@@ -1306,7 +1343,7 @@ module.exports = FolderView = (function(_super) {
     this.breadcrumbs.popAll();
     data = {
       id: query,
-      name: "Search '" + query + "'",
+      name: "" + (t('breadcrumbs search title')) + " '" + query + "'",
       type: "search"
     };
     search = new File(data);

@@ -80,10 +80,10 @@ module.exports = class FolderView extends BaseView
 
                     error: (error) =>
                         console.log error
-                        new ModalView "Error", "Error getting folders from server", "OK"
+                        new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
             error: (error) =>
                 console.log error
-                new ModalView "Error", "Error getting files from server", "OK"
+                new ModalView t("modal error"), t("modal error get files"), t("modal ok")
 
 
     ###
@@ -98,7 +98,6 @@ module.exports = class FolderView extends BaseView
         if e.keyCode is 13
             e.preventDefault()
             e.stopPropagation()
-            console.log "enter on add folder"
             @onAddFolder()
 
     onAddFolder: =>
@@ -109,7 +108,7 @@ module.exports = class FolderView extends BaseView
         console.log "creating folder #{folder}"
 
         if folder.validate()
-            new ModalView "Error", "Folder name can't be empty", "OK"
+            new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
         else
             @filesList.addFolder folder
             # hide modal
@@ -128,7 +127,7 @@ module.exports = class FolderView extends BaseView
         atLeastOne = false
         for attach in e.dataTransfer.files
             if attach.type is ""
-                new ModalView "Error", "#{attach.name} doesn't seem to be a valid file", "OK"
+                new ModalView t("modal error"), "#{attach.name} #{t('modal error file invalid')}", t("modal ok")
             else
                 @filesList.addFile attach
                 atLeastOne = true
@@ -158,7 +157,7 @@ module.exports = class FolderView extends BaseView
 
         data = 
             id: query
-            name: "Search '#{query}'"
+            name: "#{t('breadcrumbs search title')} '#{query}'"
             type: "search"
 
         search = new File data

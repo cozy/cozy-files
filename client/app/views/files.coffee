@@ -34,7 +34,6 @@ module.exports = class FilesView extends ViewCollection
                 type: "file"
             file = new File fileAttributes
             file.file = attach
-            @collection.add file
 
             # add a progress bar
             progress = new ProgressbarView file
@@ -55,7 +54,8 @@ module.exports = class FilesView extends ViewCollection
             data: formdata
             success: (data) =>
                 console.log "File sent successfully"
-                file.set data
+                # file.set data
+                @collection.add file, merge:true
                 #new ModalView "Success", "File transfered successfully", "OK"
             error: =>
                 console.log "error"
