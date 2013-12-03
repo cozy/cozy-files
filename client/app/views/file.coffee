@@ -26,11 +26,11 @@ module.exports = class FileView extends BaseView
         @listenTo @model, 'change', @render
 
     onDeleteClicked: ->
-        new ModalView "Are you sure ?", "Deleting cannot be undone", "Delete", "cancel", (confirm) =>
+        new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
                 @model.destroy
                     error: ->
-                        new ModalView "Error", "Server error occured, file was not deleted", "OK"
+                        new ModalView t("modal error"), t("modal delete error"), t("modal ok")
 
     onEditClicked: ->
         width = @$(".caption").width() + 10
@@ -47,16 +47,15 @@ module.exports = class FileView extends BaseView
                 patch: true
                 wait: true
                 success: (data) =>
-                    console.log "File name changed successfully"
                     @render()
                 error: (model, err)=>
                     console.log err
                     if err.status is 400
-                        new ModalView "Error", "Name already in use", "OK"
+                        new ModalView t("modal error"), t("modal error in use"), t("modal ok")
                     else
-                        new ModalView "Error", "Name could not be changed", "OK"
+                        new ModalView t("modal error"), t("modal error rename"), t("modal ok")
         else
-            new ModalView "Error", "The name can't be empty", "OK"
+            new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
 
     onKeyPress: (e) =>
         if e.keyCode is 13

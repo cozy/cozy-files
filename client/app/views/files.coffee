@@ -41,7 +41,7 @@ module.exports = class FilesView extends ViewCollection
 
             @upload file
         else
-            new ModalView "Error", "Sorry, could not upload the file #{attach.name}: it already exists", "OK"
+            new ModalView t("modal error"), "#{t('modal error file exists')}: #{attach.name}", t("modal ok")
 
     upload: (file) =>
         formdata = new FormData()
@@ -53,13 +53,9 @@ module.exports = class FilesView extends ViewCollection
             contentType: false
             data: formdata
             success: (data) =>
-                console.log "File sent successfully"
-                # file.set data
                 @collection.add file, merge:true
-                #new ModalView "Success", "File transfered successfully", "OK"
             error: =>
-                console.log "error"
-                new ModalView "Error", "File could not be sent to server", "OK"
+                new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
 
     addFolder: (folder) ->
         found = @collection.findWhere(name: folder.get("name"))
@@ -67,10 +63,8 @@ module.exports = class FilesView extends ViewCollection
         if not found
             folder.save null,
                 success: (data) =>
-                    console.log "Folder created successfully"
                     @collection.add folder
                 error: (error) =>
-                    console.log error
-                    new ModalView "Error", "Folder could not be created", "OK"
+                    new ModalView t("modal error"), t("modal error folder create"), t("modal ok")
         else
-            new ModalView "Error", "Sorry, could not create the folder: it already exists", "OK"
+            new ModalView t("modal error"), t("modal error folder exists"), t("modal ok")

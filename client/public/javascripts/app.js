@@ -662,7 +662,19 @@ module.exports = {
   "modal error get folders": "Error getting folders from server",
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
-  "breadcrumbs search title": "Search"
+  "breadcrumbs search title": "Search",
+  "modal error file exists": "Sorry, file already exists",
+  "modal error file upload": "File could not be sent to server",
+  "modal error folder create": "Folder could not be created",
+  "modal error folder exists": "Sorry, folder already exists",
+  "modal are you sure": "Are you sure ?",
+  "modal delete msg": "Deleting cannot be undone",
+  "modal delete ok": "Delete",
+  "modal cancel": "cancel",
+  "modal delete error": "cancel",
+  "modal error in use": "Name already in use",
+  "modal error rename": "Name could not be changed",
+  "modal error empty name": "Name can't be ampty"
 };
 
 });
@@ -946,11 +958,11 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.onDeleteClicked = function() {
     var _this = this;
-    return new ModalView("Are you sure ?", "Deleting cannot be undone", "Delete", "cancel", function(confirm) {
+    return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), function(confirm) {
       if (confirm) {
         return _this.model.destroy({
           error: function() {
-            return new ModalView("Error", "Server error occured, file was not deleted", "OK");
+            return new ModalView(t("modal error"), t("modal delete error"), t("modal ok"));
           }
         });
       }
@@ -978,20 +990,19 @@ module.exports = FileView = (function(_super) {
         patch: true,
         wait: true,
         success: function(data) {
-          console.log("File name changed successfully");
           return _this.render();
         },
         error: function(model, err) {
           console.log(err);
           if (err.status === 400) {
-            return new ModalView("Error", "Name already in use", "OK");
+            return new ModalView(t("modal error"), t("modal error in use"), t("modal ok"));
           } else {
-            return new ModalView("Error", "Name could not be changed", "OK");
+            return new ModalView(t("modal error"), t("modal error rename"), t("modal ok"));
           }
         }
       });
     } else {
-      return new ModalView("Error", "The name can't be empty", "OK");
+      return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
     }
   };
 
@@ -1073,7 +1084,7 @@ module.exports = FilesView = (function(_super) {
       $("#dialog-upload-file .modal-body").append(progress.render().el);
       return this.upload(file);
     } else {
-      return new ModalView("Error", "Sorry, could not upload the file " + attach.name + ": it already exists", "OK");
+      return new ModalView(t("modal error"), "" + (t('modal error file exists')) + ": " + attach.name, t("modal ok"));
     }
   };
 
@@ -1089,14 +1100,12 @@ module.exports = FilesView = (function(_super) {
       contentType: false,
       data: formdata,
       success: function(data) {
-        console.log("File sent successfully");
         return _this.collection.add(file, {
           merge: true
         });
       },
       error: function() {
-        console.log("error");
-        return new ModalView("Error", "File could not be sent to server", "OK");
+        return new ModalView(t("modal error"), t("modal error file upload"), t("modal ok"));
       }
     });
   };
@@ -1110,16 +1119,14 @@ module.exports = FilesView = (function(_super) {
     if (!found) {
       return folder.save(null, {
         success: function(data) {
-          console.log("Folder created successfully");
           return _this.collection.add(folder);
         },
         error: function(error) {
-          console.log(error);
-          return new ModalView("Error", "Folder could not be created", "OK");
+          return new ModalView(t("modal error"), t("modal error folder create"), t("modal ok"));
         }
       });
     } else {
-      return new ModalView("Error", "Sorry, could not create the folder: it already exists", "OK");
+      return new ModalView(t("modal error"), t("modal error folder exists"), t("modal ok"));
     }
   };
 
