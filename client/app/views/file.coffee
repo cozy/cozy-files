@@ -1,5 +1,6 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
+client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
 
@@ -11,6 +12,7 @@ module.exports = class FileView extends BaseView
 
     events:
         'click a.file-delete'      : 'onDeleteClicked'
+        'click a.file-share'       : 'onShare'
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'render'
@@ -37,6 +39,15 @@ module.exports = class FileView extends BaseView
         @$el.html @templateEdit(model: @model.toJSON())
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
+
+    onShare: ->
+        client.get "public/file/#{@model.id}/notify",
+            success: (data) ->
+                console.log data
+                new ModalView t("modal shared link title"), t("modal shared link msg")+" "+data.url, t("modal ok")
+            error: (data) ->
+                console.log data
+                new ModalView t("modal error"), t("modal share error"), t("modal ok")
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()

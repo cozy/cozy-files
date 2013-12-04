@@ -15,6 +15,12 @@ module.exports =
     'files/:id/download/:name':
         get: files.downloadAttachment
 
+    # public access to the file
+    'public/file:id':
+        get: files.downloadAttachment
+    'public/file/:id/notify':
+        get: files.sendPublicLink
+
     'folders':
         post: folders.create
     'folders/:id':

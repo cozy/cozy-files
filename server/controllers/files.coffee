@@ -137,3 +137,20 @@ module.exports.search = (req, res) ->
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
             res.send files
+
+module.exports.sendPublicLink = (req, res) ->
+     findFile req.params.id, (err, file) ->
+        if err
+            res.send error: true, msg: err, 404
+        else
+            MailHelper = require "../mails/mail_helper"
+            mails = new MailHelper()
+
+            # send the email and get url
+            mails.sendPublicLink file, (err, url) ->
+                if err
+                    console.error err
+                    #res.send url: url, 200
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200

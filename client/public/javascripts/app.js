@@ -675,6 +675,9 @@ module.exports = {
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
   "modal error empty name": "Name can't be ampty",
+  "modal shared link title": "Share this file on the internet",
+  "modal shared link msg": "You can use this address to let others download this file:",
+  "modal share error": "There was an error sharing this file",
   "file edit save": "Save",
   "file edit cancel": "cancel",
   "upload caption": "Upload a new file",
@@ -920,7 +923,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 });
 
 ;require.register("views/file", function(exports, require, module) {
-var BaseView, FileView, ModalView, _ref,
+var BaseView, FileView, ModalView, client, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -928,6 +931,8 @@ var BaseView, FileView, ModalView, _ref,
 BaseView = require('../lib/base_view');
 
 ModalView = require("./modal");
+
+client = require("../helpers/client");
 
 module.exports = FileView = (function(_super) {
   __extends(FileView, _super);
@@ -950,6 +955,7 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.events = {
     'click a.file-delete': 'onDeleteClicked',
+    'click a.file-share': 'onShare',
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
     'click a.file-edit-cancel': 'render',
@@ -989,6 +995,19 @@ module.exports = FileView = (function(_super) {
     }));
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
+  };
+
+  FileView.prototype.onShare = function() {
+    return client.get("public/file/" + this.model.id + "/notify", {
+      success: function(data) {
+        console.log(data);
+        return new ModalView(t("modal shared link title"), t("modal shared link msg") + " " + data.url, t("modal ok"));
+      },
+      error: function(data) {
+        console.log(data);
+        return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
+      }
+    });
   };
 
   FileView.prototype.onSaveClicked = function() {
@@ -1541,7 +1560,7 @@ buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 }
 return buf.join("");
@@ -1589,7 +1608,7 @@ buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 }
 return buf.join("");

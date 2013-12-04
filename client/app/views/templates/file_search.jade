@@ -25,6 +25,8 @@ else
         span.glyphicon.glyphicon-edit  
       a(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")
         span.glyphicon.glyphicon-cloud-download  
+      a.file-share
+        span.glyphicon.glyphicon-share-alt
     p.file-path
       | #{model.path}/#{model.name}
   td
