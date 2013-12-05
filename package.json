@@ -41,6 +41,9 @@
     },
     "send mail to user": {
       "description": "Send links by mail"
+    },
+    "CozyInstance": {
+      "description": "Afin d'afficher le contenu dans votre langue, l'application doit accéder à vos préférences."
     }
   }
 }
