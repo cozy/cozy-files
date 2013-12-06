@@ -19,22 +19,9 @@ module.exports = class FolderView extends BaseView
         'keyup input#search-box'    : 'onSeachKeyPress'
         'keyup input#inputName'     : 'onAddFolderEnter'
 
-    constructor: (@model, @breadcrumbs) ->
-        super()
+    initialize: (options) -> 
+        @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
-
-    render: ->
-        @beforeRender()
-        @$el.html @template model:@model
-        @afterRender()
-        @
-
-    afterRender: ->
-        super()
-
-        # add breadcrumbs view
-        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
-        @$("#crumbs").append @breadcrumbsView.render().$el
 
         # add drag and drop support
         prevent = (e) ->
@@ -45,7 +32,14 @@ module.exports = class FolderView extends BaseView
         @$el.on "drop", (e) =>
             @onDragAndDrop(e)
 
-        
+    getRenderData: ->
+        model: @model
+
+    afterRender: ->
+        # add breadcrumbs view
+        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
+        @$("#crumbs").append @breadcrumbsView.render().$el
+
 
     ###
         Display and re-render the contents of the folder
@@ -53,12 +47,9 @@ module.exports = class FolderView extends BaseView
     changeActiveFolder: (folder) ->
         # save the model
         @model = folder
+
         # update breadcrumbs
         @breadcrumbs.push folder
-        # files
-        @displayChildren()
-
-    displayChildren: ->
 
         # add files view
         @model.findFiles
@@ -76,28 +67,39 @@ module.exports = class FolderView extends BaseView
                             folder.type = "folder"
 
                         # new collection
-                        @stopListening @filesCollection, "progress:done"
+                        if @filesCollection
+                            @stopListening @filesCollection
                         @filesCollection = new FileCollection folders.concat(files)
-                        @listenTo @filesCollection, "progress:done", @hideUploadForm
+                        @listenTo @filesCollection, "sync", @hideUploadForm
 
                         # render the collection
+                        @filesList?.destroy() if @filesList
                         @filesList = new FilesView @filesCollection, @model
-
-                        
                         @$('#files').html @filesList.$el
                         @filesList.render()
 
                     error: (error) =>
                         console.log error
-                        new ModalView "Error", "Error getting folders from server", "OK"
+                        new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
             error: (error) =>
                 console.log error
-                new ModalView "Error", "Error getting files from server", "OK"
+                new ModalView t("modal error"), t("modal error get files"), t("modal ok")
 
 
     ###
         Upload/ new folder
     ###
+    prepareNewFolder: ->
+        setTimeout () =>
+            @$("#inputName").focus()
+        , 500
+
+    onAddFolderEnter: (e) ->
+        if e.keyCode is 13
+            e.preventDefault()
+            e.stopPropagation()
+            @onAddFolder()
+
     onAddFolder: =>
         folder = new File
             name: @$('#inputName').val()
@@ -106,20 +108,11 @@ module.exports = class FolderView extends BaseView
         console.log "creating folder #{folder}"
 
         if folder.validate()
-            new ModalView "Error", "Folder name can't be empty", "OK"
+            new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
         else
             @filesList.addFolder folder
             # hide modal
             $('#dialog-new-folder').modal('hide')
-
-    prepareNewFolder: ->
-        setTimeout () =>
-            @$("#inputName").focus()
-        , 500
-
-    onAddFolderEnter: (e) =>
-        if e.keyCode is 13
-            @onAddFolder()
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files
@@ -129,11 +122,19 @@ module.exports = class FolderView extends BaseView
         e.preventDefault()
         e.stopPropagation()
         console.log "Drag and drop"
-        # show a status bar
-        $("#dialog-upload-file").modal("show")
+        
         # send file
+        atLeastOne = false
         for attach in e.dataTransfer.files
-            @filesList.addFile attach
+            if attach.type is ""
+                new ModalView t("modal error"), "#{attach.name} #{t('modal error file invalid')}", t("modal ok")
+            else
+                @filesList.addFile attach
+                atLeastOne = true
+
+        if atLeastOne
+            # show a status bar
+            $("#dialog-upload-file").modal("show")
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')
@@ -156,7 +157,7 @@ module.exports = class FolderView extends BaseView
 
         data = 
             id: query
-            name: "Search '#{query}'"
+            name: "#{t('breadcrumbs search title')} '#{query}'"
             type: "search"
 
         search = new File data

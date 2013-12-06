@@ -7,7 +7,9 @@ if model.type && model.type == "folder"
       a.file-delete
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
-        span.glyphicon.glyphicon-edit  
+        span.glyphicon.glyphicon-edit
+    p.file-path
+      | #{model.path}/#{model.name}
   td
   td.file-date
     span.pull-right 12:00 12/10/2013
@@ -25,6 +27,8 @@ else
         span.glyphicon.glyphicon-cloud-download  
       a.file-share
         span.glyphicon.glyphicon-share-alt
+    p.file-path
+      | #{model.path}/#{model.name}
   td
   td.file-date
     span.pull-right 12:00 12/10/2013

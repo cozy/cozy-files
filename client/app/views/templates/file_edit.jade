@@ -1,22 +1,13 @@
-if model.type && model.type == "folder"
-  td
+td
+  if model.type && model.type == "folder"
     span.glyphicon.glyphicon-folder-close.no-hover.icon
-    input.caption.file-edit-name(value=model.name)
-    a.btn.btn-sm.btn-cozy.file-edit-save
-      | Save
-    a.btn.btn-sm.btn-link.file-edit-cancel
-      | cancel
-  td
-  td.file-date
-    span.pull-right 12:00 12/10/2013
-else
-  td
+  else
     span.glyphicon.glyphicon-folder-close.no-hover.icon
-    input.caption.file-edit-name(value=model.name)
-    a.btn.btn-sm.btn-cozy.file-edit-save
-      | Save
-    a.btn.btn-sm.btn-link.file-edit-cancel
-      | cancel
-  td
-  td.file-date
-    span.pull-right 12:00 12/10/2013
+  input.caption.file-edit-name(value=model.name)
+  a.btn.btn-sm.btn-cozy.file-edit-save
+    | #{t("file edit save")}
+  a.btn.btn-sm.btn-link.file-edit-cancel
+    | #{t("file edit cancel")}
+td
+td.file-date
+  span.pull-right 12:00 12/10/2013

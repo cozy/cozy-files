@@ -118,9 +118,24 @@ module.exports.getAttachment = (req, res) ->
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
-module.exports.search = (req, res, next) ->
+module.exports.search = (req, res) ->
     File.search "*#{req.body.id}*", (err, files) ->
-        if e
-            next err
+        if err
+            res.send error: true, msg: err, 500
         else
+            console.log files
             res.send files
+
+module.exports.sendPublicLink = (req, res) ->
+    file = req.file
+    MailHelper = require "../mails/mail_helper"
+    mails = new MailHelper()
+
+    # send the email and get url
+    mails.sendPublicLink file, (err, url) ->
+        if err
+            console.log err
+            #res.send url: url, 200
+            res.send error: true, msg: err, 500
+        else
+            res.send url: url, 200

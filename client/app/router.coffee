@@ -16,10 +16,9 @@ module.exports = class Router extends Backbone.Router
 
     folder: (id) ->
         folder = new File id:id, type:"folder"
-        folder.find 
+        folder.fetch 
             success: (data) =>
                 folder.set data
-                console.log folder
                 app.folderView.changeActiveFolder folder
 
     search: (query) ->

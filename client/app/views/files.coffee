@@ -7,6 +7,8 @@ ModalView = require "./modal"
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
+SocketListener = require '../helpers/socket'
+
 module.exports = class FilesView extends ViewCollection
 
     template: require('./templates/files')
@@ -17,15 +19,13 @@ module.exports = class FilesView extends ViewCollection
     initialize: (@collection, @model) ->
         super()
         @listenTo @collection, "sort", @render
-
-    afterRender: ->
-        super()
+        @listenTo @collection, "remove", @render
+        @listenTo @collection, "add", @render
+        @socket = new SocketListener()
+        @socket.watch @collection
         
     addFile: (attach) =>
-        found = false
-        for file in @collection.models
-            if (file.get("name") == attach.name) and file.get("type") is "file"
-                found = true
+        found = @collection.findWhere(name: attach.name)
         
         if not found
             fileAttributes = 
@@ -34,7 +34,6 @@ module.exports = class FilesView extends ViewCollection
                 type: "file"
             file = new File fileAttributes
             file.file = attach
-            @collection.add file
 
             # add a progress bar
             progress = new ProgressbarView file
@@ -42,7 +41,7 @@ module.exports = class FilesView extends ViewCollection
 
             @upload file
         else
-            new ModalView "Error", "Sorry, could not upload the file: it already exists", "OK"
+            new ModalView t("modal error"), "#{t('modal error file exists')}: #{attach.name}", t("modal ok")
 
     upload: (file) =>
         formdata = new FormData()
@@ -54,26 +53,18 @@ module.exports = class FilesView extends ViewCollection
             contentType: false
             data: formdata
             success: (data) =>
-                console.log "File sent successfully"
-                file.set data
-                #new ModalView "Success", "File transfered successfully", "OK"
+                @collection.add file, merge:true
             error: =>
-                console.log "error"
-                new ModalView "Error", "File could not be sent to server", "OK"
+                new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
 
     addFolder: (folder) ->
-        found = false
-        for file in @collection.models
-            if (file.get("name") == folder.get("name")) and file.get("type") is "folder"
-                found = true
+        found = @collection.findWhere(name: folder.get("name"))
 
         if not found
             folder.save null,
                 success: (data) =>
-                    console.log "Folder created successfully"
                     @collection.add folder
                 error: (error) =>
-                    console.log error
-                    new ModalView "Error", "Folder could not be created", "OK"
+                    new ModalView t("modal error"), t("modal error folder create"), t("modal ok")
         else
-            new ModalView "Error", "Sorry, could not create the folder: it already exists", "OK"
+            new ModalView t("modal error"), t("modal error folder exists"), t("modal ok")

@@ -11,19 +11,14 @@ module.exports = class ProgressbarView extends BaseView
 
     initialize: ->
         @listenTo @model, 'progress', @update
+        @listenTo @model, 'sync', @destroy
 
     update: (e) ->
         pc = parseInt(e.loaded / e.total * 100)
         console.log "[Progress bar] : #{pc} %"
+        
+        @value = pc
+        @render()
 
-        if pc == 100
-            @model.trigger "progress:done"
-            @remove()
-            @destroy()
-        else
-            @value = pc
-            @render()
-
-    render: ->
-        @$el.html @template(value: @value)
-        @
+    getRenderData: ->
+        value: @value

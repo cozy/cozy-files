@@ -12,9 +12,12 @@
   },
   "main": "server.js",
   "dependencies": {
-    "americano": "0.2.5",
-    "americano-cozy": "0.1.8",
-    "async": "~0.2.9"
+    "americano": "0.2.12",
+    "americano-cozy": "0.1.10",
+    "async": "0.2.9"
+    "cozy-realtime-adapter": "0.12.0",
+    "cozy-i18n-helper": "0.0.4",
+    "jade": "0.35.0"
   },
   "devDependencies": {
     "should": "= 1.2.0",
@@ -32,6 +35,18 @@
     },
     "Folder": {
       "description": "Store folders in your cozy"
+    },
+    "send mail" : {
+      "description": "Send links by mail"
+    },
+    "send mail from user": {
+      "description": "Send links by mail"
+    },
+    "send mail to user": {
+      "description": "Send links by mail"
+    },
+    "CozyInstance": {
+      "description": "To display the application in the right language, the application requires access to your instance informations."
     }
   }
 }

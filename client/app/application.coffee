@@ -7,9 +7,6 @@ FolderView = require './views/folder'
 module.exports =
 
     initialize: ->
-        # Used in inter-app communication
-        #SocketListener = require '../lib/socket_listener'
-
         # Routing management
         Router = require 'router'
         @router = new Router()
@@ -18,7 +15,9 @@ module.exports =
         # the root
         @root = new File id:"root", path:"", name:"", type:"folder"
         # and the folder view
-        @folderView = new FolderView @root, @breadcrumbs
+        @folderView = new FolderView 
+            model: @root
+            breadcrumbs: @breadcrumbs
 
         el = @folderView.render().$el
         $('body').append el
