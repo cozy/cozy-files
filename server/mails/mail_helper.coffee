@@ -36,6 +36,7 @@ module.exports = class MailHandler
 
                 CozyAdapter.sendMailToUser mailOptions, (err) ->
                     if err
+                        console.log err
                         callback err, url
                     else
                         callback null, url

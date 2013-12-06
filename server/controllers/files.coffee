@@ -131,10 +131,10 @@ module.exports.getAttachment = (req, res) ->
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
-module.exports.search = (req, res, next) ->
+module.exports.search = (req, res) ->
     File.search "*#{req.body.id}*", (err, files) ->
         if err
-            next err
+            res.send error: true, msg: err, 500
         else
             res.send files
 

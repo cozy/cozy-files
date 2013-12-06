@@ -14,6 +14,8 @@ module.exports = class FileCollection extends Backbone.Collection
     # sorting - folders first, then alphabetically, by name
     comparator: (o1, o2) ->
 
+        console.log "comparator: #{o1}, #{o2}"
+
         n1 = o1.get("name").toLocaleLowerCase()
         n2 = o2.get("name").toLocaleLowerCase()
 

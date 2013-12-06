@@ -222,6 +222,7 @@ module.exports = FileCollection = (function(_super) {
 
   FileCollection.prototype.comparator = function(o1, o2) {
     var n1, n2, sort, t1, t2;
+    console.log("comparator: " + o1 + ", " + o2);
     n1 = o1.get("name").toLocaleLowerCase();
     n2 = o2.get("name").toLocaleLowerCase();
     t1 = o1.get("type");
