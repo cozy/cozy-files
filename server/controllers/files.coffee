@@ -136,6 +136,7 @@ module.exports.search = (req, res) ->
         if err
             res.send error: true, msg: err, 500
         else
+            console.log files
             res.send files
 
 module.exports.sendPublicLink = (req, res) ->
