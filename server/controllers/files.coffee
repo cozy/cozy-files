@@ -68,7 +68,7 @@ module.exports.create = (req, res) ->
                                                     res.send newfile, 200
 
 module.exports.find = (req, res) ->
-    res.send req.file[0]
+    res.send req.file
 
 module.exports.modify = (req, res) ->
     if not req.body.name or req.body.name is ""
