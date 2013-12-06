@@ -3,16 +3,19 @@ folders = require './folders'
 
 module.exports =
 
+    'fileid':
+        param: files.fetch
+
     'files':
         get: files.all
         post: files.create
-    'files/:id':
+    'files/:fileid':
         get: files.find
         patch: files.modify
         delete: files.destroy
-    'files/:id/attach/:name':
+    'files/:fileid/attach/:name':
         get: files.getAttachment
-    'files/:id/download/:name':
+    'files/:fileid/download/:name':
         get: files.downloadAttachment
 
     'folders':

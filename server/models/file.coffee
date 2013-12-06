@@ -13,5 +13,6 @@ module.exports = File = americano.getModel 'File',
 
 File.all = (params, callback) ->
     File.request "all", params, callback
+
 File.byFolder = (params, callback) ->
     File.request "byFolder", params, callback

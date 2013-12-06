@@ -1,6 +1,6 @@
 {
   "name": "cozy-files",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": [
     "node = 0.8.x"
   ],
@@ -13,7 +13,7 @@
   "main": "server.js",
   "dependencies": {
     "americano": "0.2.5",
-    "americano-cozy": "0.1.6",
+    "americano-cozy": "0.1.8",
     "async": "~0.2.9"
   },
   "devDependencies": {

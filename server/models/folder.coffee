@@ -11,5 +11,6 @@ module.exports = Folder = americano.getModel 'Folder',
 
 Folder.all = (params, callback) ->
     Folder.request "all", params, callback
+
 Folder.byFolder = (params, callback) ->
     Folder.request "byFolder", params, callback
