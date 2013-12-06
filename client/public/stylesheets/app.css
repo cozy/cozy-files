@@ -762,6 +762,9 @@ a:focus,
   background-color: #fe8800;
   border-color: #fe8800;
 }
+a {
+  cursor: pointer;
+}
 input {
   border: 1px solid #ccc;
   color: #ccc;
