@@ -149,7 +149,7 @@ module.exports.sendPublicLink = (req, res) ->
             # send the email and get url
             mails.sendPublicLink file, (err, url) ->
                 if err
-                    console.error err
+                    console.log err
                     #res.send url: url, 200
                     res.send error: true, msg: err, 500
                 else
