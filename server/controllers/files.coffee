@@ -19,7 +19,7 @@ module.exports.fetch = (req, res, next, id) ->
             next new Error "File not found" if err
             return res.error 404, 'Photo not found' if not file
         else
-            req.file = file
+            req.file = file[0]
             next()
 
 
