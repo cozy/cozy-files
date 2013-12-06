@@ -1,6 +1,6 @@
 {
   "name": "cozy-files",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": [
     "node = 0.8.x"
   ],
@@ -12,12 +12,12 @@
   },
   "main": "server.js",
   "dependencies": {
-    "americano": "0.2.5",
-    "americano-cozy": "0.1.6",
-    "async": "~0.2.9",
-    "cozy-realtime-adapter": "~0.12.0",
+    "americano": "0.2.12",
+    "americano-cozy": "0.1.10",
+    "async": "0.2.9",
+    "cozy-realtime-adapter": "0.12.0",
     "cozy-i18n-helper": "0.0.4",
-    "jade": "~0.35.0"
+    "jade": "0.35.0"
   },
   "devDependencies": {
     "should": "= 1.2.0",
@@ -46,7 +46,7 @@
       "description": "Send links by mail"
     },
     "CozyInstance": {
-      "description": "Afin d'afficher le contenu dans votre langue, l'application doit accéder à vos préférences."
+      "description": "To display the application in the right language, the application requires access to your instance informations."
     }
   }
 }
