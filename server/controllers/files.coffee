@@ -19,7 +19,7 @@ module.exports.fetch = (req, res, next, id) ->
             next new Error "File not found" if err
             return res.error 404, 'Photo not found' if not file
         else
-            req.file = file
+            req.file = file[0]
             next()
 
 
@@ -68,7 +68,7 @@ module.exports.create = (req, res) ->
                                                     res.send newfile, 200
 
 module.exports.find = (req, res) ->
-    res.send req.file
+    res.send req.file[0]
 
 module.exports.modify = (req, res) ->
     if not req.body.name or req.body.name is ""
