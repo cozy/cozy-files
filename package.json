@@ -36,6 +36,9 @@
     "Folder": {
       "description": "Store folders in your cozy"
     },
+    "send mail" : {
+      "description": "Send links by mail"
+    }
     "send mail from user": {
       "description": "Send links by mail"
     },
