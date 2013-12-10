@@ -23,7 +23,8 @@ module.exports = class MailHandler
                 cb err
             else
                 # generate the url 
-                cb null, "#{domain}/public/cozy-files/file#{file.id}"
+                domain = domain.replace("http://", "")
+                cb null, "http://#{domain}/public/files/file#{file.id}"
 
 
     sendPublicLinks: (file, users, callback) ->
