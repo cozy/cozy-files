@@ -32,6 +32,8 @@ module.exports =
         get: folders.find
         patch: folders.modify
         delete: folders.destroy
+    'folders/:id/zip/:name':
+        get: folders.zip
 
     'folders/files':
         post: folders.findFiles

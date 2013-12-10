@@ -8,6 +8,8 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
         span.glyphicon.glyphicon-edit  
+      a(href="folders/#{model.id}/zip/#{model.name}", target="_blank")
+        span.glyphicon.glyphicon-cloud-download  
   td
   td.file-date
     span.pull-right 12:00 12/10/2013

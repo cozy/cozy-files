@@ -810,6 +810,11 @@ module.exports = File = (function(_super) {
     }, callbacks);
   };
 
+  File.prototype.getZip = function(file, callbacks) {
+    this.prepareCallbacks(callbacks);
+    return client.post("" + (this.urlRoot()) + this.id + "/zip/" + this.name, callbacks);
+  };
+
   File.prototype.getAttachment = function(file, callbacks) {
     this.prepareCallbacks(callbacks);
     return client.post("" + (this.urlRoot()) + this.id + "/getAttachment/" + this.name, callbacks);
@@ -1630,7 +1635,9 @@ if ( model.type && model.type == "folder")
 {
 buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
+buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank") }, {"href":true,"target":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 else
 {
