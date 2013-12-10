@@ -664,10 +664,10 @@ module.exports = {
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
   "breadcrumbs search title": "Search",
-  "modal error file exists": "Sorry, file already exists",
+  "modal error file exists": "Sorry, a file or folder having this name already exists",
   "modal error file upload": "File could not be sent to server",
   "modal error folder create": "Folder could not be created",
-  "modal error folder exists": "Sorry, folder already exists",
+  "modal error folder exists": "Sorry, a file or folder having this name already exists",
   "modal are you sure": "Are you sure ?",
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
@@ -679,6 +679,8 @@ module.exports = {
   "modal shared link title": "Share this file on the internet",
   "modal shared link msg": "You can use this address to let others download this file:",
   "modal share error": "There was an error sharing this file",
+  "modal share send msg": "If you want to send people notifications, type their emails here (separated by commas):",
+  "modal share send btn": "Share",
   "file edit save": "Save",
   "file edit cancel": "cancel",
   "upload caption": "Upload a new file",
@@ -924,7 +926,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 });
 
 ;require.register("views/file", function(exports, require, module) {
-var BaseView, FileView, ModalView, client, _ref,
+var BaseView, FileView, ModalShareView, ModalView, client, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -932,6 +934,8 @@ var BaseView, FileView, ModalView, client, _ref,
 BaseView = require('../lib/base_view');
 
 ModalView = require("./modal");
+
+ModalShareView = require("./modal_share");
 
 client = require("../helpers/client");
 
@@ -999,10 +1003,14 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onShare = function() {
-    return client.get("public/file/" + this.model.id + "/notify", {
+    var _this = this;
+    return client.get("fileshare/" + this.model.id, {
       success: function(data) {
         console.log(data);
-        return new ModalView(t("modal shared link title"), t("modal shared link msg") + " " + data.url, t("modal ok"));
+        return new ModalShareView({
+          url: data.url,
+          model: _this.model
+        });
       },
       error: function(data) {
         console.log(data);
@@ -1467,6 +1475,75 @@ module.exports = ModalView = (function(_super) {
 
 });
 
+;require.register("views/modal_share", function(exports, require, module) {
+var BaseView, ModalShareView, ModalView, client, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+ModalView = require("./modal");
+
+client = require("../helpers/client");
+
+module.exports = ModalShareView = (function(_super) {
+  __extends(ModalShareView, _super);
+
+  function ModalShareView() {
+    _ref = ModalShareView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ModalShareView.prototype.template = require('./templates/modal_share');
+
+  ModalShareView.prototype.events = {
+    "click #modal-dialog-share-send": "send"
+  };
+
+  ModalShareView.prototype.initialize = function(options) {
+    console.log(options);
+    this.url = options.url;
+    this.model = options.model;
+    this.render();
+    return this.$('#modal-dialog').modal('show');
+  };
+
+  ModalShareView.prototype.send = function() {
+    var input, mails,
+      _this = this;
+    input = this.$('#modal-dialog-share-input').val();
+    console.log(input);
+    mails = input.replace(/\s+/g, ' ').replace(/\ /g, ',').replace(/\,+/g, ',').split(",");
+    console.log(mails);
+    return client.post("fileshare/" + this.model.id + "/send", {
+      users: mails
+    }, {
+      success: function(data) {
+        _this.$('#modal-dialog').modal('hide');
+        return setTimeout(function() {
+          return _this.destroy();
+        }, 1000);
+      },
+      error: function(data) {
+        return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
+      }
+    });
+  };
+
+  ModalShareView.prototype.render = function() {
+    this.$el.append(this.template({
+      url: this.url
+    }));
+    $("body").append(this.el);
+    return this;
+  };
+
+  return ModalShareView;
+
+})(BaseView);
+
+});
+
 ;require.register("views/progressbar", function(exports, require, module) {
 var BaseView, ProgressbarView,
   __hasProp = {}.hasOwnProperty,
@@ -1656,6 +1733,20 @@ if ( yes)
 buf.push('<button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = yes) == null ? '' : interp) + '</button>');
 }
 buf.push('</div></div></div></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/modal_share", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div id="modal-dialog" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t('modal shared link title')) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = t('modal shared link msg')) == null ? '' : interp) + '<input');
+buf.push(attrs({ 'value':(url), "class": ('form-control') }, {"value":true}));
+buf.push('/></p><p>' + escape((interp = t('modal share send msg')) == null ? '' : interp) + '<input id="modal-dialog-share-input" type="text" class="form-control"/></p></div><div class="modal-footer"><button id="modal-dialog-share-send" type="button" class="btn btn-cozy">' + escape((interp = t('modal share send btn')) == null ? '' : interp) + '</button></div></div></div></div>');
 }
 return buf.join("");
 };

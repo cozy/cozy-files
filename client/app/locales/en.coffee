@@ -12,10 +12,10 @@ module.exports =
     "breadcrumbs search title"  : "Search"
     
     # files view
-    "modal error file exists"   : "Sorry, file already exists"
+    "modal error file exists"   : "Sorry, a file or folder having this name already exists"
     "modal error file upload"   : "File could not be sent to server"
     "modal error folder create" : "Folder could not be created"
-    "modal error folder exists" : "Sorry, folder already exists"
+    "modal error folder exists" : "Sorry, a file or folder having this name already exists"
     
     # file view
     "modal are you sure"        : "Are you sure ?"
@@ -31,6 +31,8 @@ module.exports =
     "modal shared link title"   : "Share this file on the internet"
     "modal shared link msg"     : "You can use this address to let others download this file:"
     "modal share error"         : "There was an error sharing this file"
+    "modal share send msg"      : "If you want to send people notifications, type their emails here (separated by commas):"
+    "modal share send btn"      : "Share"
     
     # file_edit template
     "file edit save"            : "Save"
