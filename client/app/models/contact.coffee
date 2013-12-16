@@ -115,9 +115,9 @@ module.exports = class Contact extends Backbone.Model
         [familly, given, middle, prefix, suffix] = n or @get 'n'
         switch app.config.get 'nameOrder'
             when 'given-familly' then "#{given} #{middle} #{familly}"
-            when 'familly-given' then "#{familly}, #{given} #{middle}"
             when 'given-middleinitial-familly'
                 "#{given} #{initial(middle)} #{familly}"
+            else "#{familly}, #{given} #{middle}"
 
 
     getComputedN: (fn) ->
