@@ -216,36 +216,42 @@ module.exports.zip = (req, res) ->
                 if err
                     res.send error: true, msg: "Server error occured: #{err}", 500
                 else
-
-                    isContained = (file, cb) ->
-                        if file.path.indexOf(key) is 0
-                            cb null, [file]
+                    # find the name
+                    findFolder req.params.id, (err, folder) ->
+                        if err or not folder
+                            callback "folder not found"
                         else
-                            cb null, []
+                            zipName = folder.name?.replace(/\W/g, '')
 
-                    # check that the name is not already taken
-                    async.concat files, isContained, (err, files) ->
-                        if err
-                            res.send error:true, msg: "Server error", 400
-                        else
-                            archive = archiver('zip')
-
-                            addToArchive = (file, cb) ->
-                                stream = file.getBinary "file", (err, resp, body) =>
-                                    if err
-                                        res.send error: true, msg: "Server error occured: #{err}", 500
-                                name = file.path.replace(key, "") + "/" + file.name
-                                archive.append stream, name: name, cb
-
-                            async.eachSeries files, addToArchive, (err) ->
-                                if err
-                                    res.send error: true, msg: "Server error occured: #{err}", 500
+                            isContained = (file, cb) ->
+                                if file.path.indexOf(key) is 0
+                                    cb null, [file]
                                 else
-                                    archive.pipe res
+                                    cb null, []
 
-                                    disposition = "attachment; filename=\"folder.zip\""
-                                    res.setHeader 'Content-Disposition', disposition
-                                    res.setHeader 'Content-Type', 'application/zip'
+                            # check that the name is not already taken
+                            async.concat files, isContained, (err, files) ->
+                                if err
+                                    res.send error:true, msg: "Server error", 400
+                                else
+                                    archive = archiver('zip')
+
+                                    addToArchive = (file, cb) ->
+                                        stream = file.getBinary "file", (err, resp, body) =>
+                                            if err
+                                                res.send error: true, msg: "Server error occured: #{err}", 500
+                                        name = file.path.replace(key, "") + "/" + file.name
+                                        archive.append stream, name: name, cb
+
+                                    async.eachSeries files, addToArchive, (err) ->
+                                        if err
+                                            res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            archive.pipe res
+
+                                            disposition = "attachment; filename=\"#{zipName}.zip\""
+                                            res.setHeader 'Content-Disposition', disposition
+                                            res.setHeader 'Content-Type', 'application/zip'
 
                                     archive.finalize (err, bytes) ->
                                         if err
