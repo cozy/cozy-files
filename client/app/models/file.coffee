@@ -56,6 +56,12 @@ module.exports = class File extends Backbone.Model
             rep = ""
         rep
 
+    endpoint: ->
+        if @get("type") is "folder"
+            "foldershare"
+        else
+            "fileshare"
+
     # FOLDER
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks

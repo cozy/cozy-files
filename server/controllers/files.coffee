@@ -144,7 +144,7 @@ module.exports.sendPublicLinks = (req, res) ->
     users = req.body.users
 
     # send the email and get url
-    mails.sendPublicLinks file, users, (err, url) ->
+    mails.sendPublicFileLinks file, users, (err, url) ->
         if err
             console.log err
             res.send error: true, msg: err, 500

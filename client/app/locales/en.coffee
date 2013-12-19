@@ -28,11 +28,16 @@ module.exports =
     "modal error rename"        : "Name could not be changed"
     "modal error empty name"    : "Name can't be ampty"
     
-    "modal shared link title"   : "Share this file on the internet"
-    "modal shared link msg"     : "You can use this address to let others download this file:"
-    "modal share error"         : "There was an error sharing this file"
-    "modal share send msg"      : "If you want to send people notifications, type their emails here (separated by commas):"
+    "modal shared file link title"   : "Share this file on the internet"
+    "modal shared file link msg"     : "You can use this address to let others download this file:"
+    "modal share file send msg"      : "If you want to send people notifications, type their emails here (separated by commas):"
+    
+    "modal shared folder link title" : "Share this folder on the internet"
+    "modal shared folder link msg"   : "You can use this address to let others download an archive with this folder:"
+    "modal share folder send msg"    : "If you want to send people notifications, type their emails here (separated by commas):"
+
     "modal share send btn"      : "Share"
+    "modal share error"         : "There was an error sharing this file"
     
     # file_edit template
     "file edit save"            : "Save"

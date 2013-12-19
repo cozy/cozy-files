@@ -1,7 +1,9 @@
 Folder = require '../models/folder'
 File = require '../models/file'
 async = require 'async'
-archiver = require('archiver')
+archiver = require 'archiver'
+MailHelper = require "../mails/mail_helper"
+mails = new MailHelper()
 
 ## Helpers ##
 
@@ -206,6 +208,34 @@ module.exports.search = (req, res) ->
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
             res.send files
+
+module.exports.getPublicLink = (req, res) ->
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.getFolderUrl folder, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
+
+module.exports.sendPublicLinks = (req, res) ->
+    users = req.body.users
+
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.sendPublicFolderLinks folder, users, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
 
 module.exports.zip = (req, res) ->
     getFolderPath req.params.id, (err, key) ->

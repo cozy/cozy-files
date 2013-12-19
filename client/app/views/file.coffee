@@ -42,7 +42,7 @@ module.exports = class FileView extends BaseView
         @$(".file-edit-name").focus()
 
     onShare: ->
-        client.get "fileshare/#{@model.id}",
+        client.get "#{@model.endpoint()}/#{@model.id}",
             success: (data) =>
                 console.log data
                 new ModalShareView

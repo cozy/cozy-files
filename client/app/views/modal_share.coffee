@@ -4,15 +4,19 @@ client = require "../helpers/client"
 
 module.exports = class ModalShareView extends BaseView
 
-    template: require './templates/modal_share'
+    template: require './templates/modal_share_file'
 
     events:
         "click #modal-dialog-share-send" : "send"
 
     initialize: (options) ->
         console.log options
-        @url = options.url
-        @model = options.model
+        @url      = options.url
+        @model    = options.model
+        
+        if @model.get("type") is "folder"
+            @template = require './templates/modal_share_folder'
+        
         @render()
         @$('#modal-dialog').modal('show')
 
@@ -23,7 +27,7 @@ module.exports = class ModalShareView extends BaseView
 
         console.log mails
 
-        client.post "fileshare/#{@model.id}/send", users: mails,
+        client.post "#{@model.endpoint()}/#{@model.id}/send", users: mails,
             success: (data) =>
                 @$('#modal-dialog').modal('hide')
                 setTimeout () =>

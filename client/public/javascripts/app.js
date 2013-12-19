@@ -676,11 +676,14 @@ module.exports = {
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
   "modal error empty name": "Name can't be ampty",
-  "modal shared link title": "Share this file on the internet",
-  "modal shared link msg": "You can use this address to let others download this file:",
-  "modal share error": "There was an error sharing this file",
-  "modal share send msg": "If you want to send people notifications, type their emails here (separated by commas):",
+  "modal shared file link title": "Share this file on the internet",
+  "modal shared file link msg": "You can use this address to let others download this file:",
+  "modal share file send msg": "If you want to send people notifications, type their emails here (separated by commas):",
+  "modal shared folder link title": "Share this folder on the internet",
+  "modal shared folder link msg": "You can use this address to let others download an archive with this folder:",
+  "modal share folder send msg": "If you want to send people notifications, type their emails here (separated by commas):",
   "modal share send btn": "Share",
+  "modal share error": "There was an error sharing this file",
   "file edit save": "Save",
   "file edit cancel": "cancel",
   "upload caption": "Upload a new file",
@@ -794,6 +797,14 @@ module.exports = File = (function(_super) {
       rep = "";
     }
     return rep;
+  };
+
+  File.prototype.endpoint = function() {
+    if (this.get("type") === "folder") {
+      return "foldershare";
+    } else {
+      return "fileshare";
+    }
   };
 
   File.prototype.findFiles = function(callbacks) {
@@ -1009,7 +1020,7 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.onShare = function() {
     var _this = this;
-    return client.get("fileshare/" + this.model.id, {
+    return client.get("" + (this.model.endpoint()) + "/" + this.model.id, {
       success: function(data) {
         console.log(data);
         return new ModalShareView({
@@ -1504,7 +1515,7 @@ module.exports = ModalShareView = (function(_super) {
     return _ref;
   }
 
-  ModalShareView.prototype.template = require('./templates/modal_share');
+  ModalShareView.prototype.template = require('./templates/modal_share_file');
 
   ModalShareView.prototype.events = {
     "click #modal-dialog-share-send": "send"
@@ -1514,6 +1525,9 @@ module.exports = ModalShareView = (function(_super) {
     console.log(options);
     this.url = options.url;
     this.model = options.model;
+    if (this.model.get("type") === "folder") {
+      this.template = require('./templates/modal_share_folder');
+    }
     this.render();
     return this.$('#modal-dialog').modal('show');
   };
@@ -1525,7 +1539,7 @@ module.exports = ModalShareView = (function(_super) {
     console.log(input);
     mails = input.replace(/\s+/g, ' ').replace(/\ /g, ',').replace(/\,+/g, ',').split(",");
     console.log(mails);
-    return client.post("fileshare/" + this.model.id + "/send", {
+    return client.post("" + (this.model.endpoint()) + "/" + this.model.id + "/send", {
       users: mails
     }, {
       success: function(data) {
@@ -1642,7 +1656,7 @@ buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></spa
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank") }, {"href":true,"target":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
 }
 else
 {
@@ -1750,15 +1764,29 @@ return buf.join("");
 };
 });
 
-;require.register("views/templates/modal_share", function(exports, require, module) {
+;require.register("views/templates/modal_share_file", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="modal-dialog" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t('modal shared link title')) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = t('modal shared link msg')) == null ? '' : interp) + '<input');
+buf.push('<div id="modal-dialog" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t('modal shared file link title')) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = t('modal shared file link msg')) == null ? '' : interp) + '<input');
 buf.push(attrs({ 'value':(url), "class": ('form-control') }, {"value":true}));
-buf.push('/></p><p>' + escape((interp = t('modal share send msg')) == null ? '' : interp) + '<input id="modal-dialog-share-input" type="text" class="form-control"/></p></div><div class="modal-footer"><button id="modal-dialog-share-send" type="button" class="btn btn-cozy">' + escape((interp = t('modal share send btn')) == null ? '' : interp) + '</button></div></div></div></div>');
+buf.push('/></p><p>' + escape((interp = t('modal share file send msg')) == null ? '' : interp) + '<input id="modal-dialog-share-input" type="text" class="form-control"/></p></div><div class="modal-footer"><button id="modal-dialog-share-send" type="button" class="btn btn-cozy">' + escape((interp = t('modal share send btn')) == null ? '' : interp) + '</button></div></div></div></div>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/modal_share_folder", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div id="modal-dialog" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t('modal shared folder link title')) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = t('modal shared folder link msg')) == null ? '' : interp) + '<input');
+buf.push(attrs({ 'value':(url), "class": ('form-control') }, {"value":true}));
+buf.push('/></p><p>' + escape((interp = t('modal share folder send msg')) == null ? '' : interp) + '<input id="modal-dialog-share-input" type="text" class="form-control"/></p></div><div class="modal-footer"><button id="modal-dialog-share-send" type="button" class="btn btn-cozy">' + escape((interp = t('modal share send btn')) == null ? '' : interp) + '</button></div></div></div></div>');
 }
 return buf.join("");
 };

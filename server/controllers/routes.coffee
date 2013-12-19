@@ -26,6 +26,14 @@ module.exports =
     'fileshare/:fileid/send':
         post: files.sendPublicLinks
 
+    # public access to the folder
+    'public/folder:id':
+        get: folders.zip
+    'foldershare/:id':
+        get: folders.getPublicLink
+    'foldershare/:id/send':
+        post: folders.sendPublicLinks
+
     'folders':
         post: folders.create
     'folders/:id':
