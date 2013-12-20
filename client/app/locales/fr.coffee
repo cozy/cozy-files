@@ -19,14 +19,14 @@ module.exports =
     
     # file view
     "modal are you sure"        : "Etes-vous sûr ?"
-    "modal delete msg"          : "La suppression n'a pas pu aboutir"
+    "modal delete msg"          : "La suppression ne pourra pas être annulée"
     "modal delete ok"           : "Supprimer"
     "modal cancel"              : "Annuler"
     "modal delete error"        : "Annuler"
     
     "modal error in use"        : "Ce nom est déjà utilisé"
     "modal error rename"        : "Le nom n'a pas pu être modifié"
-    "modal error empty name"    : "Le nom ne peut pas être vide"
+    "modal error empty name"    : "Le nom du dossier ne peut pas être vide"
 
     "modal shared file link title"   : "Partage d'un fichier"
     "modal shared file link msg"     : "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le fichier :"
@@ -46,14 +46,14 @@ module.exports =
     # folder template
     "upload caption"            : "Télécharger un fichier"
     "upload msg"                : "Choisir un fichier à télécharger :"
-    "upload close"              : "Fermer"
+    "upload close"              : "Annuler"
     "upload send"               : "Ajouter"
     
     "upload button"             : "Télécharger un fichier"
     
     "new folder caption"        : "Créer un nouveau dossier"
-    "new folder msg"            : "Tapez le nom du dossier :"
-    "new folder close"          : "Fermer"
+    "new folder msg"            : "Entrer le nom du dossier :"
+    "new folder close"          : "Annuler"
     "new folder send"           : "Créer"
     
     "new folder button"         : "Créer un nouveau fichier"
