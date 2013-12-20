@@ -19,10 +19,20 @@ module.exports =
         get: files.downloadAttachment
 
     # public access to the file
-    'public/file/:fileid':
+    'public/file:fileid':
         get: files.downloadAttachment
-    'public/file/:fileid/notify':
-        get: files.sendPublicLink
+    'fileshare/:fileid':
+        get: files.getPublicLink
+    'fileshare/:fileid/send':
+        post: files.sendPublicLinks
+
+    # public access to the folder
+    'public/folder:id':
+        get: folders.zip
+    'foldershare/:id':
+        get: folders.getPublicLink
+    'foldershare/:id/send':
+        post: folders.sendPublicLinks
 
     'folders':
         post: folders.create
@@ -30,6 +40,8 @@ module.exports =
         get: folders.find
         patch: folders.modify
         delete: folders.destroy
+    'folders/:id/zip/:name':
+        get: folders.zip
 
     'folders/files':
         post: folders.findFiles

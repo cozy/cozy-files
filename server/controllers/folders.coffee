@@ -1,6 +1,9 @@
 Folder = require '../models/folder'
 File = require '../models/file'
 async = require 'async'
+archiver = require 'archiver'
+MailHelper = require "../mails/mail_helper"
+mails = new MailHelper()
 
 ## Helpers ##
 
@@ -205,3 +208,83 @@ module.exports.search = (req, res) ->
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
             res.send files
+
+module.exports.getPublicLink = (req, res) ->
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.getFolderUrl folder, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
+
+module.exports.sendPublicLinks = (req, res) ->
+    users = req.body.users
+
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.sendPublicFolderLinks folder, users, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
+
+module.exports.zip = (req, res) ->
+    getFolderPath req.params.id, (err, key) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            File.all (err, files) ->
+                if err
+                    res.send error: true, msg: "Server error occured: #{err}", 500
+                else
+                    # find the name
+                    findFolder req.params.id, (err, folder) ->
+                        if err or not folder
+                            callback "folder not found"
+                        else
+                            zipName = folder.name?.replace(/\W/g, '')
+
+                            isContained = (file, cb) ->
+                                if file.path.indexOf(key) is 0
+                                    cb null, [file]
+                                else
+                                    cb null, []
+
+                            # check that the name is not already taken
+                            async.concat files, isContained, (err, files) ->
+                                if err
+                                    res.send error:true, msg: "Server error", 400
+                                else
+                                    archive = archiver('zip')
+
+                                    addToArchive = (file, cb) ->
+                                        stream = file.getBinary "file", (err, resp, body) =>
+                                            if err
+                                                res.send error: true, msg: "Server error occured: #{err}", 500
+                                        name = file.path.replace(key, "") + "/" + file.name
+                                        archive.append stream, name: name, cb
+
+                                    async.eachSeries files, addToArchive, (err) ->
+                                        if err
+                                            res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            archive.pipe res
+
+                                            disposition = "attachment; filename=\"#{zipName}.zip\""
+                                            res.setHeader 'Content-Disposition', disposition
+                                            res.setHeader 'Content-Type', 'application/zip'
+
+                                    archive.finalize (err, bytes) ->
+                                        if err
+                                            res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            console.log "Zip created"

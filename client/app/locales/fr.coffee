@@ -12,10 +12,10 @@ module.exports =
     "breadcrumbs search title"  : "Recherche"
     
     # files view
-    "modal error file exists"   : "Désolé, le fichier existe déjà"
+    "modal error file exists"   : "Désolé, un fichier ou un dossier a déjà le même nom"
     "modal error file upload"   : "Le fichier n'a pas pu être envoyé au serveur"
     "modal error folder create" : "Le dossier n'a pas pu être créé"
-    "modal error folder exists" : "Désolé, le dossier existe déjà"
+    "modal error folder exists" : "Désolé, un fichier ou un dossier a déjà le même nom"
     
     # file view
     "modal are you sure"        : "Etes-vous sûr ?"
@@ -27,10 +27,17 @@ module.exports =
     "modal error in use"        : "Ce nom est déjà utilisé"
     "modal error rename"        : "Le nom n'a pas pu être modifié"
     "modal error empty name"    : "Le nom ne peut pas être vide"
+
+    "modal shared file link title"   : "Partage d'un fichier"
+    "modal shared file link msg"     : "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le fichier :"
+    "modal share file send msg"      : "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :"
     
-    "modal shared link title"   : "Partage du fichier"
-    "modal shared link msg"     : "Vous pouvez utiliser cette adresse pour permettre aux personnes souhaitées de téléchager ce fichier : "
-    "modal share error"         : "Une erreur s'est produite pendant le partage de ce fichier"
+    "modal shared folder link title" : "Partage d'un dossier"
+    "modal shared folder link msg"   : "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le dossier :"
+    "modal share folder send msg"    : "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :"
+
+    "modal share send btn"      : "Partager"
+    "modal share error"         : "Une erreur s'est produite pendant le partage"
     
     # file_edit template
     "file edit save"            : "Sauvegarder"
