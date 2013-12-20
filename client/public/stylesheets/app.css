@@ -858,6 +858,10 @@ tr.folder-row .operations {
 tr.folder-row .operations a {
   padding-left: 5px;
 }
+tr.folder-row .img-folder img {
+  width: 20px;
+  margin-right: -3px;
+}
 tr.folder-row .icon {
   font-size: 14px;
 }
