@@ -1,0 +1,15 @@
+#modal-dialog.modal.fade
+  .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+          h4.modal-title #{t('modal shared folder link title')}
+        .modal-body
+          p
+            | #{t('modal shared folder link msg')}
+            input(value=url).form-control
+          p
+            | #{t('modal share folder send msg')}
+            input#modal-dialog-share-input.form-control(type="text")
+        .modal-footer
+          button.btn.btn-cozy#modal-dialog-share-send(type='button') #{t('modal share send btn')}

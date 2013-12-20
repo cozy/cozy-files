@@ -51,6 +51,13 @@ module.exports = class FolderView extends BaseView
         # update breadcrumbs
         @breadcrumbs.push folder
 
+        # see, if we should display add/upload buttons
+        if folder.get("type") is "folder"
+            @$("#upload-buttons").show()
+        else
+            @$("#upload-buttons").hide()
+
+
         # add files view
         @model.findFiles
             success: (files) =>

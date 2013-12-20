@@ -1,6 +1,8 @@
 File = require '../models/file'
 fs = require 'fs'
 async = require 'async'
+MailHelper = require "../mails/mail_helper"
+mails = new MailHelper()
 
 
 ## Helpers ##
@@ -17,7 +19,7 @@ module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
         if err or not file
             next new Error "File not found" if err
-            return res.error 404, 'Photo not found' if not file
+            return res.error 404, 'File not found' if not file
         else
             req.file = file[0]
             next()
@@ -126,16 +128,25 @@ module.exports.search = (req, res) ->
             console.log files
             res.send files
 
-module.exports.sendPublicLink = (req, res) ->
+module.exports.getPublicLink = (req, res) ->
     file = req.file
-    MailHelper = require "../mails/mail_helper"
-    mails = new MailHelper()
 
     # send the email and get url
-    mails.sendPublicLink file, (err, url) ->
+    mails.getFileUrl file, (err, url) ->
         if err
             console.log err
-            #res.send url: url, 200
+            res.send error: true, msg: err, 500
+        else
+            res.send url: url, 200
+
+module.exports.sendPublicLinks = (req, res) ->
+    file = req.file
+    users = req.body.users
+
+    # send the email and get url
+    mails.sendPublicFileLinks file, users, (err, url) ->
+        if err
+            console.log err
             res.send error: true, msg: err, 500
         else
             res.send url: url, 200
