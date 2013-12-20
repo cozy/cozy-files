@@ -1665,7 +1665,7 @@ window.require.register("views/templates/file", function(exports, require, modul
   var interp;
   if ( model.type && model.type == "folder")
   {
-  buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><a');
+  buf.push('<td><a class="img-folder"><img src="images/folder.png"/></a><a');
   buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
   buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
   buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank") }, {"href":true,"target":true}));

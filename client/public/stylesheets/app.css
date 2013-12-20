@@ -779,7 +779,7 @@ input#search-box {
   font-size: 16px;
   padding-left: 28px;
   width: 200px;
-  background-image: url("/images/iconmonstr-magnifier-icon-18.png");
+  background-image: url("../images/iconmonstr-magnifier-icon-18.png");
   background-repeat: no-repeat;
   background-position: 5px 8px;
 }
@@ -857,6 +857,10 @@ tr.folder-row .operations {
 }
 tr.folder-row .operations a {
   padding-left: 5px;
+}
+tr.folder-row .img-folder img {
+  width: 20px;
+  margin-right: -3px;
 }
 tr.folder-row .icon {
   font-size: 14px;

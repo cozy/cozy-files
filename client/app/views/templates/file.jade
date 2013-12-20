@@ -1,6 +1,7 @@
 if model.type && model.type == "folder"
   td
-    span.glyphicon.glyphicon-folder-close.no-hover.icon
+    a.img-folder
+      img(src="images/folder.png")
     a.caption.btn.btn-link(href="#folders/#{model.id}")
       | #{model.name}
     .operations
