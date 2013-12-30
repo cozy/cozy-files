@@ -7,7 +7,7 @@ module.exports =
   "delete contact"        : "Supprimer le contact"
   "add contact"           : "Créer un contact"
 
-  "company"               : "Compagnie"
+  "company"               : "Société"
   "title"                 : "Titre"
   "birthday"              : "Anniversaire"
   "phone"                 : "Telephone"
