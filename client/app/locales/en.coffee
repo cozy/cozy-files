@@ -11,6 +11,7 @@ module.exports =
   "title"                 : "Title"
   "birthday"              : "Birthday"
   "phone"                 : "Phone"
+  "skype"                 : "Skype"
   "email"                 : "Email"
   "postal"                : "Postal"
   "url"                   : "Url"

@@ -23,6 +23,7 @@ module.exports = class ContactView extends ViewCollection
         'click .addadr'     : @addClicked 'adr'
         'click .addother'   : @addClicked 'other'
         'click .addurl'     : @addClicked 'url'
+        'click .addskype'   : @addClicked 'other', 'skype'
         'click #more-options': 'onMoreOptionsClicked'
         'click #name-edit'  : 'showNameModal'
         'click #undo'       : 'undo'
