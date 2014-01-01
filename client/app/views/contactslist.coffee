@@ -102,6 +102,8 @@ module.exports = class ContactsList extends ViewCollection
                 @onArrowUp @activatedModel
             else if keyCode is 40
                 @onArrowDown @activatedModel
+            event.preventDefault()
+            false
 
     # Selects the contact that is currently above the currently selected
     # contact by updating the route url with the contact ID.

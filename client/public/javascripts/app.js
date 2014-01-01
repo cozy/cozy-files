@@ -3397,10 +3397,12 @@ window.require.register("views/contactslist", function(exports, require, module)
           keyCode = event.which;
         }
         if (keyCode === 38) {
-          return this.onArrowUp(this.activatedModel);
+          this.onArrowUp(this.activatedModel);
         } else if (keyCode === 40) {
-          return this.onArrowDown(this.activatedModel);
+          this.onArrowDown(this.activatedModel);
         }
+        event.preventDefault();
+        return false;
       }
     };
 
