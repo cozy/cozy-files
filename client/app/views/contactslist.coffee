@@ -10,10 +10,10 @@ module.exports = class ContactsList extends ViewCollection
     itemView: require 'views/contactslist_item'
     template: require 'templates/contactslist'
 
-
     events:
         'change #filterfield': 'keyUpCallback'
         'click #filterClean': 'cleanFilter'
+        "keyup": "onKeyUp"
 
     initialize: ->
         super
@@ -48,6 +48,7 @@ module.exports = class ContactsList extends ViewCollection
         position = line.position().top
         outofview = position < 0 or position > @list.height()
         @list.scrollTop @list.scrollTop() + position if outofview
+        @activatedModel = model
 
     cleanFilter: (event) ->
         event.preventDefault()
@@ -88,3 +89,34 @@ module.exports = class ContactsList extends ViewCollection
 
         if firstmodel and event.keyCode is 13
             App.router.navigate "contact/#{firstmodel.id}", true
+
+    # If arrow key is up, it selects the contact that is listed above the
+    # currently selected contact.
+    # If arrow key is down, it selects the contact that is listed below the
+    # currently selected contact.
+    onKeyUp: (event) =>
+        if @activatedModel?
+            keyCode = event.keyCode
+            keyCode ?= event.which
+            if keyCode is 38
+                @onArrowUp @activatedModel
+            else if keyCode is 40
+                @onArrowDown @activatedModel
+
+    # Selects the contact that is currently above the currently selected
+    # contact by updating the route url with the contact ID.
+    onArrowUp: (contact) ->
+        prevLine = @views[contact.cid].$el.prev()
+        while prevLine.length and prevLine.is ':hidden'
+            prevLine = prevLine.prev()
+        if prevLine.length
+            App.router.navigate prevLine.attr('href'), true
+
+    # Selects the contact that is currently below the currently selected
+    # contact by updating the route url with the contact ID.
+    onArrowDown: (contact) ->
+        nextLine = @views[contact.cid].$el.next()
+        while nextLine.length and nextLine.is ':hidden'
+            nextLine = nextLine.next()
+        if nextLine.length
+            App.router.navigate nextLine.attr('href'), true
