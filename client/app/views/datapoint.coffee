@@ -12,8 +12,8 @@ module.exports = class DataPointView extends BaseView
         'blur .value'  : 'store'
         'keyup .type'  : 'onKeyup'
         'keyup .value' : 'onKeyup'
-        'keypress .value' : 'onValueKeyPress'
-        'keypress .type' : 'onTypeKeyPress'
+        'keydown .value' : 'onValueKeyPress'
+        'keydown .type' : 'onTypeKeyPress'
         'click .dpremove': 'removeModel'
 
     getRenderData: ->

@@ -37,9 +37,9 @@ module.exports = class ContactView extends ViewCollection
 
         'keyup #name'      : 'doNeedSaving'
         'keyup #notes'     : 'doNeedSaving'
-        'keypress #name'   : 'onNameKeyPress'
-        'keypress textarea#notes': 'onNoteKeyPress'
-        'keypress .ui-widget-content': 'onTagInputKeyPress'
+        'keydown #name'   : 'onNameKeyPress'
+        'keydown textarea#notes': 'onNoteKeyPress'
+        'keydown .ui-widget-content': 'onTagInputKeyPress'
 
         'blur #name'      : 'changeOccured'
         'blur #notes'     : 'changeOccured'

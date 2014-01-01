@@ -2732,9 +2732,9 @@ window.require.register("views/contact", function(exports, require, module) {
         'keypress #notes': 'resizeNote',
         'keyup #name': 'doNeedSaving',
         'keyup #notes': 'doNeedSaving',
-        'keypress #name': 'onNameKeyPress',
-        'keypress textarea#notes': 'onNoteKeyPress',
-        'keypress .ui-widget-content': 'onTagInputKeyPress',
+        'keydown #name': 'onNameKeyPress',
+        'keydown textarea#notes': 'onNoteKeyPress',
+        'keydown .ui-widget-content': 'onTagInputKeyPress',
         'blur #name': 'changeOccured',
         'blur #notes': 'changeOccured'
       };
@@ -3506,8 +3506,8 @@ window.require.register("views/datapoint", function(exports, require, module) {
         'blur .value': 'store',
         'keyup .type': 'onKeyup',
         'keyup .value': 'onKeyup',
-        'keypress .value': 'onValueKeyPress',
-        'keypress .type': 'onTypeKeyPress',
+        'keydown .value': 'onValueKeyPress',
+        'keydown .type': 'onTypeKeyPress',
         'click .dpremove': 'removeModel'
       };
     };
@@ -3651,8 +3651,6 @@ window.require.register("views/datapoint", function(exports, require, module) {
           if (prev.length === 0) {
             prev = this.$el.parent().parent();
             prev = prev.prev();
-            console.log("hoo");
-            console.log(prev);
             while (!prev.is(':visible') && prev.length > 0) {
               prev = prev.prev();
             }
