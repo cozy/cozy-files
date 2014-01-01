@@ -97,6 +97,7 @@ module.exports = class DataPointView extends BaseView
 
     # Put the focus on the previous visible input when user press tab on a type
     # field.
+    # If there are no more datapoint, it focus the tagit field.
     onTypeKeyPress: (event) ->
         keyCode = event.keyCode
         keyCode ?= event.which
@@ -130,6 +131,7 @@ module.exports = class DataPointView extends BaseView
 
     # Put the focus on the next visible input when user press tab on a value
     # field.
+    # If there are no more datapoint, it focus the note textarea.
     onValueKeyPress: (event) ->
         keyCode = event.keyCode
         keyCode ?= event.which
