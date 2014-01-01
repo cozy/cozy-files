@@ -30,17 +30,19 @@ module.exports = class ContactView extends ViewCollection
         'click #delete'     : 'delete'
         'change #uploader'  : 'photoChanged'
 
-        'keyup .type'       : 'addBelowIfEnter'
-        'keyup input.value' : 'addBelowIfEnter'
-        'keydown #notes'    : 'resizeNote'
-        'keypress #notes'   : 'resizeNote'
+        #'keyup .type'         : 'addBelowIfEnter'
+        'keyup input.value'    : 'addBelowIfEnter'
+        'keydown #notes'       : 'resizeNote'
+        'keypress #notes'      : 'resizeNote'
 
-        'keyup #name'    : 'doNeedSaving'
-        'keyup #notes'   : 'doNeedSaving'
+        'keyup #name'      : 'doNeedSaving'
+        'keyup #notes'     : 'doNeedSaving'
+        'keypress #name'   : 'onNameKeyPress'
+        'keypress textarea#notes': 'onNoteKeyPress'
+        'keypress .ui-widget-content': 'onTagInputKeyPress'
 
         'blur #name'      : 'changeOccured'
         'blur #notes'     : 'changeOccured'
-
 
     constructor: (options) ->
         options.collection = options.model.dataPoints
@@ -271,3 +273,34 @@ module.exports = class ContactView extends ViewCollection
 
                 @model.picture = blob
                 @model.save null, undo: true # hacky, prevent undoing
+
+    onTagInputKeyPress: (event) ->
+        keyCode = event.keyCode || event.which
+        if keyCode is 9
+            if event.shiftKey
+                @$('#name').focus()
+            else
+                @$('.type:visible').first().focus()
+            event.preventDefault()
+            false
+
+    onNameKeyPress: (event) ->
+        keyCode = event.keyCode || event.which
+        if keyCode is 9
+            if event.shiftKey
+                @$('textarea#notes').focus()
+            else
+                @$('input.ui-widget-content').focus()
+            event.preventDefault()
+            false
+
+    onNoteKeyPress: (event) ->
+        keyCode = event.keyCode || event.which
+        if keyCode is 9
+            if event.shiftKey
+                @$('.value:visible').last().focus()
+            else
+                @$('#name').focus()
+
+            event.preventDefault()
+            false

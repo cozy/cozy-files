@@ -13,6 +13,9 @@ module.exports = class TagsView extends BaseView
         # hack to prevent tagit events
         @duringRefresh = false
 
+        $('.ui-widget-content .ui-autocomplete-input').keypress (event) ->
+            keyCode = event.keyCode || event.which
+            $('.zone .type').first().select() if keyCode is 9
         return this
 
     tagAdded: (e, ui) =>

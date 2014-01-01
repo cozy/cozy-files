@@ -8,10 +8,12 @@ module.exports = class DataPointView extends BaseView
     className: 'datapoint'
 
     events: ->
-        'blur .type'     : 'store'
-        'blur .value'    : 'store'
+        'blur .type'   : 'store'
+        'blur .value'  : 'store'
         'keyup .type'  : 'onKeyup'
         'keyup .value' : 'onKeyup'
+        'keypress .value' : 'onValueKeyPress'
+        'keypress .type' : 'onTypeKeyPress'
         'click .dpremove': 'removeModel'
 
     getRenderData: ->
@@ -92,3 +94,67 @@ module.exports = class DataPointView extends BaseView
         @model.set
             value: @valuefield.val()
             type: @typefield.val()
+
+    # Put the focus on the next visible input when user press tab.
+    onTypeKeyPress: (event) ->
+        keyCode = event.keyCode
+        keyCode ?= event.which
+        if keyCode is 9 # 9 is tab code.
+            if event.shiftKey
+                prev = @$el.prev()
+
+                if prev.length is 0
+                    prev = @$el.parent().parent()
+                    prev = prev.prev()
+
+                    while not(prev.is(':visible') or prev.attr('id') is 'abouts')
+                        prev = prev.prev()
+
+                    if prev.attr('id') is 'abouts'
+                        prev = $ ".ui-widget-content"
+                    else
+                        prev = prev.find '.value'
+                else
+                    prev = prev.find '.value'
+
+                prev.focus()
+                prev.select()
+            else
+                $(event.target).next().focus()
+
+            event.preventDefault()
+            false
+        else
+            true
+
+    # Put the focus on the next visible input when user press tab.
+    onValueKeyPress: (event) ->
+        keyCode = event.keyCode
+        keyCode ?= event.which
+
+        if keyCode is 9 # 9 is tab code.
+            if event.shiftKey
+                $(event.target).prev().focus()
+            else
+                next = @$el.next()
+                if next.length is 0
+                    next = @$el.parent().parent()
+                    next = next.next()
+
+                    while not(next.is(':visible') or next.attr('id') is 'others')
+                        next = next.next()
+
+                    if next.attr('id') is 'others'
+                        next = $ "textarea#notes"
+                    else
+                        next = next.find '.type'
+                else
+                    next = next.find('.type')
+
+                next.focus()
+                next.select()
+
+            event.preventDefault()
+            false
+        else
+            true

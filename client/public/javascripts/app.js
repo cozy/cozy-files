@@ -2727,12 +2727,14 @@ window.require.register("views/contact", function(exports, require, module) {
         'click #undo': 'undo',
         'click #delete': 'delete',
         'change #uploader': 'photoChanged',
-        'keyup .type': 'addBelowIfEnter',
         'keyup input.value': 'addBelowIfEnter',
         'keydown #notes': 'resizeNote',
         'keypress #notes': 'resizeNote',
         'keyup #name': 'doNeedSaving',
         'keyup #notes': 'doNeedSaving',
+        'keypress #name': 'onNameKeyPress',
+        'keypress textarea#notes': 'onNoteKeyPress',
+        'keypress .ui-widget-content': 'onTagInputKeyPress',
         'blur #name': 'changeOccured',
         'blur #notes': 'changeOccured'
       };
@@ -3052,6 +3054,48 @@ window.require.register("views/contact", function(exports, require, module) {
       };
     };
 
+    ContactView.prototype.onTagInputKeyPress = function(event) {
+      var keyCode;
+      keyCode = event.keyCode || event.which;
+      if (keyCode === 9) {
+        if (event.shiftKey) {
+          this.$('#name').focus();
+        } else {
+          this.$('.type:visible').first().focus();
+        }
+        event.preventDefault();
+        return false;
+      }
+    };
+
+    ContactView.prototype.onNameKeyPress = function(event) {
+      var keyCode;
+      keyCode = event.keyCode || event.which;
+      if (keyCode === 9) {
+        if (event.shiftKey) {
+          this.$('textarea#notes').focus();
+        } else {
+          this.$('input.ui-widget-content').focus();
+        }
+        event.preventDefault();
+        return false;
+      }
+    };
+
+    ContactView.prototype.onNoteKeyPress = function(event) {
+      var keyCode;
+      keyCode = event.keyCode || event.which;
+      if (keyCode === 9) {
+        if (event.shiftKey) {
+          this.$('.value:visible').last().focus();
+        } else {
+          this.$('#name').focus();
+        }
+        event.preventDefault();
+        return false;
+      }
+    };
+
     return ContactView;
 
   })(ViewCollection);
@@ -3165,6 +3209,13 @@ window.require.register("views/contact_tags", function(exports, require, module)
         afterTagRemoved: this.tagRemoved
       });
       this.duringRefresh = false;
+      $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
+        var keyCode;
+        keyCode = event.keyCode || event.which;
+        if (keyCode === 9) {
+          return $('.zone .type').first().select();
+        }
+      });
       return this;
     };
 
@@ -3221,6 +3272,7 @@ window.require.register("views/contactslist", function(exports, require, module)
     __extends(ContactsList, _super);
 
     function ContactsList() {
+      this.onKeyUp = __bind(this.onKeyUp, this);
       this.keyUpCallback = __bind(this.keyUpCallback, this);
       this.onContactChanged = __bind(this.onContactChanged, this);
       this.getTags = __bind(this.getTags, this);
@@ -3236,7 +3288,8 @@ window.require.register("views/contactslist", function(exports, require, module)
 
     ContactsList.prototype.events = {
       'change #filterfield': 'keyUpCallback',
-      'click #filterClean': 'cleanFilter'
+      'click #filterClean': 'cleanFilter',
+      "keyup": "onKeyUp"
     };
 
     ContactsList.prototype.initialize = function() {
@@ -3278,8 +3331,9 @@ window.require.register("views/contactslist", function(exports, require, module)
       position = line.position().top;
       outofview = position < 0 || position > this.list.height();
       if (outofview) {
-        return this.list.scrollTop(this.list.scrollTop() + position);
+        this.list.scrollTop(this.list.scrollTop() + position);
       }
+      return this.activatedModel = model;
     };
 
     ContactsList.prototype.cleanFilter = function(event) {
@@ -3332,6 +3386,43 @@ window.require.register("views/contactslist", function(exports, require, module)
       }
       if (firstmodel && event.keyCode === 13) {
         return App.router.navigate("contact/" + firstmodel.id, true);
+      }
+    };
+
+    ContactsList.prototype.onKeyUp = function(event) {
+      var keyCode;
+      if (this.activatedModel != null) {
+        keyCode = event.keyCode;
+        if (keyCode == null) {
+          keyCode = event.which;
+        }
+        if (keyCode === 38) {
+          return this.onArrowUp(this.activatedModel);
+        } else if (keyCode === 40) {
+          return this.onArrowDown(this.activatedModel);
+        }
+      }
+    };
+
+    ContactsList.prototype.onArrowUp = function(contact) {
+      var prevLine;
+      prevLine = this.views[contact.cid].$el.prev();
+      while (prevLine.length && prevLine.is(':hidden')) {
+        prevLine = prevLine.prev();
+      }
+      if (prevLine.length) {
+        return App.router.navigate(prevLine.attr('href'), true);
+      }
+    };
+
+    ContactsList.prototype.onArrowDown = function(contact) {
+      var nextLine;
+      nextLine = this.views[contact.cid].$el.next();
+      while (nextLine.length && nextLine.is(':hidden')) {
+        nextLine = nextLine.next();
+      }
+      if (nextLine.length) {
+        return App.router.navigate(nextLine.attr('href'), true);
       }
     };
 
@@ -3415,6 +3506,8 @@ window.require.register("views/datapoint", function(exports, require, module) {
         'blur .value': 'store',
         'keyup .type': 'onKeyup',
         'keyup .value': 'onKeyup',
+        'keypress .value': 'onValueKeyPress',
+        'keypress .type': 'onTypeKeyPress',
         'click .dpremove': 'removeModel'
       };
     };
@@ -3544,6 +3637,76 @@ window.require.register("views/datapoint", function(exports, require, module) {
         value: this.valuefield.val(),
         type: this.typefield.val()
       });
+    };
+
+    DataPointView.prototype.onTypeKeyPress = function(event) {
+      var keyCode, prev;
+      keyCode = event.keyCode;
+      if (keyCode == null) {
+        keyCode = event.which;
+      }
+      if (keyCode === 9) {
+        if (event.shiftKey) {
+          prev = this.$el.prev();
+          if (prev.length === 0) {
+            prev = this.$el.parent().parent();
+            prev = prev.prev();
+            while (!(prev.is(':visible') || prev.attr('id') === 'abouts')) {
+              prev = prev.prev();
+            }
+            if (prev.attr('id') === 'abouts') {
+              prev = $(".ui-widget-content");
+            } else {
+              prev = prev.find('.value');
+            }
+          } else {
+            prev = prev.find('.value');
+          }
+          prev.focus();
+          prev.select();
+        } else {
+          $(event.target).next().focus();
+        }
+        event.preventDefault();
+        return false;
+      } else {
+        return true;
+      }
+    };
+
+    DataPointView.prototype.onValueKeyPress = function(event) {
+      var keyCode, next;
+      keyCode = event.keyCode;
+      if (keyCode == null) {
+        keyCode = event.which;
+      }
+      if (keyCode === 9) {
+        if (event.shiftKey) {
+          $(event.target).prev().focus();
+        } else {
+          next = this.$el.next();
+          if (next.length === 0) {
+            next = this.$el.parent().parent();
+            next = next.next();
+            while (!(next.is(':visible') || next.attr('id') === 'others')) {
+              next = next.next();
+            }
+            if (next.attr('id') === 'others') {
+              next = $("textarea#notes");
+            } else {
+              next = next.find('.type');
+            }
+          } else {
+            next = next.find('.type');
+          }
+          next.focus();
+          next.select();
+        }
+        event.preventDefault();
+        return false;
+      } else {
+        return true;
+      }
     };
 
     return DataPointView;
