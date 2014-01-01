@@ -3651,10 +3651,12 @@ window.require.register("views/datapoint", function(exports, require, module) {
           if (prev.length === 0) {
             prev = this.$el.parent().parent();
             prev = prev.prev();
-            while (!(prev.is(':visible') || prev.attr('id') === 'abouts')) {
+            console.log("hoo");
+            console.log(prev);
+            while (!prev.is(':visible') && prev.length > 0) {
               prev = prev.prev();
             }
-            if (prev.attr('id') === 'abouts') {
+            if (prev.length === 0) {
               prev = $(".ui-widget-content");
             } else {
               prev = prev.find('.value');
@@ -3688,10 +3690,10 @@ window.require.register("views/datapoint", function(exports, require, module) {
           if (next.length === 0) {
             next = this.$el.parent().parent();
             next = next.next();
-            while (!(next.is(':visible') || next.attr('id') === 'others')) {
+            while (!next.is(':visible') && (next.attr('id') != null)) {
               next = next.next();
             }
-            if (next.attr('id') === 'others') {
+            if (next.attr('id') == null) {
               next = $("textarea#notes");
             } else {
               next = next.find('.type');

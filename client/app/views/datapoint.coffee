@@ -95,7 +95,8 @@ module.exports = class DataPointView extends BaseView
             value: @valuefield.val()
             type: @typefield.val()
 
-    # Put the focus on the next visible input when user press tab.
+    # Put the focus on the previous visible input when user press tab on a type
+    # field.
     onTypeKeyPress: (event) ->
         keyCode = event.keyCode
         keyCode ?= event.which
@@ -107,10 +108,10 @@ module.exports = class DataPointView extends BaseView
                     prev = @$el.parent().parent()
                     prev = prev.prev()
 
-                    while not(prev.is(':visible') or prev.attr('id') is 'abouts')
+                    while not prev.is(':visible') and prev.length > 0
                         prev = prev.prev()
 
-                    if prev.attr('id') is 'abouts'
+                    if prev.length is 0
                         prev = $ ".ui-widget-content"
                     else
                         prev = prev.find '.value'
@@ -127,7 +128,8 @@ module.exports = class DataPointView extends BaseView
         else
             true
 
-    # Put the focus on the next visible input when user press tab.
+    # Put the focus on the next visible input when user press tab on a value
+    # field.
     onValueKeyPress: (event) ->
         keyCode = event.keyCode
         keyCode ?= event.which
@@ -141,10 +143,10 @@ module.exports = class DataPointView extends BaseView
                     next = @$el.parent().parent()
                     next = next.next()
 
-                    while not(next.is(':visible') or next.attr('id') is 'others')
+                    while not next.is(':visible') and next.attr('id')?
                         next = next.next()
 
-                    if next.attr('id') is 'others'
+                    if not next.attr('id')?
                         next = $ "textarea#notes"
                     else
                         next = next.find '.type'
