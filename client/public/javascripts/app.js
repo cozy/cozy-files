@@ -264,6 +264,17 @@ window.require.register("initialize", function(exports, require, module) {
   });
   
 });
+window.require.register("initializewidget", function(exports, require, module) {
+  var app;
+
+  app = require('widget');
+
+  $(function() {
+    jQuery.event.props.push('dataTransfer');
+    return app.initialize();
+  });
+  
+});
 window.require.register("lib/base_view", function(exports, require, module) {
   var BaseView, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -4066,64 +4077,70 @@ window.require.register("widget", function(exports, require, module) {
   var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  $(function() {
-    var ContactsCollection, ContactsList, Router, e, homeGoTo, locales, router, _ref;
-    homeGoTo = function(url) {
-      var intent;
-      intent = {
-        action: 'goto',
-        params: url
+  module.exports = {
+    initialize: function() {
+      var Config, ContactsCollection, ContactsList, Router, e, homeGoTo, locales, router, _ref;
+      window.app = this;
+      homeGoTo = function(url) {
+        var intent;
+        intent = {
+          action: 'goto',
+          params: url
+        };
+        return window.parent.postMessage(intent, window.location.origin);
       };
-      return window.parent.postMessage(intent, window.location.origin);
-    };
-    this.locale = window.locale;
-    delete window.locale;
-    this.polyglot = new Polyglot();
-    try {
-      locales = require('locales/' + this.locale);
-    } catch (_error) {
-      e = _error;
-      locales = require('locales/en');
-    }
-    this.polyglot.extend(locales);
-    window.t = this.polyglot.t.bind(this.polyglot);
-    Router = (function(_super) {
-      __extends(Router, _super);
-
-      function Router() {
-        _ref = Router.__super__.constructor.apply(this, arguments);
-        return _ref;
+      this.locale = window.locale;
+      delete window.locale;
+      this.polyglot = new Polyglot();
+      try {
+        locales = require('locales/' + this.locale);
+      } catch (_error) {
+        e = _error;
+        locales = require('locales/en');
       }
+      this.polyglot.extend(locales);
+      window.t = this.polyglot.t.bind(this.polyglot);
+      Router = (function(_super) {
+        __extends(Router, _super);
 
-      Router.prototype.routes = {
-        '': function() {},
-        '*redirect': 'redirect'
-      };
+        function Router() {
+          _ref = Router.__super__.constructor.apply(this, arguments);
+          return _ref;
+        }
 
-      Router.prototype.redirect = function(path) {
-        this.navigate('#', {
-          trigger: true
-        });
-        return homeGoTo('contacts/' + path);
-      };
+        Router.prototype.routes = {
+          '': function() {},
+          '*redirect': 'redirect'
+        };
 
-      return Router;
+        Router.prototype.redirect = function(path) {
+          this.navigate('#', {
+            trigger: true
+          });
+          return homeGoTo('contacts/' + path);
+        };
 
-    })(Backbone.Router);
-    ContactsCollection = require('collections/contact');
-    ContactsList = require('views/contactslist');
-    this.contacts = new ContactsCollection();
-    this.contactslist = new ContactsList({
-      collection: this.contacts
-    });
-    this.contactslist.$el.appendTo($('body'));
-    this.contactslist.render();
-    this.contacts.reset(window.initcontacts, {
-      parse: true
-    });
-    delete window.initcontacts;
-    router = new Router();
-    return Backbone.history.start();
-  });
+        return Router;
+
+      })(Backbone.Router);
+      Config = require('models/config');
+      this.config = new Config(window.config || {});
+      ContactsCollection = require('collections/contact');
+      ContactsList = require('views/contactslist');
+      this.contacts = new ContactsCollection();
+      this.contactslist = new ContactsList({
+        collection: this.contacts
+      });
+      this.contactslist.$el.addClass('contact-widget');
+      this.contactslist.$el.appendTo($('body'));
+      this.contactslist.render();
+      this.contacts.reset(window.initcontacts, {
+        parse: true
+      });
+      delete window.initcontacts;
+      router = new Router();
+      return Backbone.history.start();
+    }
+  };
   
 });

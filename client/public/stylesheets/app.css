@@ -731,3 +731,10 @@ a {
     display: block;
   }
 }
+#contacts-list.contact-widget #toolbar #new,
+#contacts-list.contact-widget #toolbar #gohelp {
+  display: none;
+}
+#contacts-list.contact-widget #toolbar input#filterfield {
+  width: 100%;
+}
