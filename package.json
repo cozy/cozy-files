@@ -21,7 +21,7 @@
   },
   "scripts": {
     "test": "cake tests",
-    "start": "coffee server.coffee"
+    "start": "node server.js"
   },
   "repository": "https://github.com/mycozycloud/cozy-contacts",
   "author": "Romain M. Foucault",
