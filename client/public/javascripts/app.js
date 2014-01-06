@@ -1063,7 +1063,6 @@ window.require.register("views/file", function(exports, require, module) {
         return this.model.save({
           name: name
         }, {
-          patch: true,
           wait: true,
           success: function(data) {
             return _this.render();

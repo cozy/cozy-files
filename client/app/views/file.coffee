@@ -58,7 +58,6 @@ module.exports = class FileView extends BaseView
         if name and name != ""
 
             @model.save name: name,
-                patch: true
                 wait: true
                 success: (data) =>
                     @render()
