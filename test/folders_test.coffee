@@ -9,21 +9,18 @@ describe "Folders management", ->
 
 
     before (done) -> 
+        helpers.createApp "files", "files", "token", 0, "installed"
         @timeout 5000
-        americano.start
-            name: 'Files'
-            port: 8888
-            root: __dirname + '/..'
-        , (app, server) =>
+        port = process.env.PORT || 8888
+        americano.start name: 'cozy-files', port: port, (app, server) =>
             @server = server
-            helpers.cleanDb done
+            done()
 
     after (done) ->      
         @server.close()
         helpers.cleanDb done
 
     describe "Create folder", ->
-        before helpers.createApp "files", "files", "token", 0, "installed"
         before helpers.cleanDb
 
         describe "Create a new folder", ->
