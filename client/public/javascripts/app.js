@@ -130,11 +130,13 @@ module.exports = {
 });
 
 ;require.register("collections/breadcrumbs", function(exports, require, module) {
-var BreadcrumbsManager, File, _ref,
+var BreadcrumbsManager, File, client, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 File = require('../models/file');
+
+client = require("../helpers/client");
 
 module.exports = BreadcrumbsManager = (function(_super) {
   __extends(BreadcrumbsManager, _super);
@@ -153,33 +155,54 @@ module.exports = BreadcrumbsManager = (function(_super) {
   };
 
   BreadcrumbsManager.prototype.push = function(folder) {
-    var found, treatment,
+    var found, path, treatment,
       _this = this;
-    if (this.get(folder)) {
-      found = false;
-      treatment = function(model, callback) {
-        if (!found) {
-          if (model.id === folder.id) {
-            found = true;
-          }
-          return callback(null, [model]);
-        } else {
-          return callback(null);
-        }
-      };
-      return async.concatSeries(this.models, treatment, function(err, folders) {
-        if (err) {
-          return console.log(err);
-        } else {
-          return _this.reset(folders, {
+    if ((this.length === 1) && (this.at(0) === this.root) && (folder !== this.root) && (folder.get("path") !== "") && (folder.get("type") === "folder")) {
+      path = folder.get("path").split("/");
+      path = path.slice(1, path.length);
+      console.log("direct access", path);
+      console.log("direct access", folder.get("path"));
+      return client.get("folder/tree/" + folder.id, {
+        success: function(data) {
+          console.log("OK", data);
+          _this.add(data, {
             sort: false
           });
+          return _this.add(folder, {
+            sort: false
+          });
+        },
+        error: function(err) {
+          return console.log("err", err);
         }
       });
     } else {
-      return this.add(folder, {
-        sort: false
-      });
+      if (this.get(folder)) {
+        found = false;
+        treatment = function(model, callback) {
+          if (!found) {
+            if (model.id === folder.id) {
+              found = true;
+            }
+            return callback(null, [model]);
+          } else {
+            return callback(null);
+          }
+        };
+        return async.concatSeries(this.models, treatment, function(err, folders) {
+          if (err) {
+            return console.log(err);
+          } else {
+            return _this.reset(folders, {
+              sort: false
+            });
+          }
+        });
+      } else {
+        return this.add(folder, {
+          sort: false
+        });
+      }
     }
   };
 
@@ -1285,6 +1308,7 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.initialize = function(options) {
     var prevent,
       _this = this;
+    this.model = options.model;
     this.breadcrumbs = options.breadcrumbs;
     this.breadcrumbs.setRoot(this.model);
     prevent = function(e) {

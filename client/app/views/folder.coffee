@@ -20,6 +20,7 @@ module.exports = class FolderView extends BaseView
         'keyup input#inputName'     : 'onAddFolderEnter'
 
     initialize: (options) -> 
+        @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
 
