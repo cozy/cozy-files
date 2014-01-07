@@ -1733,11 +1733,11 @@ var interp;
 buf.push('<td>');
 if ( model.type && model.type == "folder")
 {
-buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>');
+buf.push('<a class="img-folder"><img src="images/folder.png"/></a>');
 }
 else
 {
-buf.push('<span class="glyphicon glyphicon-folder-close no-hover icon"></span>');
+buf.push('<span class="glyphicon glyphicon-file no-hover icon"></span>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
@@ -1755,7 +1755,7 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><span class="glyphicon glyphicon-folder-close no-hover icon"></span><a');
+buf.push('<td><a class="img-folder"><img src="images/folder.png"/></a><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
 }
