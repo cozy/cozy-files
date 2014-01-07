@@ -858,7 +858,7 @@ tr.folder-row .caption {
 tr.folder-row .operations {
   font-size: 18px;
   visibility: hidden;
-  display: inline;
+  display: inline-block;
 }
 tr.folder-row .operations a {
   padding-left: 5px;
@@ -872,6 +872,15 @@ tr.folder-row .icon {
 }
 tr.folder-row:hover .operations {
   visibility: visible;
+}
+tr.folder-row:hover .operations a {
+  color: #d3d3d3;
+}
+tr.folder-row:hover .operations a:hover {
+  color: #428bca;
+}
+tr.folder-row:hover .operations a:active {
+  color: #fe8800;
 }
 tr.folder-row .file-date,
 tr.folder-row .file-size,
