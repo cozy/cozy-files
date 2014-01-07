@@ -60,14 +60,13 @@ module.exports.create = (req, res) ->
                     data.mime             = file.type
                     data.size             = file.size
 
-                    console.log data
+                    #console.log data
 
                     # create the file
                     File.create data, (err, newfile) =>
                         if err
                             next new Error "Server error while creating file; #{err}"
                         else
-                            console.log newfile
                             newfile.attachBinary file.path, {"name": "file"}, (err) ->
                                 if err
                                     next new Error "Error attaching binary: #{err}"
