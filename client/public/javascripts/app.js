@@ -1174,9 +1174,10 @@ module.exports = FilesView = (function(_super) {
     });
     if (!found) {
       fileAttributes = {
-        name: attach.name,
-        path: this.model.repository(),
-        type: "file"
+        'name': attach.name,
+        'path': this.model.repository(),
+        'type': "file",
+        'lastModification': attach.lastModifiedDate
       };
       file = new File(fileAttributes);
       file.file = attach;
@@ -1196,6 +1197,7 @@ module.exports = FilesView = (function(_super) {
     formdata.append('name', file.get('name'));
     formdata.append('path', file.get('path'));
     formdata.append('file', file.file);
+    formdata.append('lastModification', file.get('lastModification'));
     return file.save(null, {
       contentType: false,
       data: formdata,
@@ -1700,7 +1702,7 @@ buf.push('<td><a class="img-folder"><img src="images/folder.png"/></a><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank") }, {"href":true,"target":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"></td>');
 }
 else
 {
@@ -1708,7 +1710,7 @@ buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td class="file-date"><span class="pull-right">' + escape((interp = model.lastModification) == null ? '' : interp) + '</span></td>');
 }
 }
 return buf.join("");

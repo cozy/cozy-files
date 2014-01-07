@@ -15,7 +15,6 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-share-alt
   td
   td.file-date
-    span.pull-right 12:00 12/10/2013
 else
   td
     span.glyphicon.glyphicon-file.no-hover.icon
@@ -32,4 +31,4 @@ else
         span.glyphicon.glyphicon-share-alt
   td
   td.file-date
-    span.pull-right 12:00 12/10/2013
+    span.pull-right #{model.lastModification}
