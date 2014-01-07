@@ -29,6 +29,7 @@ describe "Files management", ->
                     name: "test"
                     path: ""
                 client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
+                    @res = res
                     done()
 
             it "Then error should not exist", ->
