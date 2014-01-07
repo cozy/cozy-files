@@ -121,7 +121,7 @@ describe "Files management", ->
         it "And 200 should be returned as response code", ->
             @res.statusCode.should.be.equal 200
 
-        it "And folder should be returned", ->
+        it "And file should be returned", ->
             @body.name.should.be.equal "new_test3"
             @body.path.should.be.equal ""
 
