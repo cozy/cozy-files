@@ -17,9 +17,11 @@ processAttachement = (req, res, download) ->
 
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
-        if err or not file
-            next new Error "File not found" if err
-            return res.error 404, 'File not found' if not file
+        if err or not file or file.length is 0
+            if err
+                next new Error "File not found"
+            else
+                res.send error:true, msg: 'File not found', 404
         else
             req.file = file[0]
             next()
