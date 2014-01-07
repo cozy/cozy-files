@@ -9,19 +9,21 @@ describe "Folders management", ->
 
 
     before (done) -> 
+        @timeout 6000
         helpers.createApp "files", "files", "token", 0, "installed"
-        @timeout 5000
-        port = process.env.PORT || 8888
-        americano.start name: 'cozy-files', port: port, (app, server) =>
-            @server = server
-            done()
+        setTimeout () =>
+            port = process.env.PORT || 8888
+            americano.start name: 'files', port: port, (app, server) =>
+                @server = server
+                done()
+        , 3000
 
     after (done) ->      
         @server.close()
         helpers.cleanDb done
 
     describe "Create folder", ->
-        before helpers.cleanDb
+        #before helpers.cleanDb
 
         describe "Create a new folder", ->
             it "When I send a request to create a folder", (done) ->

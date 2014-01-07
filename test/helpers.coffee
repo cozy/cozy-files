@@ -17,7 +17,7 @@ helpers = {}
 # will create @app in context
 # usage : before helpers.init port
 _init = (ctx, port, done) ->
-    params = name: 'Cozy Files', port: port
+    params = name: 'files', port: port
     americano.start params, (app, server) =>
         app.server = server
         ctx.app = app
