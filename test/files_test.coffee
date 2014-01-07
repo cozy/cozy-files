@@ -3,8 +3,6 @@ americano = require('americano')
 Client = require('request-json').JsonClient
 client = new Client "http://localhost:8888/"
 helpers = require './helpers'
-request = require "request"
-
 
 describe "Files management", ->
 
@@ -42,15 +40,7 @@ describe "Files management", ->
                 file =
                     name: "test"
                     path: ""
-                request
-                    method: 'POST'
-                    uri: "http://localhost:8888/files"
-                    headers: 
-                        accept: 'application/json',
-                        "user-agent": "request-json/1.0"
-                    "file": ""
-                    json: file
-                , (err, res, body) =>
+                client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
                     @err = err
                     @res = res
                     @body = body
