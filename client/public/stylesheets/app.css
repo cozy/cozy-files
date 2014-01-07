@@ -873,7 +873,9 @@ tr.folder-row .icon {
 tr.folder-row:hover .operations {
   visibility: visible;
 }
-tr.folder-row .file-date {
+tr.folder-row .file-date,
+tr.folder-row .file-size,
+tr.folder-row .file-type {
   padding-top: 13px;
 }
 .visible-lg.visible-md.visible-inline {

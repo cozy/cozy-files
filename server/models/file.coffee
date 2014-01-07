@@ -6,7 +6,7 @@ module.exports = File = americano.getModel 'File',
     permissions: String
     creationDate: String
     lastModification: String
-    type: String
+    mime: String
     size: Number
     binary: Object
     modificationHistory: Object
