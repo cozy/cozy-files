@@ -4,11 +4,12 @@ module.exports = File = americano.getModel 'File',
     path: String
     name: String
     permissions: String
-	creationDate: String
-	lastModification: String
-	size: Number
-	binary: Object
-	modificationHistory: Object
+    creationDate: String
+    lastModification: String
+    mime: String
+    size: Number
+    binary: Object
+    modificationHistory: Object
 
 
 File.all = (params, callback) ->

@@ -36,6 +36,8 @@ module.exports =
 
     'folders':
         post: folders.create
+    'folder/tree/:id':
+        get: folders.tree
     'folders/:id':
         get: folders.find
         put: folders.modify

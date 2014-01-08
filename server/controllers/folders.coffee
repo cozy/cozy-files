@@ -59,6 +59,33 @@ module.exports.find = (req, res) ->
         else
             res.send folder, 200
 
+module.exports.tree = (req, res) ->
+    findFolder req.params.id, (err, folderChild) ->
+        if err
+            res.send error: true, msg:  "Server error occured: #{err}", 500
+        else
+            Folder.all (err, folders) =>
+
+                isParent = (folder, cb) ->
+                    if (folderChild.path+"/").indexOf(folder.path + "/" + folder.name + "/") is 0
+                        cb null, [folder]
+                    else
+                        cb null, []
+
+                # check that the name is not already taken
+                async.concat folders, isParent, (err, parents) ->
+                    if err
+                        console.log err
+                        res.send error: true, msg: "Couldn't find the tree: : #{err}", 500
+                    else
+                        parents = parents.sort (a, b) ->
+                            if a.path + "/" + a.name < b.path + "/" + b.name then return -1
+                            else return 1
+
+                        console.log parents
+                        res.send parents, 200
+
+
 module.exports.modify = (req, res) ->
     if (not req.body.name) or (req.body.name == "")
         res.send error: true, msg: "No filename specified", 500
@@ -69,19 +96,24 @@ module.exports.modify = (req, res) ->
                 res.send error: true, msg:  "Server error occured: #{err}", 500
             else
                 newName = req.body.name
-                oldPath = folderToModify.path + '/' + folderToModify.name
-                newPath = folderToModify.path + '/' + newName
+                oldPath = folderToModify.path + '/' + folderToModify.name + "/"
+                newPath = folderToModify.path + '/' + newName + "/"
 
                 hasntTheSamePathOrIsTheSame = (folder, cb) ->
                     if (folderToModify.id is folder.id)
                         cb true
                     else
-                        cb (newPath isnt (folder.path + '/' + folder.name))
+                        cb (newPath isnt (folder.path + '/' + folder.name + "/"))
 
                 updateIfIsSubFolder = (file, cb) ->
-                    if (file.path.indexOf(oldPath) is 0)
-                        console.log "Moving '#{file.name}': '#{oldPath}/#{file.name}'' -> '#{newPath}/#{file.name}'"
-                        modifiedPath = file.path.replace oldPath, newPath
+                    if ((file.path + "/").indexOf(oldPath) is 0)
+
+                        oldRealPath = folderToModify.path + '/' + folderToModify.name
+                        newRealPath = folderToModify.path + '/' + newName
+
+                        modifiedPath = file.path.replace oldRealPath, newRealPath
+
+                        console.log "Moving '#{file.name}': '#{oldPath}#{file.name}'' -> '#{newPath}#{file.name}' (#{modifiedPath})"
                         file.updateAttributes path: modifiedPath, cb
                     else
                         cb null
@@ -254,7 +286,7 @@ module.exports.zip = (req, res) ->
                             zipName = folder.name?.replace(/\W/g, '')
 
                             isContained = (file, cb) ->
-                                if file.path.indexOf(key) is 0
+                                if (file.path+"/").indexOf(key+"/") is 0
                                     cb null, [file]
                                 else
                                     cb null, []

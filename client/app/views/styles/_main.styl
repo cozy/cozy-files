@@ -159,7 +159,7 @@ tr.folder-row
   .operations
     font-size: 18px
     visibility: hidden
-    display: inline
+    display: inline-block
     a
       padding-left: 5px
 
@@ -174,7 +174,16 @@ tr.folder-row
   &:hover .operations
     visibility: visible
 
-  .file-date
+    a
+      color: lightgray
+
+    a:hover
+      color: mediumcolor-contrast
+
+    a:active
+      color: actioncolor
+
+  .file-date, .file-size, .file-type
     padding-top: 13px
 
 .visible-lg.visible-md.visible-inline

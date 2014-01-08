@@ -14,8 +14,8 @@ if model.type && model.type == "folder"
       a.file-share
         span.glyphicon.glyphicon-share-alt
   td
-  td.file-date
-    span.pull-right 12:00 12/10/2013
+  td
+  td
 else
   td
     span.glyphicon.glyphicon-file.no-hover.icon
@@ -30,6 +30,11 @@ else
         span.glyphicon.glyphicon-cloud-download  
       a.file-share
         span.glyphicon.glyphicon-share-alt
-  td
+  td.file-size
+    - options = {base: 2}
+    span.pull-left #{filesize(model.size || 0, options)}
+  td.file-type
+    span.pull-left #{model.mime}
   td.file-date
-    span.pull-right 12:00 12/10/2013
+    if model.lastModification
+      span.pull-right #{moment(model.lastModification).calendar()}

@@ -29,9 +29,10 @@ module.exports = class FilesView extends ViewCollection
         
         if not found
             fileAttributes = 
-                name: attach.name
-                path: @model.repository()
-                type: "file"
+                'name'               : attach.name
+                'path'               : @model.repository()
+                'type'               : "file"
+                'lastModification'   : attach.lastModifiedDate
             file = new File fileAttributes
             file.file = attach
 
@@ -49,6 +50,7 @@ module.exports = class FilesView extends ViewCollection
         formdata.append 'name', file.get 'name'
         formdata.append 'path', file.get 'path'
         formdata.append 'file', file.file
+        formdata.append 'lastModification', file.get 'lastModification'
         file.save null,
             contentType: false
             data: formdata

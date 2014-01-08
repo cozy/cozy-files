@@ -52,8 +52,18 @@ module.exports.create = (req, res) ->
                 else
                     file = req.files["file"]
 
+                    # calculate metadata
+                    data                  = {}
+                    data.name             = req.body.name
+                    data.path             = req.body.path
+                    data.lastModification = req.body.lastModification
+                    data.mime             = file.type
+                    data.size             = file.size
+
+                    #console.log data
+
                     # create the file
-                    File.create req.body, (err, newfile) =>
+                    File.create data, (err, newfile) =>
                         if err
                             next new Error "Server error while creating file; #{err}"
                         else
