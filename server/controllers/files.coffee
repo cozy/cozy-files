@@ -59,7 +59,7 @@ module.exports.create = (req, res) ->
                     data.lastModification = req.body.lastModification
                     data.mime             = file.type
                     data.size             = file.size
-
+                    console.log(data)
                     #console.log data
 
                     # create the file
