@@ -11,7 +11,7 @@
                   | #{t("upload msg")}
                 input#uploader(type="file", multiple)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("upload close")}
+            button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade

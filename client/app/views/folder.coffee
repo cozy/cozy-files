@@ -17,6 +17,7 @@ module.exports = class FolderView extends BaseView
         'click #new-folder-send'    : 'onAddFolder'
         'click #cancel-new-folder'  : 'onCancelFolder'
         'click #upload-file-send'   : 'onAddFile'
+        'click #cancel-new-file'    : 'onCancelFile'
         'keyup input#search-box'    : 'onSeachKeyPress'
         'keyup input#inputName'     : 'onAddFolderEnter'
 
@@ -105,7 +106,7 @@ module.exports = class FolderView extends BaseView
 
     onCancelFolder: ->
         @$("#inputName").val("")    
-        
+
 
     onAddFolderEnter: (e) ->
         if e.keyCode is 13
@@ -131,6 +132,10 @@ module.exports = class FolderView extends BaseView
     onAddFile: =>
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
+        @$('#uploader').val("")
+
+    onCancelFile: ->
+        @$("#uploader").val("")   
 
     onDragAndDrop: (e) =>
         e.preventDefault()
