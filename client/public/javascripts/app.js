@@ -1272,6 +1272,7 @@ window.require.register("views/folder", function(exports, require, module) {
       return {
         'click a#button-new-folder': 'prepareNewFolder',
         'click #new-folder-send': 'onAddFolder',
+        'click #cancel-new-folder': 'onCancelFolder',
         'click #upload-file-send': 'onAddFile',
         'keyup input#search-box': 'onSeachKeyPress',
         'keyup input#inputName': 'onAddFolderEnter'
@@ -1373,6 +1374,10 @@ window.require.register("views/folder", function(exports, require, module) {
       }, 500);
     };
 
+    FolderView.prototype.onCancelFolder = function() {
+      return this.$("#inputName").val("");
+    };
+
     FolderView.prototype.onAddFolderEnter = function(e) {
       if (e.keyCode === 13) {
         e.preventDefault();
@@ -1389,6 +1394,7 @@ window.require.register("views/folder", function(exports, require, module) {
         type: "folder"
       });
       console.log("creating folder " + folder);
+      this.$("#inputName").val("");
       if (folder.validate()) {
         return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
       } else {
@@ -1806,7 +1812,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div id="upload-buttons" class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive"> ' + escape((interp = t("upload button")) == null ? '' : interp) + '</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> ' + escape((interp = t("new folder button")) == null ? '' : interp) + '</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div id="upload-buttons" class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive"> ' + escape((interp = t("upload button")) == null ? '' : interp) + '</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> ' + escape((interp = t("new folder button")) == null ? '' : interp) + '</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
   }
   return buf.join("");
   };

@@ -27,7 +27,7 @@
                   | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("new folder close")}
+            button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
             button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")

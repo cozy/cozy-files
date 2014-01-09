@@ -15,6 +15,7 @@ module.exports = class FolderView extends BaseView
     events: ->
         'click a#button-new-folder' : 'prepareNewFolder'
         'click #new-folder-send'    : 'onAddFolder'
+        'click #cancel-new-folder'  : 'onCancelFolder'
         'click #upload-file-send'   : 'onAddFile'
         'keyup input#search-box'    : 'onSeachKeyPress'
         'keyup input#inputName'     : 'onAddFolderEnter'
@@ -102,6 +103,10 @@ module.exports = class FolderView extends BaseView
             @$("#inputName").focus()
         , 500
 
+    onCancelFolder: ->
+        @$("#inputName").val("")    
+        
+
     onAddFolderEnter: (e) ->
         if e.keyCode is 13
             e.preventDefault()
@@ -114,6 +119,7 @@ module.exports = class FolderView extends BaseView
             path: @model.repository()
             type: "folder"
         console.log "creating folder #{folder}"
+        @$("#inputName").val("")    
 
         if folder.validate()
             new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
