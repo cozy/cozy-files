@@ -1776,13 +1776,34 @@ window.require.register("views/templates/file_search", function(exports, require
   var interp;
   if ( model.type && model.type == "folder")
   {
-  buf.push('<td><a class="img-folder"><img src="images/folder.png"/></a><a');
+  buf.push('<td><a');
+  buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
+  buf.push('><img src="images/folder.png"/></a><a');
   buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
   buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
   }
   else
   {
-  buf.push('<td><span class="glyphicon glyphicon-file no-hover icon"></span><a');
+  buf.push('<td><a');
+  buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('img-file') }, {"href":true,"target":true}));
+  buf.push('>');
+  if ( model.mime == "application/pdf")
+  {
+  buf.push('<img src="images/pdf.png"/>');
+  }
+  else if ( model.mime == "image/jpeg")
+  {
+  buf.push('<img src="images/jpg.png"/>');
+  }
+  else if ( model.mime == "text/plain")
+  {
+  buf.push('<img src="images/txt.png"/>');
+  }
+  else
+  {
+  buf.push('<img src="images/file.png"/>');
+  }
+  buf.push('</a><a');
   buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
   buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
   buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
