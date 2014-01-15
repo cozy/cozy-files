@@ -737,7 +737,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "modal share error": "Une erreur s'est produite pendant le partage",
     "tooltip delete": "Supprimer",
     "tooltip edit": "Renommer",
-    "tooltip download": "Telecharger",
+    "tooltip download": "Télécharger",
     "tooltip send": "Envoyer",
     "file edit save": "Sauvegarder",
     "file edit cancel": "Annuler",
@@ -1328,10 +1328,12 @@ window.require.register("views/folder", function(exports, require, module) {
         this.$("#crumbs").css({
           opacity: 0.5
         });
+        this.$("#crumbs").hide();
       } else {
         this.$("#crumbs").css({
           opacity: 1
         });
+        this.$("#upload-buttons").show();
       }
       if (folder.get("type") === "folder") {
         this.$("#upload-buttons").show();
@@ -1364,7 +1366,12 @@ window.require.register("views/folder", function(exports, require, module) {
               }
               _this.filesList = new FilesView(_this.filesCollection, _this.model);
               _this.$('#files').html(_this.filesList.$el);
-              return _this.filesList.render();
+              _this.filesList.render();
+              if (_this.filesCollection.length === 0 && folder.id === "root") {
+                return _this.$("#crumbs").hide();
+              } else {
+                return _this.$("#crumbs").show();
+              }
             },
             error: function(error) {
               console.log(error);
@@ -1405,6 +1412,7 @@ window.require.register("views/folder", function(exports, require, module) {
 
     FolderView.prototype.onAddFolder = function() {
       var folder;
+      this.$("#crumbs ").show();
       folder = new File({
         name: this.$('#inputName').val(),
         path: this.model.repository(),
@@ -1422,6 +1430,7 @@ window.require.register("views/folder", function(exports, require, module) {
 
     FolderView.prototype.onAddFile = function() {
       var attach, _i, _len, _ref1;
+      this.$("#crumbs").show();
       _ref1 = this.$('#uploader')[0].files;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         attach = _ref1[_i];
@@ -1687,7 +1696,7 @@ window.require.register("views/templates/breadcrumbs_element", function(exports,
   var interp;
   if ( model.id == "root")
   {
-  buf.push('<li><a href="#"><span class="glyphicon glyphicon-folder-open"></span></a></li>');
+  buf.push('<li><a href="#"><img src="images/root.png"/></a></li>');
   }
   else
   {

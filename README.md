@@ -28,3 +28,4 @@ Feel free to check out our IRC channel (#cozycloud on irc.freenode.org) if you h
 ## Icons
 
 by [momentum](http://www.momentumdesignlab.com/)
+and [iconmonster](http://iconmonstr.com)

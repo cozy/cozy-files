@@ -896,6 +896,12 @@ tr.folder-row .file-type {
 #crumbs {
   overflow: hidden;
 }
+#crumbs img {
+  height: 25px;
+  margin-top: -3px;
+  margin-left: -5px;
+  margin-right: -5px;
+}
 #crumbs ul {
   margin-top: 15px;
   margin-bottom: 0px;
