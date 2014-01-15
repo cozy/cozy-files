@@ -25,7 +25,6 @@ module.exports = class FolderView extends BaseView
         @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
-
         # add drag and drop support
         prevent = (e) ->
             e.preventDefault()
@@ -53,6 +52,10 @@ module.exports = class FolderView extends BaseView
 
         # update breadcrumbs
         @breadcrumbs.push folder
+        if folder.id == "root"
+            @$("#crumbs").css({opacity:0.5})    
+        else
+            @$("#crumbs").css({opacity:1})
 
         # see, if we should display add/upload buttons
         if folder.get("type") is "folder"

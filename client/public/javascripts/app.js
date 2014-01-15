@@ -689,6 +689,10 @@ window.require.register("locales/en", function(exports, require, module) {
     "modal share error": "There was an error sharing this file",
     "file edit save": "Save",
     "file edit cancel": "cancel",
+    "tooltip delete": "Delete",
+    "tooltip edit": "Rename",
+    "tooltip download": "Download",
+    "tooltip send": "Send",
     "upload caption": "Upload a new file",
     "upload msg": "Choose the file to upload:",
     "upload close": "Close",
@@ -731,6 +735,10 @@ window.require.register("locales/fr", function(exports, require, module) {
     "modal share folder send msg": "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :",
     "modal share send btn": "Partager",
     "modal share error": "Une erreur s'est produite pendant le partage",
+    "tooltip delete": "Supprimer",
+    "tooltip edit": "Renommer",
+    "tooltip download": "Telecharger",
+    "tooltip send": "Envoyer",
     "file edit save": "Sauvegarder",
     "file edit cancel": "Annuler",
     "upload caption": "Télécharger un fichier",
@@ -741,8 +749,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "new folder caption": "Créer un nouveau dossier",
     "new folder msg": "Entrer le nom du dossier :",
     "new folder close": "Annuler",
-    "new folder send": "Créer",
-    "new folder button": "Créer un nouveau fichier"
+    "new folder send": "Créer"
   };
   
 });
@@ -1317,6 +1324,15 @@ window.require.register("views/folder", function(exports, require, module) {
       var _this = this;
       this.model = folder;
       this.breadcrumbs.push(folder);
+      if (folder.id === "root") {
+        this.$("#crumbs").css({
+          opacity: 0.5
+        });
+      } else {
+        this.$("#crumbs").css({
+          opacity: 1
+        });
+      }
       if (folder.get("type") === "folder") {
         this.$("#upload-buttons").show();
       } else {
@@ -1704,9 +1720,15 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
   buf.push('><img src="images/folder.png"/></a><a');
   buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-  buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
-  buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank") }, {"href":true,"target":true}));
-  buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td></td><td></td>');
+  buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a');
+  buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+  buf.push('><span class="glyphicon glyphicon-remove-circle"> </span></a><a');
+  buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
+  buf.push('><span class="glyphicon glyphicon-edit"> </span></a><a');
+  buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + "") }, {"href":true,"target":true,"title":true}));
+  buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+  buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
+  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td></td><td></td>');
   }
   else
   {
@@ -1731,9 +1753,15 @@ window.require.register("views/templates/file", function(exports, require, modul
   }
   buf.push('</a><a');
   buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
-  buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
-  buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-  buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size">');
+  buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a');
+  buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+  buf.push('><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span');
+  buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
+  buf.push('></span></a><a');
+  buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + "") }, {"href":true,"download":true,"title":true}));
+  buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+  buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
+  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size">');
    options = {base: 2}
   buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type"><span class="pull-left">' + escape((interp = model.mime) == null ? '' : interp) + '</span></td><td class="file-date">');
   if ( model.lastModification)
@@ -1837,7 +1865,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div id="upload-buttons" class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><span class="glyphicon glyphicon-upload"></span><span class="button-title-reponsive"> ' + escape((interp = t("upload button")) == null ? '' : interp) + '</span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><span class="glyphicon glyphicon-plus-sign"></span><span class="button-title-reponsive"> ' + escape((interp = t("new folder button")) == null ? '' : interp) + '</span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div class="pull-left"><input id="search-box" type="search"/></div><div id="upload-buttons" class="pull-right"><p class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy-contrast"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></p></div></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
   }
   return buf.join("");
   };

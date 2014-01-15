@@ -805,13 +805,17 @@ div#affixbar {
 }
 div#affixbar .row {
   background-color: #fff;
-  padding-top: 5px;
+  padding-top: 15px;
 }
 div#affixbar .row p {
   margin-bottom: 5px;
 }
 div#affixbar a.btn {
   height: 35px;
+}
+div#affixbar img {
+  height: 20px;
+  color: #c60;
 }
 .affix-top {
   color: #00f;
@@ -893,6 +897,8 @@ tr.folder-row .file-type {
   overflow: hidden;
 }
 #crumbs ul {
+  margin-top: 15px;
+  margin-bottom: 0px;
   padding-left: 0;
   list-style: none;
   display: inline-table;
@@ -908,7 +914,7 @@ tr.folder-row .file-type {
   text-align: center;
   padding: 8px 5px 0 22px;
   position: relative;
-  margin: 5px 10px 0 0;
+  margin: 10px 5px 0 0;
   font-size: 15px;
   text-decoration: none;
   color: #fff;

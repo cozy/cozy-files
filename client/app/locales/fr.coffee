@@ -39,6 +39,12 @@ module.exports =
     "modal share send btn"      : "Partager"
     "modal share error"         : "Une erreur s'est produite pendant le partage"
     
+    #tooltip
+    "tooltip delete"          : "Supprimer"
+    "tooltip edit"            : "Renommer"
+    "tooltip download"        : "Telecharger"
+    "tooltip send"            : "Envoyer"
+
     # file_edit template
     "file edit save"            : "Sauvegarder"
     "file edit cancel"          : "Annuler"
@@ -56,5 +62,4 @@ module.exports =
     "new folder close"          : "Annuler"
     "new folder send"           : "Créer"
     
-    "new folder button"         : "Créer un nouveau fichier"
 
