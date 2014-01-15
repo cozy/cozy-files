@@ -59,8 +59,14 @@ module.exports.create = (req, res) ->
                     data.lastModification = req.body.lastModification
                     data.mime             = file.type
                     data.size             = file.size
-                    console.log(data)
-                    #console.log data
+                    switch file.type.split('/')[0]
+                        when 'image' then data.class = "image"
+                        when 'application' then data.class = "document"
+                        when 'text' then data.class = "document"
+                        when 'audio' then data.class = "music"
+                        when 'video' then data.class = "video"
+                        else 
+                            data.class = "file"
 
                     # create the file
                     File.create data, (err, newfile) =>

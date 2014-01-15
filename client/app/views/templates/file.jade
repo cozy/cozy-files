@@ -15,16 +15,13 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-share-alt
   td
   td
+    span.pull-left #{t('folder')}
   td
 else
   td
     a.img-file(href="files/#{model.id}/attach/#{model.name}", target="_blank")
-      if model.mime == "application/pdf"
-        img(src="images/pdf.png")
-      else if model.mime == "image/jpeg"
-        img(src="images/jpg.png")
-      else if model.mime == "text/plain"
-        img(src="images/txt.png")
+      if model.class == "music"
+        img(src="images/music.png")
       else
         img(src="images/file.png")
     a.caption.btn.btn-link(href="files/#{model.id}/attach/#{model.name}", target="_blank")
@@ -42,7 +39,7 @@ else
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}
   td.file-type
-    span.pull-left #{model.mime}
+    span.pull-left #{t(model.class)}
   td.file-date
     if model.lastModification
       span.pull-right #{moment(model.lastModification).calendar()}

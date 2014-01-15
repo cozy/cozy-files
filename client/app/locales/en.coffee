@@ -63,3 +63,9 @@ module.exports =
     
     "new folder button"         : "Create a new folder"
 
+    "folder"                    : "Folder"
+    "image"                     : "Image"
+    "document"                  : "Document"
+    "music"                     : "Music"
+    "video"                     : "Video"
+

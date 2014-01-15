@@ -777,7 +777,7 @@ input:focus {
 input#search-box {
   height: 35px;
   font-size: 16px;
-  padding-left: 28px;
+  margin-left: 5px;
   width: 200px;
   background-image: url("../images/iconmonstr-magnifier-icon-18.png");
   background-repeat: no-repeat;
@@ -898,12 +898,12 @@ tr.folder-row .file-type {
 }
 #crumbs img {
   height: 25px;
-  margin-top: -3px;
+  margin-top: 0px;
   margin-left: -5px;
   margin-right: -5px;
 }
 #crumbs ul {
-  margin-top: 15px;
+  margin-top: 10px;
   margin-bottom: 0px;
   padding-left: 0;
   list-style: none;
