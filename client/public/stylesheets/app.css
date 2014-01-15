@@ -903,7 +903,7 @@ tr.folder-row .file-type {
   margin-right: -5px;
 }
 #crumbs ul {
-  margin-top: 5px;
+  margin-top: 10px;
   margin-bottom: 0px;
   padding-left: 0;
   list-style: none;
