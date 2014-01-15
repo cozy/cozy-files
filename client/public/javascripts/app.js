@@ -1328,12 +1328,10 @@ window.require.register("views/folder", function(exports, require, module) {
         this.$("#crumbs").css({
           opacity: 0.5
         });
-        this.$("#crumbs").hide();
       } else {
         this.$("#crumbs").css({
           opacity: 1
         });
-        this.$("#upload-buttons").show();
       }
       if (folder.get("type") === "folder") {
         this.$("#upload-buttons").show();

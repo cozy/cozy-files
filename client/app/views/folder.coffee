@@ -53,11 +53,9 @@ module.exports = class FolderView extends BaseView
         # update breadcrumbs
         @breadcrumbs.push folder
         if folder.id == "root"
-            @$("#crumbs").css({opacity:0.5})
-            @$("#crumbs").hide()    
+            @$("#crumbs").css({opacity:0.5}) 
         else
             @$("#crumbs").css({opacity:1})
-            @$("#upload-buttons").show()
 
         # see, if we should display add/upload buttons
         if folder.get("type") is "folder"
