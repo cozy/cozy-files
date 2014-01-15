@@ -90,11 +90,6 @@ module.exports = class FolderView extends BaseView
                         @filesList = new FilesView @filesCollection, @model
                         @$('#files').html @filesList.$el
                         @filesList.render()
-                        if @filesCollection.length is 0 and folder.id is "root"
-                            @$("#crumbs").hide()
-                        else
-                            @$("#crumbs").show()
-
                     error: (error) =>
                         console.log error
                         new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
@@ -123,7 +118,6 @@ module.exports = class FolderView extends BaseView
             @onAddFolder()
 
     onAddFolder: =>
-        @$("#crumbs ").show()
         folder = new File
             name: @$('#inputName').val()
             path: @model.repository()
@@ -139,7 +133,6 @@ module.exports = class FolderView extends BaseView
             $('#dialog-new-folder').modal('hide')
 
     onAddFile: =>
-        @$("#crumbs").show()
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
         @$('#uploader').val("")

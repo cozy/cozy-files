@@ -1364,12 +1364,7 @@ window.require.register("views/folder", function(exports, require, module) {
               }
               _this.filesList = new FilesView(_this.filesCollection, _this.model);
               _this.$('#files').html(_this.filesList.$el);
-              _this.filesList.render();
-              if (_this.filesCollection.length === 0 && folder.id === "root") {
-                return _this.$("#crumbs").hide();
-              } else {
-                return _this.$("#crumbs").show();
-              }
+              return _this.filesList.render();
             },
             error: function(error) {
               console.log(error);
@@ -1410,7 +1405,6 @@ window.require.register("views/folder", function(exports, require, module) {
 
     FolderView.prototype.onAddFolder = function() {
       var folder;
-      this.$("#crumbs ").show();
       folder = new File({
         name: this.$('#inputName').val(),
         path: this.model.repository(),
@@ -1428,7 +1422,6 @@ window.require.register("views/folder", function(exports, require, module) {
 
     FolderView.prototype.onAddFile = function() {
       var attach, _i, _len, _ref1;
-      this.$("#crumbs").show();
       _ref1 = this.$('#uploader')[0].files;
       for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
         attach = _ref1[_i];
