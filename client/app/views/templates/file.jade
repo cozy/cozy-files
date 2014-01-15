@@ -15,6 +15,7 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-share-alt
   td
   td
+    span.pull-left #{t('folder')}
   td
 else
   td
@@ -42,7 +43,7 @@ else
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}
   td.file-type
-    span.pull-left #{model.class}
+    span.pull-left #{t(model.class)}
   td.file-date
     if model.lastModification
       span.pull-right #{moment(model.lastModification).calendar()}

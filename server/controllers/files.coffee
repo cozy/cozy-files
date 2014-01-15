@@ -60,13 +60,13 @@ module.exports.create = (req, res) ->
                     data.mime             = file.type
                     data.size             = file.size
                     switch file.type.split('/')[0]
-                        when 'image' then data.class = "Image"
-                        when 'application' then data.class = "Document"
-                        when 'text' then data.class = "Document"
-                        when 'audio' then data.class = "Music"
-                        when 'video' then data.class = "Video"
+                        when 'image' then data.class = "image"
+                        when 'application' then data.class = "document"
+                        when 'text' then data.class = "document"
+                        when 'audio' then data.class = "music"
+                        when 'video' then data.class = "video"
                         else 
-                            data.class = "File"
+                            data.class = "file"
 
                     # create the file
                     File.create data, (err, newfile) =>

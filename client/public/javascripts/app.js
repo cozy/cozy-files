@@ -702,7 +702,12 @@ window.require.register("locales/en", function(exports, require, module) {
     "new folder msg": "Enter the folder's name:",
     "new folder close": "Close",
     "new folder send": "Create",
-    "new folder button": "Create a new folder"
+    "new folder button": "Create a new folder",
+    "folder": "Folder",
+    "image": "Image",
+    "document": "Document",
+    "music": "Music",
+    "video": "Video"
   };
   
 });
@@ -749,7 +754,12 @@ window.require.register("locales/fr", function(exports, require, module) {
     "new folder caption": "Créer un nouveau dossier",
     "new folder msg": "Entrer le nom du dossier :",
     "new folder close": "Annuler",
-    "new folder send": "Créer"
+    "new folder send": "Créer",
+    "folder": "Dossier",
+    "image": "Image",
+    "document": "Document",
+    "music": "Musique",
+    "video": "Vidéo"
   };
   
 });
@@ -1728,7 +1738,7 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + "") }, {"href":true,"target":true,"title":true}));
   buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
   buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td></td><td></td>');
+  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td></td>');
   }
   else
   {
@@ -1763,7 +1773,7 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
   buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size">');
    options = {base: 2}
-  buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type"><span class="pull-left">' + escape((interp = model.class) == null ? '' : interp) + '</span></td><td class="file-date">');
+  buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date">');
   if ( model.lastModification)
   {
   buf.push('<span class="pull-right">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');

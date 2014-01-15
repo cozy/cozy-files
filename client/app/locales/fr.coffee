@@ -61,5 +61,11 @@ module.exports =
     "new folder msg"            : "Entrer le nom du dossier :"
     "new folder close"          : "Annuler"
     "new folder send"           : "Créer"
+
+    "folder"                    : "Dossier"
+    "image"                     : "Image"
+    "document"                  : "Document"
+    "music"                     : "Musique"
+    "video"                     : "Vidéo"
     
 
