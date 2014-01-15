@@ -34,8 +34,6 @@
   .container
     .row
       .col-lg-12
-        .pull-left
-          input#search-box(type="search")
         #upload-buttons.pull-right
           p.pull-right
             a.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
@@ -45,6 +43,7 @@
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
               img(src="images/add-folder.png")
               span.button-title-reponsive
+            input#search-box(type="search")
 .container
   .row.content-shadow
     .col-lg-12#content

@@ -42,7 +42,7 @@ else
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}
   td.file-type
-    span.pull-left #{model.mime}
+    span.pull-left #{model.class}
   td.file-date
     if model.lastModification
       span.pull-right #{moment(model.lastModification).calendar()}
