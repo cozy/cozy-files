@@ -1745,17 +1745,9 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push('<td><a');
   buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('img-file') }, {"href":true,"target":true}));
   buf.push('>');
-  if ( model.mime == "application/pdf")
+  if ( model.class == "music")
   {
-  buf.push('<img src="images/pdf.png"/>');
-  }
-  else if ( model.mime == "image/jpeg")
-  {
-  buf.push('<img src="images/jpg.png"/>');
-  }
-  else if ( model.mime == "text/plain")
-  {
-  buf.push('<img src="images/txt.png"/>');
+  buf.push('<img src="images/music.png"/>');
   }
   else
   {
