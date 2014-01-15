@@ -1697,7 +1697,7 @@ window.require.register("views/templates/breadcrumbs_element", function(exports,
   var interp;
   if ( model.id == "root")
   {
-  buf.push('<li><a href="#">Cozy Files</a></li>');
+  buf.push('<li><a href="#"><span class="glyphicon glyphicon-home"> </span></a></li>');
   }
   else
   {
