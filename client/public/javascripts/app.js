@@ -737,7 +737,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "modal share error": "Une erreur s'est produite pendant le partage",
     "tooltip delete": "Supprimer",
     "tooltip edit": "Renommer",
-    "tooltip download": "Telecharger",
+    "tooltip download": "Télécharger",
     "tooltip send": "Envoyer",
     "file edit save": "Sauvegarder",
     "file edit cancel": "Annuler",
@@ -1687,7 +1687,7 @@ window.require.register("views/templates/breadcrumbs_element", function(exports,
   var interp;
   if ( model.id == "root")
   {
-  buf.push('<li><a href="#"><span class="glyphicon glyphicon-folder-open"></span></a></li>');
+  buf.push('<li><a href="#"><img src="images/root.png"/></a></li>');
   }
   else
   {
