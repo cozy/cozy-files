@@ -42,7 +42,7 @@ module.exports =
     #tooltip
     "tooltip delete"          : "Supprimer"
     "tooltip edit"            : "Renommer"
-    "tooltip download"        : "Telecharger"
+    "tooltip download"        : "Télécharger"
     "tooltip send"            : "Envoyer"
 
     # file_edit template
