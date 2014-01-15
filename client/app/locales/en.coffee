@@ -41,7 +41,12 @@ module.exports =
     
     # file_edit template
     "file edit save"            : "Save"
-    "file edit cancel"          : "cancel"
+    "file edit cancel"          : "cancel"    
+    #tooltip
+    "tooltip delete"          : "Delete"
+    "tooltip edit"            : "Rename"
+    "tooltip download"        : "Download"
+    "tooltip send"            : "Send"
     
     # folder template
     "upload caption"            : "Upload a new file"

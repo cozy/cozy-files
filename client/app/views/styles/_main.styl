@@ -48,6 +48,7 @@ a:focus,
     &:hover
       background-color: actioncolor
       border-color: actioncolor
+
   &.btn-cozy-contrast
     background-color: contrastcolor
     border-color: contrastcolor
@@ -107,13 +108,17 @@ div#affixbar
 
   .row
     background-color: white
-    padding-top: 5px
+    padding-top: 15px
 
     p
       margin-bottom: 5px
 
   a.btn
     height: 35px
+
+  img
+    height: 20px
+    color: #C60
 
 .affix-top
   color: blue
@@ -166,6 +171,11 @@ tr.folder-row
   .img-folder
     img  
       width: 20px
+      margin-right: -3px
+
+  .img-file
+    img  
+      width: 20px
       margin-right: -3px  
 
   .icon
@@ -194,6 +204,8 @@ tr.folder-row
 #crumbs
   overflow: hidden
   ul
+    margin-top: 15px
+    margin-bottom: 0px
     padding-left: 0
     list-style none
     display inline-table
@@ -207,7 +219,7 @@ tr.folder-row
         text-align center
         padding 8px 5px 0 22px
         position relative
-        margin 5px 10px 0 0
+        margin 10px 5px 0 0
         font-size 15px
         text-decoration none
         color #fff
@@ -231,7 +243,7 @@ tr.folder-row
         &:hover
           background actioncolor
           &:after
-            border-left-color actioncolor
+            border-left-color actioncolor    
       &:first-child
         a
           padding-left: 20px

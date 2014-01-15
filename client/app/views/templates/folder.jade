@@ -11,7 +11,7 @@
                   | #{t("upload msg")}
                 input#uploader(type="file", multiple)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("upload close")}
+            button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade
@@ -27,7 +27,7 @@
                   | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("new folder close")}
+            button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
             button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")
@@ -39,15 +39,12 @@
         #upload-buttons.pull-right
           p.pull-right
             a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
-              span.glyphicon.glyphicon-upload
+              img(src="images/add-file.png")
               span.button-title-reponsive
-                |  #{t("upload button")}
             |  
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
-              span.glyphicon.glyphicon-plus-sign
+              img(src="images/add-folder.png")
               span.button-title-reponsive
-                |  #{t("new folder button")}
-
 .container
   .row.content-shadow
     .col-lg-12#content

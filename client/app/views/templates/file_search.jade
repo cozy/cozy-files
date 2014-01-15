@@ -1,6 +1,6 @@
 if model.type && model.type == "folder"
   td
-    a.img-folder
+    a.img-folder(href="#folders/#{model.id}")
       img(src="images/folder.png")
     a.caption.btn.btn-link(href="#folders/#{model.id}")
       | #{model.name}
@@ -16,7 +16,15 @@ if model.type && model.type == "folder"
   td
 else
   td
-    span.glyphicon.glyphicon-file.no-hover.icon
+    a.img-file(href="files/#{model.id}/attach/#{model.name}", target="_blank")
+      if model.mime == "application/pdf"
+        img(src="images/pdf.png")
+      else if model.mime == "image/jpeg"
+        img(src="images/jpg.png")
+      else if model.mime == "text/plain"
+        img(src="images/txt.png")
+      else
+        img(src="images/file.png")
     a.caption.btn.btn-link(href="files/#{model.id}/attach/#{model.name}", target="_blank")
       | #{model.name}
     .operations

@@ -15,7 +15,9 @@ module.exports = class FolderView extends BaseView
     events: ->
         'click a#button-new-folder' : 'prepareNewFolder'
         'click #new-folder-send'    : 'onAddFolder'
+        'click #cancel-new-folder'  : 'onCancelFolder'
         'click #upload-file-send'   : 'onAddFile'
+        'click #cancel-new-file'    : 'onCancelFile'
         'keyup input#search-box'    : 'onSeachKeyPress'
         'keyup input#inputName'     : 'onAddFolderEnter'
 
@@ -23,7 +25,6 @@ module.exports = class FolderView extends BaseView
         @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
-
         # add drag and drop support
         prevent = (e) ->
             e.preventDefault()
@@ -51,6 +52,10 @@ module.exports = class FolderView extends BaseView
 
         # update breadcrumbs
         @breadcrumbs.push folder
+        if folder.id == "root"
+            @$("#crumbs").css({opacity:0.5})    
+        else
+            @$("#crumbs").css({opacity:1})
 
         # see, if we should display add/upload buttons
         if folder.get("type") is "folder"
@@ -102,6 +107,10 @@ module.exports = class FolderView extends BaseView
             @$("#inputName").focus()
         , 500
 
+    onCancelFolder: ->
+        @$("#inputName").val("")    
+
+
     onAddFolderEnter: (e) ->
         if e.keyCode is 13
             e.preventDefault()
@@ -114,6 +123,7 @@ module.exports = class FolderView extends BaseView
             path: @model.repository()
             type: "folder"
         console.log "creating folder #{folder}"
+        @$("#inputName").val("")    
 
         if folder.validate()
             new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
@@ -125,6 +135,10 @@ module.exports = class FolderView extends BaseView
     onAddFile: =>
         for attach in @$('#uploader')[0].files
             @filesList.addFile attach
+        @$('#uploader').val("")
+
+    onCancelFile: ->
+        @$("#uploader").val("")   
 
     onDragAndDrop: (e) =>
         e.preventDefault()
