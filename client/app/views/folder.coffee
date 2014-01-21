@@ -13,13 +13,25 @@ module.exports = class FolderView extends BaseView
     template: require './templates/folder'
 
     events: ->
-        'click a#button-new-folder' : 'prepareNewFolder'
-        'click #new-folder-send'    : 'onAddFolder'
-        'click #cancel-new-folder'  : 'onCancelFolder'
-        'click #upload-file-send'   : 'onAddFile'
-        'click #cancel-new-file'    : 'onCancelFile'
-        'keyup input#search-box'    : 'onSeachKeyPress'
-        'keyup input#inputName'     : 'onAddFolderEnter'
+        'click a#button-new-folder'    : 'prepareNewFolder'
+        'click #new-folder-send'       : 'onAddFolder'
+        'click #cancel-new-folder'     : 'onCancelFolder'
+        'click #upload-file-send'      : 'onAddFile'
+        'click #cancel-new-file'       : 'onCancelFile'
+        'click #up-name'               : 'onChangeOrder'
+        'click #down-name'             : 'onChangeOrder'
+        'click #up-class'              : 'onChangeOrder'
+        'click #down-class'            : 'onChangeOrder'
+        'click #up-size'               : 'onChangeOrder'
+        'click #down-size'             : 'onChangeOrder'
+        'click #up-lastModification'   : 'onChangeOrder'
+        'click #down-lastModification' : 'onChangeOrder'
+        'click #name'                  : 'onChangeName' 
+        'click #size'                  : 'onChangeSize'
+        'click #type'                  : 'onChangeType'
+        'click #date'                  : 'onChangeDate'
+        'keyup input#search-box'       : 'onSeachKeyPress'
+        'keyup input#inputName'        : 'onAddFolderEnter'
 
     initialize: (options) -> 
         @model = options.model
@@ -34,6 +46,7 @@ module.exports = class FolderView extends BaseView
         @$el.on "drop", (e) =>
             @onDragAndDrop(e)
 
+
     getRenderData: ->
         model: @model
 
@@ -41,7 +54,29 @@ module.exports = class FolderView extends BaseView
         # add breadcrumbs view
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
+        @displayChevron('up', 'name')
 
+    ###
+        Helpers to display correct chevron to sort files
+    ###
+    displayChevron: (order, type) ->
+        @$('#up-name').show()
+        @$('#up-name')[0].setAttribute('disabled', 'disabled')
+        @$('#down-name').hide()
+        @$('#up-size').show()
+        @$('#up-size')[0].setAttribute('disabled', 'disabled')
+        @$('#down-size').hide()
+        @$('#up-class').show()
+        @$('#up-class')[0].setAttribute('disabled', 'disabled')
+        @$('#down-class').hide()
+        @$('#up-lastModification').show()
+        @$('#up-lastModification')[0].setAttribute('disabled', 'disabled')
+        @$('#down-lastModification').hide()
+        @$("##{order}-#{type}").show()
+        if order == "up"
+            @$("##{order}-#{type}")[0].removeAttribute('disabled')
+        else         
+            @$("#up-#{type}").hide()
 
     ###
         Display and re-render the contents of the folder
@@ -184,3 +219,45 @@ module.exports = class FolderView extends BaseView
 
         search = new File data
         @changeActiveFolder search
+
+    # Changer order if files sorting
+    onChangeOrder: ->
+        if @filesCollection.order is "incr"
+            @filesCollection.order = "decr"
+            @filesCollection.sort()        
+            @displayChevron('down', @filesCollection.type)
+        else
+            @filesCollection.order = "incr"
+            @filesCollection.sort()
+            @displayChevron('up', @filesCollection.type)
+
+    # Sort files by name
+    onChangeName: ->
+            @filesCollection.order = "incr"
+            @filesCollection.type = "name"
+            @filesCollection.sort()
+            @displayChevron('up','name')    
+
+    # Sort files by size
+    onChangeSize: ->
+            console.log 'onChangeType'
+            @filesCollection.order = "incr"
+            @filesCollection.type = "size"
+            @filesCollection.sort()
+            @displayChevron('up','size')    
+
+    # Sort files by type
+    onChangeType: ->
+            console.log 'onChangeType'
+            @filesCollection.order = "incr"
+            @filesCollection.type = "class"
+            @filesCollection.sort()
+            @displayChevron('up','class')
+
+    # Sort files by date
+    onChangeDate: ->
+            console.log 'onChangeType'
+            @filesCollection.order = "incr"
+            @filesCollection.type = "lastModification"
+            @filesCollection.sort()
+            @displayChevron('up','lastModification')

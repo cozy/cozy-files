@@ -226,18 +226,28 @@ window.require.register("collections/files", function(exports, require, module) 
 
     FileCollection.prototype.model = File;
 
-    FileCollection.prototype.order = "asc";
+    FileCollection.prototype.order = "incr";
+
+    FileCollection.prototype.type = "name";
 
     FileCollection.prototype.url = 'files';
 
     FileCollection.prototype.comparator = function(o1, o2) {
       var n1, n2, sort, t1, t2;
       console.log("comparator: " + o1 + ", " + o2);
-      n1 = o1.get("name").toLocaleLowerCase();
-      n2 = o2.get("name").toLocaleLowerCase();
+      if (this.type === "name") {
+        n1 = o1.get("name").toLocaleLowerCase();
+        n2 = o2.get("name").toLocaleLowerCase();
+      } else if (this.type === "lastModification") {
+        n1 = new Date(o1.get("lastModification"));
+        n2 = new Date(o2.get("lastModification"));
+      } else {
+        n1 = o1.get(this.type);
+        n2 = o2.get(this.type);
+      }
       t1 = o1.get("type");
       t2 = o2.get("type");
-      sort = this.order === "asc" ? -1 : 1;
+      sort = this.order === "incr" ? -1 : 1;
       if (t1 === t2) {
         if (n1 > n2) {
           return -sort;
@@ -1292,6 +1302,18 @@ window.require.register("views/folder", function(exports, require, module) {
         'click #cancel-new-folder': 'onCancelFolder',
         'click #upload-file-send': 'onAddFile',
         'click #cancel-new-file': 'onCancelFile',
+        'click #up-name': 'onChangeOrder',
+        'click #down-name': 'onChangeOrder',
+        'click #up-class': 'onChangeOrder',
+        'click #down-class': 'onChangeOrder',
+        'click #up-size': 'onChangeOrder',
+        'click #down-size': 'onChangeOrder',
+        'click #up-lastModification': 'onChangeOrder',
+        'click #down-lastModification': 'onChangeOrder',
+        'click #name': 'onChangeName',
+        'click #size': 'onChangeSize',
+        'click #type': 'onChangeType',
+        'click #date': 'onChangeDate',
         'keyup input#search-box': 'onSeachKeyPress',
         'keyup input#inputName': 'onAddFolderEnter'
       };
@@ -1322,7 +1344,34 @@ window.require.register("views/folder", function(exports, require, module) {
 
     FolderView.prototype.afterRender = function() {
       this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
-      return this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+      this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+      return this.displayChevron('up', 'name');
+    };
+
+    /*
+        Helpers to display correct chevron to sort files
+    */
+
+
+    FolderView.prototype.displayChevron = function(order, type) {
+      this.$('#up-name').show();
+      this.$('#up-name')[0].setAttribute('disabled', 'disabled');
+      this.$('#down-name').hide();
+      this.$('#up-size').show();
+      this.$('#up-size')[0].setAttribute('disabled', 'disabled');
+      this.$('#down-size').hide();
+      this.$('#up-class').show();
+      this.$('#up-class')[0].setAttribute('disabled', 'disabled');
+      this.$('#down-class').hide();
+      this.$('#up-lastModification').show();
+      this.$('#up-lastModification')[0].setAttribute('disabled', 'disabled');
+      this.$('#down-lastModification').hide();
+      this.$("#" + order + "-" + type).show();
+      if (order === "up") {
+        return this.$("#" + order + "-" + type)[0].removeAttribute('disabled');
+      } else {
+        return this.$("#up-" + type).hide();
+      }
     };
 
     /*
@@ -1495,6 +1544,49 @@ window.require.register("views/folder", function(exports, require, module) {
       };
       search = new File(data);
       return this.changeActiveFolder(search);
+    };
+
+    FolderView.prototype.onChangeOrder = function() {
+      if (this.filesCollection.order === "incr") {
+        this.filesCollection.order = "decr";
+        this.filesCollection.sort();
+        return this.displayChevron('down', this.filesCollection.type);
+      } else {
+        this.filesCollection.order = "incr";
+        this.filesCollection.sort();
+        return this.displayChevron('up', this.filesCollection.type);
+      }
+    };
+
+    FolderView.prototype.onChangeName = function() {
+      this.filesCollection.order = "incr";
+      this.filesCollection.type = "name";
+      this.filesCollection.sort();
+      return this.displayChevron('up', 'name');
+    };
+
+    FolderView.prototype.onChangeSize = function() {
+      console.log('onChangeType');
+      this.filesCollection.order = "incr";
+      this.filesCollection.type = "size";
+      this.filesCollection.sort();
+      return this.displayChevron('up', 'size');
+    };
+
+    FolderView.prototype.onChangeType = function() {
+      console.log('onChangeType');
+      this.filesCollection.order = "incr";
+      this.filesCollection.type = "class";
+      this.filesCollection.sort();
+      return this.displayChevron('up', 'class');
+    };
+
+    FolderView.prototype.onChangeDate = function() {
+      console.log('onChangeType');
+      this.filesCollection.order = "incr";
+      this.filesCollection.type = "lastModification";
+      this.filesCollection.sort();
+      return this.displayChevron('up', 'lastModification');
     };
 
     return FolderView;
@@ -1867,7 +1959,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="files"></div></div></div></div>');
+  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><td><a id="name" type="buton" class="btn"><span>Name  </span><a id="down-name" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-name" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td><a id="size" type="buton" class="btn"><span>   Size</span><a id="down-size" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-size" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td><a id="type" type="buton" class="btn"><span>   Type</span><a id="down-class" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-class" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td> <a id="date" type="buton" class="btn"><span>   Date</span><a id="down-lastModification" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-lastModification" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"></span></a></a></td></tbody></table><div id="files"></div></div></div></div>');
   }
   return buf.join("");
   };
