@@ -739,6 +739,12 @@ a:focus,
   outline: 0px !important;
   -webkit-appearance: none;
 }
+.btn[disabled=disabled],
+.btn:disabled {
+  opacity: 0.2;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
+  filter: alpha(opacity=20);
+}
 .btn.btn-cozy {
   background-color: #34a6ff;
   border-color: #34a6ff;
@@ -964,6 +970,9 @@ tr.folder-row .file-type {
   border-bottom-right-radius: 10px;
 }
 #crumbs ul li:last-child a:after {
+  display: none;
+}
+.table .tbody .td span {
   display: none;
 }
 @media screen and (max-width: 480px) {

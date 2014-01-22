@@ -36,6 +36,8 @@ a:focus,
 .btn:focus
      outline:0px !important
      -webkit-appearance:none
+.btn[disabled=disabled], .btn:disabled
+  opacity: 0.2
 
 
 /*      COZY BUTTONS    */
@@ -263,3 +265,9 @@ tr.folder-row
           border-bottom-right-radius 10px
           &:after
             display none
+
+.table
+  .tbody
+    .td
+      span
+        display none
