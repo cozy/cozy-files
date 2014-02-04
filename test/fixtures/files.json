@@ -1,0 +1,29 @@
+[
+    {
+        "docType": "File",
+        "_attachments": "test/fixtures/files/chat-mignon1.jpg",
+        "class": "image",
+        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+        "name": "chat-mignon1.jpg",
+        "path": "/Mes images/Chats mignons",
+        "size": 2413
+    },
+    {
+        "docType": "File",
+        "_attachments": "test/fixtures/files/chat-mignon2.jpg",
+        "class": "image",
+        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+        "name": "chat-mignon2.jpg",
+        "path": "/Mes images/Chats mignons",
+        "size": 2413
+    },
+    {
+        "docType": "File",
+        "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+        "class": "image",
+        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+        "name": "chaton-innocent.jpg",
+        "path": "/Mes images",
+        "size": 2413
+    }
+]

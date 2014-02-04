@@ -1,6 +1,6 @@
 # Cozy Files
 
-Cozy Files manages files in your Cozy platform. 
+Cozy Files manages files in your Cozy platform.
 
 ![Build
 Status](https://travis-ci.org/seeker89/cozy-files.png?branch=master)
@@ -14,6 +14,16 @@ Clone this repository, install dependencies and run server.
     npm install
     cd client/ && npm install && cd ..
     npm start
+
+# Fixtures
+To add fixtures, you need the cozy-fixtures utility:
+```bash
+npm install -g cozy-fixtures
+```
+Then just run:
+```bash
+cozy-fixtures load test/fixtures
+```
 
 # About Cozy
 
