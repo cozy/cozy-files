@@ -36,7 +36,10 @@ module.exports = class Contact extends Backbone.Model
 
     parse: (attrs) ->
         if attrs.datapoints
-            @dataPoints.reset attrs.datapoints
+            if @get('_id')?
+                @dataPoints.reset attrs.datapoints
+            else
+                @dataPoints.reset attrs.datapoints, silent: true
             delete attrs.datapoints
 
         if attrs._attachments?.picture

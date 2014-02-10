@@ -30,7 +30,6 @@ module.exports = class ContactView extends ViewCollection
         'click #delete'     : 'delete'
         'change #uploader'  : 'photoChanged'
 
-        #'keyup .type'         : 'addBelowIfEnter'
         'keyup input.value'    : 'addBelowIfEnter'
         'keydown #notes'       : 'resizeNote'
         'keypress #notes'      : 'resizeNote'
@@ -92,6 +91,7 @@ module.exports = class ContactView extends ViewCollection
             collection: @model.history
         @history.render().$el.appendTo @$('#history')
 
+        @$('a#infotab').tab('show') if $(window).width() < 900
         # resize nice scroll when we switch to history tab
         @$('a[data-toggle="tab"]').on 'shown', =>
             @$('#left').hide() if $(window).width() < 900

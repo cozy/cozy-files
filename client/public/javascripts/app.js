@@ -1564,7 +1564,13 @@ window.require.register("models/contact", function(exports, require, module) {
     Contact.prototype.parse = function(attrs) {
       var _ref;
       if (attrs.datapoints) {
-        this.dataPoints.reset(attrs.datapoints);
+        if (this.get('_id') != null) {
+          this.dataPoints.reset(attrs.datapoints);
+        } else {
+          this.dataPoints.reset(attrs.datapoints, {
+            silent: true
+          });
+        }
         delete attrs.datapoints;
       }
       if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {
@@ -2820,6 +2826,9 @@ window.require.register("views/contact", function(exports, require, module) {
         collection: this.model.history
       });
       this.history.render().$el.appendTo(this.$('#history'));
+      if ($(window).width() < 900) {
+        this.$('a#infotab').tab('show');
+      }
       this.$('a[data-toggle="tab"]').on('shown', function() {
         if ($(window).width() < 900) {
           _this.$('#left').hide();

@@ -660,6 +660,10 @@ a {
 #contact #adder h2 {
   display: none;
 }
+#contact #name {
+  padding: 5px 10px 0px 10px;
+  font-size: 26px;
+}
 #more-options {
   top: 30px;
   width: 100%;
@@ -686,6 +690,15 @@ a {
   background: #fe8800;
 }
 @media (max-width: 900px) {
+  body {
+    padding: 0;
+  }
+  #contacts-list #toolbar #new {
+    float: right;
+  }
+  #contacts-list #toolbar #gohelp {
+    display: none;
+  }
   #contacts-list,
   #doc,
   #contact {
@@ -706,13 +719,15 @@ a {
   }
   #contact #right {
     left: 3%;
-    top: 120px;
-    width: 94%;
+    top: 160px;
+    width: 90%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
   }
   #contact #infotab {
     display: block;
   }
-  #contact #right,
   #contact #left {
     width: 100%;
   }
@@ -721,14 +736,38 @@ a {
     height: 10px;
   }
   #contact #left {
-    top: 160px;
+    width: 96%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    top: 220px;
+  }
+  #contact #left .zone a.btn.add {
     display: none;
   }
   #contact #picture {
-    top: 33px;
+    top: 50px;
+  }
+  #contact #wrap-name-notes {
+    top: 48px;
+    left: 95px;
   }
   #contact #adder {
-    display: block;
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  #contact #name {
+    padding-left: 0;
+  }
+  #contact #picture {
+    display: none;
+  }
+  #contact #wrap-name-notes {
+    left: 10px;
+  }
+  #contact #wrap-name-notes:hover #name-edit {
+    display: none;
   }
 }
 #contacts-list.contact-widget #toolbar #new,

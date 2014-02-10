@@ -563,6 +563,10 @@ a
         h2
             display: none
 
+    #name
+        padding: 5px 10px 0px 10px
+        font-size: 26px
+
 #more-options
     top: 30px
     width: 100%
@@ -589,8 +593,16 @@ a
         color: white
         background: orange
 
-
 @media (max-width: 900px)
+    body
+        padding: 0
+
+    #contacts-list
+        #toolbar
+            #new
+                float: right
+            #gohelp
+                display: none
 
     #contacts-list, #doc, #contact
         width 100%
@@ -608,29 +620,58 @@ a
 
       #right
         left 3%
-        top 120px
-        width 94%
+        top 160px
+        width 90%
+        box-sizing: border-box
 
       #infotab
         display block
 
-      #right, #left
+      #left
         width 100%
 
       #abouts.zone h2
         visibility hidden
         height 10px
 
+
       #left
-        top 160px
-        display none
+        width 96%
+        box-sizing: border-box
+        top 220px
+
+      #left 
+        .zone 
+          a.btn.add
+            display: none
 
       #picture
-        top 33px
+          top 50px
+
+      #wrap-name-notes
+          top: 48px
+          left: 95px
 
       #adder
-        display: block
+        display: none
 
+@media (max-width: 600px)
+    #contact
+        #name
+            padding-left: 0
+
+        #picture
+            display: none
+
+        #wrap-name-notes
+            left: 10px
+
+        #wrap-name-notes:hover
+            #name-edit
+                display: none
+
+
+// Widget
 #contacts-list.contact-widget
     #toolbar
         #new
