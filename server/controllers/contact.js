@@ -136,7 +136,7 @@ module.exports = {
   createTask: function(req, res, next) {
     var contact, text;
     contact = req.contact;
-    text = "call " + contact.fn + " #followup";
+    text = "Contact " + contact.fn + " #followup";
     return Todolist.getOrCreateInbox(function(err, inbox) {
       var data;
       if (err) {
@@ -145,7 +145,8 @@ module.exports = {
         data = {
           list: inbox,
           done: false,
-          description: text
+          description: text,
+          tags: ["followup"]
         };
         return Task.create(data, function(err, task) {
           if (err) {

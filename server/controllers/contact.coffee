@@ -102,7 +102,7 @@ module.exports =
     # other apps than Todo-List). This tasks says to call back current contact.
     createTask: (req, res, next) ->
         contact = req.contact
-        text = "call #{contact.fn} #followup"
+        text = "Contact #{contact.fn} #followup"
 
         Todolist.getOrCreateInbox (err, inbox) ->
             if err then next err
@@ -111,6 +111,7 @@ module.exports =
                     list: inbox
                     done: false
                     description: text
+                    tags: ["followup"]
 
                 Task.create data, (err, task) ->
                     if err then next err

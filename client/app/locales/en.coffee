@@ -50,7 +50,7 @@ module.exports =
   "hours"                 : "h"
   "you called"            : "You called"
   "you were called"       : "You were called"
-  "create call task"      : "Create call task"
+  "create call task"      : "Create contact task"
   "creating..."           : "creating..."
 
 # Name modal
