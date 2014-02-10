@@ -8,7 +8,8 @@ logwatch = require('./server/initializers/finglogwatch');
 start = function(port, callback) {
   return require('americano').start({
     name: 'Contacts',
-    port: port
+    port: port,
+    host: '0.0.0.0'
   }, function(app, server) {
     app.set('views', './client/');
     return patch1(function(err) {

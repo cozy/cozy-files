@@ -42,6 +42,9 @@ module.exports = {
     get: contactLog.byContact,
     post: contactLog.create
   },
+  'contacts/:contactid/new-call-task': {
+    post: contact.createTask
+  },
   'contacts/:contactnotfetched/logs/:logid': {
     put: contactLog.update,
     del: contactLog["delete"]

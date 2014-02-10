@@ -33,5 +33,16 @@ module.exports = {
     byNumber: function(doc) {
       return emit(doc.correspondantNumber, doc);
     }
+  },
+  todolist: {
+    all: americano.defaultRequests.all
+  },
+  tree: {
+    byType: function(doc) {
+      return emit(doc.type, doc);
+    }
+  },
+  task: {
+    all: americano.defaultRequests.all
   }
 };

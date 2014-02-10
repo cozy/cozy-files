@@ -6,6 +6,7 @@ start = (port, callback) ->
     require('americano').start
             name: 'Contacts'
             port: port
+            host: '0.0.0.0'
     , (app, server) ->
         app.set 'views', './client/'
 

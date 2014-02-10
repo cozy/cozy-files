@@ -1,5 +1,7 @@
 Contact = require '../models/contact'
-Config  = require '../models/config'
+Config = require '../models/config'
+Todolist = require '../models/todolist'
+Task = require '../models/task'
 path    = require 'path'
 fs      = require 'fs'
 
@@ -81,10 +83,10 @@ module.exports =
         else
             res.sendfile path.resolve __dirname, '../assets/defaultpicture.png'
 
-    vCard: (req, res) ->
+    vCard: (req, res, next) ->
         Config.getInstance (err, config) ->
             Contact.request 'all', (err, contacts) ->
-                return res.error 500, 'An error occured', err if err
+                next err if err
 
                 out = ""
                 out += contact.toVCF(config) for contact in contacts
@@ -96,4 +98,21 @@ module.exports =
                 res.send out
 
 
+    # Create a new task in the Inbox todo-list (the one that get task from
+    # other apps than Todo-List). This tasks says to call back current contact.
+    createTask: (req, res, next) ->
+        contact = req.contact
+        text = "call #{contact.fn} #followup"
 
+        Todolist.getOrCreateInbox (err, inbox) ->
+            if err then next err
+            else
+                data =
+                    list: inbox
+                    done: false
+                    description: text
+
+                Task.create data, (err, task) ->
+                    if err then next err
+                    else
+                        res.send success: true, task: task, 201

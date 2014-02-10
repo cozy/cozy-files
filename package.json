@@ -43,6 +43,15 @@
     },
     "Mail": {
       "description": "Display last emails for a contact"
+    },
+    "Task": {
+      "description": "Create call tasks from a contact"
+    },
+    "TodoList": {
+      "description": "Create the \"inbox\" TodoList"
+    },
+    "Tree": {
+      "description": "Find the Inbox TodoList"
     }
   },
   "cozy-widget": "/apps/contacts/widget"

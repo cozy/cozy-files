@@ -1170,6 +1170,46 @@ window.require.register("lib/phone_number", function(exports, require, module) {
   db['Reserved for future global service'] = '999';
   
 });
+window.require.register("lib/request", function(exports, require, module) {
+  exports.request = function(type, url, data, callback) {
+    return $.ajax({
+      type: type,
+      url: url,
+      data: data != null ? JSON.stringify(data) : null,
+      contentType: "application/json",
+      dataType: "json",
+      success: function(data) {
+        if (callback != null) {
+          return callback(null, data);
+        }
+      },
+      error: function(data) {
+        if ((data != null) && (data.msg != null) && (callback != null)) {
+          return callback(new Error(data.msg));
+        } else if (callback != null) {
+          return callback(new Error("Server error occured"));
+        }
+      }
+    });
+  };
+
+  exports.get = function(url, callback) {
+    return exports.request("GET", url, null, callback);
+  };
+
+  exports.post = function(url, data, callback) {
+    return exports.request("POST", url, data, callback);
+  };
+
+  exports.put = function(url, data, callback) {
+    return exports.request("PUT", url, data, callback);
+  };
+
+  exports.del = function(url, callback) {
+    return exports.request("DELETE", url, null, callback);
+  };
+  
+});
 window.require.register("lib/view_collection", function(exports, require, module) {
   var BaseView, ViewCollection, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1318,6 +1358,8 @@ window.require.register("locales/en", function(exports, require, module) {
     "hours": "h",
     "you called": "You called",
     "you were called": "You were called",
+    "create call task": "Create call task",
+    "creating...": "creating...",
     "edit name": "Edit Name",
     "name editor": "Name Editor",
     "prefix": "Prefix",
@@ -1424,6 +1466,8 @@ window.require.register("locales/fr", function(exports, require, module) {
     "hours": "h",
     "you called": "Vous avez appelé",
     "you were called": "Vous avez été appelé",
+    "create call task": "Créer une tâche d'appel",
+    "creating...": "en création...",
     "edit name": "Modifier le nom",
     "name editor": "Editeur de nom",
     "prefix": "Préfixe",
@@ -1510,10 +1554,12 @@ window.require.register("models/config", function(exports, require, module) {
   
 });
 window.require.register("models/contact", function(exports, require, module) {
-  var ANDROID_RELATION_TYPES, AndroidToDP, Contact, ContactLogCollection, DataPoint, DataPointCollection,
+  var ANDROID_RELATION_TYPES, AndroidToDP, Contact, ContactLogCollection, DataPoint, DataPointCollection, request,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  request = require('lib/request');
 
   DataPoint = require('models/datapoint');
 
@@ -1709,6 +1755,10 @@ window.require.register("models/contact", function(exports, require, module) {
           middle = parts.slice(2).join(' ');
       }
       return [familly, given, middle, prefix, suffix];
+    };
+
+    Contact.prototype.createTask = function(callback) {
+      return request.post("contacts/" + this.id + "/new-call-task", {}, callback);
     };
 
     return Contact;
@@ -2253,8 +2303,11 @@ window.require.register("templates/contact", function(exports, require, module) 
   buf.push('</h2><ul></ul><a class="btn add addother">');
   var __val__ = t('add')
   buf.push(escape(null == __val__ ? "" : __val__));
-  buf.push('</a></div><div class="zone clearfix">&nbsp;</div><div class="zone clearfix"><a id="more-options" class="button">');
+  buf.push('</a></div><div class="zone clearfix">&nbsp;</div><div class="zone"><a id="more-options" class="button">');
   var __val__ = t('more options')
+  buf.push(escape(null == __val__ ? "" : __val__));
+  buf.push('</a><a id="create-task" class="button">');
+  var __val__ = t('create call task')
   buf.push(escape(null == __val__ ? "" : __val__));
   buf.push('</a></div><div id="adder" class="zone"><h2>');
   var __val__ = t("actions")
@@ -2740,6 +2793,7 @@ window.require.register("views/contact", function(exports, require, module) {
         'click .addurl': this.addClicked('url'),
         'click .addskype': this.addClicked('other', 'skype'),
         'click #more-options': 'onMoreOptionsClicked',
+        'click #create-task': 'onCreateTaskClicked',
         'click #name-edit': 'showNameModal',
         'click #undo': 'undo',
         'click #delete': 'delete',
@@ -2762,6 +2816,7 @@ window.require.register("views/contact", function(exports, require, module) {
       this.resizeNiceScroll = __bind(this.resizeNiceScroll, this);
       this.modelChanged = __bind(this.modelChanged, this);
       this.undo = __bind(this.undo, this);
+      this.onCreateTaskClicked = __bind(this.onCreateTaskClicked, this);
       this.onMoreOptionsClicked = __bind(this.onMoreOptionsClicked, this);
       this.showNameModal = __bind(this.showNameModal, this);
       this.save = __bind(this.save, this);
@@ -2835,10 +2890,14 @@ window.require.register("views/contact", function(exports, require, module) {
         }
         return _this.resizeNiceScroll();
       });
-      return this.$('a#infotab').on('shown', function() {
+      this.$('a#infotab').on('shown', function() {
         _this.$('#left').show();
         return _this.resizeNiceScroll();
       });
+      this.createTaskButton = this.$("#create-task");
+      if (this.model.get('id') == null) {
+        return this.createTaskButton.hide();
+      }
     };
 
     ContactView.prototype.remove = function() {
@@ -2960,6 +3019,21 @@ window.require.register("views/contact", function(exports, require, module) {
         _this.$("#adder h2").show();
         _this.$("#adder").fadeIn();
         return _this.resizeNiceScroll();
+      });
+    };
+
+    ContactView.prototype.onCreateTaskClicked = function() {
+      var value,
+        _this = this;
+      value = this.createTaskButton.html();
+      this.createTaskButton.html(t('creating...'));
+      return this.model.createTask(function(err) {
+        _this.createTaskButton.html(value);
+        if (err) {
+          return alert("An error occured while creating task");
+        } else {
+          return alert("Task created");
+        }
       });
     };
 

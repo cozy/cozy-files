@@ -1,3 +1,4 @@
+request = require 'lib/request'
 DataPoint = require 'models/datapoint'
 DataPointCollection  = require 'collections/datapoint'
 ContactLogCollection = require 'collections/contactlog'
@@ -139,6 +140,12 @@ module.exports = class Contact extends Backbone.Model
                 middle = parts[2..].join(' ')
 
         return [familly, given, middle, prefix, suffix]
+
+
+    # Ask to server to create a new task that says to call back current
+    # contact.
+    createTask: (callback) ->
+        request.post "contacts/#{@id}/new-call-task", {}, callback
 
 
 AndroidToDP = (contact, raw) ->
