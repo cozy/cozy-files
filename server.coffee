@@ -1,23 +1,16 @@
-patch1 = require './server/initializers/patch1'
 logwatch = require './server/initializers/finglogwatch'
+americano = require('americano')
 
 
 start = (port, callback) ->
-    require('americano').start
-            name: 'Contacts'
-            port: port
-            host: '0.0.0.0'
+    americano.start
+        name: 'Contacts'
+        port: port
     , (app, server) ->
-        app.set 'views', './client/'
 
-        # run patch to fix old contacts
-        patch1 (err) ->
-            return callback? err if err
-
-            # start realtime and sync Fing's log with contact's log
-            logwatch server, (err) ->
-
-                callback? err, app, server
+        # start realtime and sync Fing's log with contact's log
+        logwatch server, (err) ->
+            callback? null, app, server
 
 if not module.parent
     port = process.env.PORT or 9114
