@@ -36,11 +36,61 @@ module.exports = class Contact extends Backbone.Model
         tags: []
 
     parse: (attrs) ->
+
+        if _.where(attrs?.datapoints, name: 'tel').length is 0
+            attrs?.datapoints.push
+                name: 'tel'
+                type: 'main'
+                value: ''
+
+        if _.where(attrs?.datapoints, name: 'email').length is 0
+            attrs?.datapoints.push
+                name: 'email'
+                type: 'main'
+                value: ''
+
         if attrs.datapoints
-            if @get('_id')?
-                @dataPoints.reset attrs.datapoints
-            else
-                @dataPoints.reset attrs.datapoints, silent: true
+            @dataPoints.reset attrs.datapoints
+            delete attrs.datapoints
+
+        if attrs._attachments?.picture
+            @hasPicture = true
+            delete attrs._attachments
+
+        if typeof attrs.n is 'string'
+            attrs.n = attrs.n.split ';'
+
+        unless Array.isArray attrs.n
+            attrs.n = undefined
+
+        return attrs
+
+    sync: (method, model, options) ->
+        if @picture
+            options.contentType = false
+            options.data = new FormData()
+            options.data.append 'picture', @picture
+            options.data.append 'contact', JSON.stringify @toJSON()
+            success = options.success
+            options.success = (resp) =>
+                success resp
+                @hasPicture = true
+                @trigger 'change', this, {}
+                delete @picture
+
+        super(method, model, options)
+
+    getBest: (name) ->
+        result = null
+        @dataPoints.each (dp) ->
+            if dp.get('name') is name
+                if dp.get('pref') then result = dp.get 'value'
+                else result ?= dp.get 'value'
+
+        attrs?.addDP 'mail', 'main', ''
+
+        if attrs.datapoints
+            @dataPoints.reset attrs.datapoints
             delete attrs.datapoints
 
         if attrs._attachments?.picture

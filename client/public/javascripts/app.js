@@ -1609,14 +1609,81 @@ window.require.register("models/contact", function(exports, require, module) {
 
     Contact.prototype.parse = function(attrs) {
       var _ref;
-      if (attrs.datapoints) {
-        if (this.get('_id') != null) {
-          this.dataPoints.reset(attrs.datapoints);
-        } else {
-          this.dataPoints.reset(attrs.datapoints, {
-            silent: true
+      if (_.where(attrs != null ? attrs.datapoints : void 0, {
+        name: 'tel'
+      }).length === 0) {
+        if (attrs != null) {
+          attrs.datapoints.push({
+            name: 'tel',
+            type: 'main',
+            value: ''
           });
         }
+      }
+      if (_.where(attrs != null ? attrs.datapoints : void 0, {
+        name: 'email'
+      }).length === 0) {
+        if (attrs != null) {
+          attrs.datapoints.push({
+            name: 'email',
+            type: 'main',
+            value: ''
+          });
+        }
+      }
+      if (attrs.datapoints) {
+        this.dataPoints.reset(attrs.datapoints);
+        delete attrs.datapoints;
+      }
+      if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {
+        this.hasPicture = true;
+        delete attrs._attachments;
+      }
+      if (typeof attrs.n === 'string') {
+        attrs.n = attrs.n.split(';');
+      }
+      if (!Array.isArray(attrs.n)) {
+        attrs.n = void 0;
+      }
+      return attrs;
+    };
+
+    Contact.prototype.sync = function(method, model, options) {
+      var success,
+        _this = this;
+      if (this.picture) {
+        options.contentType = false;
+        options.data = new FormData();
+        options.data.append('picture', this.picture);
+        options.data.append('contact', JSON.stringify(this.toJSON()));
+        success = options.success;
+        options.success = function(resp) {
+          success(resp);
+          _this.hasPicture = true;
+          _this.trigger('change', _this, {});
+          return delete _this.picture;
+        };
+      }
+      return Contact.__super__.sync.call(this, method, model, options);
+    };
+
+    Contact.prototype.getBest = function(name) {
+      var result, _ref;
+      result = null;
+      this.dataPoints.each(function(dp) {
+        if (dp.get('name') === name) {
+          if (dp.get('pref')) {
+            return result = dp.get('value');
+          } else {
+            return result != null ? result : result = dp.get('value');
+          }
+        }
+      });
+      if (typeof attrs !== "undefined" && attrs !== null) {
+        attrs.addDP('mail', 'main', '');
+      }
+      if (attrs.datapoints) {
+        this.dataPoints.reset(attrs.datapoints);
         delete attrs.datapoints;
       }
       if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {

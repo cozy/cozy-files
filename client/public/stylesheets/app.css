@@ -655,6 +655,7 @@ a {
   display: inline-block;
 }
 #contact #adder {
+  margin-top: 20px;
   display: none;
 }
 #contact #adder h2 {
