@@ -17,7 +17,7 @@ describe 'Contacts', ->
         it 'should allow requests', (done) ->
             # getLocale is very long, this need to be fixed
             @timeout 10000
-            @client.get '/', done
+            @client.get '/', done, false
 
         it 'should reply with the index.html file', ->
             expect(@err).to.not.exist

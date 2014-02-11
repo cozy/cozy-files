@@ -45,9 +45,9 @@ module.exports =
             store.body = null
 
         store.client =
-            get: (url, done) ->
+            get: (url, done, parse) ->
                 clean()
-                old.get url, callbackFactory(done)
+                old.get url, callbackFactory(done), parse
             post: (url, data, done) ->
                 clean()
                 old.post url, data, callbackFactory(done)
