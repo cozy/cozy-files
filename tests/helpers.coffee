@@ -1,5 +1,6 @@
 TESTPORT = process.env.PORT or 8013
 Contact = require '../server/models/contact'
+Task = require '../server/models/task'
 PCLog = require '../server/models/phone_communication_log'
 ContactLog = require '../server/models/contact_log'
 Config = require '../server/models/config'
@@ -21,7 +22,8 @@ module.exports =
         Config.requestDestroy "all", ->
             Contact.requestDestroy "all", ->
                 PCLog.requestDestroy "all", ->
-                    ContactLog.requestDestroy "all", done
+                    Task.requestDestroy "all", ->
+                        ContactLog.requestDestroy "all", done
 
     createContact: (data) -> (done) ->
         baseContact = new Contact(data)

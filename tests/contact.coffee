@@ -1,3 +1,5 @@
+Task = require '../server/models/task'
+
 fixtures = require './fixtures/data'
 fs = require 'fs'
 helpers = require './helpers'
@@ -75,6 +77,22 @@ describe 'Contacts', ->
         it 'then it is changed', ->
             expect(@body.note).to.equal update.note
 
+    describe 'Create task - POST /contacts/:id/new-call-task', ->
+
+        it 'should allow requests', (done) ->
+            @client.post "contacts/#{@id}/new-call-task", {}, done
+
+        it 'should reply with 201 status', ->
+            expect(@response.statusCode).to.equal 201
+
+        it 'when I fetch tasks', (done) ->
+            Task.all (err, tasks) =>
+                @task = tasks[0]
+                done()
+
+        it 'then i get one with correct description', ->
+            expect(@task.description).to.equal "Contact undefined #followup"
+
     describe 'Delete - DELETE /contacts/:id', ->
 
         it 'should allow requests', (done) ->
@@ -83,8 +101,10 @@ describe 'Contacts', ->
         it 'should reply with 204 status', ->
             expect(@response.statusCode).to.equal 204
 
-        it 'when I GET the album', (done) ->
+        it 'when I GET the contact', (done) ->
             @client.get "contacts/#{@id}", done
 
         it 'then i get an error', ->
             expect(@response.statusCode).to.equal 404
+
+
