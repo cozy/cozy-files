@@ -65,7 +65,7 @@ module.exports.create = (req, res) ->
                         when 'text' then data.class = "document"
                         when 'audio' then data.class = "music"
                         when 'video' then data.class = "video"
-                        else 
+                        else
                             data.class = "file"
 
                     # create the file
@@ -146,25 +146,23 @@ module.exports.search = (req, res) ->
             console.log files
             res.send files
 
-module.exports.getPublicLink = (req, res) ->
+module.exports.getPublicLink = (req, res, next) ->
     file = req.file
 
     # send the email and get url
     mails.getFileUrl file, (err, url) ->
         if err
-            console.log err
-            res.send error: true, msg: err, 500
+            next err
         else
             res.send url: url, 200
 
-module.exports.sendPublicLinks = (req, res) ->
+module.exports.sendPublicLinks = (req, res, next) ->
     file = req.file
     users = req.body.users
 
     # send the email and get url
     mails.sendPublicFileLinks file, users, (err, url) ->
         if err
-            console.log err
-            res.send error: true, msg: err, 500
+            next err
         else
             res.send url: url, 200
