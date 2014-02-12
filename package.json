@@ -12,8 +12,8 @@
   },
   "main": "server.js",
   "dependencies": {
-    "americano": "0.2.12",
-    "americano-cozy": "0.1.10",
+    "americano": "0.3.0",
+    "americano-cozy": "0.2.2",
     "async": "0.2.9",
     "cozy-realtime-adapter": "0.12.0",
     "cozy-i18n-helper": "0.0.4",
