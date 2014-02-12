@@ -118,7 +118,7 @@ window.require.register("application", function(exports, require, module) {
   
 });
 window.require.register("collections/breadcrumbs", function(exports, require, module) {
-  var BreadcrumbsManager, File, client, _ref,
+  var BreadcrumbsManager, File, client,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -130,8 +130,7 @@ window.require.register("collections/breadcrumbs", function(exports, require, mo
     __extends(BreadcrumbsManager, _super);
 
     function BreadcrumbsManager() {
-      _ref = BreadcrumbsManager.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return BreadcrumbsManager.__super__.constructor.apply(this, arguments);
     }
 
     BreadcrumbsManager.prototype.model = File;
@@ -143,26 +142,29 @@ window.require.register("collections/breadcrumbs", function(exports, require, mo
     };
 
     BreadcrumbsManager.prototype.push = function(folder) {
-      var found, path, treatment,
-        _this = this;
+      var found, path, treatment;
       if ((this.length === 1) && (this.at(0) === this.root) && (folder !== this.root) && (folder.get("path") !== "") && (folder.get("type") === "folder")) {
         path = folder.get("path").split("/");
         path = path.slice(1, path.length);
         console.log("direct access", path);
         console.log("direct access", folder.get("path"));
         return client.get("folder/tree/" + folder.id, {
-          success: function(data) {
-            console.log("OK", data);
-            _this.add(data, {
-              sort: false
-            });
-            return _this.add(folder, {
-              sort: false
-            });
-          },
-          error: function(err) {
-            return console.log("err", err);
-          }
+          success: (function(_this) {
+            return function(data) {
+              console.log("OK", data);
+              _this.add(data, {
+                sort: false
+              });
+              return _this.add(folder, {
+                sort: false
+              });
+            };
+          })(this),
+          error: (function(_this) {
+            return function(err) {
+              return console.log("err", err);
+            };
+          })(this)
         });
       } else {
         if (this.get(folder)) {
@@ -177,15 +179,17 @@ window.require.register("collections/breadcrumbs", function(exports, require, mo
               return callback(null);
             }
           };
-          return async.concatSeries(this.models, treatment, function(err, folders) {
-            if (err) {
-              return console.log(err);
-            } else {
-              return _this.reset(folders, {
-                sort: false
-              });
-            }
-          });
+          return async.concatSeries(this.models, treatment, (function(_this) {
+            return function(err, folders) {
+              if (err) {
+                return console.log(err);
+              } else {
+                return _this.reset(folders, {
+                  sort: false
+                });
+              }
+            };
+          })(this));
         } else {
           return this.add(folder, {
             sort: false
@@ -210,7 +214,7 @@ window.require.register("collections/breadcrumbs", function(exports, require, mo
   
 });
 window.require.register("collections/files", function(exports, require, module) {
-  var File, FileCollection, _ref,
+  var File, FileCollection,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -220,8 +224,7 @@ window.require.register("collections/files", function(exports, require, module) 
     __extends(FileCollection, _super);
 
     function FileCollection() {
-      _ref = FileCollection.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return FileCollection.__super__.constructor.apply(this, arguments);
     }
 
     FileCollection.prototype.model = File;
@@ -297,7 +300,7 @@ window.require.register("helpers/client", function(exports, require, module) {
   
 });
 window.require.register("helpers/socket", function(exports, require, module) {
-  var File, SocketListener, _ref,
+  var File, SocketListener,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -307,8 +310,7 @@ window.require.register("helpers/socket", function(exports, require, module) {
     __extends(SocketListener, _super);
 
     function SocketListener() {
-      _ref = SocketListener.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return SocketListener.__super__.constructor.apply(this, arguments);
     }
 
     SocketListener.prototype.models = {
@@ -356,8 +358,7 @@ window.require.register("helpers/socket", function(exports, require, module) {
     };
 
     SocketListener.prototype.process = function(event) {
-      var doctype, id, model, operation,
-        _this = this;
+      var doctype, id, model, operation;
       doctype = event.doctype, operation = event.operation, id = event.id;
       console.log("received: " + operation + ":" + doctype);
       switch (operation) {
@@ -367,36 +368,42 @@ window.require.register("helpers/socket", function(exports, require, module) {
             type: doctype
           });
           return model.fetch({
-            success: function(fetched) {
-              fetched.set({
-                type: doctype
-              });
-              return _this.onRemoteCreate(fetched);
-            }
+            success: (function(_this) {
+              return function(fetched) {
+                fetched.set({
+                  type: doctype
+                });
+                return _this.onRemoteCreate(fetched);
+              };
+            })(this)
           });
         case 'update':
-          return this.collections.forEach(function(collection) {
-            if (!(model = collection.get(id))) {
-              return;
-            }
-            return model.fetch({
-              success: function(fetched) {
-                if (fetched.changedAttributes()) {
-                  fetched.set({
-                    type: doctype
-                  });
-                  return _this.onRemoteUpdate(fetched, collection);
-                }
+          return this.collections.forEach((function(_this) {
+            return function(collection) {
+              if (!(model = collection.get(id))) {
+                return;
               }
-            });
-          });
+              return model.fetch({
+                success: function(fetched) {
+                  if (fetched.changedAttributes()) {
+                    fetched.set({
+                      type: doctype
+                    });
+                    return _this.onRemoteUpdate(fetched, collection);
+                  }
+                }
+              });
+            };
+          })(this));
         case 'delete':
-          return this.collections.forEach(function(collection) {
-            if (!(model = collection.get(id))) {
-              return;
-            }
-            return _this.onRemoteDelete(model, collection);
-          });
+          return this.collections.forEach((function(_this) {
+            return function(collection) {
+              if (!(model = collection.get(id))) {
+                return;
+              }
+              return _this.onRemoteDelete(model, collection);
+            };
+          })(this));
       }
     };
 
@@ -500,9 +507,7 @@ window.require.register("lib/app_helpers", function(exports, require, module) {
       console = window.console = window.console || {};
       method = void 0;
       dummy = function() {};
-      methods = 'assert,count,debug,dir,dirxml,error,exception,\
-                   group,groupCollapsed,groupEnd,info,log,markTimeline,\
-                   profile,profileEnd,time,timeEnd,trace,warn'.split(',');
+      methods = 'assert,count,debug,dir,dirxml,error,exception, group,groupCollapsed,groupEnd,info,log,markTimeline, profile,profileEnd,time,timeEnd,trace,warn'.split(',');
       _results = [];
       while (method = methods.pop()) {
         _results.push(console[method] = console[method] || dummy);
@@ -513,7 +518,7 @@ window.require.register("lib/app_helpers", function(exports, require, module) {
   
 });
 window.require.register("lib/base_view", function(exports, require, module) {
-  var BaseView, _ref,
+  var BaseView,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -521,8 +526,7 @@ window.require.register("lib/base_view", function(exports, require, module) {
     __extends(BaseView, _super);
 
     function BaseView() {
-      _ref = BaseView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return BaseView.__super__.constructor.apply(this, arguments);
     }
 
     BaseView.prototype.template = function() {};
@@ -530,9 +534,9 @@ window.require.register("lib/base_view", function(exports, require, module) {
     BaseView.prototype.initialize = function() {};
 
     BaseView.prototype.getRenderData = function() {
-      var _ref1;
+      var _ref;
       return {
-        model: (_ref1 = this.model) != null ? _ref1.toJSON() : void 0
+        model: (_ref = this.model) != null ? _ref.toJSON() : void 0
       };
     };
 
@@ -560,7 +564,7 @@ window.require.register("lib/base_view", function(exports, require, module) {
   
 });
 window.require.register("lib/view_collection", function(exports, require, module) {
-  var BaseView, ViewCollection, _ref,
+  var BaseView, ViewCollection,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -573,8 +577,7 @@ window.require.register("lib/view_collection", function(exports, require, module
     function ViewCollection() {
       this.removeItem = __bind(this.removeItem, this);
       this.addItem = __bind(this.addItem, this);
-      _ref = ViewCollection.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return ViewCollection.__super__.constructor.apply(this, arguments);
     }
 
     ViewCollection.prototype.itemview = null;
@@ -610,21 +613,21 @@ window.require.register("lib/view_collection", function(exports, require, module
     };
 
     ViewCollection.prototype.render = function() {
-      var id, view, _ref1;
-      _ref1 = this.views;
-      for (id in _ref1) {
-        view = _ref1[id];
+      var id, view, _ref;
+      _ref = this.views;
+      for (id in _ref) {
+        view = _ref[id];
         view.$el.detach();
       }
       return ViewCollection.__super__.render.apply(this, arguments);
     };
 
     ViewCollection.prototype.afterRender = function() {
-      var id, view, _ref1;
+      var id, view, _ref;
       this.$collectionEl = $(this.collectionEl);
-      _ref1 = this.views;
-      for (id in _ref1) {
-        view = _ref1[id];
+      _ref = this.views;
+      for (id in _ref) {
+        view = _ref[id];
         this.appendView(view.$el);
       }
       this.onReset(this.collection);
@@ -637,10 +640,10 @@ window.require.register("lib/view_collection", function(exports, require, module
     };
 
     ViewCollection.prototype.onReset = function(newcollection) {
-      var id, view, _ref1;
-      _ref1 = this.views;
-      for (id in _ref1) {
-        view = _ref1[id];
+      var id, view, _ref;
+      _ref = this.views;
+      for (id in _ref) {
+        view = _ref[id];
         view.remove();
       }
       return newcollection.forEach(this.addItem);
@@ -774,7 +777,7 @@ window.require.register("locales/fr", function(exports, require, module) {
   
 });
 window.require.register("models/file", function(exports, require, module) {
-  var File, client, _ref,
+  var File, client,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -784,8 +787,7 @@ window.require.register("models/file", function(exports, require, module) {
     __extends(File, _super);
 
     function File() {
-      _ref = File.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return File.__super__.constructor.apply(this, arguments);
     }
 
     File.prototype.sync = function(method, model, options) {
@@ -834,33 +836,38 @@ window.require.register("models/file", function(exports, require, module) {
     };
 
     File.prototype.prepareCallbacks = function(callbacks, presuccess, preerror) {
-      var error, success, _ref1,
-        _this = this;
-      _ref1 = callbacks || {}, success = _ref1.success, error = _ref1.error;
+      var error, success, _ref;
+      _ref = callbacks || {}, success = _ref.success, error = _ref.error;
       if (presuccess == null) {
-        presuccess = function(data) {
-          return _this.set(data.app);
-        };
+        presuccess = (function(_this) {
+          return function(data) {
+            return _this.set(data.app);
+          };
+        })(this);
       }
       this.trigger('request', this, null, callbacks);
-      callbacks.success = function(data) {
-        if (presuccess) {
-          presuccess(data);
-        }
-        _this.trigger('sync', _this, null, callbacks);
-        if (success) {
-          return success(data);
-        }
-      };
-      return callbacks.error = function(jqXHR) {
-        if (preerror) {
-          preerror(jqXHR);
-        }
-        _this.trigger('error', _this, jqXHR, {});
-        if (error) {
-          return error(jqXHR);
-        }
-      };
+      callbacks.success = (function(_this) {
+        return function(data) {
+          if (presuccess) {
+            presuccess(data);
+          }
+          _this.trigger('sync', _this, null, callbacks);
+          if (success) {
+            return success(data);
+          }
+        };
+      })(this);
+      return callbacks.error = (function(_this) {
+        return function(jqXHR) {
+          if (preerror) {
+            preerror(jqXHR);
+          }
+          _this.trigger('error', _this, jqXHR, {});
+          if (error) {
+            return error(jqXHR);
+          }
+        };
+      })(this);
     };
 
     File.prototype.repository = function() {
@@ -910,7 +917,7 @@ window.require.register("models/file", function(exports, require, module) {
   
 });
 window.require.register("router", function(exports, require, module) {
-  var File, FolderView, Router, app, _ref,
+  var File, FolderView, Router, app,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -924,8 +931,7 @@ window.require.register("router", function(exports, require, module) {
     __extends(Router, _super);
 
     function Router() {
-      _ref = Router.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Router.__super__.constructor.apply(this, arguments);
     }
 
     Router.prototype.routes = {
@@ -939,17 +945,18 @@ window.require.register("router", function(exports, require, module) {
     };
 
     Router.prototype.folder = function(id) {
-      var folder,
-        _this = this;
+      var folder;
       folder = new File({
         id: id,
         type: "folder"
       });
       return folder.fetch({
-        success: function(data) {
-          folder.set(data);
-          return app.folderView.changeActiveFolder(folder);
-        }
+        success: (function(_this) {
+          return function(data) {
+            folder.set(data);
+            return app.folderView.changeActiveFolder(folder);
+          };
+        })(this)
       });
     };
 
@@ -1012,7 +1019,7 @@ window.require.register("views/breadcrumbs", function(exports, require, module) 
   
 });
 window.require.register("views/file", function(exports, require, module) {
-  var BaseView, FileView, ModalShareView, ModalView, client, _ref,
+  var BaseView, FileView, ModalShareView, ModalView, client,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1030,8 +1037,7 @@ window.require.register("views/file", function(exports, require, module) {
 
     function FileView() {
       this.onKeyPress = __bind(this.onKeyPress, this);
-      _ref = FileView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return FileView.__super__.constructor.apply(this, arguments);
     }
 
     FileView.prototype.className = 'folder-row';
@@ -1066,16 +1072,17 @@ window.require.register("views/file", function(exports, require, module) {
     };
 
     FileView.prototype.onDeleteClicked = function() {
-      var _this = this;
-      return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), function(confirm) {
-        if (confirm) {
-          return _this.model.destroy({
-            error: function() {
-              return new ModalView(t("modal error"), t("modal delete error"), t("modal ok"));
-            }
-          });
-        }
-      });
+      return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
+        return function(confirm) {
+          if (confirm) {
+            return _this.model.destroy({
+              error: function() {
+                return new ModalView(t("modal error"), t("modal delete error"), t("modal ok"));
+              }
+            });
+          }
+        };
+      })(this));
     };
 
     FileView.prototype.onEditClicked = function() {
@@ -1089,42 +1096,48 @@ window.require.register("views/file", function(exports, require, module) {
     };
 
     FileView.prototype.onShare = function() {
-      var _this = this;
       return client.get("" + (this.model.endpoint()) + "/" + this.model.id, {
-        success: function(data) {
-          console.log(data);
-          return new ModalShareView({
-            url: data.url,
-            model: _this.model
-          });
-        },
-        error: function(data) {
-          console.log(data);
-          return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
-        }
+        success: (function(_this) {
+          return function(data) {
+            console.log(data);
+            return new ModalShareView({
+              url: data.url,
+              model: _this.model
+            });
+          };
+        })(this),
+        error: (function(_this) {
+          return function(data) {
+            console.log(data);
+            return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
+          };
+        })(this)
       });
     };
 
     FileView.prototype.onSaveClicked = function() {
-      var name,
-        _this = this;
+      var name;
       name = this.$('.file-edit-name').val();
       if (name && name !== "") {
         return this.model.save({
           name: name
         }, {
           wait: true,
-          success: function(data) {
-            return _this.render();
-          },
-          error: function(model, err) {
-            console.log(err);
-            if (err.status === 400) {
-              return new ModalView(t("modal error"), t("modal error in use"), t("modal ok"));
-            } else {
-              return new ModalView(t("modal error"), t("modal error rename"), t("modal ok"));
-            }
-          }
+          success: (function(_this) {
+            return function(data) {
+              return _this.render();
+            };
+          })(this),
+          error: (function(_this) {
+            return function(model, err) {
+              console.log(err);
+              if (err.status === 400) {
+                return new ModalView(t("modal error"), t("modal error in use"), t("modal ok"));
+              } else {
+                return new ModalView(t("modal error"), t("modal error rename"), t("modal ok"));
+              }
+            };
+          })(this)
         });
       } else {
         return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
@@ -1143,7 +1156,7 @@ window.require.register("views/file", function(exports, require, module) {
   
 });
 window.require.register("views/files", function(exports, require, module) {
-  var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, SocketListener, ViewCollection, _ref,
+  var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, SocketListener, ViewCollection,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1168,8 +1181,7 @@ window.require.register("views/files", function(exports, require, module) {
     function FilesView() {
       this.upload = __bind(this.upload, this);
       this.addFile = __bind(this.addFile, this);
-      _ref = FilesView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return FilesView.__super__.constructor.apply(this, arguments);
     }
 
     FilesView.prototype.template = require('./templates/files');
@@ -1214,8 +1226,7 @@ window.require.register("views/files", function(exports, require, module) {
     };
 
     FilesView.prototype.upload = function(file) {
-      var formdata,
-        _this = this;
+      var formdata;
       formdata = new FormData();
       formdata.append('cid', file.cid);
       formdata.append('name', file.get('name'));
@@ -1225,31 +1236,38 @@ window.require.register("views/files", function(exports, require, module) {
       return file.save(null, {
         contentType: false,
         data: formdata,
-        success: function(data) {
-          return _this.collection.add(file, {
-            merge: true
-          });
-        },
-        error: function() {
-          return new ModalView(t("modal error"), t("modal error file upload"), t("modal ok"));
-        }
+        success: (function(_this) {
+          return function(data) {
+            return _this.collection.add(file, {
+              merge: true
+            });
+          };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            return new ModalView(t("modal error"), t("modal error file upload"), t("modal ok"));
+          };
+        })(this)
       });
     };
 
     FilesView.prototype.addFolder = function(folder) {
-      var found,
-        _this = this;
+      var found;
       found = this.collection.findWhere({
         name: folder.get("name")
       });
       if (!found) {
         return folder.save(null, {
-          success: function(data) {
-            return _this.collection.add(folder);
-          },
-          error: function(error) {
-            return new ModalView(t("modal error"), t("modal error folder create"), t("modal ok"));
-          }
+          success: (function(_this) {
+            return function(data) {
+              return _this.collection.add(folder);
+            };
+          })(this),
+          error: (function(_this) {
+            return function(error) {
+              return new ModalView(t("modal error"), t("modal error folder create"), t("modal ok"));
+            };
+          })(this)
         });
       } else {
         return new ModalView(t("modal error"), t("modal error folder exists"), t("modal ok"));
@@ -1262,7 +1280,7 @@ window.require.register("views/files", function(exports, require, module) {
   
 });
 window.require.register("views/folder", function(exports, require, module) {
-  var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView, _ref,
+  var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1289,8 +1307,7 @@ window.require.register("views/folder", function(exports, require, module) {
       this.onDragAndDrop = __bind(this.onDragAndDrop, this);
       this.onAddFile = __bind(this.onAddFile, this);
       this.onAddFolder = __bind(this.onAddFolder, this);
-      _ref = FolderView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return FolderView.__super__.constructor.apply(this, arguments);
     }
 
     FolderView.prototype.template = require('./templates/folder');
@@ -1320,8 +1337,7 @@ window.require.register("views/folder", function(exports, require, module) {
     };
 
     FolderView.prototype.initialize = function(options) {
-      var prevent,
-        _this = this;
+      var prevent;
       this.model = options.model;
       this.breadcrumbs = options.breadcrumbs;
       this.breadcrumbs.setRoot(this.model);
@@ -1331,9 +1347,11 @@ window.require.register("views/folder", function(exports, require, module) {
       };
       this.$el.on("dragover", prevent);
       this.$el.on("dragenter", prevent);
-      return this.$el.on("drop", function(e) {
-        return _this.onDragAndDrop(e);
-      });
+      return this.$el.on("drop", (function(_this) {
+        return function(e) {
+          return _this.onDragAndDrop(e);
+        };
+      })(this));
     };
 
     FolderView.prototype.getRenderData = function() {
@@ -1348,10 +1366,10 @@ window.require.register("views/folder", function(exports, require, module) {
       return this.displayChevron('up', 'name');
     };
 
+
     /*
         Helpers to display correct chevron to sort files
-    */
-
+     */
 
     FolderView.prototype.displayChevron = function(order, type) {
       this.$('#up-name').show();
@@ -1374,13 +1392,12 @@ window.require.register("views/folder", function(exports, require, module) {
       }
     };
 
+
     /*
         Display and re-render the contents of the folder
-    */
-
+     */
 
     FolderView.prototype.changeActiveFolder = function(folder) {
-      var _this = this;
       this.model = folder;
       this.breadcrumbs.push(folder);
       if (folder.id === "root") {
@@ -1398,56 +1415,61 @@ window.require.register("views/folder", function(exports, require, module) {
         this.$("#upload-buttons").hide();
       }
       return this.model.findFiles({
-        success: function(files) {
-          var file, _i, _len;
-          for (_i = 0, _len = files.length; _i < _len; _i++) {
-            file = files[_i];
-            file.type = "file";
-          }
-          return _this.model.findFolders({
-            success: function(folders) {
-              var _j, _len1, _ref1;
-              for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
-                folder = folders[_j];
-                folder.type = "folder";
-              }
-              if (_this.filesCollection) {
-                _this.stopListening(_this.filesCollection);
-              }
-              _this.filesCollection = new FileCollection(folders.concat(files));
-              _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
-              if (_this.filesList) {
-                if ((_ref1 = _this.filesList) != null) {
-                  _ref1.destroy();
-                }
-              }
-              _this.filesList = new FilesView(_this.filesCollection, _this.model);
-              _this.$('#files').html(_this.filesList.$el);
-              return _this.filesList.render();
-            },
-            error: function(error) {
-              console.log(error);
-              return new ModalView(t("modal error"), t("modal error get folders"), t("modal ok"));
+        success: (function(_this) {
+          return function(files) {
+            var file, _i, _len;
+            for (_i = 0, _len = files.length; _i < _len; _i++) {
+              file = files[_i];
+              file.type = "file";
             }
-          });
-        },
-        error: function(error) {
-          console.log(error);
-          return new ModalView(t("modal error"), t("modal error get files"), t("modal ok"));
-        }
+            return _this.model.findFolders({
+              success: function(folders) {
+                var _j, _len1, _ref;
+                for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
+                  folder = folders[_j];
+                  folder.type = "folder";
+                }
+                if (_this.filesCollection) {
+                  _this.stopListening(_this.filesCollection);
+                }
+                _this.filesCollection = new FileCollection(folders.concat(files));
+                _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
+                if (_this.filesList) {
+                  if ((_ref = _this.filesList) != null) {
+                    _ref.destroy();
+                  }
+                }
+                _this.filesList = new FilesView(_this.filesCollection, _this.model);
+                _this.$('#files').html(_this.filesList.$el);
+                return _this.filesList.render();
+              },
+              error: function(error) {
+                console.log(error);
+                return new ModalView(t("modal error"), t("modal error get folders"), t("modal ok"));
+              }
+            });
+          };
+        })(this),
+        error: (function(_this) {
+          return function(error) {
+            console.log(error);
+            return new ModalView(t("modal error"), t("modal error get files"), t("modal ok"));
+          };
+        })(this)
       });
     };
 
+
     /*
         Upload/ new folder
-    */
-
+     */
 
     FolderView.prototype.prepareNewFolder = function() {
-      var _this = this;
-      return setTimeout(function() {
-        return _this.$("#inputName").focus();
-      }, 500);
+      return setTimeout((function(_this) {
+        return function() {
+          return _this.$("#inputName").focus();
+        };
+      })(this), 500);
     };
 
     FolderView.prototype.onCancelFolder = function() {
@@ -1480,10 +1502,10 @@ window.require.register("views/folder", function(exports, require, module) {
     };
 
     FolderView.prototype.onAddFile = function() {
-      var attach, _i, _len, _ref1;
-      _ref1 = this.$('#uploader')[0].files;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        attach = _ref1[_i];
+      var attach, _i, _len, _ref;
+      _ref = this.$('#uploader')[0].files;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attach = _ref[_i];
         this.filesList.addFile(attach);
       }
       return this.$('#uploader').val("");
@@ -1494,14 +1516,14 @@ window.require.register("views/folder", function(exports, require, module) {
     };
 
     FolderView.prototype.onDragAndDrop = function(e) {
-      var atLeastOne, attach, _i, _len, _ref1;
+      var atLeastOne, attach, _i, _len, _ref;
       e.preventDefault();
       e.stopPropagation();
       console.log("Drag and drop");
       atLeastOne = false;
-      _ref1 = e.dataTransfer.files;
-      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-        attach = _ref1[_i];
+      _ref = e.dataTransfer.files;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        attach = _ref[_i];
         if (attach.type === "") {
           new ModalView(t("modal error"), "" + attach.name + " " + (t('modal error file invalid')), t("modal ok"));
         } else {
@@ -1518,10 +1540,10 @@ window.require.register("views/folder", function(exports, require, module) {
       return $('#dialog-upload-file').modal('hide');
     };
 
+
     /*
         Search
-    */
-
+     */
 
     FolderView.prototype.onSeachKeyPress = function(e) {
       var query;
@@ -1628,25 +1650,27 @@ window.require.register("views/modal", function(exports, require, module) {
     };
 
     ModalView.prototype.onYes = function() {
-      var _this = this;
       if (this.cb) {
         this.cb(true);
       }
       this.$('#modal-dialog').modal('hide');
-      return setTimeout(function() {
-        return _this.destroy();
-      }, 1000);
+      return setTimeout((function(_this) {
+        return function() {
+          return _this.destroy();
+        };
+      })(this), 1000);
     };
 
     ModalView.prototype.onNo = function() {
-      var _this = this;
       if (this.cb) {
         this.cb(false);
       }
       this.$('#modal-dialog').modal('hide');
-      return setTimeout(function() {
-        return _this.destroy();
-      }, 1000);
+      return setTimeout((function(_this) {
+        return function() {
+          return _this.destroy();
+        };
+      })(this), 1000);
     };
 
     ModalView.prototype.render = function() {
@@ -1666,7 +1690,7 @@ window.require.register("views/modal", function(exports, require, module) {
   
 });
 window.require.register("views/modal_share", function(exports, require, module) {
-  var BaseView, ModalShareView, ModalView, client, _ref,
+  var BaseView, ModalShareView, ModalView, client,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1680,8 +1704,7 @@ window.require.register("views/modal_share", function(exports, require, module) 
     __extends(ModalShareView, _super);
 
     function ModalShareView() {
-      _ref = ModalShareView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return ModalShareView.__super__.constructor.apply(this, arguments);
     }
 
     ModalShareView.prototype.template = require('./templates/modal_share_file');
@@ -1702,8 +1725,7 @@ window.require.register("views/modal_share", function(exports, require, module) 
     };
 
     ModalShareView.prototype.send = function() {
-      var input, mails,
-        _this = this;
+      var input, mails;
       input = this.$('#modal-dialog-share-input').val();
       console.log(input);
       mails = input.replace(/\s+/g, ' ').replace(/\ /g, ',').replace(/\,+/g, ',').split(",");
@@ -1711,15 +1733,19 @@ window.require.register("views/modal_share", function(exports, require, module) 
       return client.post("" + (this.model.endpoint()) + "/" + this.model.id + "/send", {
         users: mails
       }, {
-        success: function(data) {
-          _this.$('#modal-dialog').modal('hide');
-          return setTimeout(function() {
-            return _this.destroy();
-          }, 1000);
-        },
-        error: function(data) {
-          return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
-        }
+        success: (function(_this) {
+          return function(data) {
+            _this.$('#modal-dialog').modal('hide');
+            return setTimeout(function() {
+              return _this.destroy();
+            }, 1000);
+          };
+        })(this),
+        error: (function(_this) {
+          return function(data) {
+            return new ModalView(t("modal error"), t("modal share error"), t("modal ok"));
+          };
+        })(this)
       });
     };
 
