@@ -1,8 +1,10 @@
 americano = require 'americano'
+errorHandler = require './server/middlewares/errors'
 
 port = process.env.PORT || 9250
 americano.start name: 'cozy-files', port: port, (app, server) ->
     app.server = server
+    app.use errorHandler
 
     RealtimeAdapter = require 'cozy-realtime-adapter'
 
