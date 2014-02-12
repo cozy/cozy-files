@@ -11,7 +11,7 @@
                   | #{t("upload msg")}
                 input#uploader(type="file", multiple)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("upload close")}
+            button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade
@@ -27,29 +27,55 @@
                   | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("new folder close")}
+            button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
             button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
     .row
       .col-lg-12
-        .pull-left
-          input#search-box(type="search")
-        .pull-right
-          p.pull-right
-            a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
-              span.glyphicon.glyphicon-upload
+        p.pull-right
+          input#search-box.pull-right(type="search")
+          #upload-buttons.pull-right
+            a.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
+              img(src="images/add-file.png")
               span.button-title-reponsive
-                |  #{t("upload button")}
             |  
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
-              span.glyphicon.glyphicon-plus-sign
+              img(src="images/add-folder.png")
               span.button-title-reponsive
-                |  #{t("new folder button")}
-
 .container
   .row.content-shadow
     .col-lg-12#content
       #crumbs
+      table#table-items.table.table-hover
+        tbody#table-items-body
+          td
+            a.btn#name(type='buton')
+              span Name  
+              a.btn#down-name(type='buton')
+                span.glyphicon.glyphicon-chevron-down
+              a.btn#up-name(type='buton', disabled=true)
+                span.glyphicon.glyphicon-chevron-up 
+          td
+            a.btn#size(type='buton')
+              span    Size
+              a.btn#down-size(type='buton')
+                span.glyphicon.glyphicon-chevron-down
+              a.btn#up-size(type='buton', disabled=true)
+                span.glyphicon.glyphicon-chevron-up 
+          td
+            a.btn#type(type='buton')
+              span    Type
+              a.btn#down-class(type='buton')
+                span.glyphicon.glyphicon-chevron-down
+              a.btn#up-class(type='buton', disabled=true)
+                span.glyphicon.glyphicon-chevron-up 
+          td 
+            a.btn#date(type='buton')
+              span    Date
+              a.btn#down-lastModification(type='buton')
+                span.glyphicon.glyphicon-chevron-down
+              a.btn#up-lastModification(type='buton', disabled=true)
+                span.glyphicon.glyphicon-chevron-up
       #files

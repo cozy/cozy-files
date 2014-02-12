@@ -36,6 +36,8 @@ a:focus,
 .btn:focus
      outline:0px !important
      -webkit-appearance:none
+.btn[disabled=disabled], .btn:disabled
+  opacity: 0.2
 
 
 /*      COZY BUTTONS    */
@@ -48,6 +50,7 @@ a:focus,
     &:hover
       background-color: actioncolor
       border-color: actioncolor
+
   &.btn-cozy-contrast
     background-color: contrastcolor
     border-color: contrastcolor
@@ -77,9 +80,9 @@ input:focus
 input#search-box
     height: 35px
     font-size: 16px
-    padding-left: 28px
+    margin-left: 5px
     width: 200px
-    background-image: url("/images/iconmonstr-magnifier-icon-18.png")
+    background-image: url("../images/iconmonstr-magnifier-icon-18.png")
     background-repeat: no-repeat 
     background-position: 5px 8px
 
@@ -107,13 +110,17 @@ div#affixbar
 
   .row
     background-color: white
-    padding-top: 5px
+    padding-top: 15px
 
     p
       margin-bottom: 5px
 
   a.btn
     height: 35px
+
+  img
+    height: 20px
+    color: #C60
 
 .affix-top
   color: blue
@@ -159,9 +166,19 @@ tr.folder-row
   .operations
     font-size: 18px
     visibility: hidden
-    display: inline
+    display: inline-block
     a
       padding-left: 5px
+
+  .img-folder
+    img  
+      width: 20px
+      margin-right: -3px
+
+  .img-file
+    img  
+      width: 20px
+      margin-right: -3px  
 
   .icon
     font-size: 14px
@@ -169,7 +186,16 @@ tr.folder-row
   &:hover .operations
     visibility: visible
 
-  .file-date
+    a
+      color: lightgray
+
+    a:hover
+      color: mediumcolor-contrast
+
+    a:active
+      color: actioncolor
+
+  .file-date, .file-size, .file-type
     padding-top: 13px
 
 .visible-lg.visible-md.visible-inline
@@ -179,7 +205,14 @@ tr.folder-row
 /*      BREADCRUMBS     */
 #crumbs
   overflow: hidden
+  img
+    height: 25px
+    margin-top: 0px
+    margin-left:-5px
+    margin-right:-5px
   ul
+    margin-top: 10px
+    margin-bottom: 0px
     padding-left: 0
     list-style none
     display inline-table
@@ -193,7 +226,7 @@ tr.folder-row
         text-align center
         padding 8px 5px 0 22px
         position relative
-        margin 5px 10px 0 0
+        margin 10px 5px 0 0
         font-size 15px
         text-decoration none
         color #fff
@@ -217,7 +250,7 @@ tr.folder-row
         &:hover
           background actioncolor
           &:after
-            border-left-color actioncolor
+            border-left-color actioncolor    
       &:first-child
         a
           padding-left: 20px
@@ -232,3 +265,9 @@ tr.folder-row
           border-bottom-right-radius 10px
           &:after
             display none
+
+.table
+  .tbody
+    .td
+      span
+        display none

@@ -1,8 +1,9 @@
 td
   if model.type && model.type == "folder"
-    span.glyphicon.glyphicon-folder-close.no-hover.icon
+    a.img-folder
+      img(src="images/folder.png")
   else
-    span.glyphicon.glyphicon-folder-close.no-hover.icon
+    span.glyphicon.glyphicon-file.no-hover.icon
   input.caption.file-edit-name(value=model.name)
   a.btn.btn-sm.btn-cozy.file-edit-save
     | #{t("file edit save")}

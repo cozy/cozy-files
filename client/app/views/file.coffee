@@ -1,5 +1,6 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
+ModalShareView = require "./modal_share"
 client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
@@ -41,11 +42,13 @@ module.exports = class FileView extends BaseView
         @$(".file-edit-name").focus()
 
     onShare: ->
-        client.get "public/file/#{@model.id}/notify",
-            success: (data) ->
+        client.get "#{@model.endpoint()}/#{@model.id}",
+            success: (data) =>
                 console.log data
-                new ModalView t("modal shared link title"), t("modal shared link msg")+" "+data.url, t("modal ok")
-            error: (data) ->
+                new ModalShareView
+                    url: data.url
+                    model: @model
+            error: (data) =>
                 console.log data
                 new ModalView t("modal error"), t("modal share error"), t("modal ok")
 
@@ -55,7 +58,6 @@ module.exports = class FileView extends BaseView
         if name and name != ""
 
             @model.save name: name,
-                patch: true
                 wait: true
                 success: (data) =>
                     @render()

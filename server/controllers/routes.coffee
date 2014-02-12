@@ -11,7 +11,7 @@ module.exports =
         post: files.create
     'files/:fileid':
         get: files.find
-        patch: files.modify
+        put: files.modify
         delete: files.destroy
     'files/:fileid/attach/:name':
         get: files.getAttachment
@@ -19,17 +19,31 @@ module.exports =
         get: files.downloadAttachment
 
     # public access to the file
-    'public/file/:fileid':
+    'public/file:fileid':
         get: files.downloadAttachment
-    'public/file/:fileid/notify':
-        get: files.sendPublicLink
+    'fileshare/:fileid':
+        get: files.getPublicLink
+    'fileshare/:fileid/send':
+        post: files.sendPublicLinks
+
+    # public access to the folder
+    'public/folder:id':
+        get: folders.zip
+    'foldershare/:id':
+        get: folders.getPublicLink
+    'foldershare/:id/send':
+        post: folders.sendPublicLinks
 
     'folders':
         post: folders.create
+    'folder/tree/:id':
+        get: folders.tree
     'folders/:id':
         get: folders.find
-        patch: folders.modify
+        put: folders.modify
         delete: folders.destroy
+    'folders/:id/zip/:name':
+        get: folders.zip
 
     'folders/files':
         post: folders.findFiles

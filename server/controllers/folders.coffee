@@ -1,6 +1,9 @@
 Folder = require '../models/folder'
 File = require '../models/file'
 async = require 'async'
+archiver = require 'archiver'
+MailHelper = require "../mails/mail_helper"
+mails = new MailHelper()
 
 ## Helpers ##
 
@@ -56,6 +59,33 @@ module.exports.find = (req, res) ->
         else
             res.send folder, 200
 
+module.exports.tree = (req, res) ->
+    findFolder req.params.id, (err, folderChild) ->
+        if err
+            res.send error: true, msg:  "Server error occured: #{err}", 500
+        else
+            Folder.all (err, folders) =>
+
+                isParent = (folder, cb) ->
+                    if (folderChild.path+"/").indexOf(folder.path + "/" + folder.name + "/") is 0
+                        cb null, [folder]
+                    else
+                        cb null, []
+
+                # check that the name is not already taken
+                async.concat folders, isParent, (err, parents) ->
+                    if err
+                        console.log err
+                        res.send error: true, msg: "Couldn't find the tree: : #{err}", 500
+                    else
+                        parents = parents.sort (a, b) ->
+                            if a.path + "/" + a.name < b.path + "/" + b.name then return -1
+                            else return 1
+
+                        console.log parents
+                        res.send parents, 200
+
+
 module.exports.modify = (req, res) ->
     if (not req.body.name) or (req.body.name == "")
         res.send error: true, msg: "No filename specified", 500
@@ -66,19 +96,24 @@ module.exports.modify = (req, res) ->
                 res.send error: true, msg:  "Server error occured: #{err}", 500
             else
                 newName = req.body.name
-                oldPath = folderToModify.path + '/' + folderToModify.name
-                newPath = folderToModify.path + '/' + newName
+                oldPath = folderToModify.path + '/' + folderToModify.name + "/"
+                newPath = folderToModify.path + '/' + newName + "/"
 
                 hasntTheSamePathOrIsTheSame = (folder, cb) ->
                     if (folderToModify.id is folder.id)
                         cb true
                     else
-                        cb (newPath isnt (folder.path + '/' + folder.name))
+                        cb (newPath isnt (folder.path + '/' + folder.name + "/"))
 
                 updateIfIsSubFolder = (file, cb) ->
-                    if (file.path.indexOf(oldPath) is 0)
-                        console.log "Moving '#{file.name}': '#{oldPath}/#{file.name}'' -> '#{newPath}/#{file.name}'"
-                        modifiedPath = file.path.replace oldPath, newPath
+                    if ((file.path + "/").indexOf(oldPath) is 0)
+
+                        oldRealPath = folderToModify.path + '/' + folderToModify.name
+                        newRealPath = folderToModify.path + '/' + newName
+
+                        modifiedPath = file.path.replace oldRealPath, newRealPath
+
+                        console.log "Moving '#{file.name}': '#{oldPath}#{file.name}'' -> '#{newPath}#{file.name}' (#{modifiedPath})"
                         file.updateAttributes path: modifiedPath, cb
                     else
                         cb null
@@ -205,3 +240,83 @@ module.exports.search = (req, res) ->
             res.send error: true, msg: "Server error occured: #{err}", 500
         else
             res.send files
+
+module.exports.getPublicLink = (req, res) ->
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.getFolderUrl folder, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
+
+module.exports.sendPublicLinks = (req, res) ->
+    users = req.body.users
+
+    findFolder req.params.id, (err, folder) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            # send the email and get url
+            mails.sendPublicFolderLinks folder, users, (err, url) ->
+                if err
+                    console.log err
+                    res.send error: true, msg: err, 500
+                else
+                    res.send url: url, 200
+
+module.exports.zip = (req, res) ->
+    getFolderPath req.params.id, (err, key) ->
+        if err
+            res.send error: true, msg: "Server error occured: #{err}", 500
+        else
+            File.all (err, files) ->
+                if err
+                    res.send error: true, msg: "Server error occured: #{err}", 500
+                else
+                    # find the name
+                    findFolder req.params.id, (err, folder) ->
+                        if err or not folder
+                            callback "folder not found"
+                        else
+                            zipName = folder.name?.replace(/\W/g, '')
+
+                            isContained = (file, cb) ->
+                                if (file.path+"/").indexOf(key+"/") is 0
+                                    cb null, [file]
+                                else
+                                    cb null, []
+
+                            # check that the name is not already taken
+                            async.concat files, isContained, (err, files) ->
+                                if err
+                                    res.send error:true, msg: "Server error", 400
+                                else
+                                    archive = archiver('zip')
+
+                                    addToArchive = (file, cb) ->
+                                        stream = file.getBinary "file", (err, resp, body) =>
+                                            if err
+                                                res.send error: true, msg: "Server error occured: #{err}", 500
+                                        name = file.path.replace(key, "") + "/" + file.name
+                                        archive.append stream, name: name, cb
+
+                                    async.eachSeries files, addToArchive, (err) ->
+                                        if err
+                                            res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            archive.pipe res
+
+                                            disposition = "attachment; filename=\"#{zipName}.zip\""
+                                            res.setHeader 'Content-Disposition', disposition
+                                            res.setHeader 'Content-Type', 'application/zip'
+
+                                    archive.finalize (err, bytes) ->
+                                        if err
+                                            res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            console.log "Zip created"
