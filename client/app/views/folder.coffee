@@ -26,14 +26,14 @@ module.exports = class FolderView extends BaseView
         'click #down-size'             : 'onChangeOrder'
         'click #up-lastModification'   : 'onChangeOrder'
         'click #down-lastModification' : 'onChangeOrder'
-        'click #name'                  : 'onChangeName' 
+        'click #name'                  : 'onChangeName'
         'click #size'                  : 'onChangeSize'
         'click #type'                  : 'onChangeType'
         'click #date'                  : 'onChangeDate'
         'keyup input#search-box'       : 'onSeachKeyPress'
         'keyup input#inputName'        : 'onAddFolderEnter'
 
-    initialize: (options) -> 
+    initialize: (options) ->
         @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
@@ -61,21 +61,21 @@ module.exports = class FolderView extends BaseView
     ###
     displayChevron: (order, type) ->
         @$('#up-name').show()
-        @$('#up-name')[0].setAttribute('disabled', 'disabled')
+        @$('#up-name')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-name').hide()
         @$('#up-size').show()
-        @$('#up-size')[0].setAttribute('disabled', 'disabled')
+        @$('#up-size')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-size').hide()
         @$('#up-class').show()
-        @$('#up-class')[0].setAttribute('disabled', 'disabled')
+        @$('#up-class')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-class').hide()
         @$('#up-lastModification').show()
-        @$('#up-lastModification')[0].setAttribute('disabled', 'disabled')
+        @$('#up-lastModification')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-lastModification').hide()
         @$("##{order}-#{type}").show()
         if order == "up"
             @$("##{order}-#{type}")[0].removeAttribute('disabled')
-        else         
+        else
             @$("#up-#{type}").hide()
 
     ###
@@ -88,7 +88,7 @@ module.exports = class FolderView extends BaseView
         # update breadcrumbs
         @breadcrumbs.push folder
         if folder.id == "root"
-            @$("#crumbs").css({opacity:0.5}) 
+            @$("#crumbs").css({opacity:0.5})
         else
             @$("#crumbs").css({opacity:1})
 
@@ -143,7 +143,7 @@ module.exports = class FolderView extends BaseView
         , 500
 
     onCancelFolder: ->
-        @$("#inputName").val("")    
+        @$("#inputName").val("")
 
 
     onAddFolderEnter: (e) ->
@@ -158,7 +158,7 @@ module.exports = class FolderView extends BaseView
             path: @model.repository()
             type: "folder"
         console.log "creating folder #{folder}"
-        @$("#inputName").val("")    
+        @$("#inputName").val("")
 
         if folder.validate()
             new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
@@ -173,13 +173,13 @@ module.exports = class FolderView extends BaseView
         @$('#uploader').val("")
 
     onCancelFile: ->
-        @$("#uploader").val("")   
+        @$("#uploader").val("")
 
     onDragAndDrop: (e) =>
         e.preventDefault()
         e.stopPropagation()
         console.log "Drag and drop"
-        
+
         # send file
         atLeastOne = false
         for attach in e.dataTransfer.files
@@ -212,7 +212,7 @@ module.exports = class FolderView extends BaseView
     displaySearchResults: (query) ->
         @breadcrumbs.popAll()
 
-        data = 
+        data =
             id: query
             name: "#{t('breadcrumbs search title')} '#{query}'"
             type: "search"
@@ -224,7 +224,7 @@ module.exports = class FolderView extends BaseView
     onChangeOrder: ->
         if @filesCollection.order is "incr"
             @filesCollection.order = "decr"
-            @filesCollection.sort()        
+            @filesCollection.sort()
             @displayChevron('down', @filesCollection.type)
         else
             @filesCollection.order = "incr"
@@ -236,7 +236,7 @@ module.exports = class FolderView extends BaseView
             @filesCollection.order = "incr"
             @filesCollection.type = "name"
             @filesCollection.sort()
-            @displayChevron('up','name')    
+            @displayChevron('up','name')
 
     # Sort files by size
     onChangeSize: ->
@@ -244,7 +244,7 @@ module.exports = class FolderView extends BaseView
             @filesCollection.order = "incr"
             @filesCollection.type = "size"
             @filesCollection.sort()
-            @displayChevron('up','size')    
+            @displayChevron('up','size')
 
     # Sort files by type
     onChangeType: ->

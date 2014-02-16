@@ -36,7 +36,7 @@ module.exports.all = (req, res) ->
         else
             res.send files
 
-module.exports.create = (req, res) ->
+module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
         res.send error: true, msg: "Invalid arguments", 500
     else

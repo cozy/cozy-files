@@ -1372,17 +1372,26 @@ window.require.register("views/folder", function(exports, require, module) {
      */
 
     FolderView.prototype.displayChevron = function(order, type) {
+      var _ref, _ref1, _ref2, _ref3;
       this.$('#up-name').show();
-      this.$('#up-name')[0].setAttribute('disabled', 'disabled');
+      if ((_ref = this.$('#up-name')[0]) != null) {
+        _ref.setAttribute('disabled', 'disabled');
+      }
       this.$('#down-name').hide();
       this.$('#up-size').show();
-      this.$('#up-size')[0].setAttribute('disabled', 'disabled');
+      if ((_ref1 = this.$('#up-size')[0]) != null) {
+        _ref1.setAttribute('disabled', 'disabled');
+      }
       this.$('#down-size').hide();
       this.$('#up-class').show();
-      this.$('#up-class')[0].setAttribute('disabled', 'disabled');
+      if ((_ref2 = this.$('#up-class')[0]) != null) {
+        _ref2.setAttribute('disabled', 'disabled');
+      }
       this.$('#down-class').hide();
       this.$('#up-lastModification').show();
-      this.$('#up-lastModification')[0].setAttribute('disabled', 'disabled');
+      if ((_ref3 = this.$('#up-lastModification')[0]) != null) {
+        _ref3.setAttribute('disabled', 'disabled');
+      }
       this.$('#down-lastModification').hide();
       this.$("#" + order + "-" + type).show();
       if (order === "up") {
@@ -1853,10 +1862,10 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push('><span class="glyphicon glyphicon-remove-circle"> </span></a><a');
   buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
   buf.push('><span class="glyphicon glyphicon-edit"> </span></a><a');
-  buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + "") }, {"href":true,"target":true,"title":true}));
+  buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
   buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
   buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td></td><td><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td></td>');
+  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
   }
   else
   {
@@ -1878,15 +1887,15 @@ window.require.register("views/templates/file", function(exports, require, modul
   buf.push('><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span');
   buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
   buf.push('></span></a><a');
-  buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + "") }, {"href":true,"download":true,"title":true}));
+  buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
   buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
   buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size">');
+  buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size size-column-cell">');
    options = {base: 2}
-  buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date">');
+  buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
   if ( model.lastModification)
   {
-  buf.push('<span class="pull-right">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+  buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
   }
   buf.push('</td>');
   }
@@ -1985,7 +1994,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><td><a id="name" type="buton" class="btn"><span>Name  </span><a id="down-name" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-name" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td><a id="size" type="buton" class="btn"><span>   Size</span><a id="down-size" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-size" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td><a id="type" type="buton" class="btn"><span>   Type</span><a id="down-class" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-class" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></a></td><td> <a id="date" type="buton" class="btn"><span>   Date</span><a id="down-lastModification" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-lastModification" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"></span></a></a></td></tbody></table><div id="files"></div></div></div></div>');
+  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name  </span><a id="down-name" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-name" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="size-column-cell"><span>   Size</span><a id="down-size" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-size" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="type-column-cell"><span>   Type</span><a id="down-class" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-class" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="date-column-cell"><span>   Date</span><a id="down-lastModification" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-lastModification" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"></span></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
   }
   return buf.join("");
   };

@@ -910,17 +910,13 @@ input#search-box {
 }
 .content-shadow {
   background-color: #fff;
-  -moz-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
-  -webkit-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
-  -webkit-box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
-  box-shadow: 3px 0 5px 0 rgba(0,0,0,0.2);
+  -webkit-box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1);
+  box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1);
   height: 100%;
 }
 .shadow-down {
-  -moz-box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
-  -webkit-box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
-  -webkit-box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
-  box-shadow: 0px 3px 5px 0 rgba(0,0,0,0.2);
+  -webkit-box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1);
+  box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1);
 }
 div#affixbar {
   height: 45px;
@@ -1094,140 +1090,58 @@ tr.folder-row .file-type {
 .table .tbody .td span {
   display: none;
 }
-@media screen and (max-width: 480px) {
+@media (max-width: 480px) {
   body {
     text-rendering: optimizeSpeed;
   }
+  .type-column-cell,
+  .date-column-cell,
+  .size-column-cell {
+    display: none;
+  }
+  .table-headers {
+    display: none;
+  }
+  tr.folder-row .caption {
+    font-size: 14px;
+  }
+  #search-box {
+    width: 100%;
+    max-width: 185px;
+  }
+  .file-delete,
+  .file-download,
+  .file-edit {
+    display: none;
+  }
+  .btn-link {
+    white-space: normal;
+    text-align: left;
+  }
+  #crumbs li a {
+    padding: 5px;
+  }
 }
-@media screen and (max-width: 767px) {
+@media (max-width: 768px) {
   body {
     text-rendering: optimizeSpeed;
   }
   .button-title-reponsive {
     display: none;
   }
+  .type-column-cell {
+    display: none;
+  }
 }
-@media screen and (min-width: 768px) and (max-width: 992px) {
+@media (max-width: 992px) {
+  .application .container {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+  }
 }
-@media screen and (min-width: 992px) {
+@media (min-width: 992px) {
 }
-/*
-.flatbtn
-    margin-top 10px
-    margin-bottom 10px
-    font-size 18px
-    margin 2px 1%
-    padding 10px 2%
-    background-color blue
-    color white
-    border 0
-
-.flatbtn:hover 
-    text-decoration:underline
-
-.flatbtn:active 
-    text-decoration:underline
-    color: orange
-
-
-#bar
-    background-color: Gainsboro
-
-    .input-block-level
-        margin-left 30px
-
-    .add.flatbtn
-        background-color blue
-        color white
-        text-decoration none
-
-        #uploader
-            display none
-
-#content
-    padding: 2em
-    background-color white
-
-#h4
-    margin-top 10px
-    margin-left 40px
-    font-weight: bold
-
-#file-list    
-
-    .file 
-        margin-left 20px
-        margin-top 20px
-        height 30px
-
-        .delete
-            background-color: white
-            margin-left 5px
-
-        .download
-            background-color: white
-
-    a:link 
-        text-decoration:none
-        color: black
-
-    a:visited 
-        text-decoration:none
-        color: black
-
-    a:hover 
-        text-decoration:underline
-
-    a:active 
-        text-decoration:underline
-        color: black
-
-    a.button
-        float: right
-        text-align: left
-        width: auto
-        padding: 8px
-        line-height: 16px
-        font-size: 16px
-        text-transform: lowercase
-        background-color: white
-
-    a.flatbtn.active
-        background-color: black
-
-#uploader
-    margin-left 20px
-    margin-top 20px
-    margin-bottom 20px
-
-#folder-list
- 
-    .folder 
-        display block
-        margin-left 20px
-        margin-top 20px
-        font-weight: bold
-        height 30px
-
-        .delete
-            background-color: white
-
-    a:link 
-        text-decoration:none
-        color: black
-
-    a:visited 
-        text-decoration:none
-        color: black
-
-    a:hover 
-        text-decoration:underline
-
-    a:active 
-        text-decoration:underline
-        color: black
-
-*/
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
 .ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; *line-height: 0; }
 .ir br { display: none; }

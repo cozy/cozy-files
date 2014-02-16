@@ -50,32 +50,29 @@
       #crumbs
       table#table-items.table.table-hover
         tbody#table-items-body
-          td
-            a.btn#name(type='buton')
-              span Name  
-              a.btn#down-name(type='buton')
-                span.glyphicon.glyphicon-chevron-down
-              a.btn#up-name(type='buton', disabled=true)
-                span.glyphicon.glyphicon-chevron-up 
-          td
-            a.btn#size(type='buton')
-              span    Size
-              a.btn#down-size(type='buton')
-                span.glyphicon.glyphicon-chevron-down
-              a.btn#up-size(type='buton', disabled=true)
-                span.glyphicon.glyphicon-chevron-up 
-          td
-            a.btn#type(type='buton')
-              span    Type
-              a.btn#down-class(type='buton')
-                span.glyphicon.glyphicon-chevron-down
-              a.btn#up-class(type='buton', disabled=true)
-                span.glyphicon.glyphicon-chevron-up 
-          td 
-            a.btn#date(type='buton')
-              span    Date
-              a.btn#down-lastModification(type='buton')
-                span.glyphicon.glyphicon-chevron-down
-              a.btn#up-lastModification(type='buton', disabled=true)
-                span.glyphicon.glyphicon-chevron-up
+          tr.table-headers
+              td
+                span Name  
+                a.btn#down-name(type='buton')
+                  span.glyphicon.glyphicon-chevron-down
+                a.btn#up-name(type='buton', disabled=true)
+                  span.glyphicon.glyphicon-chevron-up 
+              td.size-column-cell
+                span    Size
+                a.btn#down-size(type='buton')
+                  span.glyphicon.glyphicon-chevron-down
+                a.btn#up-size(type='buton', disabled=true)
+                  span.glyphicon.glyphicon-chevron-up 
+              td.type-column-cell
+                span    Type
+                a.btn#down-class(type='buton')
+                  span.glyphicon.glyphicon-chevron-down
+                a.btn#up-class(type='buton', disabled=true)
+                  span.glyphicon.glyphicon-chevron-up 
+              td.date-column-cell
+                span    Date
+                a.btn#down-lastModification(type='buton')
+                  span.glyphicon.glyphicon-chevron-down
+                a.btn#up-lastModification(type='buton', disabled=true)
+                  span.glyphicon.glyphicon-chevron-up
       #files
