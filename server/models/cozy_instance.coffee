@@ -13,10 +13,11 @@ CozyInstance.first = (callback) ->
 
 CozyInstance.getURL = (callback) ->
     CozyInstance.first (err, instance) ->
-        if instance?.domain
+        if err then callback err
+        else if instance?.domain
             callback null, instance.domain
         else
-            callback err or new Error('no instance domain')
+            callback new Error 'No instance domain set'
 
 CozyInstance.getLocale = (callback) ->
     CozyInstance.first (err, instance) ->

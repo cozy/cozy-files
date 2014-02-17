@@ -24,9 +24,11 @@ module.exports = class MailHandler
     getFileUrl: (file, cb) ->
         CozyInstance.getURL (err, domain) =>
             if err
+                console.log err
+
                 cb err
             else
-                # generate the url 
+                # generate the url
                 domain = domain.replace("http://", "")
                 cb null, "http://#{domain}/public/files/file#{file.id}"
 
@@ -35,7 +37,7 @@ module.exports = class MailHandler
             if err
                 cb err
             else
-                # generate the url 
+                # generate the url
                 domain = domain.replace("http://", "")
                 cb null, "http://#{domain}/public/files/folder#{folder.id}"
 
