@@ -1,10 +1,11 @@
-TESTPORT = process.env.PORT or 8013
 Contact = require '../server/models/contact'
 Task = require '../server/models/task'
 PCLog = require '../server/models/phone_communication_log'
 ContactLog = require '../server/models/contact_log'
 Config = require '../server/models/config'
 Client = require('request-json').JsonClient
+
+TESTPORT = process.env.PORT or 8013
 
 module.exports =
 
