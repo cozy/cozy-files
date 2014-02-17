@@ -957,6 +957,11 @@ div#affixbar img {
 table#table-items {
   margin-top: 20px;
 }
+table#table-items .unactive {
+  opacity: 0.5;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  filter: alpha(opacity=50);
+}
 tr.folder-row {
   color: #bdbdbd;
 }
@@ -1089,6 +1094,12 @@ tr.folder-row .file-type {
 }
 .table .tbody .td span {
   display: none;
+}
+.table-headers span {
+  line-height: 30px;
+}
+.table-headers .btn {
+  top: -2px;
 }
 @media (max-width: 480px) {
   body {

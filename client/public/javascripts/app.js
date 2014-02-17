@@ -1303,7 +1303,7 @@ window.require.register("views/folder", function(exports, require, module) {
     __extends(FolderView, _super);
 
     function FolderView() {
-      this.onSeachKeyPress = __bind(this.onSeachKeyPress, this);
+      this.onSearchKeyPress = __bind(this.onSearchKeyPress, this);
       this.onDragAndDrop = __bind(this.onDragAndDrop, this);
       this.onAddFile = __bind(this.onAddFile, this);
       this.onAddFolder = __bind(this.onAddFolder, this);
@@ -1327,11 +1327,7 @@ window.require.register("views/folder", function(exports, require, module) {
         'click #down-size': 'onChangeOrder',
         'click #up-lastModification': 'onChangeOrder',
         'click #down-lastModification': 'onChangeOrder',
-        'click #name': 'onChangeName',
-        'click #size': 'onChangeSize',
-        'click #type': 'onChangeType',
-        'click #date': 'onChangeDate',
-        'keyup input#search-box': 'onSeachKeyPress',
+        'keyup input#search-box': 'onSearchKeyPress',
         'keyup input#inputName': 'onAddFolderEnter'
       };
     };
@@ -1372,26 +1368,13 @@ window.require.register("views/folder", function(exports, require, module) {
      */
 
     FolderView.prototype.displayChevron = function(order, type) {
-      var _ref, _ref1, _ref2, _ref3;
       this.$('#up-name').show();
-      if ((_ref = this.$('#up-name')[0]) != null) {
-        _ref.setAttribute('disabled', 'disabled');
-      }
       this.$('#down-name').hide();
       this.$('#up-size').show();
-      if ((_ref1 = this.$('#up-size')[0]) != null) {
-        _ref1.setAttribute('disabled', 'disabled');
-      }
       this.$('#down-size').hide();
       this.$('#up-class').show();
-      if ((_ref2 = this.$('#up-class')[0]) != null) {
-        _ref2.setAttribute('disabled', 'disabled');
-      }
       this.$('#down-class').hide();
       this.$('#up-lastModification').show();
-      if ((_ref3 = this.$('#up-lastModification')[0]) != null) {
-        _ref3.setAttribute('disabled', 'disabled');
-      }
       this.$('#down-lastModification').hide();
       this.$("#" + order + "-" + type).show();
       if (order === "up") {
@@ -1500,7 +1483,6 @@ window.require.register("views/folder", function(exports, require, module) {
         path: this.model.repository(),
         type: "folder"
       });
-      console.log("creating folder " + folder);
       this.$("#inputName").val("");
       if (folder.validate()) {
         return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
@@ -1554,7 +1536,7 @@ window.require.register("views/folder", function(exports, require, module) {
         Search
      */
 
-    FolderView.prototype.onSeachKeyPress = function(e) {
+    FolderView.prototype.onSearchKeyPress = function(e) {
       var query;
       query = this.$('input#search-box').val();
       if (query !== "") {
@@ -1577,7 +1559,15 @@ window.require.register("views/folder", function(exports, require, module) {
       return this.changeActiveFolder(search);
     };
 
-    FolderView.prototype.onChangeOrder = function() {
+    FolderView.prototype.onChangeOrder = function(event) {
+      var infos, type, way;
+      infos = event.target.id.split('-');
+      way = infos[0];
+      type = infos[1];
+      this.$(".glyphicon-chevron-up").addClass('unactive');
+      this.$("#up-" + type).removeClass('unactive');
+      this.displayChevron(way, type);
+      this.filesCollection.type = type;
       if (this.filesCollection.order === "incr") {
         this.filesCollection.order = "decr";
         this.filesCollection.sort();
@@ -1587,37 +1577,6 @@ window.require.register("views/folder", function(exports, require, module) {
         this.filesCollection.sort();
         return this.displayChevron('up', this.filesCollection.type);
       }
-    };
-
-    FolderView.prototype.onChangeName = function() {
-      this.filesCollection.order = "incr";
-      this.filesCollection.type = "name";
-      this.filesCollection.sort();
-      return this.displayChevron('up', 'name');
-    };
-
-    FolderView.prototype.onChangeSize = function() {
-      console.log('onChangeType');
-      this.filesCollection.order = "incr";
-      this.filesCollection.type = "size";
-      this.filesCollection.sort();
-      return this.displayChevron('up', 'size');
-    };
-
-    FolderView.prototype.onChangeType = function() {
-      console.log('onChangeType');
-      this.filesCollection.order = "incr";
-      this.filesCollection.type = "class";
-      this.filesCollection.sort();
-      return this.displayChevron('up', 'class');
-    };
-
-    FolderView.prototype.onChangeDate = function() {
-      console.log('onChangeType');
-      this.filesCollection.order = "incr";
-      this.filesCollection.type = "lastModification";
-      this.filesCollection.sort();
-      return this.displayChevron('up', 'lastModification');
     };
 
     return FolderView;
@@ -1994,7 +1953,7 @@ window.require.register("views/templates/folder", function(exports, require, mod
   var buf = [];
   with (locals || {}) {
   var interp;
-  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name  </span><a id="down-name" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-name" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="size-column-cell"><span>   Size</span><a id="down-size" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-size" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="type-column-cell"><span>   Type</span><a id="down-class" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-class" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"> </span></a></td><td class="date-column-cell"><span>   Date</span><a id="down-lastModification" type="buton" class="btn"><span class="glyphicon glyphicon-chevron-down"></span></a><a id="up-lastModification" type="buton" disabled="disabled" class="btn"><span class="glyphicon glyphicon-chevron-up"></span></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
+  buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/><span class="button-title-reponsive"></span></a> <a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/><span class="button-title-reponsive"></span></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>Size</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>Type</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>Date</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
   }
   return buf.join("");
   };

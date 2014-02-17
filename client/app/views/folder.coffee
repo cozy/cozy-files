@@ -26,11 +26,7 @@ module.exports = class FolderView extends BaseView
         'click #down-size'             : 'onChangeOrder'
         'click #up-lastModification'   : 'onChangeOrder'
         'click #down-lastModification' : 'onChangeOrder'
-        'click #name'                  : 'onChangeName'
-        'click #size'                  : 'onChangeSize'
-        'click #type'                  : 'onChangeType'
-        'click #date'                  : 'onChangeDate'
-        'keyup input#search-box'       : 'onSeachKeyPress'
+        'keyup input#search-box'       : 'onSearchKeyPress'
         'keyup input#inputName'        : 'onAddFolderEnter'
 
     initialize: (options) ->
@@ -61,16 +57,12 @@ module.exports = class FolderView extends BaseView
     ###
     displayChevron: (order, type) ->
         @$('#up-name').show()
-        @$('#up-name')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-name').hide()
         @$('#up-size').show()
-        @$('#up-size')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-size').hide()
         @$('#up-class').show()
-        @$('#up-class')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-class').hide()
         @$('#up-lastModification').show()
-        @$('#up-lastModification')[0]?.setAttribute('disabled', 'disabled')
         @$('#down-lastModification').hide()
         @$("##{order}-#{type}").show()
         if order == "up"
@@ -157,7 +149,6 @@ module.exports = class FolderView extends BaseView
             name: @$('#inputName').val()
             path: @model.repository()
             type: "folder"
-        console.log "creating folder #{folder}"
         @$("#inputName").val("")
 
         if folder.validate()
@@ -200,7 +191,7 @@ module.exports = class FolderView extends BaseView
     ###
         Search
     ###
-    onSeachKeyPress: (e) =>
+    onSearchKeyPress: (e) =>
         query = @$('input#search-box').val()
         #if e.keyCode is 13
         if query isnt ""
@@ -221,43 +212,21 @@ module.exports = class FolderView extends BaseView
         @changeActiveFolder search
 
     # Changer order if files sorting
-    onChangeOrder: ->
+    onChangeOrder: (event) ->
+        infos = event.target.id.split '-'
+        way = infos[0]
+        type = infos[1]
+
+        @$(".glyphicon-chevron-up").addClass 'unactive'
+        @$("#up-#{type}").removeClass 'unactive'
+        @displayChevron way, type
+        @filesCollection.type = type
+
         if @filesCollection.order is "incr"
             @filesCollection.order = "decr"
             @filesCollection.sort()
-            @displayChevron('down', @filesCollection.type)
+            @displayChevron 'down', @filesCollection.type
         else
             @filesCollection.order = "incr"
             @filesCollection.sort()
-            @displayChevron('up', @filesCollection.type)
-
-    # Sort files by name
-    onChangeName: ->
-            @filesCollection.order = "incr"
-            @filesCollection.type = "name"
-            @filesCollection.sort()
-            @displayChevron('up','name')
-
-    # Sort files by size
-    onChangeSize: ->
-            console.log 'onChangeType'
-            @filesCollection.order = "incr"
-            @filesCollection.type = "size"
-            @filesCollection.sort()
-            @displayChevron('up','size')
-
-    # Sort files by type
-    onChangeType: ->
-            console.log 'onChangeType'
-            @filesCollection.order = "incr"
-            @filesCollection.type = "class"
-            @filesCollection.sort()
-            @displayChevron('up','class')
-
-    # Sort files by date
-    onChangeDate: ->
-            console.log 'onChangeType'
-            @filesCollection.order = "incr"
-            @filesCollection.type = "lastModification"
-            @filesCollection.sort()
-            @displayChevron('up','lastModification')
+            @displayChevron 'up', @filesCollection.type
