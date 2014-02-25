@@ -7,8 +7,6 @@ module.exports = class ProgressbarView extends BaseView
     value: 0
 
     constructor: (@model) ->
-        console.log @model
-
         super()
 
     initialize: ->
@@ -17,8 +15,6 @@ module.exports = class ProgressbarView extends BaseView
 
     update: (e) ->
         pc = parseInt(e.loaded / e.total * 100)
-        console.log "[Progress bar] : #{pc} %"
-
         @value = pc
         @render()
 

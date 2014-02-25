@@ -39,7 +39,7 @@ module.exports = class FilesView extends ViewCollection
             # add a progress bar
             progress = new ProgressbarView file
             $("#dialog-upload-file .modal-body").append(
-                "<div>#{attach.name}</div>"
+                "<div class=\"progress-name\">#{attach.name}</div>"
             )
             $("#dialog-upload-file .modal-body").append progress.render().el
 

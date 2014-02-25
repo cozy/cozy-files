@@ -14,6 +14,7 @@ module.exports = class FolderView extends BaseView
 
     events: ->
         'click a#button-new-folder'    : 'prepareNewFolder'
+        'click a#button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #upload-file-send'      : 'onAddFile'
@@ -75,7 +76,6 @@ module.exports = class FolderView extends BaseView
         else
             @$("#up-#{type}").hide()
 
-
     # Display and re-render the contents of the folder
     changeActiveFolder: (folder) ->
         # register the model
@@ -133,9 +133,11 @@ module.exports = class FolderView extends BaseView
                 console.log error
                 new ModalView t("modal error"), t("modal error get files"), t("modal ok")
 
-    ###
-        Upload/ new folder
-    ###
+    onUploadNewFileClicked: ->
+        $("#dialog-upload-file .progress-name").remove()
+        $("#dialog-upload-file").modal("show")
+
+    # Upload/ new folder
     prepareNewFolder: ->
         setTimeout () =>
             @$("#inputName").focus()
@@ -176,7 +178,6 @@ module.exports = class FolderView extends BaseView
     onDragAndDrop: (e) =>
         e.preventDefault()
         e.stopPropagation()
-        console.log "Drag and drop"
 
         # send file
         atLeastOne = false
