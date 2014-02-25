@@ -7,18 +7,19 @@ FolderView = require './views/folder'
 module.exports =
 
     initialize: ->
+
         # Routing management
         Router = require 'router'
         @router = new Router()
         @breadcrumbs = new BreadcrumbsManager()
 
-        # the root
+        # Generate the root folder
         @root = new File id:"root", path:"", name:"", type:"folder"
-        # and the folder view
-        @folderView = new FolderView 
+
+        # and its view
+        @folderView = new FolderView
             model: @root
             breadcrumbs: @breadcrumbs
-
         el = @folderView.render().$el
         $('body').append el
 

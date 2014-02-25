@@ -18,6 +18,7 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #upload-file-send'      : 'onAddFile'
         'click #cancel-new-file'       : 'onCancelFile'
+
         'click #up-name'               : 'onChangeOrder'
         'click #down-name'             : 'onChangeOrder'
         'click #up-class'              : 'onChangeOrder'
@@ -26,6 +27,7 @@ module.exports = class FolderView extends BaseView
         'click #down-size'             : 'onChangeOrder'
         'click #up-lastModification'   : 'onChangeOrder'
         'click #down-lastModification' : 'onChangeOrder'
+
         'keyup input#search-box'       : 'onSearchKeyPress'
         'keyup input#inputName'        : 'onAddFolderEnter'
 
@@ -33,7 +35,12 @@ module.exports = class FolderView extends BaseView
         @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
-        # add drag and drop support
+
+        @setDragNDrop()
+
+
+    # Set Drag and drop properly.
+    setDragNDrop: ->
         prevent = (e) ->
             e.preventDefault()
             e.stopPropagation()
@@ -41,7 +48,6 @@ module.exports = class FolderView extends BaseView
         @$el.on "dragenter", prevent
         @$el.on "drop", (e) =>
             @onDragAndDrop(e)
-
 
     getRenderData: ->
         model: @model
@@ -52,9 +58,8 @@ module.exports = class FolderView extends BaseView
         @$("#crumbs").append @breadcrumbsView.render().$el
         @displayChevron('up', 'name')
 
-    ###
-        Helpers to display correct chevron to sort files
-    ###
+
+    # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
         @$('#up-name').show()
         @$('#down-name').hide()
@@ -65,24 +70,23 @@ module.exports = class FolderView extends BaseView
         @$('#up-lastModification').show()
         @$('#down-lastModification').hide()
         @$("##{order}-#{type}").show()
-        if order == "up"
+        if order is "up"
             @$("##{order}-#{type}")[0].removeAttribute('disabled')
         else
             @$("#up-#{type}").hide()
 
-    ###
-        Display and re-render the contents of the folder
-    ###
+
+    # Display and re-render the contents of the folder
     changeActiveFolder: (folder) ->
-        # save the model
+        # register the model
         @model = folder
 
         # update breadcrumbs
         @breadcrumbs.push folder
-        if folder.id == "root"
-            @$("#crumbs").css({opacity:0.5})
+        if folder.id is "root"
+            @$("#crumbs").css opacity: 0.5
         else
-            @$("#crumbs").css({opacity:1})
+            @$("#crumbs").css opacity: 1
 
         # see, if we should display add/upload buttons
         if folder.get("type") is "folder"
@@ -92,6 +96,9 @@ module.exports = class FolderView extends BaseView
 
 
         # add files view
+
+        @filesList?.$el.html null
+        @$("#loading-indicator").spin 'small'
         @model.findFiles
             success: (files) =>
 
@@ -117,14 +124,14 @@ module.exports = class FolderView extends BaseView
                         @filesList = new FilesView @filesCollection, @model
                         @$('#files').html @filesList.$el
                         @filesList.render()
+                        @$("#loading-indicator").spin()
                     error: (error) =>
                         console.log error
                         new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
+                        @$("#loading-indicator").spin()
             error: (error) =>
                 console.log error
                 new ModalView t("modal error"), t("modal error get files"), t("modal ok")
-
-
 
     ###
         Upload/ new folder
@@ -193,6 +200,7 @@ module.exports = class FolderView extends BaseView
     ###
     onSearchKeyPress: (e) =>
         query = @$('input#search-box').val()
+
         #if e.keyCode is 13
         if query isnt ""
             @displaySearchResults query
@@ -211,7 +219,7 @@ module.exports = class FolderView extends BaseView
         search = new File data
         @changeActiveFolder search
 
-    # Changer order if files sorting
+    # Changer sorting depending on the clicked chevron.
     onChangeOrder: (event) ->
         infos = event.target.id.split '-'
         way = infos[0]
