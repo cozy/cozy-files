@@ -8,11 +8,11 @@ mails = new MailHelper()
 ## Helpers ##
 
 findFolder = (id, callback) ->
-    Folder.find id, (err, file) =>
-        if err or not file
-            callback "File not found"
+    Folder.find id, (err, folder) =>
+        if err or not folder
+            callback "Folder not found"
         else
-            callback null, file
+            callback null, folder
 
 getFolderPath = (id, cb) ->
     if id is 'root'
@@ -42,7 +42,6 @@ module.exports.create = (req, res) ->
                 else
                     Folder.create req.body, (err, newFolder) ->
                         if err
-                            console.log err
                             res.send error: true, msg: "Server error while creating file: #{err}", 500
                         else
                             newFolder.index ["name"], (err) ->
@@ -75,91 +74,88 @@ module.exports.tree = (req, res) ->
                 # check that the name is not already taken
                 async.concat folders, isParent, (err, parents) ->
                     if err
-                        console.log err
                         res.send error: true, msg: "Couldn't find the tree: : #{err}", 500
                     else
                         parents = parents.sort (a, b) ->
                             if a.path + "/" + a.name < b.path + "/" + b.name then return -1
                             else return 1
 
-                        console.log parents
                         res.send parents, 200
 
 
 module.exports.modify = (req, res) ->
-    if (not req.body.name) or (req.body.name == "")
-        res.send error: true, msg: "No filename specified", 500
-    else
+    if not req.body.name? and not req.body.public?
+        return res.send error: true, msg: "Data required", 400
 
-        findFolder req.params.id, (err, folderToModify) ->
+    findFolder req.params.id, (err, folderToModify) ->
+        return next err if err
+
+        newName = req.body.name
+        isPublic = req.body.public
+        oldPath = folderToModify.path + '/' + folderToModify.name + "/"
+        newPath = folderToModify.path + '/' + newName + "/"
+
+        hasntTheSamePathOrIsTheSame = (folder, cb) ->
+            if (folderToModify.id is folder.id)
+                cb true
+            else
+                cb (newPath isnt (folder.path + '/' + folder.name + "/"))
+
+        updateIfIsSubFolder = (file, cb) ->
+            if ((file.path + "/").indexOf(oldPath) is 0)
+
+                oldRealPath = folderToModify.path + '/' + folderToModify.name
+                newRealPath = folderToModify.path + '/' + newName
+                modifiedPath = file.path.replace oldRealPath, newRealPath
+
+                file.updateAttributes path: modifiedPath, cb
+            else
+                cb null
+
+        updateTheFolder = ->
+            # update the folder itself
+            data =
+                name: newName
+                public: isPublic
+
+            folderToModify.updateAttributes data, (err) =>
+                return next err if err
+
+                # update index too
+                folderToModify.index ["name"], (err) ->
+                    if err
+                        res.send error: true, msg: "Couldn't index: #{err}", 500
+                    else
+                        res.send success: 'File succesfuly modified', 200
+
+        updateFoldersAndFiles = (folders)->
+            # update all folders
+            async.each folders, updateIfIsSubFolder, (err) ->
+                if err
+                    res.send error: true, msg: "Error updating folders: #{err}", 500
+                else
+                    # update all files
+                    File.all (err, files) =>
+                        if err
+                            res.send error: true, msg: "Server error occured: #{err}", 500
+                        else
+                            async.each files, updateIfIsSubFolder, (err) ->
+                                if err
+                                    res.send error: true, msg: "Error updating files: #{err}", 500
+                                else
+                                    updateTheFolder()
+
+
+        Folder.all (err, folders) =>
             if err
                 res.send error: true, msg:  "Server error occured: #{err}", 500
             else
-                newName = req.body.name
-                oldPath = folderToModify.path + '/' + folderToModify.name + "/"
-                newPath = folderToModify.path + '/' + newName + "/"
-
-                hasntTheSamePathOrIsTheSame = (folder, cb) ->
-                    if (folderToModify.id is folder.id)
-                        cb true
+                # check that the new name isn't taken
+                async.every folders, hasntTheSamePathOrIsTheSame, (available) ->
+                    if not available
+                        res.send error: true, msg: "The name already in use", 400
                     else
-                        cb (newPath isnt (folder.path + '/' + folder.name + "/"))
-
-                updateIfIsSubFolder = (file, cb) ->
-                    if ((file.path + "/").indexOf(oldPath) is 0)
-
-                        oldRealPath = folderToModify.path + '/' + folderToModify.name
-                        newRealPath = folderToModify.path + '/' + newName
-
-                        modifiedPath = file.path.replace oldRealPath, newRealPath
-
-                        console.log "Moving '#{file.name}': '#{oldPath}#{file.name}'' -> '#{newPath}#{file.name}' (#{modifiedPath})"
-                        file.updateAttributes path: modifiedPath, cb
-                    else
-                        cb null
-
-                updateTheFolder = ->
-                    # update the folder itself
-                    folderToModify.updateAttributes name: newName, (err) =>
-                        if err
-                            res.send error: 'Cannot modify file: #{err}', 500
-                        else
-                            # index the new data
-                            folderToModify.index ["name"], (err) ->
-                                if err
-                                    console.log err
-                                    res.send error: true, msg: "Couldn't index: : #{err}", 500
-                                else
-                                    res.send success: 'File succesfuly modified', 200
-
-                updateFoldersAndFiles = (folders)->
-                    # update all folders
-                    async.each folders, updateIfIsSubFolder, (err) ->
-                        if err
-                            res.send error: true, msg: "Error updating folders: #{err}", 500
-                        else
-                            # update all files
-                            File.all (err, files) =>
-                                if err
-                                    res.send error: true, msg: "Server error occured: #{err}", 500
-                                else
-                                    async.each files, updateIfIsSubFolder, (err) ->
-                                        if err
-                                            res.send error: true, msg: "Error updating files: #{err}", 500
-                                        else
-                                            updateTheFolder()
-
-
-                Folder.all (err, folders) =>
-                    if err
-                        res.send error: true, msg:  "Server error occured: #{err}", 500
-                    else
-                        # check that the new name isn't taken
-                        async.every folders, hasntTheSamePathOrIsTheSame, (available) ->
-                            if not available
-                                res.send error: true, msg: "The name already in use", 400
-                            else
-                                updateFoldersAndFiles folders
+                        updateFoldersAndFiles folders
 
 
 module.exports.destroy = (req, res) ->
@@ -171,7 +167,6 @@ module.exports.destroy = (req, res) ->
 
             destroyIfIsSubdirectory = (file, cb) ->
                 if (file.path.indexOf(directory) is 0)
-                    console.log "Deleting '#{file.name}'"
                     if file.binary
                         file.removeBinary "file", (err) ->
                             if err
@@ -190,7 +185,6 @@ module.exports.destroy = (req, res) ->
                     # Remove folders in the current folder
                     async.each folders, destroyIfIsSubdirectory, (err) ->
                         if err
-                            console.log err
                             res.send error: true, msg: "Server error occured while deleting subdirectories: #{err}", 500
                         else
 
@@ -201,13 +195,11 @@ module.exports.destroy = (req, res) ->
                                     # Remove files in this directory
                                     async.each files, destroyIfIsSubdirectory, (err) ->
                                         if err
-                                            console.log err
                                             res.send error: true, msg: "Server error occured when deleting sub files: #{err}", 500
                                         else
                                              # Remove the current folder
                                             currentFolder.destroy (err) ->
                                                 if err
-                                                    console.log err
                                                     res.send error: "Cannot destroy folder: #{err}", 500
                                                 else
                                                     res.send success: "Folder succesfuly deleted: #{err}", 200
@@ -249,7 +241,6 @@ module.exports.getPublicLink = (req, res) ->
             # send the email and get url
             mails.getFolderUrl folder, (err, url) ->
                 if err
-                    console.log err
                     res.send error: true, msg: err, 500
                 else
                     res.send url: url, 200
@@ -264,7 +255,6 @@ module.exports.sendPublicLinks = (req, res) ->
             # send the email and get url
             mails.sendPublicFolderLinks folder, users, (err, url) ->
                 if err
-                    console.log err
                     res.send error: true, msg: err, 500
                 else
                     res.send url: url, 200
@@ -280,7 +270,7 @@ module.exports.zip = (req, res) ->
                 else
                     # find the name
                     findFolder req.params.id, (err, folder) ->
-                        if err or not folder
+                        if err or not folder or not folder.public
                             callback "folder not found"
                         else
                             zipName = folder.name?.replace(/\W/g, '')
@@ -318,5 +308,3 @@ module.exports.zip = (req, res) ->
                                     archive.finalize (err, bytes) ->
                                         if err
                                             res.send error: true, msg: "Server error occured: #{err}", 500
-                                        else
-                                            console.log "Zip created"

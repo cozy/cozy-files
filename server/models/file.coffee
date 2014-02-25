@@ -10,6 +10,7 @@ module.exports = File = americano.getModel 'File',
     size: Number
     binary: Object
     modificationHistory: Object
+    public: Boolean
 
 
 File.all = (params, callback) ->

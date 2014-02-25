@@ -19,15 +19,15 @@ module.exports =
         get: files.downloadAttachment
 
     # public access to the file
-    'public/file:fileid':
-        get: files.downloadAttachment
+    'public/files/:fileid':
+        get: files.publicDownloadAttachment
     'fileshare/:fileid':
         get: files.getPublicLink
     'fileshare/:fileid/send':
         post: files.sendPublicLinks
 
     # public access to the folder
-    'public/folder:id':
+    'public/folders/:id':
         get: folders.zip
     'foldershare/:id':
         get: folders.getPublicLink

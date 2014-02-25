@@ -8,6 +8,7 @@ module.exports = Folder = americano.getModel 'Folder',
 	lastModification: String
 	size: Number
 	modificationHistory: Object
+    public: Boolean
 
 Folder.all = (params, callback) ->
     Folder.request "all", params, callback

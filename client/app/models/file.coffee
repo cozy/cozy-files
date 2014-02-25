@@ -35,7 +35,7 @@ module.exports = class File extends Backbone.Model
 
         if errors.length > 0
             return errors
-        return 
+        return
 
     prepareCallbacks: (callbacks, presuccess, preerror) ->
         {success, error} = callbacks or {}

@@ -745,6 +745,8 @@ textarea:active {
   font-weight: bold;
   padding: 10px;
   cursor: pointer;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
 }
 .button:hover {
   background: #fe8800;
