@@ -1218,6 +1218,7 @@ window.require.register("views/files", function(exports, require, module) {
         file = new File(fileAttributes);
         file.file = attach;
         progress = new ProgressbarView(file);
+        $("#dialog-upload-file .modal-body").append("<div>" + attach.name + "</div>");
         $("#dialog-upload-file .modal-body").append(progress.render().el);
         return this.upload(file);
       } else {
@@ -1749,6 +1750,7 @@ window.require.register("views/progressbar", function(exports, require, module) 
 
     function ProgressbarView(model) {
       this.model = model;
+      console.log(this.model);
       ProgressbarView.__super__.constructor.call(this);
     }
 
