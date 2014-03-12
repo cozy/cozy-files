@@ -117,6 +117,7 @@ module.exports.modify = (req, res) ->
                     data =
                          name: newName
                          public: isPublic
+                    data.clearance = req.body.clearance if req.body.clearance
                     fileToModify.updateAttributes data, (err) =>
                         if err
                             console.log err

@@ -118,6 +118,8 @@ module.exports.modify = (req, res) ->
                 name: newName
                 public: isPublic
 
+            data.clearance = req.body.clearance if req.body.clearance
+
             folderToModify.updateAttributes data, (err) =>
                 return next err if err
 
