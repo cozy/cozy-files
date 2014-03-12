@@ -12,10 +12,5 @@ americano.start options, (app, server) ->
 
     RealtimeAdapter = require 'cozy-realtime-adapter'
 
-    customCb = (event, msg) ->
-        console.log "Socket.io event received: #{event} #{msg}"
-
     # notification events should be proxied to client
-    realtime = RealtimeAdapter server: server, ['file.*', 'folder.*']
-    realtime.on 'file.*', customCb
-    realtime.on 'folder.*', customCb
+    realtime = RealtimeAdapter server: server, ['file.*', 'folder.*', 'contact.*']
