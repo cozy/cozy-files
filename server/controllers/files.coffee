@@ -1,8 +1,7 @@
 File = require '../models/file'
 fs = require 'fs'
 async = require 'async'
-MailHelper = require "../mails/mail_helper"
-mails = new MailHelper()
+sharing = require '../helpers/sharing'
 
 
 ## Helpers ##
@@ -146,10 +145,9 @@ module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
 module.exports.publicDownloadAttachment = (req, res) ->
-    if req.file.public
-        processAttachement req, res, true
-    else
-        res.send 404
+    sharing.checkClearance req.file, req, (authorized) ->
+        if not authorized then res.send 404
+        else processAttachement req, res, true
 
 module.exports.search = (req, res) ->
     File.search "*#{req.body.id}*", (err, files) ->
@@ -158,24 +156,3 @@ module.exports.search = (req, res) ->
         else
             console.log files
             res.send files
-
-module.exports.getPublicLink = (req, res, next) ->
-    file = req.file
-
-    # send the email and get url
-    mails.getFileUrl file, (err, url) ->
-        if err
-            next err
-        else
-            res.send url: url, 200
-
-module.exports.sendPublicLinks = (req, res, next) ->
-    file = req.file
-    users = req.body.users
-
-    # send the email and get url
-    mails.sendPublicFileLinks file, users, (err, url) ->
-        if err
-            next err
-        else
-            res.send url: url, 200

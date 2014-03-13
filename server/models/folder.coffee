@@ -4,6 +4,7 @@ CozyInstance = require './cozy_instance'
 module.exports = Folder = americano.getModel 'Folder',
     path: String
     name: String
+    docType: String
     creationDate: String
     lastModification: String
     size: Number

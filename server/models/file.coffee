@@ -3,6 +3,7 @@ americano = require 'americano-cozy'
 module.exports = File = americano.getModel 'File',
     path: String
     name: String
+    docType: String
     creationDate: String
     lastModification: String
     class: String

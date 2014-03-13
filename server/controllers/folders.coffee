@@ -1,9 +1,15 @@
 Folder = require '../models/folder'
 File = require '../models/file'
+CozyInstance = require '../models/cozy_instance'
+jade = require 'jade'
 async = require 'async'
+sharing = require '../helpers/sharing'
 archiver = require 'archiver'
-MailHelper = require "../mails/mail_helper"
-mails = new MailHelper()
+
+publicfoldertemplate = require('path').join __dirname, '../views/publicfolder.jade'
+
+KB = 1024
+MB = KB * KB
 
 ## Helpers ##
 
@@ -235,32 +241,6 @@ module.exports.search = (req, res) ->
         else
             res.send files
 
-module.exports.getPublicLink = (req, res) ->
-    findFolder req.params.id, (err, folder) ->
-        if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
-        else
-            # send the email and get url
-            mails.getFolderUrl folder, (err, url) ->
-                if err
-                    res.send error: true, msg: err, 500
-                else
-                    res.send url: url, 200
-
-module.exports.sendPublicLinks = (req, res) ->
-    users = req.body.users
-
-    findFolder req.params.id, (err, folder) ->
-        if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
-        else
-            # send the email and get url
-            mails.sendPublicFolderLinks folder, users, (err, url) ->
-                if err
-                    res.send error: true, msg: err, 500
-                else
-                    res.send url: url, 200
-
 module.exports.zip = (req, res) ->
     getFolderPath req.params.id, (err, key) ->
         if err
@@ -272,8 +252,8 @@ module.exports.zip = (req, res) ->
                 else
                     # find the name
                     findFolder req.params.id, (err, folder) ->
-                        if err or not folder or not folder.public
-                            callback "folder not found"
+                        if err or not folder
+                            res.send 404
                         else
                             zipName = folder.name?.replace(/\W/g, '')
 
@@ -310,3 +290,76 @@ module.exports.zip = (req, res) ->
                                     archive.finalize (err, bytes) ->
                                         if err
                                             res.send error: true, msg: "Server error occured: #{err}", 500
+                                        else
+                                            console.log "Zip created"
+
+
+module.exports.publicList = (req, res) ->
+
+    errortemplate = (err) ->
+        console.log err
+        res.send err.stack or err
+
+    findFolder req.params.id, (err, folder) ->
+        return errortemplate err if err
+
+        sharing.limitedTree folder, req, (path) ->
+            authorized = path.length isnt 0
+            return res.send 404 unless authorized
+
+            key = folder.path + '/' + folder.name
+            async.parallel [
+                (cb) -> CozyInstance.getLocale cb
+                (cb) -> Folder.byFolder key:key, cb
+                (cb) -> File.byFolder key:key, cb
+            ], (err, results) ->
+                return errortemplate err if err
+                [lang, folders, files] = results
+
+                translations = try require '../../client/app/locales/' + lang
+                catch e then {}
+                translate = (text) -> translations[text] or text
+
+                #format date & size
+                files = files.map (file) ->
+
+                    file = file.toJSON()
+
+                    file.lastModification = new Date(file.lastModification)
+                    .toISOString().split('T').join(' ').split('.')[0]
+
+                    file.size = if file.size > MB
+                        (parseInt(file.size) / MB).toFixed(1) + translate "MB"
+                    else if file.size > KB
+                        (parseInt(file.size) / KB).toFixed(1) + translate "KB"
+                    else
+                        file.size + translate "B"
+
+                    return file
+
+                locals = {
+                    path
+                    files
+                    folders
+                    keyquery: "?key=#{req.query.key}"
+                    t: translate
+                }
+
+                try
+                    html = jade.renderFile publicfoldertemplate, locals
+                    res.send html
+                catch err
+                    errortemplate err
+
+
+module.exports.publicZip = (req, res) ->
+
+    errortemplate = (err) ->
+        res.send err.stack or err
+
+    findFolder req.params.id, (err, folder) ->
+        return errortemplate err if err
+
+        sharing.checkClearance folder, req, (authorized) ->
+            if not authorized then res.send 404
+            else module.exports.zip req, res
