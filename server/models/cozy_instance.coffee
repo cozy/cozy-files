@@ -15,7 +15,10 @@ CozyInstance.getURL = (callback) ->
     CozyInstance.first (err, instance) ->
         if err then callback err
         else if instance?.domain
-            callback null, instance.domain
+            url = instance.domain
+            .replace('http://', '')
+            .replace('https://', '')
+            callback null, "https://#{url}/"
         else
             callback new Error 'No instance domain set'
 
