@@ -41,14 +41,7 @@ module.exports = class FileView extends BaseView
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
 
-    onShare: ->
-        client.get "#{@model.endpoint()}/#{@model.id}",
-            success: (data) =>
-                new ModalShareView
-                    url: data.url
-                    model: @model
-            error: (data) =>
-                new ModalView t("modal error"), t("modal share error"), t("modal ok")
+    onShare: -> new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
