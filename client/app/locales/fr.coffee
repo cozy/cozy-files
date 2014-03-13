@@ -28,18 +28,6 @@ module.exports =
     "modal error rename"        : "Le nom n'a pas pu être modifié"
     "modal error empty name"    : "Le nom du dossier ne peut pas être vide"
 
-    "modal shared file link title"   : "Partage d'un fichier"
-    "modal shared file link msg"     : "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le fichier :"
-    "modal share file send msg"      : "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :"
-
-    "modal shared folder link title" : "Partage d'un dossier"
-    "modal shared folder link msg"   : "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le dossier :"
-    "modal share folder send msg"    : "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :"
-
-    "modal share send btn"      : "Partager"
-    "modal share error"         : "Une erreur s'est produite pendant le partage"
-
-    "do you want to make this file shareable": "Voulez vous rendre ce fichier partageable ?"
 
     #tooltip
     "tooltip delete"          : "Supprimer"
@@ -72,3 +60,35 @@ module.exports =
 
     "Yes"                       : "Oui"
     "No"                        : "Non"
+
+    "name"                      : "Nom"
+    "type"                      : "Type"
+    "size"                      : "Taille"
+    "date"                      : "Dernière modification"
+    "download"                  : "Télécharger"
+    "MB"                        : "Mo"
+    "KB"                        : "Ko"
+    "B"                         : "o"
+
+
+     # clearance modal
+    "also have access"                : "Ces personnes ont égalment accès, car ils ont accès à un dossier parent"
+    "cancel"                          : "Annuler"
+    "copy paste link"                 : "Copier ce lien : "
+    "details"                         : "Details"
+    "inherited from"                  : "hérité de"
+    "modal question folder shareable" : "Choisissez le mode de partage pour ce dossier"
+    "modal shared folder custom msg"  : "Entrez un email et appuyez sur enter"
+    "modal shared folder link msg"    : "Envoyez ce lien pour qu'ils puissent accéder à ce dossier"
+    "modal question file shareable"   : "Choisissez le mode de partage pour ce fichier"
+    "modal shared file custom msg"    : "Entrez un email et appuyez sur enter"
+    "modal shared file link msg"      : "Envoyez ce lien pour qu'ils puissent accéder à ce dossier"
+    "only you can see"                : "Seul vous et les personnes ci-dessous peuvent accéder."
+    "public"                          : "Publique"
+    "private"                         : "Privé"
+    "save"                            : "Sauvegarder"
+    "see link"                        : "Voir le lien"
+    "sharing"                         : "Partage"
+    "revoke"                          : "Révoquer la permission"
+    "send mails question"             : "Envoyer un email de notification à : "
+    "modal send mails"                : "Envoyer une notification"

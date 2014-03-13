@@ -28,19 +28,6 @@ module.exports =
     "modal error rename"        : "Name could not be changed"
     "modal error empty name"    : "Name can't be ampty"
 
-    "modal shared file link title"   : "Share this file on the internet"
-    "modal shared file link msg"     : "You can use this address to let others download this file:"
-    "modal share file send msg"      : "If you want to send people notifications, type their emails here (separated by commas):"
-
-    "modal shared folder link title" : "Share this folder on the internet"
-    "modal shared folder link msg"   : "You can use this address to let others download an archive of this folder:"
-    "modal share folder send msg"    : "If you want to send people notifications, type their emails here (separated by commas):"
-
-    "modal share send btn"      : "Share"
-    "modal share error"         : "There was an error sharing this file"
-
-    "do you want to make this file shareable": "Do you want to make this file shareable?"
-
     # file_edit template
     "file edit save"            : "Save"
     "file edit cancel"          : "cancel"
@@ -75,3 +62,35 @@ module.exports =
     "yes"                       : "Yes"
     "no"                        : "No"
 
+    "name"                      : "Name"
+    "type"                      : "Type"
+    "size"                      : "Size"
+    "date"                      : "Last update"
+    "download"                  : "Download"
+    "MB"                        : "MB"
+    "KB"                        : "KB"
+    "B"                         : "B"
+
+
+    # clearance modal
+    "also have access"                : "These people also have access, because they have access to a parent folder"
+    "cancel"                          : "Cancel"
+    "copy paste link"                 : "Copy this link : "
+    "details"                         : "Details"
+    "inherited from"                  : "inherited from"
+    "modal question folder shareable" : "Select share mode for this folder"
+    "modal shared folder custom msg"  : "Enter email and press enter"
+    "modal shared folder link msg"    : "Send this link to let people access this folder"
+    "modal send mails"                : "Send a notification"
+    "modal question file shareable"   : "Select share mode for this file"
+    "modal shared file custom msg"    : "Enter email and press enter"
+    "modal shared file link msg"      : "Send this link to let people access this file"
+    "only you can see"                : "Only you and the people listed below can access this"
+    "public"                          : "Public"
+    "private"                         : "Private"
+    "save"                            : "Save"
+    "see link"                        : "See link"
+    "send mails question"             : "Send a notification email to : "
+    "sharing"                         : "Sharing"
+    "revoke"                          : "Revoke"
+    "forced public"                   : "This is public because one of the parent folder is public : "
