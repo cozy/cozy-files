@@ -4,7 +4,8 @@ exports.request = (type, url, data, callbacks) ->
     $.ajax
         type: type
         url: url
-        data: data
+        data: JSON.stringify(data)
+        contentType: 'application/json; charset=utf-8'
         success: callbacks.success
         error: callbacks.error
 

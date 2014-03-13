@@ -43,7 +43,7 @@ module.exports = class SocketListener extends CozySocketListener
     process: (event) ->
         {doctype, operation, id} = event
 
-        console.log "received: #{operation}:#{doctype}"
+        # console.log "received: #{operation}:#{doctype}"
 
         switch operation
             when 'create'

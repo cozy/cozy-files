@@ -15,8 +15,6 @@ processAttachement = (req, res, download) ->
     stream.pipe res
 
 module.exports.fetch = (req, res, next, id) ->
-    console.log id
-
     File.request 'all', key: id, (err, file) ->
         if err or not file or file.length is 0
             if err
@@ -154,5 +152,4 @@ module.exports.search = (req, res) ->
         if err
             res.send error: true, msg: err, 500
         else
-            console.log files
             res.send files

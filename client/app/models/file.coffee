@@ -71,6 +71,9 @@ module.exports = class File extends Backbone.Model
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}folders", id: @id, callbacks
 
+    getPublicURL: (key) ->
+        "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+
     getZip: (file, callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}#{@id}/zip/#{@name}", callbacks
