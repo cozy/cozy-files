@@ -8,19 +8,9 @@ helpers = require './helpers'
 describe "Folders management", ->
 
 
-    before (done) -> 
-        @timeout 6000
-        helpers.createApp "files", "files", "token", 0, "installed"
-        setTimeout () =>
-            port = process.env.PORT || 8888
-            americano.start name: 'files', port: port, (app, server) =>
-                @server = server
-                done()
-        , 3000
+    before helpers.setup 8888
 
-    after (done) ->      
-        @server.close()
-        helpers.cleanDb done
+    after helpers.takeDown
 
     describe "Create folder", ->
         #before helpers.cleanDb
@@ -54,9 +44,9 @@ describe "Folders management", ->
                     done()
 
             it "Then 400 should be returned as response code", ->
-                @res.statusCode.should.be.equal 400  
+                @res.statusCode.should.be.equal 400
 
-    describe "Get folder", => 
+    describe "Get folder", =>
 
         it "When I send a request to create a folder", (done) ->
             folder =
@@ -84,7 +74,7 @@ describe "Folders management", ->
             @body.path.should.be.equal "/root"
 
 
-    describe "Rename folder", => 
+    describe "Rename folder", =>
 
         it "When I send a request to create a folder", (done) ->
             folder =
@@ -127,8 +117,8 @@ describe "Folders management", ->
             @body.name.should.be.equal "test_new_folder"
             @body.path.should.be.equal "/root"
 
- 
-    describe "Find folders in a specific folder", => 
+
+    describe "Find folders in a specific folder", =>
 
         it "When I send a request to create a root folder", (done) ->
             folder =
@@ -155,7 +145,7 @@ describe "Folders management", ->
         	@body.length.should.be.equal 3
 
 
-    describe "Find file in a specific folder", => 
+    describe "Find file in a specific folder", =>
 
         it "When I send a request to create a folder1", (done) ->
             folder =
@@ -190,7 +180,7 @@ describe "Folders management", ->
         it "And one file should be returned", ->
             @body.length.should.be.equal 1
 
- 
+
     describe "Download folder in zip format", =>
 
         it "When I send a request to create a root folder", (done) ->
@@ -210,7 +200,7 @@ describe "Folders management", ->
             @res.statusCode.should.be.equal 200
 
 
-    describe "Delete folder", => 
+    describe "Delete folder", =>
 
         it "When I send a request to create a root folder", (done) ->
             folder =
@@ -218,7 +208,7 @@ describe "Folders management", ->
                 path: ""
             client.post "folders/", folder, (err, res, body) =>
                 @rootId = body.id
-                done()        
+                done()
 
         it "And I send a request to create a sub-folder", (done) ->
             folder =

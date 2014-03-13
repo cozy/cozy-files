@@ -6,19 +6,9 @@ helpers = require './helpers'
 
 describe "Files management", ->
 
-    before (done) -> 
-        @timeout 6000
-        helpers.createApp "files", "files", "token", 0, "installed"
-        port = process.env.PORT || 8888
-        setTimeout () =>
-            americano.start name: 'files', port: port, (app, server) =>
-                @server = server
-                done()
-        , 3000
+    before helpers.setup 8888
 
-    after (done) ->      
-        @server.close()
-        helpers.cleanDb done
+    after helpers.takeDown
 
     describe "Create file", ->
         #before helpers.cleanDb
@@ -50,10 +40,10 @@ describe "Files management", ->
                     done()
 
             it "Then 400 should be returned as response code", ->
-                @res.statusCode.should.be.equal 400     
+                @res.statusCode.should.be.equal 400
 
 
-    describe "Get file", => 
+    describe "Get file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
@@ -83,7 +73,7 @@ describe "Files management", ->
             @body.path.should.be.equal ""
 
 
-    describe "Rename file", => 
+    describe "Rename file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
@@ -126,7 +116,7 @@ describe "Files management", ->
             @body.name.should.be.equal "new_test3"
             @body.path.should.be.equal ""
 
-    describe "Delete file", => 
+    describe "Delete file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
@@ -135,7 +125,7 @@ describe "Files management", ->
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
-                done()        
+                done()
 
         it "And I send a request to remove the file", (done) ->
             client.del "files/#{@id}", (err, res, body) =>
