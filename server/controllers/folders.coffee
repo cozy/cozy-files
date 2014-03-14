@@ -317,7 +317,9 @@ module.exports.publicList = (req, res) ->
                 [lang, folders, files] = results
 
                 translations = try require '../../client/app/locales/' + lang
-                catch e then {}
+                catch e
+                    try require '../../../client/app/locales/' + lang
+                    catch e then {}
                 translate = (text) -> translations[text] or text
 
                 #format date & size

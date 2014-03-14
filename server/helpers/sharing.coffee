@@ -69,7 +69,7 @@ module.exports.sendMail = (type, doc, key, cb) ->
             to: rule.email
             subject: "Cozy-file: someone has shared a #{type} with you"
             content: url
-            html: mailtemplate name: doc.name, url: url, type: type
+            html: mailtemplate(name: doc.name, url: url, type: type)
 
         CozyAdapter.sendMailFromUser mailOptions, (err) ->
             if err

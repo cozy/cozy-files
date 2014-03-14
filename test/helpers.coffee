@@ -4,14 +4,19 @@ americano = require 'americano'
 
 clientDS = new Client 'http://localhost:9101'
 
-# Bring models in context
-File = require '../server/models/file'
-Folder = require '../server/models/folder'
-
-process.env.NAME = "files"
-process.env.TOKEN = "token"
 
 helpers = {}
+ref = if process.env.COVERAGE
+    helpers.prefix = '../instrumented/'
+else if process.env.USE_JS
+    helpers.prefix = '../build/'
+else
+    helpers.prefix = '../'
+
+# Bring models in context
+File = require helpers.prefix + 'server/models/file'
+Folder = require helpers.prefix + 'server/models/folder'
+
 
 # init the compound application
 # will create @app in context

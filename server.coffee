@@ -3,6 +3,7 @@ errorHandler = require './server/middlewares/errors'
 
 options =
     name: 'cozy-files'
+    root: __dirname
     port: process.env.PORT || 9121
     host: process.env.HOST || '127.0.0.1'
 
