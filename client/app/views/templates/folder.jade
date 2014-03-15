@@ -26,6 +26,11 @@
                 label(for='inputName')
                   | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
+                br
+                p.text-center or
+                label(for='inputName')
+                  | #{t("upload folder msg")}
+                input#folder-uploader.form-control(type="file", directory, mozdirectory, webkitdirectory)
           .modal-footer
             button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
             button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}

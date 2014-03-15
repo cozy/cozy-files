@@ -7,6 +7,7 @@ ModalView = require "./modal"
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
+Helpers = require '../lib/folder_helpers'
 
 module.exports = class FolderView extends BaseView
 
@@ -145,18 +146,52 @@ module.exports = class FolderView extends BaseView
             @onAddFolder()
 
     onAddFolder: =>
+        prefix = @model.repository()
+
         folder = new File
             name: @$('#inputName').val()
-            path: @model.repository()
+            path: prefix
             type: "folder"
         @$("#inputName").val("")
 
-        if folder.validate()
-            new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
-        else
+        files = @$('#folder-uploader')[0].files
+
+        if not files.length and folder.validate()
+            new ModalView t("modal error"), t("modal error no data"), t("modal ok")
+            return
+
+        if not folder.validate()
             @filesList.addFolder folder
-            # hide modal
-            $('#dialog-new-folder').modal('hide')
+
+        if files.length
+            # create the necessary (nested) folder structure
+            dirsToCreate = Helpers.nestedDirs(files)
+            for dir in dirsToCreate
+                # figure out the name and path for the folder
+                dir = Helpers.removeTralingSlash(dir)
+                parts = dir.split('/')
+                path = prefix + "/" + parts[...-1].join('/')
+                path = Helpers.removeTralingSlash(path)
+
+                nFolder = new File
+                    name: parts[-1..][0]
+                    path: path
+                    type: "folder"
+                r = @filesList.addFolder nFolder, true
+                # stop if the folder already exists
+                if r instanceof ModalView
+                    return
+
+            # now that the required folder structure was created, upload files
+            # filter out . and ..
+            files = (file for file in files when (file.name isnt "." and file.name isnt ".."))
+            for file in files
+                relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
+                file.path = prefix + "/" + Helpers.dirName(relPath)
+                r = @filesList.addFile file, true
+                # stop if the file already exists
+                if r instanceof ModalView
+                    return
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files
@@ -186,6 +221,7 @@ module.exports = class FolderView extends BaseView
 
     hideUploadForm: ->
         $('#dialog-upload-file').modal('hide')
+        $('#dialog-new-folder').modal('hide')
 
 
     ###
