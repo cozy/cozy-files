@@ -26,7 +26,8 @@ module.exports =
 
     "modal error in use"        : "Name already in use"
     "modal error rename"        : "Name could not be changed"
-    "modal error empty name"    : "Name can't be ampty"
+    "modal error empty name"    : "Name can't be empty"
+    "modal error no data"       : "No name and no folder to upload"
 
     # file_edit template
     "file edit save"            : "Save"
@@ -46,11 +47,12 @@ module.exports =
     "upload button"             : "Upload a file here"
 
     "new folder caption"        : "Add a new folder"
-    "new folder msg"            : "Enter the folder's name:"
+    "new folder msg"            : "Create a folder named:"
     "new folder close"          : "Close"
-    "new folder send"           : "Create"
-
+    "new folder send"           : "OK"
     "new folder button"         : "Create a new folder"
+
+    "upload folder msg"         : "Upload a folder"
 
     "folder"                    : "Folder"
     "image"                     : "Image"

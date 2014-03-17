@@ -581,6 +581,57 @@ module.exports = BaseView = (function(_super) {
 
 });
 
+;require.register("lib/folder_helpers", function(exports, require, module) {
+module.exports = {
+  removeTralingSlash: function(path) {
+    if (path.slice(-1) === '/') {
+      return path.slice(0, -1);
+    }
+    return path;
+  },
+  dirName: function(path) {
+    return path.split('/').slice(0, -1).join('/');
+  },
+  nestedDirs: function(fileList) {
+    var dir, dirs, file, levels, nestLevel, parent, path, relPath, _i, _len;
+    levels = {};
+    for (_i = 0, _len = fileList.length; _i < _len; _i++) {
+      file = fileList[_i];
+      relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
+      parent = relPath.slice(0, relPath.lastIndexOf(file.name));
+      nestLevel = parent.split('/').length - 1;
+      levels[parent] = nestLevel;
+    }
+    dirs = (function() {
+      var _j, _len1, _ref, _results;
+      _ref = Object.keys(levels);
+      _results = [];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        path = _ref[_j];
+        _results.push({
+          path: path,
+          nestLevel: levels[path]
+        });
+      }
+      return _results;
+    })();
+    dirs.sort(function(a, b) {
+      return a.nestLevel - b.nestLevel;
+    });
+    return (function() {
+      var _j, _len1, _results;
+      _results = [];
+      for (_j = 0, _len1 = dirs.length; _j < _len1; _j++) {
+        dir = dirs[_j];
+        _results.push(dir.path);
+      }
+      return _results;
+    })();
+  }
+};
+
+});
+
 ;require.register("lib/view_collection", function(exports, require, module) {
 var BaseView, ViewCollection,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -710,7 +761,8 @@ module.exports = {
   "modal delete error": "cancel",
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
-  "modal error empty name": "Name can't be ampty",
+  "modal error empty name": "Name can't be empty",
+  "modal error no data": "No name and no folder to upload",
   "file edit save": "Save",
   "file edit cancel": "cancel",
   "tooltip delete": "Delete",
@@ -723,10 +775,11 @@ module.exports = {
   "upload send": "Add",
   "upload button": "Upload a file here",
   "new folder caption": "Add a new folder",
-  "new folder msg": "Enter the folder's name:",
+  "new folder msg": "Create a folder named:",
   "new folder close": "Close",
-  "new folder send": "Create",
+  "new folder send": "OK",
   "new folder button": "Create a new folder",
+  "upload folder msg": "Upload a folder",
   "folder": "Folder",
   "image": "Image",
   "document": "Document",
@@ -789,15 +842,6 @@ module.exports = {
   "modal error in use": "Ce nom est déjà utilisé",
   "modal error rename": "Le nom n'a pas pu être modifié",
   "modal error empty name": "Le nom du dossier ne peut pas être vide",
-  "modal shared file link title": "Partage d'un fichier",
-  "modal shared file link msg": "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le fichier :",
-  "modal share file send msg": "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :",
-  "modal shared folder link title": "Partage d'un dossier",
-  "modal shared folder link msg": "Vous pouvez utiliser cette adresse pour permettre aux personnes désirées de télécharger le dossier :",
-  "modal share folder send msg": "Si vous souhaitez envoyer ce lien par mails, entrez les adresses mails ici (séparé par une virgule) :",
-  "modal share send btn": "Partager",
-  "modal share error": "Une erreur s'est produite pendant le partage",
-  "do you want to make this file shareable": "Voulez vous rendre ce fichier partageable ?",
   "tooltip delete": "Supprimer",
   "tooltip edit": "Renommer",
   "tooltip download": "Télécharger",
@@ -1273,7 +1317,7 @@ module.exports = FilesView = (function(_super) {
     return this.socket.watch(this.collection);
   };
 
-  FilesView.prototype.addFile = function(attach) {
+  FilesView.prototype.addFile = function(attach, dirUpload) {
     var file, fileAttributes, found, progress;
     found = this.collection.findWhere({
       name: attach.name
@@ -1281,22 +1325,25 @@ module.exports = FilesView = (function(_super) {
     if (!found) {
       fileAttributes = {
         'name': attach.name,
-        'path': this.model.repository(),
+        'path': attach.path || this.model.repository(),
         'type': "file",
         'lastModification': attach.lastModifiedDate
       };
       file = new File(fileAttributes);
       file.file = attach;
       progress = new ProgressbarView(file);
-      $("#dialog-upload-file .modal-body").append("<div class=\"progress-name\">" + attach.name + "</div>");
-      $("#dialog-upload-file .modal-body").append(progress.render().el);
-      return this.upload(file);
+      if (dirUpload) {
+        $("#dialog-new-folder .modal-body").append(progress.render().el);
+      } else {
+        $("#dialog-upload-file .modal-body").append(progress.render().el);
+      }
+      return this.upload(file, dirUpload);
     } else {
       return new ModalView(t("modal error"), "" + (t('modal error file exists')) + ": " + attach.name, t("modal ok"));
     }
   };
 
-  FilesView.prototype.upload = function(file) {
+  FilesView.prototype.upload = function(file, noDisplay) {
     var formdata;
     formdata = new FormData();
     formdata.append('cid', file.cid);
@@ -1309,9 +1356,11 @@ module.exports = FilesView = (function(_super) {
       data: formdata,
       success: (function(_this) {
         return function(data) {
-          return _this.collection.add(file, {
-            merge: true
-          });
+          if (!noDisplay) {
+            return _this.collection.add(file, {
+              merge: true
+            });
+          }
         };
       })(this),
       error: (function(_this) {
@@ -1322,16 +1371,19 @@ module.exports = FilesView = (function(_super) {
     });
   };
 
-  FilesView.prototype.addFolder = function(folder) {
+  FilesView.prototype.addFolder = function(folder, noDisplay) {
     var found;
     found = this.collection.findWhere({
-      name: folder.get("name")
+      name: folder.get("name"),
+      path: folder.get("path")
     });
     if (!found) {
       return folder.save(null, {
         success: (function(_this) {
           return function(data) {
-            return _this.collection.add(folder);
+            if (!noDisplay) {
+              return _this.collection.add(folder);
+            }
           };
         })(this),
         error: (function(_this) {
@@ -1352,7 +1404,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalView, ProgressbarView,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, Helpers, ModalView, ProgressbarView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1370,6 +1422,8 @@ ModalView = require("./modal");
 File = require('../models/file');
 
 FileCollection = require('../collections/files');
+
+Helpers = require('../lib/folder_helpers');
 
 module.exports = FolderView = (function(_super) {
   __extends(FolderView, _super);
@@ -1531,6 +1585,12 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.prepareNewFolder = function() {
+    var supportsDirectoryUpload, uploadDirectoryInput;
+    uploadDirectoryInput = this.$("#folder-uploader")[0];
+    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
+    if (supportsDirectoryUpload) {
+      this.$("#folder-upload-form").removeClass('hide');
+    }
     return setTimeout((function(_this) {
       return function() {
         return _this.$("#inputName").focus();
@@ -1551,18 +1611,60 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onAddFolder = function() {
-    var folder;
+    var dir, dirsToCreate, file, files, folder, nFolder, parts, path, prefix, relPath, response, _i, _j, _len, _len1;
+    prefix = this.model.repository();
     folder = new File({
       name: this.$('#inputName').val(),
-      path: this.model.repository(),
+      path: prefix,
       type: "folder"
     });
     this.$("#inputName").val("");
-    if (folder.validate()) {
-      return new ModalView(t("modal error"), t("modal error empty name"), t("modal ok"));
-    } else {
+    files = this.$('#folder-uploader')[0].files;
+    if (!files.length && folder.validate()) {
+      new ModalView(t("modal error"), t("modal error no data"), t("modal ok"));
+      return;
+    }
+    if (!folder.validate()) {
       this.filesList.addFolder(folder);
-      return $('#dialog-new-folder').modal('hide');
+    }
+    if (files.length) {
+      dirsToCreate = Helpers.nestedDirs(files);
+      for (_i = 0, _len = dirsToCreate.length; _i < _len; _i++) {
+        dir = dirsToCreate[_i];
+        dir = Helpers.removeTralingSlash(dir);
+        parts = dir.split('/');
+        path = prefix + "/" + parts.slice(0, -1).join('/');
+        path = Helpers.removeTralingSlash(path);
+        nFolder = new File({
+          name: parts.slice(-1)[0],
+          path: path,
+          type: "folder"
+        });
+        response = this.filesList.addFolder(nFolder, true);
+        if (response instanceof ModalView) {
+          return;
+        }
+      }
+      files = (function() {
+        var _j, _len1, _results;
+        _results = [];
+        for (_j = 0, _len1 = files.length; _j < _len1; _j++) {
+          file = files[_j];
+          if (file.name !== "." && file.name !== "..") {
+            _results.push(file);
+          }
+        }
+        return _results;
+      })();
+      for (_j = 0, _len1 = files.length; _j < _len1; _j++) {
+        file = files[_j];
+        relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
+        file.path = prefix + "/" + Helpers.dirName(relPath);
+        response = this.filesList.addFile(file, true);
+        if (response instanceof ModalView) {
+          return;
+        }
+      }
     }
   };
 
@@ -1601,7 +1703,8 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.hideUploadForm = function() {
-    return $('#dialog-upload-file').modal('hide');
+    $('#dialog-upload-file').modal('hide');
+    return $('#dialog-new-folder').modal('hide');
   };
 
 
@@ -2110,7 +2213,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>Size</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>Type</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>Date</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
+buf.push('<div id="dialog-upload-file" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>Size</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>Type</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>Date</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
