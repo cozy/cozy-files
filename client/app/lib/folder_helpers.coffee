@@ -14,7 +14,7 @@ nestedDirs: (fileList) ->
     # make an object with keys paths, values nest level
     for file in fileList
         relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
-        parent = relPath.split(file.name)[0]
+        parent = relPath.slice(0, relPath.lastIndexOf(file.name))
         nestLevel = parent.split('/').length - 1
         levels[parent] = nestLevel
 
