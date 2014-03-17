@@ -25,3 +25,7 @@ Folder::getPublicURL = (cb) ->
         return cb err if err
         url = "#{domain}public/files/folders/#{@id}"
         cb null, url
+
+if process.env.NODE_ENV is 'test'
+    Folder::index = (fields, callback) -> callback null
+    Folder::search = (query, callback) -> callback null, []

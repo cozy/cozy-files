@@ -27,3 +27,7 @@ File::getPublicURL = (cb) ->
         return cb err if err
         url = "#{domain}public/files/files/#{@id}"
         cb null, url
+
+if process.env.NODE_ENV is 'test'
+    File::index = (fields, callback) -> callback null
+    File::search =  (query, callback) -> callback null, []
