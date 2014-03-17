@@ -52,6 +52,9 @@
     },
     "CozyInstance": {
       "description": "To display the application in the right language, the application requires access to your instance informations."
+    },
+    "Contact": {
+      "description": "To easily find your contact when sharing files & folders."
     }
   }
 }
