@@ -133,9 +133,9 @@ module.exports = class FolderView extends BaseView
     prepareNewFolder: ->
         # display upload folder form only if it is supported
         uploadDirectoryInput = @$("#folder-uploader")[0]
-        supportsDirectoryUpload = uploadDirectoryInput.directory ||
-                                  uploadDirectoryInput.mozdirectory ||
-                                  uploadDirectoryInput.webkitdirectory ||
+        supportsDirectoryUpload = uploadDirectoryInput.directory or
+                                  uploadDirectoryInput.mozdirectory or
+                                  uploadDirectoryInput.webkitdirectory or
                                   uploadDirectoryInput.msdirectory
         if supportsDirectoryUpload
           @$("#folder-upload-form").removeClass('hide')
@@ -186,9 +186,9 @@ module.exports = class FolderView extends BaseView
                     name: parts[-1..][0]
                     path: path
                     type: "folder"
-                r = @filesList.addFolder nFolder, true
+                response = @filesList.addFolder nFolder, true
                 # stop if the folder already exists
-                if r instanceof ModalView
+                if response instanceof ModalView
                     return
 
             # now that the required folder structure was created, upload files
@@ -197,9 +197,9 @@ module.exports = class FolderView extends BaseView
             for file in files
                 relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
                 file.path = prefix + "/" + Helpers.dirName(relPath)
-                r = @filesList.addFile file, true
+                response = @filesList.addFile file, true
                 # stop if the file already exists
-                if r instanceof ModalView
+                if response instanceof ModalView
                     return
 
     onAddFile: =>

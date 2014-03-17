@@ -1575,7 +1575,7 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onAddFolder = function() {
-    var dir, dirsToCreate, file, files, folder, nFolder, parts, path, prefix, r, relPath, _i, _j, _len, _len1;
+    var dir, dirsToCreate, file, files, folder, nFolder, parts, path, prefix, relPath, response, _i, _j, _len, _len1;
     prefix = this.model.repository();
     folder = new File({
       name: this.$('#inputName').val(),
@@ -1604,8 +1604,8 @@ module.exports = FolderView = (function(_super) {
           path: path,
           type: "folder"
         });
-        r = this.filesList.addFolder(nFolder, true);
-        if (r instanceof ModalView) {
+        response = this.filesList.addFolder(nFolder, true);
+        if (response instanceof ModalView) {
           return;
         }
       }
@@ -1624,8 +1624,8 @@ module.exports = FolderView = (function(_super) {
         file = files[_j];
         relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
         file.path = prefix + "/" + Helpers.dirName(relPath);
-        r = this.filesList.addFile(file, true);
-        if (r instanceof ModalView) {
+        response = this.filesList.addFile(file, true);
+        if (response instanceof ModalView) {
           return;
         }
       }
