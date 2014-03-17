@@ -131,6 +131,14 @@ module.exports = class FolderView extends BaseView
         Upload/ new folder
     ###
     prepareNewFolder: ->
+        # display upload folder form only if it is supported
+        uploadDirectoryInput = @$("#folder-uploader")[0]
+        supportsDirectoryUpload = uploadDirectoryInput.directory ||
+                                  uploadDirectoryInput.mozdirectory ||
+                                  uploadDirectoryInput.webkitdirectory
+        if supportsDirectoryUpload
+          @$("#folder-upload-form").removeClass('hide')
+
         setTimeout () =>
             @$("#inputName").focus()
         , 500
