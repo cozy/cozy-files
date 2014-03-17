@@ -1,5 +1,6 @@
 files = require './files'
 folders = require './folders'
+sharing = require './sharing'
 
 module.exports =
 
@@ -18,21 +19,6 @@ module.exports =
     'files/:fileid/download/:name':
         get: files.downloadAttachment
 
-    # public access to the file
-    'public/file:fileid':
-        get: files.downloadAttachment
-    'fileshare/:fileid':
-        get: files.getPublicLink
-    'fileshare/:fileid/send':
-        post: files.sendPublicLinks
-
-    # public access to the folder
-    'public/folder:id':
-        get: folders.zip
-    'foldershare/:id':
-        get: folders.getPublicLink
-    'foldershare/:id/send':
-        post: folders.sendPublicLinks
 
     'folders':
         post: folders.create
@@ -54,3 +40,22 @@ module.exports =
         post: folders.search
     'search/files':
         post: files.search
+
+    'shareid':
+        param: sharing.fetch
+    'share/:type/:shareid':
+        get: sharing.details
+        put: sharing.change
+    'share/:type/:shareid/send':
+        post: sharing.sendAll
+    # for contact autocomplete
+    'contacts':
+        get: sharing.contactList
+
+    # public access
+    'public/files/:fileid':
+        get: files.publicDownloadAttachment
+    'public/folders/:id.zip':
+        get: folders.publicZip
+    'public/folders/:id':
+        get: folders.publicList

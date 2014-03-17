@@ -1,0 +1,58 @@
+!!!
+html
+  head
+    title Cozy - Files
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible",content="IE=edge,chrome=1")
+    meta(name="viewport", content="width=device-width,initial-scale=1.0")
+    link(rel="stylesheet", href="../assets/stylesheets/app.css")
+    style.
+      #download-link{
+        margin-top: 20px;
+        height: 35px;
+      }
+
+
+  body.public
+    .container
+      .row.content-shadow
+        #content.col-lg-12
+
+          a#download-link.button.cozy-button.pull-right(
+            href=path[path.length-1].id + '.zip' + keyquery
+            title=t("download"))
+            i.icon-arrow-down.icon-white
+          #crumbs
+            ul
+              each folder in path
+                li: a(href=folder.id + keyquery)= folder.name
+
+
+
+          table#table-items.table.table-hover
+            tbody.table-items-body
+              tr.table-headers
+                td: span= t('name')
+                td.size-column-cell: span= t('size')
+                td.type-column-cell: span= t('type')
+                td.date-column-cell: span= t('date')
+
+              each folder in folders
+                tr.folder-row
+                  td: span
+                    a(href=folder.id + keyquery).img-folder
+                      img(src="../assets/images/folder.png")
+                    a(href=folder.id + keyquery).caption.btn.btn-link= folder.name
+                  td.size-column-cell
+                  td.type-column-cell: span= t('Folder')
+                  td.date-column-cell
+
+              each file in files
+                tr.folder-row
+                  td: span
+                    a(href='../files/' + file.id + keyquery).img-file
+                      img(src="../assets/images/file.png")
+                    a(href='../files/' + file.id + keyquery).caption.btn.btn-link= file.name
+                  td.size-column-cell: span= file.size
+                  td.type-column-cell: span= file.class
+                  td.date-column-cell: span= file.lastModification

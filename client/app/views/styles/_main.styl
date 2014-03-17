@@ -26,12 +26,12 @@ h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
 body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
   margin-right: 0
 
-textarea:hover, 
-input:hover, 
-textarea:active, 
-input:active, 
-textarea:focus, 
-input:focus
+textarea:hover,
+input[type="text"]:hover,
+textarea:active,
+input[type="text"]:active,
+textarea:focus,
+input[type="text"]:focus
 a:focus,
 .btn:focus
      outline:0px !important
@@ -83,7 +83,7 @@ input#search-box
     margin-left: 5px
     width: 200px
     background-image: url("../images/iconmonstr-magnifier-icon-18.png")
-    background-repeat: no-repeat 
+    background-repeat: no-repeat
     background-position: 5px 8px
 
 
@@ -138,7 +138,7 @@ div#affixbar
 table#table-items
   margin-top: 20px
 
-  .unactive 
+  .unactive
     opacity: 0.5
 
 tr.folder-row
@@ -170,14 +170,14 @@ tr.folder-row
       padding-left: 5px
 
   .img-folder
-    img  
+    img
       width: 20px
       margin-right: -3px
 
   .img-file
-    img  
+    img
       width: 20px
-      margin-right: -3px  
+      margin-right: -3px
 
   .icon
     font-size: 14px
@@ -249,7 +249,7 @@ tr.folder-row
         &:hover
           background actioncolor
           &:after
-            border-left-color actioncolor    
+            border-left-color actioncolor
       &:first-child
         a
           padding-left: 20px
@@ -277,3 +277,29 @@ tr.folder-row
 
     .btn
         top: -2px
+
+#clearancemanager
+  label
+    font-weight normal
+
+#share-list
+    list-style-type: none
+    padding-left 5px
+
+#inherited-share-list
+  li.header
+    list-style-type none
+    margin-left -30px
+    font-weight bold
+
+.linkshow
+  margin-bottom 5px
+  margin-left -5px
+  padding-left 15px
+  border-bottom 1px solid lightgray
+  label
+    width 30%
+
+  input
+    color #444
+    width 70%

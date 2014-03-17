@@ -35,7 +35,7 @@ module.exports = class File extends Backbone.Model
 
         if errors.length > 0
             return errors
-        return 
+        return
 
     prepareCallbacks: (callbacks, presuccess, preerror) ->
         {success, error} = callbacks or {}
@@ -70,6 +70,9 @@ module.exports = class File extends Backbone.Model
     findFolders: (callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}folders", id: @id, callbacks
+
+    getPublicURL: (key) ->
+        "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
 
     getZip: (file, callbacks) ->
         @prepareCallbacks callbacks

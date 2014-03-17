@@ -1,8 +1,7 @@
 File = require '../models/file'
 fs = require 'fs'
 async = require 'async'
-MailHelper = require "../mails/mail_helper"
-mails = new MailHelper()
+sharing = require '../helpers/sharing'
 
 
 ## Helpers ##
@@ -96,6 +95,7 @@ module.exports.modify = (req, res) ->
     else
         fileToModify = req.file
         newName = req.body.name
+        isPublic = req.body.public
         newPath = fileToModify.path + '/' + newName
 
         # test if the filename is available
@@ -111,7 +111,11 @@ module.exports.modify = (req, res) ->
                 if not available
                     res.send error: true, msg: "The name already in use", 400
                 else
-                    fileToModify.updateAttributes name: newName, (err) =>
+                    data =
+                         name: newName
+                         public: isPublic
+                    data.clearance = req.body.clearance if req.body.clearance
+                    fileToModify.updateAttributes data, (err) =>
                         if err
                             console.log err
                             res.send error: 'Cannot modify file', 500
@@ -138,31 +142,14 @@ module.exports.getAttachment = (req, res) ->
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
+module.exports.publicDownloadAttachment = (req, res) ->
+    sharing.checkClearance req.file, req, (authorized) ->
+        if not authorized then res.send 404
+        else processAttachement req, res, true
+
 module.exports.search = (req, res) ->
     File.search "*#{req.body.id}*", (err, files) ->
         if err
             res.send error: true, msg: err, 500
         else
-            console.log files
             res.send files
-
-module.exports.getPublicLink = (req, res, next) ->
-    file = req.file
-
-    # send the email and get url
-    mails.getFileUrl file, (err, url) ->
-        if err
-            next err
-        else
-            res.send url: url, 200
-
-module.exports.sendPublicLinks = (req, res, next) ->
-    file = req.file
-    users = req.body.users
-
-    # send the email and get url
-    mails.sendPublicFileLinks file, users, (err, url) ->
-        if err
-            next err
-        else
-            res.send url: url, 200
