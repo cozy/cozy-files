@@ -1551,7 +1551,7 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.prepareNewFolder = function() {
     var supportsDirectoryUpload, uploadDirectoryInput;
     uploadDirectoryInput = this.$("#folder-uploader")[0];
-    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory;
+    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
     if (supportsDirectoryUpload) {
       this.$("#folder-upload-form").removeClass('hide');
     }

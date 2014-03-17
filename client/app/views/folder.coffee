@@ -135,7 +135,8 @@ module.exports = class FolderView extends BaseView
         uploadDirectoryInput = @$("#folder-uploader")[0]
         supportsDirectoryUpload = uploadDirectoryInput.directory ||
                                   uploadDirectoryInput.mozdirectory ||
-                                  uploadDirectoryInput.webkitdirectory
+                                  uploadDirectoryInput.webkitdirectory ||
+                                  uploadDirectoryInput.msdirectory
         if supportsDirectoryUpload
           @$("#folder-upload-form").removeClass('hide')
 
