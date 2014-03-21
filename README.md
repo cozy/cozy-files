@@ -31,7 +31,7 @@ You can contribute to the Cozy Files in many ways:
 
 ## Hack
 
-Hacking the Files app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack Cozy Contact just like it was your own app.
+Hacking the Files app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack Cozy Files just like it was your own app.
 
     git clone https://github.com/mycozycloud/cozy-files.git
 
