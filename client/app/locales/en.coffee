@@ -1,5 +1,5 @@
 module.exports =
-    
+
     # folder view
     "modal error"               : "Error"
     "modal ok"                  : "OK"
@@ -7,47 +7,92 @@ module.exports =
     "modal error get folders"   : "Error getting folders from server"
     "modal error empty name"    : "The name can't be empty"
     "modal error file invalid"  : "doesn't seem to be a valid file"
-    
+
     # breadcrumbs
     "breadcrumbs search title"  : "Search"
-    
+
     # files view
-    "modal error file exists"   : "Sorry, file already exists"
+    "modal error file exists"   : "Sorry, a file or folder having this name already exists"
     "modal error file upload"   : "File could not be sent to server"
     "modal error folder create" : "Folder could not be created"
-    "modal error folder exists" : "Sorry, folder already exists"
-    
+    "modal error folder exists" : "Sorry, a file or folder having this name already exists"
+
     # file view
     "modal are you sure"        : "Are you sure ?"
     "modal delete msg"          : "Deleting cannot be undone"
     "modal delete ok"           : "Delete"
     "modal cancel"              : "cancel"
     "modal delete error"        : "cancel"
-    
+
     "modal error in use"        : "Name already in use"
     "modal error rename"        : "Name could not be changed"
-    "modal error empty name"    : "Name can't be ampty"
-    
-    "modal shared link title"   : "Share this file on the internet"
-    "modal shared link msg"     : "You can use this address to let others download this file:"
-    "modal share error"         : "There was an error sharing this file"
-    
+    "modal error empty name"    : "Name can't be empty"
+    "modal error no data"       : "No name and no folder to upload"
+
     # file_edit template
     "file edit save"            : "Save"
     "file edit cancel"          : "cancel"
-    
+    #tooltip
+    "tooltip delete"          : "Delete"
+    "tooltip edit"            : "Rename"
+    "tooltip download"        : "Download"
+    "tooltip send"            : "Send"
+
     # folder template
     "upload caption"            : "Upload a new file"
     "upload msg"                : "Choose the file to upload:"
     "upload close"              : "Close"
     "upload send"               : "Add"
-    
+
     "upload button"             : "Upload a file here"
-    
+
     "new folder caption"        : "Add a new folder"
-    "new folder msg"            : "Enter the folder's name:"
+    "new folder msg"            : "Create a folder named:"
     "new folder close"          : "Close"
-    "new folder send"           : "Create"
-    
+    "new folder send"           : "OK"
     "new folder button"         : "Create a new folder"
 
+    "upload folder msg"         : "Upload a folder"
+
+    "folder"                    : "Folder"
+    "image"                     : "Image"
+    "document"                  : "Document"
+    "music"                     : "Music"
+    "video"                     : "Video"
+    "video"                     : "Video"
+
+    "yes"                       : "Yes"
+    "no"                        : "No"
+
+    "name"                      : "Name"
+    "type"                      : "Type"
+    "size"                      : "Size"
+    "date"                      : "Last update"
+    "download"                  : "Download"
+    "MB"                        : "MB"
+    "KB"                        : "KB"
+    "B"                         : "B"
+
+
+    # clearance modal
+    "also have access"                : "These people also have access, because they have access to a parent folder"
+    "cancel"                          : "Cancel"
+    "copy paste link"                 : "Copy this link : "
+    "details"                         : "Details"
+    "inherited from"                  : "inherited from"
+    "modal question folder shareable" : "Select share mode for this folder"
+    "modal shared folder custom msg"  : "Enter email and press enter"
+    "modal shared folder link msg"    : "Send this link to let people access this folder"
+    "modal send mails"                : "Send a notification"
+    "modal question file shareable"   : "Select share mode for this file"
+    "modal shared file custom msg"    : "Enter email and press enter"
+    "modal shared file link msg"      : "Send this link to let people access this file"
+    "only you can see"                : "Only you and the people listed below can access this"
+    "public"                          : "Public"
+    "private"                         : "Private"
+    "save"                            : "Save"
+    "see link"                        : "See link"
+    "send mails question"             : "Send a notification email to : "
+    "sharing"                         : "Sharing"
+    "revoke"                          : "Revoke"
+    "forced public"                   : "This is public because one of the parent folder is public : "

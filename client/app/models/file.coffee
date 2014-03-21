@@ -35,7 +35,7 @@ module.exports = class File extends Backbone.Model
 
         if errors.length > 0
             return errors
-        return 
+        return
 
     prepareCallbacks: (callbacks, presuccess, preerror) ->
         {success, error} = callbacks or {}
@@ -56,6 +56,12 @@ module.exports = class File extends Backbone.Model
             rep = ""
         rep
 
+    endpoint: ->
+        if @get("type") is "folder"
+            "foldershare"
+        else
+            "fileshare"
+
     # FOLDER
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
@@ -65,8 +71,14 @@ module.exports = class File extends Backbone.Model
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}folders", id: @id, callbacks
 
+    getPublicURL: (key) ->
+        "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+
+    getZip: (file, callbacks) ->
+        @prepareCallbacks callbacks
+        client.post "#{@urlRoot()}#{@id}/zip/#{@name}", callbacks
+
     # FILE
-    # get file attachement
     getAttachment: (file, callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}#{@id}/getAttachment/#{@name}", callbacks

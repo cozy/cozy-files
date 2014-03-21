@@ -1,5 +1,6 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
+ModalShareView = require "./modal_share"
 client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
@@ -40,26 +41,18 @@ module.exports = class FileView extends BaseView
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
 
-    onShare: ->
-        client.get "public/file/#{@model.id}/notify",
-            success: (data) ->
-                console.log data
-                new ModalView t("modal shared link title"), t("modal shared link msg")+" "+data.url, t("modal ok")
-            error: (data) ->
-                console.log data
-                new ModalView t("modal error"), t("modal share error"), t("modal ok")
+    onShare: -> new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
-        if name and name != ""
+        if name and name isnt ""
 
             @model.save name: name,
-                patch: true
                 wait: true
                 success: (data) =>
                     @render()
-                error: (model, err)=>
+                error: (model, err) =>
                     console.log err
                     if err.status is 400
                         new ModalView t("modal error"), t("modal error in use"), t("modal ok")

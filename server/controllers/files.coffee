@@ -1,6 +1,7 @@
 File = require '../models/file'
 fs = require 'fs'
 async = require 'async'
+sharing = require '../helpers/sharing'
 
 
 ## Helpers ##
@@ -15,11 +16,13 @@ processAttachement = (req, res, download) ->
 
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
-        if err or not file
-            next new Error "File not found" if err
-            return res.error 404, 'Photo not found' if not file
+        if err or not file or file.length is 0
+            if err
+                next new Error "File not found"
+            else
+                res.send error:true, msg: 'File not found', 404
         else
-            req.file = file
+            req.file = file[0]
             next()
 
 
@@ -32,7 +35,7 @@ module.exports.all = (req, res) ->
         else
             res.send files
 
-module.exports.create = (req, res) ->
+module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
         res.send error: true, msg: "Invalid arguments", 500
     else
@@ -48,8 +51,24 @@ module.exports.create = (req, res) ->
                 else
                     file = req.files["file"]
 
+                    # calculate metadata
+                    data                  = {}
+                    data.name             = req.body.name
+                    data.path             = req.body.path
+                    data.lastModification = req.body.lastModification
+                    data.mime             = file.type
+                    data.size             = file.size
+                    switch file.type.split('/')[0]
+                        when 'image' then data.class = "image"
+                        when 'application' then data.class = "document"
+                        when 'text' then data.class = "document"
+                        when 'audio' then data.class = "music"
+                        when 'video' then data.class = "video"
+                        else
+                            data.class = "file"
+
                     # create the file
-                    File.create req.body, (err, newfile) =>
+                    File.create data, (err, newfile) =>
                         if err
                             next new Error "Server error while creating file; #{err}"
                         else
@@ -76,6 +95,7 @@ module.exports.modify = (req, res) ->
     else
         fileToModify = req.file
         newName = req.body.name
+        isPublic = req.body.public
         newPath = fileToModify.path + '/' + newName
 
         # test if the filename is available
@@ -91,7 +111,11 @@ module.exports.modify = (req, res) ->
                 if not available
                     res.send error: true, msg: "The name already in use", 400
                 else
-                    fileToModify.updateAttributes name: newName, (err) =>
+                    data =
+                         name: newName
+                         public: isPublic
+                    data.clearance = req.body.clearance if req.body.clearance
+                    fileToModify.updateAttributes data, (err) =>
                         if err
                             console.log err
                             res.send error: 'Cannot modify file', 500
@@ -118,24 +142,14 @@ module.exports.getAttachment = (req, res) ->
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
+module.exports.publicDownloadAttachment = (req, res) ->
+    sharing.checkClearance req.file, req, (authorized) ->
+        if not authorized then res.send 404
+        else processAttachement req, res, true
+
 module.exports.search = (req, res) ->
     File.search "*#{req.body.id}*", (err, files) ->
         if err
             res.send error: true, msg: err, 500
         else
-            console.log files
             res.send files
-
-module.exports.sendPublicLink = (req, res) ->
-    file = req.file
-    MailHelper = require "../mails/mail_helper"
-    mails = new MailHelper()
-
-    # send the email and get url
-    mails.sendPublicLink file, (err, url) ->
-        if err
-            console.log err
-            #res.send url: url, 200
-            res.send error: true, msg: err, 500
-        else
-            res.send url: url, 200

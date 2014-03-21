@@ -9,9 +9,9 @@
               .form-group
                 label(for='uploader')
                   | #{t("upload msg")}
-                input#uploader(type="file", multiple)
+                input#uploader.form-control(type="file", multiple)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("upload close")}
+            button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade
@@ -26,30 +26,50 @@
                 label(for='inputName')
                   | #{t("new folder msg")}
                 input#inputName.form-control(type="text")
+              .form-group.hide#folder-upload-form
+                br
+                p.text-center or
+                label(for='inputName')
+                  | #{t("upload folder msg")}
+                input#folder-uploader.form-control(type="file", directory, mozdirectory, webkitdirectory)
           .modal-footer
-            button.btn.btn-link(type='button', data-dismiss='modal') #{t("new folder close")}
+            button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
             button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
     .row
       .col-lg-12
-        .pull-left
-          input#search-box(type="search")
-        .pull-right
-          p.pull-right
-            a.btn.btn-cozy-contrast(data-toggle="modal",data-target="#dialog-upload-file")
-              span.glyphicon.glyphicon-upload
-              span.button-title-reponsive
-                |  #{t("upload button")}
-            |  
+        p.pull-right
+          input#search-box.pull-right(type="search")
+          #upload-buttons.pull-right
+            a#button-upload-new-file.btn.btn-cozy
+              img(src="images/add-file.png")
+            | &nbsp;
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
-              span.glyphicon.glyphicon-plus-sign
-              span.button-title-reponsive
-                |  #{t("new folder button")}
-
+              img(src="images/add-folder.png")
 .container
   .row.content-shadow
     .col-lg-12#content
       #crumbs
+      #loading-indicator
+      table#table-items.table.table-hover
+        tbody#table-items-body
+          tr.table-headers
+              td
+                span Name
+                a#down-name.btn.glyphicon.glyphicon-chevron-down
+                a#up-name.btn.glyphicon.glyphicon-chevron-up
+              td.size-column-cell
+                span Size
+                a#down-size.glyphicon.glyphicon-chevron-down.btn
+                a#up-size.unactive.btn.glyphicon.glyphicon-chevron-up
+              td.type-column-cell
+                span Type
+                a#down-class.btn.glyphicon.glyphicon-chevron-down
+                a#up-class.glyphicon.glyphicon-chevron-up.btn.unactive
+              td.date-column-cell
+                span Date
+                a#down-lastModification.btn.glyphicon.glyphicon-chevron-down
+                a#up-lastModification.btn.glyphicon.glyphicon-chevron-up.unactive
       #files

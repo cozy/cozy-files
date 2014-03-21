@@ -6,23 +6,29 @@ module.exports = class FileCollection extends Backbone.Collection
     model: File
 
     # sort
-    order: "asc"
+    order: "incr"
+    type: "name"
 
     # This is where ajax requests the backend.
     url: 'files'
 
-    # sorting - folders first, then alphabetically, by name
+
     comparator: (o1, o2) ->
 
-        console.log "comparator: #{o1}, #{o2}"
-
-        n1 = o1.get("name").toLocaleLowerCase()
-        n2 = o2.get("name").toLocaleLowerCase()
+        if @type is "name"
+            n1 = o1.get("name").toLocaleLowerCase()
+            n2 = o2.get("name").toLocaleLowerCase()
+        else if @type is "lastModification"
+            n1 = new Date(o1.get("lastModification"))
+            n2 = new Date(o2.get("lastModification"))
+        else
+            n1 = o1.get(@type)
+            n2 = o2.get(@type)
 
         t1 = o1.get("type")
         t2 = o2.get("type")
 
-        sort = if @order == "asc" then -1 else 1
+        sort = if @order == "incr" then -1 else 1
 
         if t1 is t2
             if n1 > n2 then return -sort

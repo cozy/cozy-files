@@ -1,30 +1,45 @@
 if model.type && model.type == "folder"
   td
-    span.glyphicon.glyphicon-folder-close.no-hover.icon
+    a.img-folder(href="#folders/#{model.id}")
+      img(src="images/folder.png")
     a.caption.btn.btn-link(href="#folders/#{model.id}")
       | #{model.name}
     .operations
-      a.file-delete
+      a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle  
-      a.file-edit
+      a.file-edit(title="#{t('tooltip edit')}")
         span.glyphicon.glyphicon-edit  
-  td
-  td.file-date
-    span.pull-right 12:00 12/10/2013
+      a.file-download(href="folders/#{model.id}/zip/#{model.name}", target="_blank")(title="#{t('tooltip download')}")
+        span.glyphicon.glyphicon-cloud-download
+      a.file-share(title="#{t('tooltip send')}")
+        span.glyphicon.glyphicon-share-alt
+  td.size-column-cell
+  td.type-column-cell
+    span.pull-left #{t('folder')}
+  td.date-column-cell
 else
   td
-    span.glyphicon.glyphicon-file.no-hover.icon
+    a.img-file(href="files/#{model.id}/attach/#{model.name}", target="_blank")
+      if model.class == "music"
+        img(src="images/music.png")
+      else
+        img(src="images/file.png")
     a.caption.btn.btn-link(href="files/#{model.id}/attach/#{model.name}", target="_blank")
       | #{model.name}
     .operations
-      a.file-delete
+      a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
-        span.glyphicon.glyphicon-edit  
-      a(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")
-        span.glyphicon.glyphicon-cloud-download  
-      a.file-share
+        span.glyphicon.glyphicon-edit(title="#{t('tooltip edit')}")
+      a.file-download(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")(title="#{t('tooltip download')}")
+        span.glyphicon.glyphicon-cloud-download
+      a.file-share(title="#{t('tooltip send')}")
         span.glyphicon.glyphicon-share-alt
-  td
-  td.file-date
-    span.pull-right 12:00 12/10/2013
+  td.file-size.size-column-cell
+    - options = {base: 2}
+    span.pull-left #{filesize(model.size || 0, options)}
+  td.file-type.type-column-cell
+    span.pull-left #{t(model.class)}
+  td.file-date.date-column-cell
+    if model.lastModification
+      span.pull-left #{moment(model.lastModification).calendar()}

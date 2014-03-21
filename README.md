@@ -51,6 +51,8 @@ Each modification of the client requires a specific build too.
 
 ## Tests
 
+Cozy Files manages files in your Cozy platform.
+
 ![Build
 Status](https://travis-ci.org/mycozycloud/cozy-files.png?branch=master)
 
@@ -63,6 +65,7 @@ In order to run the tests, you must only have the Data System started.
 ## Icons
 
 by [iconmonstr](http://iconmonstr.com/)
+and [momentum](http://www.momentumdesignlab.com/)
 
 ## License
 

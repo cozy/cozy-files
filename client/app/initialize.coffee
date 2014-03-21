@@ -7,9 +7,9 @@ $ ->
     $.fn.spin = (opts, color) ->
         presets =
             tiny:
-                lines: 8
-                length: 2
-                width: 2
+                lines: 6
+                length: 1
+                width: 1
                 radius: 3
 
             small:

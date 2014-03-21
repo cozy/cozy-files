@@ -15,8 +15,6 @@ module.exports = class ProgressbarView extends BaseView
 
     update: (e) ->
         pc = parseInt(e.loaded / e.total * 100)
-        console.log "[Progress bar] : #{pc} %"
-        
         @value = pc
         @render()
 
