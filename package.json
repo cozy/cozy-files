@@ -1,6 +1,13 @@
 {
   "name": "cozy-contacts",
   "version": "1.0.1",
+  "author": "Cozy Cloud <contact@cozycloud.cc> (http://cozycloud.cc)",
+  "licenses": [
+    {
+      "type": "AGPL v3",
+      "url": "http://www.gnu.org/licenses/agpl-3.0.html"
+    }
+  ],
   "description": "A cozy application to manage your contacts.",
   "main": "server.coffee",
   "dependencies": {
@@ -23,7 +30,6 @@
     "start": "node server.js"
   },
   "repository": "https://github.com/mycozycloud/cozy-contacts",
-  "author": "Romain M. Foucault",
   "readmeFilename": "README.md",
   "cozy-permissions": {
     "Contact": {
