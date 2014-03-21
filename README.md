@@ -24,8 +24,8 @@ From the command line you can type this command:
 
 You can contribute to the Cozy Contacts in many ways:
 
-* Pick up an [issue](https://github.com/mycozycloud/cozy-contact/issues?state=open) and solve it.
-* Translate it in [a new language](https://github.com/mycozycloud/cozy-contact/tree/master/client/app/locales).
+* Pick up an [issue](https://github.com/mycozycloud/cozy-contacts/issues?state=open) and solve it.
+* Translate it in [a new language](https://github.com/mycozycloud/cozy-contacts/tree/master/client/app/locales).
 * Allow to share contacts
 * Allow to subscribe to a CalDAV Contacts.
 * Add SyncML support
@@ -33,9 +33,9 @@ You can contribute to the Cozy Contacts in many ways:
 
 ## Hack
 
-Hacking the Contacts app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack the contact just like it was your own app.
+Hacking the Contacts app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack Cozy Contact just like it was your own app.
 
-    git clone https://github.com/mycozycloud/cozy-contact.git
+    git clone https://github.com/mycozycloud/cozy-contacts.git
 
 Run it with:
 
@@ -54,7 +54,7 @@ Each modification of the client requires a specific build too.
 ## Tests
 
 ![Build
-Status](https://travis-ci.org/mycozycloud/cozy-contact.png?branch=master)
+Status](https://travis-ci.org/mycozycloud/cozy-contacts.png?branch=master)
 
 To run tests type the following command into the Cozy Contacts folder:
 
