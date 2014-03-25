@@ -914,6 +914,7 @@ input#search-box {
   height: 35px;
   font-size: 16px;
   margin-left: 5px;
+  padding-left: 25px;
   width: 200px;
   background-image: url("../images/iconmonstr-magnifier-icon-18.png");
   background-repeat: no-repeat;
@@ -1221,4 +1222,4 @@ tr.folder-row .file-type {
 }
 
 
-/*@ sourceMappingURL=app.css.map*/
+/*# sourceMappingURL=app.css.map*/
