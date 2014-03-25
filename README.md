@@ -37,7 +37,7 @@ Hacking the Files app requires you [setup a dev environment](http://cozy.io/hack
 
 Run it with:
 
-    node server.js
+    node build/server.js
 
 Each modification of the server requires a new build, here is how to run a
 build:
