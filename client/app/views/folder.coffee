@@ -136,7 +136,6 @@ module.exports = class FolderView extends BaseView
 
     onUploadNewFileClicked: ->
         $("#dialog-upload-file .progress-name").remove()
-        $("#dialog-upload-file").modal("show")
 
     # Upload/ new folder
     prepareNewFolder: ->

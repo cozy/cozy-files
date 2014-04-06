@@ -1,4 +1,4 @@
-#dialog-upload-file.modal.fade
+#dialog-upload-file.modal.fade(tabindex=-1)
     .modal-dialog
         .modal-content
           .modal-header
@@ -14,7 +14,7 @@
             button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
-#dialog-new-folder.modal.fade
+#dialog-new-folder.modal.fade(tabindex=-1)
     .modal-dialog
         .modal-content
           .modal-header
@@ -43,7 +43,7 @@
         p.pull-right
           input#search-box.pull-right(type="search")
           #upload-buttons.pull-right
-            a#button-upload-new-file.btn.btn-cozy
+            a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
               img(src="images/add-file.png")
             | &nbsp;
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
