@@ -3,7 +3,7 @@ var americano, config, publicStatic, staticMiddleware;
 
 americano = require('americano');
 
-staticMiddleware = americano["static"](__dirname + '/../../client/public', {
+staticMiddleware = americano["static"](__dirname + '/../client/public', {
   maxAge: 86400000
 });
 
