@@ -9,6 +9,11 @@ td
     | #{t("file edit save")}
   a.btn.btn-sm.btn-link.file-edit-cancel
     | #{t("file edit cancel")}
-td
-td.file-date
-  span.pull-right 12:00 12/10/2013
+td.file-size
+    - options = {base: 2}
+    span.pull-left #{filesize(model.size || 0, options)}
+td.file-type.type-column-cell
+    span.pull-left #{t(model.class)}
+td.file-date.date-column-cell
+  if model.lastModification
+      span.pull-left #{moment(model.lastModification).calendar()}

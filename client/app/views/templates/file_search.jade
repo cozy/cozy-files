@@ -38,11 +38,11 @@ else
         span.glyphicon.glyphicon-share-alt
     p.file-path
       | #{model.path}/#{model.name}
-  td.file-size
+  td.file-size.size-column-cell
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}
-  td.file-type
-    span.pull-left #{model.mime}
-  td.file-date
+  td.file-type.type-column-cell
+    span.pull-left #{t(model.class)}
+  td.file-date.date-column-cell
     if model.lastModification
-      span.pull-right #{moment(model.lastModification).calendar()}
+      span.pull-left #{moment(model.lastModification).calendar()}
