@@ -144,3 +144,46 @@ describe "Files management", ->
             client.get "files/#{@id}" , (err, res, body) ->
                 res.statusCode.should.equal 404
                 done()
+
+    describe "Tag file", =>
+        it "When I send a request to create a file", (done) ->
+            file =
+                name: "testtags"
+                path: ""
+            client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
+                body = JSON.parse(body)
+                @id = body.id
+                done()
+
+        it "And I send a request to tag the file", (done) ->
+            file =
+                name: "testtags"
+                path: ""
+                tags: ["tag1", "tag2"]
+            client.put "files/#{@id}", file, (err, res, body) =>
+                @err = err
+                @res = res
+                done()
+
+        it "Then error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And I send a request to get a file", (done) ->
+            client.get "files/#{@id}", (err, res, body) =>
+                @err = err
+                @res = res
+                @body = body
+                done()
+
+        it "And error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And file should have tags", ->
+            @body.tags[0].should.be.equal "tag1"
+            @body.tags[1].should.be.equal "tag2"
