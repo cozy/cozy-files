@@ -10,13 +10,17 @@ publicStatic = (req, res, next) ->
         req.url = url
         next err
 
+GB = 1024 * 1024 * 1024
+
 config =
     common:
         set:
             'view engine': 'jade'
             'views': './server/views'
         use: [
-            americano.bodyParser()
+            americano.bodyParser
+                limit: 2 * GB
+                maxFieldsSize: 2 * GB
             require('cozy-i18n-helper').middleware
             americano.errorHandler
                 dumpExceptions: true
