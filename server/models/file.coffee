@@ -11,6 +11,7 @@ module.exports = File = americano.getModel 'File',
     binary: Object
     modificationHistory: Object
     clearance: (x) -> x
+    tags: (x) -> x
 
 
 File.all = (params, callback) ->

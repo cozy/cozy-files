@@ -90,9 +90,9 @@ module.exports.find = (req, res) ->
     res.send req.file
 
 module.exports.modify = (req, res) ->
-    if not req.body.name or req.body.name is ""
-        res.send error: true, msg: "No filename specified", 400
-    else
+    ok = false
+    if req.body.name and req.body.name.trim() isnt ""
+        ok = true
         fileToModify = req.file
         newName = req.body.name
         isPublic = req.body.public
@@ -125,6 +125,21 @@ module.exports.modify = (req, res) ->
                                     res.send error: true, msg: "Error indexing: #{err}", 500
                                 else
                                     res.send success: 'File successfully modified', 200
+
+    if req.body.tags and Array.isArray req.body.tags
+        ok = true
+        file = req.file
+        tags = req.body.tags
+        console.log tags
+        file.updateAttributes tags: tags, (err) =>
+            if err
+                console.log err
+                res.send error: 'Cannot change tags', 500
+            else
+                res.send success: 'Tags successfully changed', 200
+
+    if not ok
+        res.send error: true, msg: "No data specified", 400
 
 module.exports.destroy = (req, res) ->
     file = req.file

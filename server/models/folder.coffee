@@ -10,6 +10,7 @@ module.exports = Folder = americano.getModel 'Folder',
     size: Number
     modificationHistory: Object
     clearance: (x) -> x
+    tags: (x) -> x
 
 Folder.all = (params, callback) ->
     Folder.request "all", params, callback
