@@ -2135,7 +2135,14 @@ buf.push('<span class="glyphicon glyphicon-file no-hover icon"></span>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td></td><td class="file-date"><span class="pull-right">12:00 12/10/2013</span></td>');
+buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td class="file-size">');
+ options = {base: 2}
+buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
 }
 return buf.join("");
 };
@@ -2180,12 +2187,12 @@ buf.push('</a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size">');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
  options = {base: 2}
-buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type"><span class="pull-left">' + escape((interp = model.mime) == null ? '' : interp) + '</span></td><td class="file-date">');
+buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
 {
-buf.push('<span class="pull-right">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
 }
 buf.push('</td>');
 }
