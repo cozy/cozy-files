@@ -13,6 +13,9 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-cloud-download
       a.file-share(title="#{t('tooltip send')}")
         span.glyphicon.glyphicon-share-alt
+    span.pull-right
+      for tag in model.tags
+        span.label.label-info.files-tag #{tag}
   td.size-column-cell
   td.type-column-cell
     span.pull-left #{t('folder')}
@@ -35,6 +38,9 @@ else
         span.glyphicon.glyphicon-cloud-download
       a.file-share(title="#{t('tooltip send')}")
         span.glyphicon.glyphicon-share-alt
+    span.pull-right
+      for tag in model.tags
+        span.label.label-info.files-tag #{tag}
   td.file-size.size-column-cell
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}

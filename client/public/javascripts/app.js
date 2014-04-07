@@ -2079,7 +2079,29 @@ buf.push('><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
+buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><span class="pull-right">');
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  }
+}).call(this);
+
+buf.push('</span></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
 }
 else
 {
@@ -2104,7 +2126,29 @@ buf.push('></span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size size-column-cell">');
+buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><span class="pull-right">');
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  }
+}).call(this);
+
+buf.push('</span></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
