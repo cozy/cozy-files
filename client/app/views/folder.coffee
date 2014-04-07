@@ -203,7 +203,7 @@ module.exports = class FolderView extends BaseView
             # filter out . and ..
             files = (file for file in files when (file.name isnt "." and file.name isnt ".."))
             for file in files
-                relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
+                relPath = file.relativePath or file.mozRelativePath or file.webkitRelativePath or file.msRelativePath
                 file.path = prefix + "/" + Helpers.dirName(relPath)
                 response = @filesList.addFile file, true
                 # stop if the file already exists
