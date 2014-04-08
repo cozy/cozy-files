@@ -1,6 +1,7 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
 ModalShareView = require "./modal_share"
+TagsView = require "./tags"
 client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
@@ -64,3 +65,8 @@ module.exports = class FileView extends BaseView
     onKeyPress: (e) =>
         if e.keyCode is 13
             @onSaveClicked()
+
+    afterRender: ->
+        @tags = new TagsView
+            el: @$('.tags')
+            model: @model
