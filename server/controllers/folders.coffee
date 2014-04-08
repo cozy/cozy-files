@@ -100,6 +100,7 @@ module.exports.modify = (req, res) ->
         isPublic = req.body.public
         oldPath = folderToModify.path + '/' + folderToModify.name + "/"
         newPath = folderToModify.path + '/' + newName + "/"
+        newTags = req.body.tags or []
 
         hasntTheSamePathOrIsTheSame = (folder, cb) ->
             if (folderToModify.id is folder.id)
@@ -114,7 +115,14 @@ module.exports.modify = (req, res) ->
                 newRealPath = folderToModify.path + '/' + newName
                 modifiedPath = file.path.replace oldRealPath, newRealPath
 
-                file.updateAttributes path: modifiedPath, cb
+                # add new tags from parent, keeping the old ones
+                oldTags = file.tags
+                tags = [].concat(oldTags)
+                for tag in newTags
+                    if tags.indexOf tag is -1
+                        tags.push tag
+
+                file.updateAttributes path: modifiedPath, tags: tags, cb
             else
                 cb null
 
@@ -123,6 +131,7 @@ module.exports.modify = (req, res) ->
             data =
                 name: newName
                 public: isPublic
+                tags: newTags
 
             data.clearance = req.body.clearance if req.body.clearance
 
