@@ -130,7 +130,6 @@ module.exports.modify = (req, res) ->
         validRequest = true
         file = req.file
         tags = req.body.tags
-        console.log tags
         file.updateAttributes tags: tags, (err) =>
             if err
                 console.log err
