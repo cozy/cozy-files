@@ -763,6 +763,7 @@ module.exports = {
   "modal error rename": "Name could not be changed",
   "modal error empty name": "Name can't be empty",
   "modal error no data": "No name and no folder to upload",
+  "tag": "tag",
   "file edit save": "Save",
   "file edit cancel": "cancel",
   "tooltip delete": "Delete",
@@ -841,6 +842,7 @@ module.exports = {
   "modal error in use": "Ce nom est déjà utilisé",
   "modal error rename": "Le nom n'a pas pu être modifié",
   "modal error empty name": "Le nom du dossier ne peut pas être vide",
+  "tag": "étiquette",
   "tooltip delete": "Supprimer",
   "tooltip edit": "Renommer",
   "tooltip download": "Télécharger",
@@ -917,6 +919,7 @@ module.exports = {
   "modal error rename": "Numele nu a putut fi schimbat",
   "modal error empty name": "Numele nu poate fi vid",
   "modal error no data": "Nu există date de încărcat",
+  "tag": "etichetă",
   "file edit save": "Salvare",
   "file edit cancel": "Anulare",
   "tooltip delete": "Ștergere",
@@ -1224,7 +1227,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 });
 
 ;require.register("views/file", function(exports, require, module) {
-var BaseView, FileView, ModalShareView, ModalView, client,
+var BaseView, FileView, ModalShareView, ModalView, TagsView, client,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1234,6 +1237,8 @@ BaseView = require('../lib/base_view');
 ModalView = require("./modal");
 
 ModalShareView = require("./modal_share");
+
+TagsView = require("./tags");
 
 client = require("../helpers/client");
 
@@ -1339,6 +1344,13 @@ module.exports = FileView = (function(_super) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
     }
+  };
+
+  FileView.prototype.afterRender = function() {
+    return this.tags = new TagsView({
+      el: this.$('.tags'),
+      model: this.model
+    });
   };
 
   return FileView;
@@ -2107,6 +2119,84 @@ module.exports = ProgressbarView = (function(_super) {
 
 });
 
+;require.register("views/tags", function(exports, require, module) {
+var BaseView, TagsView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+module.exports = TagsView = (function(_super) {
+  __extends(TagsView, _super);
+
+  function TagsView() {
+    this.refresh = __bind(this.refresh, this);
+    this.tagRemoved = __bind(this.tagRemoved, this);
+    this.tagAdded = __bind(this.tagAdded, this);
+    return TagsView.__super__.constructor.apply(this, arguments);
+  }
+
+  TagsView.prototype.initialize = function() {
+    TagsView.__super__.initialize.apply(this, arguments);
+    this.$el.tagit({
+      availableTags: [],
+      placeholderText: t('tag'),
+      afterTagAdded: this.tagAdded,
+      afterTagRemoved: this.tagRemoved
+    });
+    this.duringRefresh = false;
+    $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
+      var keyCode;
+      keyCode = event.keyCode || event.which;
+      if (keyCode === 9) {
+        return $('.zone .type').first().select();
+      }
+    });
+    return this;
+  };
+
+  TagsView.prototype.tagAdded = function(e, ui) {
+    if (!(this.duringRefresh || ui.duringInitialization)) {
+      this.model.set('tags', this.$el.tagit('assignedTags'));
+      this.model.save();
+    }
+    return ui.tag.click((function(_this) {
+      return function() {
+        var tagLabel;
+        tagLabel = ui.tag.find('.tagit-label').text();
+        $("#filterfield").val(tagLabel);
+        $("#filterfield").trigger('keyup');
+        return $(".dropdown-menu").hide();
+      };
+    })(this));
+  };
+
+  TagsView.prototype.tagRemoved = function(er, ui) {
+    if (!(this.duringRefresh || ui.duringInitialization)) {
+      this.model.set('tags', this.$el.tagit('assignedTags'));
+      return this.model.save();
+    }
+  };
+
+  TagsView.prototype.refresh = function() {
+    var tag, _i, _len, _ref;
+    this.duringRefresh = true;
+    this.$el.tagit('removeAll');
+    _ref = this.model.get('tags');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      tag = _ref[_i];
+      this.$el.tagit('createTag', tag);
+    }
+    return this.duringRefresh = false;
+  };
+
+  return TagsView;
+
+})(BaseView);
+
+});
+
 ;require.register("views/templates/breadcrumbs_element", function(exports, require, module) {
 module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
 attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
@@ -2157,7 +2247,32 @@ buf.push('><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
+buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
 }
 else
 {
@@ -2182,7 +2297,32 @@ buf.push('></span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div></td><td class="file-size size-column-cell">');
+buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
@@ -2238,7 +2378,34 @@ buf.push('<td><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
 buf.push('><img src="images/folder.png"/></a><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
+buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div>');
+if ( model.tags)
+{
+buf.push('<span class="pull-right">');
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+    }
+
+  }
+}).call(this);
+
+buf.push('</span>');
+}
+buf.push('<p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
 }
 else
 {
@@ -2265,7 +2432,32 @@ buf.push('</a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
@@ -2339,4 +2531,4 @@ return buf.join("");
 });
 
 ;
-//@ sourceMappingURL=app.js.map
+//# sourceMappingURL=app.js.map

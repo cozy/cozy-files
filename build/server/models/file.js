@@ -15,6 +15,9 @@ module.exports = File = americano.getModel('File', {
   modificationHistory: Object,
   clearance: function(x) {
     return x;
+  },
+  tags: function(x) {
+    return x;
   }
 });
 
