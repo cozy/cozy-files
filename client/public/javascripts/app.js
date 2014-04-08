@@ -2378,10 +2378,9 @@ buf.push('<td><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
 buf.push('><img src="images/folder.png"/></a><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div>');
+buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><ul class="tags pull-right">');
 if ( model.tags)
 {
-buf.push('<span class="pull-right">');
 // iterate model.tags
 ;(function(){
   if ('number' == typeof model.tags.length) {
@@ -2389,7 +2388,7 @@ buf.push('<span class="pull-right">');
     for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
       var tag = model.tags[$index];
 
-buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
     }
 
   } else {
@@ -2397,15 +2396,14 @@ buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == 
     for (var $index in model.tags) {
       $$l++;      var tag = model.tags[$index];
 
-buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
     }
 
   }
 }).call(this);
 
-buf.push('</span>');
 }
-buf.push('<p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
+buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
 }
 else
 {
