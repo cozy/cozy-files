@@ -19,5 +19,10 @@ module.exports = {
     byFolder: function(doc) {
       return emit(doc.path, doc);
     }
+  },
+  contact: {
+    all: function(doc) {
+      return emit(doc._id, doc);
+    }
   }
 };
