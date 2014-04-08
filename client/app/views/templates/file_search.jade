@@ -40,10 +40,10 @@ else
         span.glyphicon.glyphicon-cloud-download  
       a.file-share
         span.glyphicon.glyphicon-share-alt
-    if model.tags
-        span.pull-right
-          for tag in model.tags
-            span.label.label-info.files-tag #{tag}
+    ul.tags.pull-right
+      if model.tags
+        for tag in model.tags
+          li #{tag}
     p.file-path
       | #{model.path}/#{model.name}
   td.file-size.size-column-cell

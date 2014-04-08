@@ -2432,10 +2432,9 @@ buf.push('</a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
 buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div>');
+buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
 if ( model.tags)
 {
-buf.push('<span class="pull-right">');
 // iterate model.tags
 ;(function(){
   if ('number' == typeof model.tags.length) {
@@ -2443,7 +2442,7 @@ buf.push('<span class="pull-right">');
     for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
       var tag = model.tags[$index];
 
-buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
     }
 
   } else {
@@ -2451,15 +2450,14 @@ buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == 
     for (var $index in model.tags) {
       $$l++;      var tag = model.tags[$index];
 
-buf.push('<span class="label label-info files-tag">' + escape((interp = tag) == null ? '' : interp) + '</span>');
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
     }
 
   }
 }).call(this);
 
-buf.push('</span>');
 }
-buf.push('<p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
+buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
