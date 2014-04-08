@@ -146,6 +146,7 @@ module.exports.modify = (req, res) ->
         validRequest = true
         file = req.file
         tags = req.body.tags
+        tags = tags.filter (e) -> typeof e is 'string'
         file.updateAttributes tags: tags, (err) =>
             if err
                 console.log err

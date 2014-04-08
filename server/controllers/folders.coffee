@@ -116,6 +116,7 @@ module.exports.modify = (req, res) ->
         oldPath = folderToModify.path + '/' + folderToModify.name + "/"
         newPath = folderToModify.path + '/' + newName + "/"
         newTags = req.body.tags or []
+        newTags = newTags.filter (e) -> typeof e is 'string'
 
         hasntTheSamePathOrIsTheSame = (folder, cb) ->
             if (folderToModify.id is folder.id)
