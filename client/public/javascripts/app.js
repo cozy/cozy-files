@@ -1656,7 +1656,7 @@ module.exports = FolderView = (function(_super) {
       })();
       for (_j = 0, _len1 = files.length; _j < _len1; _j++) {
         file = files[_j];
-        relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
+        relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath || file.msRelativePath;
         file.path = prefix + "/" + Helpers.dirName(relPath);
         response = this.filesList.addFile(file, true);
         if (response instanceof ModalView) {
