@@ -260,11 +260,22 @@ module.exports.findFolders = (req, res) ->
                     res.send files, 200
 
 module.exports.search = (req, res) ->
-    Folder.search "*#{req.body.id}*", (err, files) ->
+    sendResults = (err, files) ->
         if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
+            res.send error: true, msg: err, 500
         else
             res.send files
+
+    query = req.body.id
+    query = query.trim()
+
+    if query.indexOf('tag:') isnt -1
+        parts = query.split()
+        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        tag = parts[0].split('tag:')[1]
+        Folder.request 'byTag', key: tag, sendResults
+    else
+        Folder.search "*#{query}*", sendResults
 
 module.exports.zip = (req, res) ->
     getFolderPath req.params.id, (err, key) ->

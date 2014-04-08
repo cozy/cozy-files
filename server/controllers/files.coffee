@@ -179,8 +179,19 @@ module.exports.publicDownloadAttachment = (req, res) ->
         else processAttachement req, res, true
 
 module.exports.search = (req, res) ->
-    File.search "*#{req.body.id}*", (err, files) ->
+    sendResults = (err, files) ->
         if err
             res.send error: true, msg: err, 500
         else
             res.send files
+
+    query = req.body.id
+    query = query.trim()
+
+    if query.indexOf('tag:') isnt -1
+        parts = query.split()
+        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        tag = parts[0].split('tag:')[1]
+        File.request 'byTag', key: tag, sendResults
+    else
+        File.search "*#{query}*", sendResults
