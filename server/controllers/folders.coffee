@@ -46,16 +46,31 @@ module.exports.create = (req, res) ->
                 if not available
                     res.send error:true, msg: "This folder already exists", 400
                 else
-                    Folder.create req.body, (err, newFolder) ->
-                        if err
-                            res.send error: true, msg: "Server error while creating file: #{err}", 500
+                    # find parent folder
+                    Folder.all (err, folders) =>
+                        return callback err if err
+
+                        fullPath = req.body.path
+                        parents = folders.filter (tested) ->
+                            fullPath is tested.getFullPath()
+
+                        # inherit its tags
+                        if parents.length
+                            parent = parents[0]
+                            req.body.tags = parent.tags
                         else
-                            newFolder.index ["name"], (err) ->
-                                if err
-                                    console.log err
-                                    res.send error: true, msg: "Couldn't index: : #{err}", 500
-                                else
-                                    res.send newFolder, 200
+                            req.body.tags = []
+
+                        Folder.create req.body, (err, newFolder) ->
+                            if err
+                                res.send error: true, msg: "Server error while creating file: #{err}", 500
+                            else
+                                newFolder.index ["name"], (err) ->
+                                    if err
+                                        console.log err
+                                        res.send error: true, msg: "Couldn't index: : #{err}", 500
+                                    else
+                                        res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->

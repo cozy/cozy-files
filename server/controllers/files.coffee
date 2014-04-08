@@ -1,4 +1,5 @@
 File = require '../models/file'
+Folder = require '../models/folder'
 fs = require 'fs'
 async = require 'async'
 sharing = require '../helpers/sharing'
@@ -67,24 +68,39 @@ module.exports.create = (req, res, next) ->
                         else
                             data.class = "file"
 
-                    # create the file
-                    File.create data, (err, newfile) =>
-                        if err
-                            next new Error "Server error while creating file; #{err}"
+                    # find parent folder
+                    Folder.all (err, folders) =>
+                        return callback err if err
+
+                        fullPath = data.path
+                        parents = folders.filter (tested) ->
+                            fullPath is tested.getFullPath()
+
+                        # inherit its tags
+                        if parents.length
+                            parent = parents[0]
+                            data.tags = parent.tags
                         else
-                            newfile.attachBinary file.path, {"name": "file"}, (err) ->
-                                if err
-                                    next new Error "Error attaching binary: #{err}"
-                                else
-                                    newfile.index ["name"], (err) ->
-                                        if err
-                                            next new Error "Error indexing: #{err}"
-                                        else
-                                            fs.unlink file.path, (err) ->
-                                                if err
-                                                    next new Error "Error removing uploaded file: #{err}"
-                                                else
-                                                    res.send newfile, 200
+                            data.tags = []
+
+                        # create the file
+                        File.create data, (err, newfile) =>
+                            if err
+                                next new Error "Server error while creating file; #{err}"
+                            else
+                                newfile.attachBinary file.path, {"name": "file"}, (err) ->
+                                    if err
+                                        next new Error "Error attaching binary: #{err}"
+                                    else
+                                        newfile.index ["name"], (err) ->
+                                            if err
+                                                next new Error "Error indexing: #{err}"
+                                            else
+                                                fs.unlink file.path, (err) ->
+                                                    if err
+                                                        next new Error "Error removing uploaded file: #{err}"
+                                                    else
+                                                        res.send newfile, 200
 
 module.exports.find = (req, res) ->
     res.send req.file
