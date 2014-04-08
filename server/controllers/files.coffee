@@ -90,9 +90,9 @@ module.exports.find = (req, res) ->
     res.send req.file
 
 module.exports.modify = (req, res) ->
-    ok = false
+    validRequest = false
     if req.body.name and req.body.name.trim() isnt ""
-        ok = true
+        validRequest = true
         fileToModify = req.file
         newName = req.body.name
         isPublic = req.body.public
@@ -127,7 +127,7 @@ module.exports.modify = (req, res) ->
                                     res.send success: 'File successfully modified', 200
 
     if req.body.tags and Array.isArray req.body.tags
-        ok = true
+        validRequest = true
         file = req.file
         tags = req.body.tags
         console.log tags
@@ -138,7 +138,7 @@ module.exports.modify = (req, res) ->
             else
                 res.send success: 'Tags successfully changed', 200
 
-    if not ok
+    if not validRequest
         res.send error: true, msg: "No data specified", 400
 
 module.exports.destroy = (req, res) ->
