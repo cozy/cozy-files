@@ -59,7 +59,6 @@ module.exports =
     "document"                  : "Document"
     "music"                     : "Music"
     "video"                     : "Video"
-    "video"                     : "Video"
 
     "yes"                       : "Yes"
     "no"                        : "No"
@@ -77,7 +76,7 @@ module.exports =
     # clearance modal
     "also have access"                : "These people also have access, because they have access to a parent folder"
     "cancel"                          : "Cancel"
-    "copy paste link"                 : "Copy this link : "
+    "copy paste link"                 : "Copy this link:"
     "details"                         : "Details"
     "inherited from"                  : "inherited from"
     "modal question folder shareable" : "Select share mode for this folder"
@@ -92,7 +91,7 @@ module.exports =
     "private"                         : "Private"
     "save"                            : "Save"
     "see link"                        : "See link"
-    "send mails question"             : "Send a notification email to : "
+    "send mails question"             : "Send a notification email to:"
     "sharing"                         : "Sharing"
     "revoke"                          : "Revoke"
-    "forced public"                   : "This is public because one of the parent folder is public : "
+    "forced public"                   : "This is public because one of the parent folder is public:"

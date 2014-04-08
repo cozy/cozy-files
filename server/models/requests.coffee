@@ -8,3 +8,6 @@ module.exports =
     folder:
         all: (doc) -> emit doc._id, doc
         byFolder: (doc) -> emit doc.path, doc
+
+    contact:
+        all: (doc) -> emit doc._id, doc
