@@ -29,6 +29,8 @@ module.exports =
     "modal error empty name"    : "Numele nu poate fi vid"
     "modal error no data"       : "Nu există date de încărcat"
 
+    "tag"                       : "etichetă"
+
     # file_edit template
     "file edit save"            : "Salvare"
     "file edit cancel"          : "Anulare"

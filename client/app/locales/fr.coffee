@@ -28,6 +28,7 @@ module.exports =
     "modal error rename"        : "Le nom n'a pas pu être modifié"
     "modal error empty name"    : "Le nom du dossier ne peut pas être vide"
 
+    "tag"                       : "étiquette"
 
     #tooltip
     "tooltip delete"          : "Supprimer"

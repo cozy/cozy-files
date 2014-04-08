@@ -29,6 +29,8 @@ module.exports =
     "modal error empty name"    : "Name can't be empty"
     "modal error no data"       : "No name and no folder to upload"
 
+    "tag"                       : "tag"
+
     # file_edit template
     "file edit save"            : "Save"
     "file edit cancel"          : "cancel"
