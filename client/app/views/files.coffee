@@ -25,7 +25,7 @@ module.exports = class FilesView extends ViewCollection
         @socket.watch @collection
 
     addFile: (attach, dirUpload) =>
-        found = @collection.findWhere(name: attach.name)
+        found = @collection.findWhere name: attach.name
 
         if not found
             fileAttributes =
@@ -39,11 +39,15 @@ module.exports = class FilesView extends ViewCollection
 
             # add a progress bar
             progress = new ProgressbarView file
-
             if dirUpload
-                $("#dialog-new-folder .modal-body").append progress.render().el
+                dialogEl = "dialog-new-folder"
             else
-                $("#dialog-upload-file .modal-body").append progress.render().el
+                dialogEl = "dialog-upload-file"
+
+            $("##{dialogEl} .modal-body").append(
+               "<div class=\"progress-name\">#{attach.name}</div>"
+            )
+            $("##{dialogEl} .modal-body").append progress.render().el
 
             @upload file, dirUpload
         else

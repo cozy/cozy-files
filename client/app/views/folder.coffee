@@ -145,6 +145,9 @@ module.exports = class FolderView extends BaseView
                                   uploadDirectoryInput.mozdirectory or
                                   uploadDirectoryInput.webkitdirectory or
                                   uploadDirectoryInput.msdirectory
+
+        $("#dialog-new-folder .progress-name").remove()
+
         if supportsDirectoryUpload
           @$("#folder-upload-form").removeClass('hide')
 

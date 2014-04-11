@@ -1408,7 +1408,7 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.addFile = function(attach, dirUpload) {
-    var file, fileAttributes, found, progress;
+    var dialogEl, file, fileAttributes, found, progress;
     found = this.collection.findWhere({
       name: attach.name
     });
@@ -1423,10 +1423,12 @@ module.exports = FilesView = (function(_super) {
       file.file = attach;
       progress = new ProgressbarView(file);
       if (dirUpload) {
-        $("#dialog-new-folder .modal-body").append(progress.render().el);
+        dialogEl = "dialog-new-folder";
       } else {
-        $("#dialog-upload-file .modal-body").append(progress.render().el);
+        dialogEl = "dialog-upload-file";
       }
+      $("#" + dialogEl + " .modal-body").append("<div class=\"progress-name\">" + attach.name + "</div>");
+      $("#" + dialogEl + " .modal-body").append(progress.render().el);
       return this.upload(file, dirUpload);
     } else {
       return new ModalView(t("modal error"), "" + (t('modal error file exists')) + ": " + attach.name, t("modal ok"));
@@ -1677,6 +1679,7 @@ module.exports = FolderView = (function(_super) {
     var supportsDirectoryUpload, uploadDirectoryInput;
     uploadDirectoryInput = this.$("#folder-uploader")[0];
     supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
+    $("#dialog-new-folder .progress-name").remove();
     if (supportsDirectoryUpload) {
       this.$("#folder-upload-form").removeClass('hide');
     }
@@ -2529,4 +2532,4 @@ return buf.join("");
 });
 
 ;
-//# sourceMappingURL=app.js.map
+//@ sourceMappingURL=app.js.map
