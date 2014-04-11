@@ -6,6 +6,7 @@ Cozy Files makes your file management easy. Main features are:
 * File and Folder upload.
 * File and Folder sharing (via URLs)
 * File search
+* File and Folder tagging (and search by tag)
 
 ## Install
 
@@ -26,7 +27,6 @@ You can contribute to the Cozy Files in many ways:
 * Pick up an [issue](https://github.com/mycozycloud/cozy-files/issues?state=open) and solve it.
 * Translate it in [a new language](https://github.com/mycozycloud/cozy-files/tree/master/client/app/locales).
 * Allow to move a file from a folder to another.
-* File tagging
 
 
 ## Hack
