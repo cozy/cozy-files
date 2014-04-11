@@ -67,26 +67,44 @@ module.exports.create = function(req, res) {
               msg: "This folder already exists"
             }, 400);
           } else {
-            return Folder.create(req.body, function(err, newFolder) {
-              if (err) {
-                return res.send({
-                  error: true,
-                  msg: "Server error while creating file: " + err
-                }, 500);
-              } else {
-                return newFolder.index(["name"], function(err) {
+            return Folder.all((function(_this) {
+              return function(err, folders) {
+                var fullPath, parent, parents;
+                if (err) {
+                  return callback(err);
+                }
+                fullPath = req.body.path;
+                parents = folders.filter(function(tested) {
+                  return fullPath === tested.getFullPath();
+                });
+                if (parents.length) {
+                  parent = parents[0];
+                  req.body.tags = parent.tags;
+                } else {
+                  req.body.tags = [];
+                }
+                return Folder.create(req.body, function(err, newFolder) {
                   if (err) {
-                    console.log(err);
                     return res.send({
                       error: true,
-                      msg: "Couldn't index: : " + err
+                      msg: "Server error while creating file: " + err
                     }, 500);
                   } else {
-                    return res.send(newFolder, 200);
+                    return newFolder.index(["name"], function(err) {
+                      if (err) {
+                        console.log(err);
+                        return res.send({
+                          error: true,
+                          msg: "Couldn't index: : " + err
+                        }, 500);
+                      } else {
+                        return res.send(newFolder, 200);
+                      }
+                    });
                   }
                 });
-              }
-            });
+              };
+            })(this));
           }
         });
       };
@@ -156,7 +174,7 @@ module.exports.modify = function(req, res) {
     }, 400);
   }
   return findFolder(req.params.id, function(err, folderToModify) {
-    var hasntTheSamePathOrIsTheSame, isPublic, newName, newPath, oldPath, updateFoldersAndFiles, updateIfIsSubFolder, updateTheFolder;
+    var hasntTheSamePathOrIsTheSame, isPublic, newName, newPath, newTags, oldPath, updateFoldersAndFiles, updateIfIsSubFolder, updateTheFolder;
     if (err) {
       return next(err);
     }
@@ -164,6 +182,10 @@ module.exports.modify = function(req, res) {
     isPublic = req.body["public"];
     oldPath = folderToModify.path + '/' + folderToModify.name + "/";
     newPath = folderToModify.path + '/' + newName + "/";
+    newTags = req.body.tags || [];
+    newTags = newTags.filter(function(e) {
+      return typeof e === 'string';
+    });
     hasntTheSamePathOrIsTheSame = function(folder, cb) {
       if (folderToModify.id === folder.id) {
         return cb(true);
@@ -172,13 +194,22 @@ module.exports.modify = function(req, res) {
       }
     };
     updateIfIsSubFolder = function(file, cb) {
-      var modifiedPath, newRealPath, oldRealPath;
+      var modifiedPath, newRealPath, oldRealPath, oldTags, tag, tags, _i, _len;
       if ((file.path + "/").indexOf(oldPath) === 0) {
         oldRealPath = folderToModify.path + '/' + folderToModify.name;
         newRealPath = folderToModify.path + '/' + newName;
         modifiedPath = file.path.replace(oldRealPath, newRealPath);
+        oldTags = file.tags;
+        tags = [].concat(oldTags);
+        for (_i = 0, _len = newTags.length; _i < _len; _i++) {
+          tag = newTags[_i];
+          if (tags.indexOf(tag === -1)) {
+            tags.push(tag);
+          }
+        }
         return file.updateAttributes({
-          path: modifiedPath
+          path: modifiedPath,
+          tags: tags
         }, cb);
       } else {
         return cb(null);
@@ -188,7 +219,8 @@ module.exports.modify = function(req, res) {
       var data;
       data = {
         name: newName,
-        "public": isPublic
+        "public": isPublic,
+        tags: newTags
       };
       if (req.body.clearance) {
         data.clearance = req.body.clearance;
@@ -400,16 +432,31 @@ module.exports.findFolders = function(req, res) {
 };
 
 module.exports.search = function(req, res) {
-  return Folder.search("*" + req.body.id + "*", function(err, files) {
+  var parts, query, sendResults, tag;
+  sendResults = function(err, files) {
     if (err) {
       return res.send({
         error: true,
-        msg: "Server error occured: " + err
+        msg: err
       }, 500);
     } else {
       return res.send(files);
     }
-  });
+  };
+  query = req.body.id;
+  query = query.trim();
+  if (query.indexOf('tag:') !== -1) {
+    parts = query.split();
+    parts = parts.filter(function(e) {
+      return e.indexOf('tag:' !== -1);
+    });
+    tag = parts[0].split('tag:')[1];
+    return Folder.request('byTag', {
+      key: tag
+    }, sendResults);
+  } else {
+    return Folder.search("*" + query + "*", sendResults);
+  }
 };
 
 module.exports.zip = function(req, res) {

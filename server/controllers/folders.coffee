@@ -46,16 +46,31 @@ module.exports.create = (req, res) ->
                 if not available
                     res.send error:true, msg: "This folder already exists", 400
                 else
-                    Folder.create req.body, (err, newFolder) ->
-                        if err
-                            res.send error: true, msg: "Server error while creating file: #{err}", 500
+                    # find parent folder
+                    Folder.all (err, folders) =>
+                        return callback err if err
+
+                        fullPath = req.body.path
+                        parents = folders.filter (tested) ->
+                            fullPath is tested.getFullPath()
+
+                        # inherit its tags
+                        if parents.length
+                            parent = parents[0]
+                            req.body.tags = parent.tags
                         else
-                            newFolder.index ["name"], (err) ->
-                                if err
-                                    console.log err
-                                    res.send error: true, msg: "Couldn't index: : #{err}", 500
-                                else
-                                    res.send newFolder, 200
+                            req.body.tags = []
+
+                        Folder.create req.body, (err, newFolder) ->
+                            if err
+                                res.send error: true, msg: "Server error while creating file: #{err}", 500
+                            else
+                                newFolder.index ["name"], (err) ->
+                                    if err
+                                        console.log err
+                                        res.send error: true, msg: "Couldn't index: : #{err}", 500
+                                    else
+                                        res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
@@ -100,6 +115,8 @@ module.exports.modify = (req, res) ->
         isPublic = req.body.public
         oldPath = folderToModify.path + '/' + folderToModify.name + "/"
         newPath = folderToModify.path + '/' + newName + "/"
+        newTags = req.body.tags or []
+        newTags = newTags.filter (e) -> typeof e is 'string'
 
         hasntTheSamePathOrIsTheSame = (folder, cb) ->
             if (folderToModify.id is folder.id)
@@ -114,7 +131,14 @@ module.exports.modify = (req, res) ->
                 newRealPath = folderToModify.path + '/' + newName
                 modifiedPath = file.path.replace oldRealPath, newRealPath
 
-                file.updateAttributes path: modifiedPath, cb
+                # add new tags from parent, keeping the old ones
+                oldTags = file.tags
+                tags = [].concat(oldTags)
+                for tag in newTags
+                    if tags.indexOf tag is -1
+                        tags.push tag
+
+                file.updateAttributes path: modifiedPath, tags: tags, cb
             else
                 cb null
 
@@ -123,6 +147,7 @@ module.exports.modify = (req, res) ->
             data =
                 name: newName
                 public: isPublic
+                tags: newTags
 
             data.clearance = req.body.clearance if req.body.clearance
 
@@ -235,11 +260,22 @@ module.exports.findFolders = (req, res) ->
                     res.send files, 200
 
 module.exports.search = (req, res) ->
-    Folder.search "*#{req.body.id}*", (err, files) ->
+    sendResults = (err, files) ->
         if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
+            res.send error: true, msg: err, 500
         else
             res.send files
+
+    query = req.body.id
+    query = query.trim()
+
+    if query.indexOf('tag:') isnt -1
+        parts = query.split()
+        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        tag = parts[0].split('tag:')[1]
+        Folder.request 'byTag', key: tag, sendResults
+    else
+        Folder.search "*#{query}*", sendResults
 
 module.exports.zip = (req, res) ->
     getFolderPath req.params.id, (err, key) ->

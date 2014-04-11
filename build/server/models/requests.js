@@ -10,6 +10,16 @@ module.exports = {
     },
     byFolder: function(doc) {
       return emit(doc.path, doc);
+    },
+    byTag: function(doc) {
+      var tag, _i, _len, _ref, _results;
+      _ref = doc.tags || [];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push(emit(tag, doc));
+      }
+      return _results;
     }
   },
   folder: {
@@ -18,6 +28,16 @@ module.exports = {
     },
     byFolder: function(doc) {
       return emit(doc.path, doc);
+    },
+    byTag: function(doc) {
+      var tag, _i, _len, _ref, _results;
+      _ref = doc.tags || [];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push(emit(tag, doc));
+      }
+      return _results;
     }
   },
   contact: {

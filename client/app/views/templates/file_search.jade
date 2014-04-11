@@ -9,6 +9,10 @@ if model.type && model.type == "folder"
         span.glyphicon.glyphicon-remove-circle  
       a.file-edit
         span.glyphicon.glyphicon-edit
+    ul.tags.pull-right
+      if model.tags
+        for tag in model.tags
+          li #{tag}
     p.file-path
       | #{model.path}/#{model.name}
   td
@@ -36,6 +40,10 @@ else
         span.glyphicon.glyphicon-cloud-download  
       a.file-share
         span.glyphicon.glyphicon-share-alt
+    ul.tags.pull-right
+      if model.tags
+        for tag in model.tags
+          li #{tag}
     p.file-path
       | #{model.path}/#{model.name}
   td.file-size.size-column-cell

@@ -1,4 +1,5 @@
 File = require '../models/file'
+Folder = require '../models/folder'
 fs = require 'fs'
 async = require 'async'
 sharing = require '../helpers/sharing'
@@ -67,32 +68,47 @@ module.exports.create = (req, res, next) ->
                         else
                             data.class = "file"
 
-                    # create the file
-                    File.create data, (err, newfile) =>
-                        if err
-                            next new Error "Server error while creating file; #{err}"
+                    # find parent folder
+                    Folder.all (err, folders) =>
+                        return callback err if err
+
+                        fullPath = data.path
+                        parents = folders.filter (tested) ->
+                            fullPath is tested.getFullPath()
+
+                        # inherit its tags
+                        if parents.length
+                            parent = parents[0]
+                            data.tags = parent.tags
                         else
-                            newfile.attachBinary file.path, {"name": "file"}, (err) ->
-                                if err
-                                    next new Error "Error attaching binary: #{err}"
-                                else
-                                    newfile.index ["name"], (err) ->
-                                        if err
-                                            next new Error "Error indexing: #{err}"
-                                        else
-                                            fs.unlink file.path, (err) ->
-                                                if err
-                                                    next new Error "Error removing uploaded file: #{err}"
-                                                else
-                                                    res.send newfile, 200
+                            data.tags = []
+
+                        # create the file
+                        File.create data, (err, newfile) =>
+                            if err
+                                next new Error "Server error while creating file; #{err}"
+                            else
+                                newfile.attachBinary file.path, {"name": "file"}, (err) ->
+                                    if err
+                                        next new Error "Error attaching binary: #{err}"
+                                    else
+                                        newfile.index ["name"], (err) ->
+                                            if err
+                                                next new Error "Error indexing: #{err}"
+                                            else
+                                                fs.unlink file.path, (err) ->
+                                                    if err
+                                                        next new Error "Error removing uploaded file: #{err}"
+                                                    else
+                                                        res.send newfile, 200
 
 module.exports.find = (req, res) ->
     res.send req.file
 
 module.exports.modify = (req, res) ->
-    if not req.body.name or req.body.name is ""
-        res.send error: true, msg: "No filename specified", 400
-    else
+    validRequest = false
+    if req.body.name and req.body.name.trim() isnt ""
+        validRequest = true
         fileToModify = req.file
         newName = req.body.name
         isPublic = req.body.public
@@ -126,6 +142,21 @@ module.exports.modify = (req, res) ->
                                 else
                                     res.send success: 'File successfully modified', 200
 
+    if req.body.tags and Array.isArray req.body.tags
+        validRequest = true
+        file = req.file
+        tags = req.body.tags
+        tags = tags.filter (e) -> typeof e is 'string'
+        file.updateAttributes tags: tags, (err) =>
+            if err
+                console.log err
+                res.send error: 'Cannot change tags', 500
+            else
+                res.send success: 'Tags successfully changed', 200
+
+    if not validRequest
+        res.send error: true, msg: "No data specified", 400
+
 module.exports.destroy = (req, res) ->
     file = req.file
     file.removeBinary "file", (err, resp, body) =>
@@ -148,8 +179,19 @@ module.exports.publicDownloadAttachment = (req, res) ->
         else processAttachement req, res, true
 
 module.exports.search = (req, res) ->
-    File.search "*#{req.body.id}*", (err, files) ->
+    sendResults = (err, files) ->
         if err
             res.send error: true, msg: err, 500
         else
             res.send files
+
+    query = req.body.id
+    query = query.trim()
+
+    if query.indexOf('tag:') isnt -1
+        parts = query.split()
+        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        tag = parts[0].split('tag:')[1]
+        File.request 'byTag', key: tag, sendResults
+    else
+        File.search "*#{query}*", sendResults
