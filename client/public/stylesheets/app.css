@@ -1186,6 +1186,9 @@ tr.folder-row ul.tagit .tagit-new {
   padding: 0.2em 18px 0.2em 0.5em;
   visibility: hidden;
 }
+tr.folder-row ul.tagit .tagit-new input:focus {
+  visibility: visible !important;
+}
 tr.folder-row:hover .tagit-new {
   visibility: visible !important;
 }
@@ -1407,4 +1410,4 @@ tr.folder-row .file-type {
 }
 
 
-/*@ sourceMappingURL=app.css.map*/
+/*# sourceMappingURL=app.css.map*/
