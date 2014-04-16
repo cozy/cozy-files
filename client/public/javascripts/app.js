@@ -769,7 +769,7 @@ module.exports = {
   "tooltip delete": "Delete",
   "tooltip edit": "Rename",
   "tooltip download": "Download",
-  "tooltip send": "Send",
+  "tooltip share": "Share",
   "upload caption": "Upload a new file",
   "upload msg": "Choose the file to upload:",
   "upload close": "Close",
@@ -846,7 +846,7 @@ module.exports = {
   "tooltip delete": "Supprimer",
   "tooltip edit": "Renommer",
   "tooltip download": "Télécharger",
-  "tooltip send": "Envoyer",
+  "tooltip share": "Partager",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
   "upload caption": "Télécharger un fichier",
@@ -925,7 +925,7 @@ module.exports = {
   "tooltip delete": "Ștergere",
   "tooltip edit": "Redenumire",
   "tooltip download": "Descărcare",
-  "tooltip send": "Trimitere",
+  "tooltip share": "Trimitere",
   "upload caption": "Încărcare fișier",
   "upload msg": "Alegeți fișierul de încărcat:",
   "upload close": "Anulare",
@@ -2249,8 +2249,21 @@ buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit')
 buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
+buf.push('>');
+if ( model.clearance == 'public')
+{
+buf.push('<i class="fa fa-globe"></i>');
+}
+else if ( model.clearance && model.clearance.length > 0)
+{
+buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+}
+else
+{
+buf.push('<i class="fa fa-lock"></i>');
+}
+buf.push('</a></div><ul class="tags pull-right">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2299,8 +2312,21 @@ buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon')
 buf.push('></span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip send')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
+buf.push('>');
+if ( model.clearance == 'public')
+{
+buf.push('<i class="fa fa-globe"></i>');
+}
+else if ( model.clearance && model.clearance.length > 0)
+{
+buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+}
+else
+{
+buf.push('<i class="fa fa-lock"></i>');
+}
+buf.push('</a></div><ul class="tags pull-right">');
 if ( model.tags)
 {
 // iterate model.tags
