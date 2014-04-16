@@ -925,7 +925,7 @@ module.exports = {
   "tooltip delete": "Ștergere",
   "tooltip edit": "Redenumire",
   "tooltip download": "Descărcare",
-  "tooltip share": "Trimitere",
+  "tooltip share": "Partajare",
   "upload caption": "Încărcare fișier",
   "upload msg": "Alegeți fișierul de încărcat:",
   "upload close": "Anulare",
