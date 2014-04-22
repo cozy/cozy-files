@@ -38,7 +38,7 @@ module.exports =
     "tooltip delete"          : "Delete"
     "tooltip edit"            : "Rename"
     "tooltip download"        : "Download"
-    "tooltip send"            : "Send"
+    "tooltip share"            : "Share"
 
     # folder template
     "upload caption"            : "Upload a new file"
