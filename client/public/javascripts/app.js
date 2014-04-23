@@ -980,7 +980,11 @@ module.exports = {
   "send mails question": "Trimiteți e-mail de notificare la: ",
   "sharing": "Partajare",
   "revoke": "Revocare permisiune",
-  "forced public": "Acesta este public deoarece un director părinte este public: "
+  "forced public": "Acesta este public deoarece un director părinte este public: ",
+  "perm": "poate ",
+  "perm r file": "descărca acest fișier",
+  "perm r folder": "parcurge acest dosar ",
+  "perm rw folder": "parcurge acest dosar și încărca fișiere"
 };
 
 });
