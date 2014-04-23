@@ -10,7 +10,12 @@ catch e then CozyAdapter = require('jugglingdb-cozy-adapter')
 # helpers functions to handle inherited clearance
 
 # give the viewable path above folder
-module.exports.limitedTree = (folder, req, callback) ->
+module.exports.limitedTree = (folder, req, perm, callback) ->
+
+    if typeof perm is "function"
+        callback = perm
+        perm = 'r'
+
     Folder.all (err, folders) =>
         if err
             console.log err
@@ -29,25 +34,29 @@ module.exports.limitedTree = (folder, req, callback) ->
         scan = ->
             tested = parents[0]
             return callback [] unless tested
-            clearance.check tested, 'r', req, (err, authorized) ->
+            clearance.check tested, perm, req, (err, authorized) ->
                 return callback [] if err
                 if not authorized
                     parents.shift()
                     scan()
                 else
-                    callback parents
+                    callback parents, authorized
         scan()
 
 # check that doc is viewable by req
 # doc is visible iff any of itself or its parents is viewable
-module.exports.checkClearance = (doc, req, callback)  ->
+module.exports.checkClearance = (doc, req, perm, callback)  ->
+
+    if typeof perm is "function"
+        callback = perm
+        perm = 'r'
 
     checkAscendantVisible = ->
-        module.exports.limitedTree doc, req, (results) ->
+        module.exports.limitedTree doc, req, perm, (results) ->
             callback results.length isnt 0
 
     if doc.constructor is File
-        clearance.check doc, 'r', req, (err, result) ->
+        clearance.check doc, perm, req, (err, result) ->
             if result # the file itself is visible
                 callback true
             else

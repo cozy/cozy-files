@@ -19,15 +19,15 @@ clearanceCtl = clearance.controller
 
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->
-    switch req.params.type
-        when 'file'
-            File.find id, (err, file) ->
-                req.doc = file
-                next()
-        when 'folder'
-            Folder.find id, (err, folder) ->
-                req.doc = folder
-                next()
+    async.parallel [
+        (cb) -> File.find id, (err, file) -> cb null, file
+        (cb) -> Folder.find id, (err, folder) -> cb null, folder
+    ], (err, results) ->
+        [file, folder] = results
+        doc = file or folder
+        if doc
+            req.doc = doc
+            next()
         else
             err = new Error('bad usage')
             err.status = 400
@@ -60,13 +60,9 @@ module.exports.details = (req, res, next) ->
 
         res.send inherited: inherited
 
-
-# change the whole clearance object
+# expose clearanceCtl functions
 module.exports.change = clearanceCtl.change
 
-# send multiple mails
-# expect body = [<rule>]
 module.exports.sendAll = clearanceCtl.sendAll
-
 
 module.exports.contactList = clearanceCtl.contactList

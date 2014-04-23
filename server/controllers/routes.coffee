@@ -41,18 +41,22 @@ module.exports =
     'search/files':
         post: files.search
 
+    # clearance
     'shareid':
         param: sharing.fetch
-    'share/:type/:shareid':
+    'clearance/contacts':
+        get: sharing.contactList
+    'clearance/:shareid':
         get: sharing.details
         put: sharing.change
-    'share/:type/:shareid/send':
+    'clearance/:shareid/send':
         post: sharing.sendAll
-    # for contact autocomplete
-    'contacts':
-        get: sharing.contactList
 
     # public access
+    'public/folders':
+        post: folders.publicCreate
+    'public/files':
+        post: files.publicCreate
     'public/files/:fileid':
         get: files.publicDownloadAttachment
     'public/folders/:id.zip':
