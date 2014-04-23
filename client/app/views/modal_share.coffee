@@ -3,18 +3,21 @@ Modal = require "./modal"
 client = require "../helpers/client"
 CozyClearanceModal = require "cozy-clearance/modal_share_view"
 
+# extends the cozy-clearance modal to files specifics
 module.exports = class ModalShareView extends CozyClearanceModal
 
+    # display inherited details on summary's click
     events: -> _.extend super,
         'click #inherited-share-summary a': =>
             @$('#inherited-share-list').show()
             @$('#inherited-share-summary').hide()
 
+    # retrieve inherited rules
     initialize: (options) ->
         @type = @model.get('type')
         super
         @summaryemails = []
-        client.get "share/#{@type}/#{@model.id}",
+        client.get "clearance/#{@model.id}",
             error: => Modal.error 'server error occured', => @$el.modal 'hide'
             success: (data) =>
                 @inherited = data.inherited
@@ -23,22 +26,39 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 if last?.clearance is 'public'
                     @forcedPublic = last.name
 
-                # acutally render content
+                # actually render content
                 @refresh()
 
+    # allow rw permissions for folder, customize message depending on type
+    permissions: ->
+        if @type is 'folder'
+            'r': 'perm r folder'
+            'rw': 'perm rw folder'
+        else
+            'r': 'perm r file'
+
+    # do not allow adding permissions for user who already have them by inheritance
     typeaheadFilter: (item) =>
         email = item.toString().split(';')[0]
         super and email not in @summaryemails
 
+    # force 'public' display if forced public by inheritance
     getRenderData: ->
         clearance = if @forcedPublic then 'public' else @model.get('clearance')
         _.extend super, {clearance}
 
+    # ignore click on 'public' button when forced public by inheritance
+    makePublic: ->
+        return if @forcedPublic
+        super
+
+    # support forced public by inheritance and add inherited summary
     afterRender: () ->
         super
 
         if @forcedPublic
             text = t('forced public') + @forcedPublic
+            @$('#share-public').addClass 'toggled'
             @$('#share-private').hide().after $('<p>').text text
         else
             listitems = []
@@ -60,14 +80,14 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 list.append item for item in listitems
                 @$('#share-list').after summary, list
 
-    doSave: (sendmail, newClearances) =>
-        client.put "share/#{@type}/#{@model.id}", clearance: @model.get('clearance'),
-            error: -> ModalView.error 'server error occured'
-            success: (data) =>
-                if not sendmail
-                    @$el.modal 'hide'
-                else
-                    client.post "share/#{@type}/#{@model.id}/send", newClearances,
-                        error: -> ModalView.error 'mail not send'
-                        success: (data) =>
-                            @$el.modal 'hide'
+    # doSave: (sendmail, newClearances) =>
+    #     client.put "share/#{@type}/#{@model.id}", clearance: @model.get('clearance'),
+    #         error: -> ModalView.error 'server error occured'
+    #         success: (data) =>
+    #             if not sendmail
+    #                 @$el.modal 'hide'
+    #             else
+    #                 client.post "share/#{@type}/#{@model.id}/send", newClearances,
+    #                     error: -> ModalView.error 'mail not send'
+    #                     success: (data) =>
+    #                         @$el.modal 'hide'

@@ -93,3 +93,7 @@ module.exports =
     "revoke"                          : "Révoquer la permission"
     "send mails question"             : "Envoyer un email de notification à : "
     "modal send mails"                : "Envoyer une notification"
+    "perm"                            : "peut "
+    "perm r file"                     : "télécharger ce fichier"
+    "perm r folder"                   : "parcourir ce dossier"
+    "perm rw folder"                  : "parcourir ce dossier et ajouter des fichiers"
