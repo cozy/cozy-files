@@ -816,7 +816,11 @@ module.exports = {
   "send mails question": "Send a notification email to:",
   "sharing": "Sharing",
   "revoke": "Revoke",
-  "forced public": "This is public because one of the parent folder is public:"
+  "forced public": "This is public because one of the parent folder is public:",
+  "perm": "can ",
+  "perm r file": "download this file",
+  "perm r folder": "browse this folder",
+  "perm rw folder": "browse and upload files"
 };
 
 });
@@ -892,7 +896,11 @@ module.exports = {
   "sharing": "Partage",
   "revoke": "Révoquer la permission",
   "send mails question": "Envoyer un email de notification à : ",
-  "modal send mails": "Envoyer une notification"
+  "modal send mails": "Envoyer une notification",
+  "perm": "peut ",
+  "perm r file": "télécharger ce fichier",
+  "perm r folder": "parcourir ce dossier",
+  "perm rw folder": "parcourir ce dossier et ajouter des fichiers"
 };
 
 });
@@ -1950,7 +1958,6 @@ module.exports = ModalShareView = (function(_super) {
   __extends(ModalShareView, _super);
 
   function ModalShareView() {
-    this.doSave = __bind(this.doSave, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
     return ModalShareView.__super__.constructor.apply(this, arguments);
   }
@@ -1970,7 +1977,7 @@ module.exports = ModalShareView = (function(_super) {
     this.type = this.model.get('type');
     ModalShareView.__super__.initialize.apply(this, arguments);
     this.summaryemails = [];
-    return client.get("share/" + this.type + "/" + this.model.id, {
+    return client.get("clearance/" + this.model.id, {
       error: (function(_this) {
         return function() {
           return Modal.error('server error occured', function() {
@@ -1992,6 +1999,19 @@ module.exports = ModalShareView = (function(_super) {
     });
   };
 
+  ModalShareView.prototype.permissions = function() {
+    if (this.type === 'folder') {
+      return {
+        'r': 'perm r folder',
+        'rw': 'perm rw folder'
+      };
+    } else {
+      return {
+        'r': 'perm r file'
+      };
+    }
+  };
+
   ModalShareView.prototype.typeaheadFilter = function(item) {
     var email;
     email = item.toString().split(';')[0];
@@ -2006,11 +2026,19 @@ module.exports = ModalShareView = (function(_super) {
     });
   };
 
+  ModalShareView.prototype.makePublic = function() {
+    if (this.forcedPublic) {
+      return;
+    }
+    return ModalShareView.__super__.makePublic.apply(this, arguments);
+  };
+
   ModalShareView.prototype.afterRender = function() {
     var folder, item, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedPublic) {
       text = t('forced public') + this.forcedPublic;
+      this.$('#share-public').addClass('toggled');
       return this.$('#share-private').hide().after($('<p>').text(text));
     } else {
       listitems = [];
@@ -2043,32 +2071,6 @@ module.exports = ModalShareView = (function(_super) {
         return this.$('#share-list').after(summary, list);
       }
     }
-  };
-
-  ModalShareView.prototype.doSave = function(sendmail, newClearances) {
-    return client.put("share/" + this.type + "/" + this.model.id, {
-      clearance: this.model.get('clearance')
-    }, {
-      error: function() {
-        return ModalView.error('server error occured');
-      },
-      success: (function(_this) {
-        return function(data) {
-          if (!sendmail) {
-            return _this.$el.modal('hide');
-          } else {
-            return client.post("share/" + _this.type + "/" + _this.model.id + "/send", newClearances, {
-              error: function() {
-                return ModalView.error('mail not send');
-              },
-              success: function(data) {
-                return _this.$el.modal('hide');
-              }
-            });
-          }
-        };
-      })(this)
-    });
   };
 
   return ModalShareView;
@@ -2119,6 +2121,83 @@ module.exports = ProgressbarView = (function(_super) {
   return ProgressbarView;
 
 })(BaseView);
+
+});
+
+;require.register("views/public_folder", function(exports, require, module) {
+var File, FileCollection, FilesView, FolderView, PublicFilesView, PublicFolderView,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+window.CozySocketListener = {
+  fake: ''
+};
+
+FolderView = require('./folder');
+
+File = require('../models/file');
+
+FilesView = require('./files');
+
+FileCollection = require('../collections/files');
+
+PublicFilesView = (function(_super) {
+  __extends(PublicFilesView, _super);
+
+  function PublicFilesView() {
+    return PublicFilesView.__super__.constructor.apply(this, arguments);
+  }
+
+  PublicFilesView.prototype.initialize = function(collection, model) {
+    this.collection = collection;
+    this.model = model;
+    return FilesView.__super__.initialize.apply(this, arguments);
+  };
+
+  PublicFilesView.prototype.addItem = function() {
+    return window.location.reload();
+  };
+
+  return PublicFilesView;
+
+})(FilesView);
+
+module.exports = PublicFolderView = (function(_super) {
+  __extends(PublicFolderView, _super);
+
+  function PublicFolderView() {
+    return PublicFolderView.__super__.constructor.apply(this, arguments);
+  }
+
+  PublicFolderView.prototype.el = document.getElementsByTagName('body')[0];
+
+  PublicFolderView.prototype.templates = function() {
+    return '';
+  };
+
+  PublicFolderView.prototype.initialize = function(options) {
+    var old;
+    this.model = new File(_.extend(options.folder, {
+      type: 'folder'
+    }));
+    old = File.prototype.urlRoot;
+    File.prototype.urlRoot = function() {
+      return '../' + old.apply(this, arguments) + window.location.search;
+    };
+    this.filesCollection = new FileCollection([]);
+    return this.filesList = new PublicFilesView(this.filesCollection, this.model);
+  };
+
+  PublicFolderView.prototype.onCancelFolder = function() {
+    PublicFolderView.__super__.onCancelFolder.apply(this, arguments);
+    if (this.$('.progress-name').length) {
+      return window.location.reload();
+    }
+  };
+
+  return PublicFolderView;
+
+})(FolderView);
 
 });
 
