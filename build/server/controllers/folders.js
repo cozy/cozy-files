@@ -587,12 +587,7 @@ module.exports.publicList = function(req, res) {
             return require('../../client/app/locales/' + lang);
           } catch (_error) {
             e = _error;
-            try {
-              return require('../../../client/app/locales/' + lang);
-            } catch (_error) {
-              e = _error;
-              return {};
-            }
+            return {};
           }
         })();
         translate = function(text) {
