@@ -7,6 +7,16 @@ html
     meta(name="viewport", content="width=device-width,initial-scale=1.0")
     link(rel="stylesheet", href="../assets/stylesheets/app.css")
 
+    script(src="../assets/javascripts/vendor.js")
+    script(src="../assets/javascripts/app.js")
+    script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
+    script
+      var polyglot = new Polyglot();
+      polyglot.extend(require("locales/en"));
+      window.t = polyglot.t.bind(polyglot);
+      var PublicFolderView = require('views/public_folder');
+      new PublicFolderView({folder: window.folder});
+
     style.
       #download-link, #button-upload-new-file, #button-new-folder{
         margin-top: 20px;
@@ -123,13 +133,4 @@ html
                   button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
                   button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
-      script(src="../assets/javascripts/vendor.js")
-      script(src="../assets/javascripts/app.js")
-      script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
-      script
-        var polyglot = new Polyglot();
-        polyglot.extend(require("locales/en"));
-        window.t = polyglot.t.bind(polyglot);
-        var PublicFolderView = require('views/public_folder');
-        new PublicFolderView({folder: window.folder});
 
