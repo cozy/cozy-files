@@ -32,23 +32,29 @@ clearanceCtl = clearance.controller({
 });
 
 module.exports.fetch = function(req, res, next, id) {
-  var err;
-  switch (req.params.type) {
-    case 'file':
+  return async.parallel([
+    function(cb) {
       return File.find(id, function(err, file) {
-        req.doc = file;
-        return next();
+        return cb(null, file);
       });
-    case 'folder':
+    }, function(cb) {
       return Folder.find(id, function(err, folder) {
-        req.doc = folder;
-        return next();
+        return cb(null, folder);
       });
-    default:
+    }
+  ], function(err, results) {
+    var doc, file, folder;
+    file = results[0], folder = results[1];
+    doc = file || folder;
+    if (doc) {
+      req.doc = doc;
+      return next();
+    } else {
       err = new Error('bad usage');
       err.status = 400;
       return next(err);
-  }
+    }
+  });
 };
 
 module.exports.details = function(req, res, next) {
@@ -73,10 +79,13 @@ module.exports.details = function(req, res, next) {
       });
       isPublic = false;
       inherited = results != null ? results.filter(function(x) {
+        if (isPublic) {
+          return false;
+        }
         if (x.clearance === 'public') {
           isPublic = true;
         }
-        return isPublic || x.clearance.length !== 0;
+        return x.clearance.length !== 0;
       }) : void 0;
       return res.send({
         inherited: inherited

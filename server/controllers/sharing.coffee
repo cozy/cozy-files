@@ -55,8 +55,10 @@ module.exports.details = (req, res, next) ->
         # keep only element of path that alter the clearance
         isPublic = false
         inherited = results?.filter (x) ->
+            if isPublic then return false
+
             isPublic = true if x.clearance is 'public'
-            return isPublic or x.clearance.length isnt 0
+            return x.clearance.length isnt 0
 
         res.send inherited: inherited
 
