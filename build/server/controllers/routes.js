@@ -55,15 +55,21 @@ module.exports = {
   'shareid': {
     param: sharing.fetch
   },
-  'share/:type/:shareid': {
+  'clearance/contacts': {
+    get: sharing.contactList
+  },
+  'clearance/:shareid': {
     get: sharing.details,
     put: sharing.change
   },
-  'share/:type/:shareid/send': {
+  'clearance/:shareid/send': {
     post: sharing.sendAll
   },
-  'contacts': {
-    get: sharing.contactList
+  'public/folders': {
+    post: folders.publicCreate
+  },
+  'public/files': {
+    post: files.publicCreate
   },
   'public/files/:fileid': {
     get: files.publicDownloadAttachment

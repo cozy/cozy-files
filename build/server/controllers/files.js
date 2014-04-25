@@ -291,6 +291,18 @@ module.exports.publicDownloadAttachment = function(req, res) {
   });
 };
 
+module.exports.publicCreate = function(req, res, next) {
+  var toCreate;
+  toCreate = new File(req.body);
+  return sharing.checkClearance(toCreate, req, 'w', function(authorized) {
+    if (!authorized) {
+      return res.send(401);
+    } else {
+      return module.exports.create(req, res, next);
+    }
+  });
+};
+
 module.exports.search = function(req, res) {
   var parts, query, sendResults, tag;
   sendResults = function(err, files) {

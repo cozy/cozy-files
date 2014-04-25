@@ -339,7 +339,7 @@ module.exports.publicList = (req, res) ->
     findFolder req.params.id, (err, folder) ->
         return errortemplate err if err
 
-        sharing.limitedTree folder, req, (path) ->
+        sharing.limitedTree folder, req, (path, rule) ->
             authorized = path.length isnt 0
             return res.send 404 unless authorized
 
@@ -353,9 +353,7 @@ module.exports.publicList = (req, res) ->
                 [lang, folders, files] = results
 
                 translations = try require '../../client/app/locales/' + lang
-                catch e
-                    try require '../../../client/app/locales/' + lang
-                    catch e then {}
+                catch e then {}
                 translate = (text) -> translations[text] or text
 
                 #format date & size
@@ -379,6 +377,7 @@ module.exports.publicList = (req, res) ->
                     path
                     files
                     folders
+                    canupload: rule.perm is 'rw'
                     keyquery: "?key=#{req.query.key}"
                     t: translate
                 }
@@ -401,3 +400,9 @@ module.exports.publicZip = (req, res) ->
         sharing.checkClearance folder, req, (authorized) ->
             if not authorized then res.send 404
             else module.exports.zip req, res
+
+module.exports.publicCreate = (req, res, next) ->
+    toCreate = new Folder(req.body)
+    sharing.checkClearance toCreate, req, 'w', (authorized) ->
+        if not authorized then res.send 401
+        else module.exports.create req, res, next

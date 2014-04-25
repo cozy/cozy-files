@@ -178,6 +178,12 @@ module.exports.publicDownloadAttachment = (req, res) ->
         if not authorized then res.send 404
         else processAttachement req, res, true
 
+module.exports.publicCreate = (req, res, next) ->
+    toCreate = new File(req.body)
+    sharing.checkClearance toCreate, req, 'w', (authorized) ->
+        if not authorized then res.send 401
+        else module.exports.create req, res, next
+
 module.exports.search = (req, res) ->
     sendResults = (err, files) ->
         if err

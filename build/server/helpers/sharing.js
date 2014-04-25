@@ -20,7 +20,11 @@ try {
   CozyAdapter = require('jugglingdb-cozy-adapter');
 }
 
-module.exports.limitedTree = function(folder, req, callback) {
+module.exports.limitedTree = function(folder, req, perm, callback) {
+  if (typeof perm === "function") {
+    callback = perm;
+    perm = 'r';
+  }
   return Folder.all((function(_this) {
     return function(err, folders) {
       var fullPath, parents, scan;
@@ -41,7 +45,7 @@ module.exports.limitedTree = function(folder, req, callback) {
         if (!tested) {
           return callback([]);
         }
-        return clearance.check(tested, 'r', req, function(err, authorized) {
+        return clearance.check(tested, perm, req, function(err, authorized) {
           if (err) {
             return callback([]);
           }
@@ -49,7 +53,7 @@ module.exports.limitedTree = function(folder, req, callback) {
             parents.shift();
             return scan();
           } else {
-            return callback(parents);
+            return callback(parents, authorized);
           }
         });
       };
@@ -58,15 +62,19 @@ module.exports.limitedTree = function(folder, req, callback) {
   })(this));
 };
 
-module.exports.checkClearance = function(doc, req, callback) {
+module.exports.checkClearance = function(doc, req, perm, callback) {
   var checkAscendantVisible;
+  if (typeof perm === "function") {
+    callback = perm;
+    perm = 'r';
+  }
   checkAscendantVisible = function() {
-    return module.exports.limitedTree(doc, req, function(results) {
+    return module.exports.limitedTree(doc, req, perm, function(results) {
       return callback(results.length !== 0);
     });
   };
   if (doc.constructor === File) {
-    return clearance.check(doc, 'r', req, function(err, result) {
+    return clearance.check(doc, perm, req, function(err, result) {
       if (result) {
         return callback(true);
       } else {

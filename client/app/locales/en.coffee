@@ -97,3 +97,7 @@ module.exports =
     "sharing"                         : "Sharing"
     "revoke"                          : "Revoke"
     "forced public"                   : "This is public because one of the parent folder is public:"
+    "perm"                            : "can "
+    "perm r file"                     : "download this file"
+    "perm r folder"                   : "browse this folder"
+    "perm rw folder"                  : "browse and upload files"
