@@ -48,6 +48,15 @@ html
 
               img(src="../assets/images/add-folder.png")
 
+
+          a#notifications.btn.btn-cozy.pull-right(
+            href= keyquery + '&notifications=' + !notifications)
+
+            if notifications
+              = t('disable notifications')
+            else
+              = t('enable notifications')
+
           #crumbs
             ul
               each folder in path

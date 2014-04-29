@@ -122,29 +122,32 @@ module.exports.create = function(req, res, next) {
                 return File.create(data, function(err, newfile) {
                   if (err) {
                     return next(new Error("Server error while creating file; " + err));
-                  } else {
-                    return newfile.attachBinary(file.path, {
-                      "name": "file"
-                    }, function(err) {
-                      if (err) {
-                        return next(new Error("Error attaching binary: " + err));
-                      } else {
-                        return newfile.index(["name"], function(err) {
-                          if (err) {
-                            return next(new Error("Error indexing: " + err));
-                          } else {
-                            return fs.unlink(file.path, function(err) {
-                              if (err) {
-                                return next(new Error("Error removing uploaded file: " + err));
-                              } else {
-                                return res.send(newfile, 200);
-                              }
-                            });
-                          }
-                        });
-                      }
-                    });
                   }
+                  return newfile.attachBinary(file.path, {
+                    "name": "file"
+                  }, function(err) {
+                    if (err) {
+                      return next(new Error("Error attaching binary: " + err));
+                    }
+                    return newfile.index(["name"], function(err) {
+                      if (err) {
+                        return next(new Error("Error indexing: " + err));
+                      }
+                      return fs.unlink(file.path, function(err) {
+                        var who;
+                        if (err) {
+                          return next(new Error("Error removing uploaded file: " + err));
+                        }
+                        who = req.guestEmail || 'owner';
+                        return sharing.notifyChanges(who, newfile, function(err) {
+                          if (err) {
+                            console.log(err);
+                          }
+                          return res.send(newfile, 200);
+                        });
+                      });
+                    });
+                  });
                 });
               };
             })(this));
@@ -294,10 +297,12 @@ module.exports.publicDownloadAttachment = function(req, res) {
 module.exports.publicCreate = function(req, res, next) {
   var toCreate;
   toCreate = new File(req.body);
-  return sharing.checkClearance(toCreate, req, 'w', function(authorized) {
-    if (!authorized) {
+  return sharing.checkClearance(toCreate, req, 'w', function(authorized, rule) {
+    if (!rule) {
       return res.send(401);
     } else {
+      req.guestEmail = rule.email;
+      req.guestId = rule.contactid;
       return module.exports.create(req, res, next);
     }
   });

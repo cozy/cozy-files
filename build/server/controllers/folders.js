@@ -98,7 +98,12 @@ module.exports.create = function(req, res) {
                           msg: "Couldn't index: : " + err
                         }, 500);
                       } else {
-                        return res.send(newFolder, 200);
+                        return sharing.notifyChanges(newFolder, function(err) {
+                          if (err) {
+                            console.log(err);
+                          }
+                          return res.send(newFolder, 200);
+                        });
                       }
                     });
                   }
@@ -575,6 +580,23 @@ module.exports.publicList = function(req, res) {
           return File.byFolder({
             key: key
           }, cb);
+        }, function(cb) {
+          var clearance, notif, r, _i, _len;
+          if (req.query.notifications === void 0) {
+            return cb();
+          }
+          notif = req.query.notifications;
+          notif = notif && notif !== 'false';
+          clearance = folder.clearance;
+          for (_i = 0, _len = clearance.length; _i < _len; _i++) {
+            r = clearance[_i];
+            if (r.key === rule.key) {
+              rule.notifications = r.notifications = notif;
+            }
+          }
+          return folder.updateAttributes({
+            clearance: clearance
+          }, cb);
         }
       ], function(err, results) {
         var e, files, folders, html, lang, locals, translate, translations;
@@ -604,6 +626,7 @@ module.exports.publicList = function(req, res) {
           files: files,
           folders: folders,
           canupload: rule.perm === 'rw',
+          notifications: rule.notifications || false,
           keyquery: "?key=" + req.query.key,
           t: translate
         };

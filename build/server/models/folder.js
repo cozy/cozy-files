@@ -13,6 +13,7 @@ module.exports = Folder = americano.getModel('Folder', {
   lastModification: String,
   size: Number,
   modificationHistory: Object,
+  changeNotification: Boolean,
   clearance: function(x) {
     return x;
   },
@@ -31,6 +32,25 @@ Folder.byFolder = function(params, callback) {
 
 Folder.prototype.getFullPath = function() {
   return this.path + '/' + this.name;
+};
+
+Folder.prototype.getParents = function(callback) {
+  return Folder.all((function(_this) {
+    return function(err, folders) {
+      var fullPath, parents;
+      if (err) {
+        return callback(err);
+      }
+      fullPath = _this.getFullPath();
+      parents = folders.filter(function(tested) {
+        return fullPath.indexOf(tested.getFullPath()) === 0;
+      });
+      parents.sort(function(a, b) {
+        return a.getFullPath().length - b.getFullPath().length;
+      });
+      return callback(null, parents);
+    };
+  })(this));
 };
 
 Folder.prototype.getPublicURL = function(cb) {
