@@ -2023,11 +2023,12 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.getRenderData = function() {
-    var clearance;
-    clearance = this.forcedPublic ? 'public' : this.model.get('clearance');
-    return _.extend(ModalShareView.__super__.getRenderData.apply(this, arguments), {
-      clearance: clearance
-    });
+    var out;
+    out = ModalShareView.__super__.getRenderData.apply(this, arguments);
+    if (this.forcedPublic) {
+      out.clearance = 'public';
+    }
+    return out;
   };
 
   ModalShareView.prototype.makePublic = function() {
@@ -2038,12 +2039,12 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.afterRender = function() {
-    var folder, item, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+    var checkbox, folder, guestCanWrite, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedPublic) {
       text = t('forced public') + this.forcedPublic;
       this.$('#share-public').addClass('toggled');
-      return this.$('#share-private').hide().after($('<p>').text(text));
+      this.$('#share-private').hide().after($('<p>').text(text));
     } else {
       listitems = [];
       summary = [];
@@ -2072,9 +2073,27 @@ module.exports = ModalShareView = (function(_super) {
           item = listitems[_k];
           list.append(item);
         }
-        return this.$('#share-list').after(summary, list);
+        this.$('#share-list').after(summary, list);
       }
     }
+    guestCanWrite = _.findWhere(this.model.get('clearance'), {
+      perm: 'rw'
+    });
+    if (guestCanWrite) {
+      checkbox = $('<input id="notifs" type="checkbox">');
+      checkbox.prop('checked', this.model.get('changeNotification'));
+      text = t('change notif');
+      label = $('<label for="notifs">').append(checkbox, text);
+      return this.$('#share-list').after(label);
+    }
+  };
+
+  ModalShareView.prototype.saveData = function() {
+    var changeNotification;
+    changeNotification = this.$('#notifs').prop('checked') || false;
+    return _.extend(ModalShareView.__super__.saveData.apply(this, arguments), {
+      changeNotification: changeNotification
+    });
   };
 
   return ModalShareView;
