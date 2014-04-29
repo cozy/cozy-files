@@ -1,4 +1,6 @@
 americano = require 'americano-cozy'
+Folder = require './folder'
+CozyInstance = require './cozy_instance'
 
 module.exports = File = americano.getModel 'File',
     path: String
@@ -28,6 +30,21 @@ File::getPublicURL = (cb) ->
         return cb err if err
         url = "#{domain}public/files/files/#{@id}"
         cb null, url
+
+File::getParents = (callback) ->
+    Folder.all (err, folders) =>
+        return callback err if err
+
+        # only look at parents
+        fullPath = @getFullPath()
+        parents = folders.filter (tested) ->
+            fullPath.indexOf(tested.getFullPath()) is 0
+
+        # sort them in path order
+        parents.sort (a,b) ->
+            a.getFullPath().length - b.getFullPath().length
+
+        callback null, parents
 
 if process.env.NODE_ENV is 'test'
     File::index = (fields, callback) -> callback null

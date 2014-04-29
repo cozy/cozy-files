@@ -85,22 +85,23 @@ module.exports.create = (req, res, next) ->
 
                         # create the file
                         File.create data, (err, newfile) =>
-                            if err
-                                next new Error "Server error while creating file; #{err}"
-                            else
-                                newfile.attachBinary file.path, {"name": "file"}, (err) ->
-                                    if err
-                                        next new Error "Error attaching binary: #{err}"
-                                    else
-                                        newfile.index ["name"], (err) ->
-                                            if err
-                                                next new Error "Error indexing: #{err}"
-                                            else
-                                                fs.unlink file.path, (err) ->
-                                                    if err
-                                                        next new Error "Error removing uploaded file: #{err}"
-                                                    else
-                                                        res.send newfile, 200
+                            return next new Error "Server error while creating file; #{err}" if err
+
+                            newfile.attachBinary file.path, {"name": "file"}, (err) ->
+                                return next new Error "Error attaching binary: #{err}" if err
+
+                                newfile.index ["name"], (err) ->
+                                    return next new Error "Error indexing: #{err}" if err
+
+                                    fs.unlink file.path, (err) ->
+                                        return next new Error "Error removing uploaded file: #{err}" if err
+
+                                        who = req.guestEmail or 'owner'
+                                        sharing.notifyChanges who, newfile, (err) ->
+                                            # ignore this err
+                                            console.log err if err
+
+                                            res.send newfile, 200
 
 module.exports.find = (req, res) ->
     res.send req.file
@@ -180,9 +181,12 @@ module.exports.publicDownloadAttachment = (req, res) ->
 
 module.exports.publicCreate = (req, res, next) ->
     toCreate = new File(req.body)
-    sharing.checkClearance toCreate, req, 'w', (authorized) ->
-        if not authorized then res.send 401
-        else module.exports.create req, res, next
+    sharing.checkClearance toCreate, req, 'w', (authorized, rule) ->
+        if not rule then res.send 401
+        else
+            req.guestEmail = rule.email
+            req.guestId = rule.contactid
+            module.exports.create req, res, next
 
 module.exports.search = (req, res) ->
     sendResults = (err, files) ->

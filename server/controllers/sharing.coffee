@@ -62,9 +62,19 @@ module.exports.details = (req, res, next) ->
 
         res.send inherited: inherited
 
-# expose clearanceCtl functions
-module.exports.change = clearanceCtl.change
+# do not use clearanceCtl, because we handle notifications
+module.exports.change = (req, res, next) ->
 
+    {clearance, changeNotification} = req.body
+    body = {clearance, changeNotification}
+
+    req.doc.updateAttributes body, (err) ->
+        return next err if err
+        res.send req.doc
+
+# expose clearanceCtl functions
 module.exports.sendAll = clearanceCtl.sendAll
 
 module.exports.contactList = clearanceCtl.contactList
+
+module.exports.contactPicture = clearanceCtl.contactPicture

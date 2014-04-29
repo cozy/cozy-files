@@ -1,11 +1,28 @@
 File = require '../models/file'
 Folder = require '../models/folder'
+CozyInstance = require '../models/cozy_instance'
 clearance = require 'cozy-clearance'
 async = require 'async'
 jade = require 'jade'
 fs = require 'fs'
+NotificationHelper = require 'cozy-notifications-helper'
+
 try CozyAdapter = require('americano-cozy/node_modules/jugglingdb-cozy-adapter')
 catch e then CozyAdapter = require('jugglingdb-cozy-adapter')
+
+cozydomain = 'http://your.friends.cozy.url/'
+CozyInstance.getURL (err, domain) =>
+    return console.log err if err
+    cozydomain = domain
+
+notifications = new NotificationHelper 'files'
+
+publicURL = (doc) ->
+    if doc instanceof File
+        "#{cozydomain}public/files/files/#{doc.id}"
+    else if doc instanceof Folder
+        "#{cozydomain}public/files/folder/#{doc.id}"
+    else throw new Error('wrong usage')
 
 # helpers functions to handle inherited clearance
 
@@ -16,19 +33,8 @@ module.exports.limitedTree = (folder, req, perm, callback) ->
         callback = perm
         perm = 'r'
 
-    Folder.all (err, folders) =>
-        if err
-            console.log err
-            return callback []
-
-        # only look at parents
-        fullPath = folder.getFullPath()
-        parents = folders.filter (tested) ->
-            fullPath.indexOf(tested.getFullPath()) is 0
-
-        # sort them in path order
-        parents.sort (a,b) ->
-            a.getFullPath().length - b.getFullPath().length
+    folder.getParents (err, parents) ->
+        return callback err if err
 
         # remove start of path until first visible
         scan = ->
@@ -52,8 +58,8 @@ module.exports.checkClearance = (doc, req, perm, callback)  ->
         perm = 'r'
 
     checkAscendantVisible = ->
-        module.exports.limitedTree doc, req, perm, (results) ->
-            callback results.length isnt 0
+        module.exports.limitedTree doc, req, perm, (results, rule) ->
+            callback results.length isnt 0, rule
 
     if doc.constructor is File
         clearance.check doc, perm, req, (err, result) ->
@@ -64,25 +70,56 @@ module.exports.checkClearance = (doc, req, perm, callback)  ->
     else
         checkAscendantVisible()
 
-# send a share mail
-templatefile = require('path').join __dirname, '../views/sharemail.jade'
-mailtemplate = jade.compile fs.readFileSync templatefile, 'utf8'
-module.exports.sendMail = (type, doc, key, cb) ->
-    rule = doc.clearance.filter((rule) -> rule.key is key)[0]
-    doc.getPublicURL (err, url) =>
-        return cb err if err
+# notify guests of file change, if they want it
+# this is 5min-throttled to avoid multiple mails for one batch change
+# <File> file : the file that has changed
+# <Bool> publicRequest is this a guest action
+# callback
+mailsToSend = {}
+timer = null
+_5min = 5000 # 5 * 60 * 1000
+module.exports.notifyChanges = (who, file, callback) ->
+    clearTimeout timer if timer
 
-        url += '?key=' + key
+    file.getParents (err, parents) ->
+        return callback err if err
+        for folder in parents when folder.clearance?.length
+            for rule in folder.clearance
+                if rule.email isnt who and rule.notifications
+                    timer = setTimeout doSendNotif, _5min
+                    uniq = rule.key + folder.name
+                    mailsToSend[uniq] =
+                        name: folder.name
+                        url: publicURL(folder) + '&key=' + rule.key
+                        to: rule.email
+
+            if who isnt 'owner' and folder.changeNotification
+                uniq = 'udapte' + folder.id
+                params =
+                    text: "#{who} uploaded file #{file.name} into #{folder.name}"
+                    resource:
+                        app: 'files'
+                        url: "#folder/#{folder.id}"
+
+                notifications.createOrUpdatePersistent uniq, params, (err) ->
+                    console.log err if err
+
+        callback null
+
+# send notif mails
+templatefile = require('path').join __dirname, '../views/notifmail.jade'
+notiftemplate = jade.compile fs.readFileSync templatefile, 'utf8'
+doSendNotif = ->
+    for key, item of mailsToSend
 
         mailOptions =
-            to: rule.email
-            subject: "Cozy-file: someone has shared a #{type} with you"
-            content: url
-            html: mailtemplate(name: doc.name, url: url, type: type)
+            to: item.to
+            subject: "Cozy-file: #{item.name} has changed "
+            content: item.url
+            html: notiftemplate name: item.name, url: item.url
 
         CozyAdapter.sendMailFromUser mailOptions, (err) ->
-            if err
-                console.log err
-                cb err
-            else
-                cb null
+            console.log 'sent update mail to ', item.to
+            console.log err if err
+
+    mailsToSend = {}
