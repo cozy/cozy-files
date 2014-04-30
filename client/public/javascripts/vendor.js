@@ -6613,34 +6613,9 @@ if (!jQuery) { throw new Error("Bootstrap requires jQuery") }
 }(window.jQuery);
 
 ;require.register("cozy-clearance/contact_autocomplete", function(exports, require, module){
-    var Contact, contactCollection,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-contactCollection = new Backbone.Collection();
-
-contactCollection.url = 'clearance/contacts';
-
-contactCollection.model = Contact = (function(_super) {
-  __extends(Contact, _super);
-
-  function Contact() {
-    return Contact.__super__.constructor.apply(this, arguments);
-  }
-
-  Contact.prototype.match = function(filter) {
-    return filter.test(this.get('name')) || this.get('emails').some(function(email) {
-      return filter.test(email);
-    });
-  };
-
-  return Contact;
-
-})(Backbone.Model);
-
-contactCollection.fetch();
-
-module.exports = function(input, onGuestAdded, extrafilter) {
+    module.exports = function(input, onGuestAdded, extrafilter) {
+  var contactCollection;
+  contactCollection = require('./contact_collection');
   if (extrafilter == null) {
     extrafilter = function() {
       return true;
@@ -6667,6 +6642,7 @@ module.exports = function(input, onGuestAdded, extrafilter) {
         return contact.get('emails').forEach(function(email) {
           return items.push({
             id: contact.id,
+            hasPicture: contact.get('hasPicture'),
             display: "" + (contact.get('name')) + " &lt;" + email + "&gt;",
             toString: function() {
               return "" + email + ";" + contact.id;
@@ -6700,9 +6676,10 @@ module.exports = function(input, onGuestAdded, extrafilter) {
       return beginswith.concat(caseSensitive, caseInsensitive);
     },
     highlighter: function(contact) {
-      var old;
+      var img, old;
       old = $.fn.typeahead.Constructor.prototype.highlighter;
-      return old.call(this, contact.display);
+      img = contact.hasPicture ? '<img width="14" src="clearance/contacts/' + contact.id + '.jpg">&nbsp;' : '<i class="icon icon-user"></i>&nbsp;';
+      return img + old.call(this, contact.display);
     },
     updater: (function(_this) {
       return function(value) {
@@ -6712,6 +6689,37 @@ module.exports = function(input, onGuestAdded, extrafilter) {
     })(this)
   });
 };
+
+});
+require.register("cozy-clearance/contact_collection", function(exports, require, module){
+    var Contact, collection,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+collection = new Backbone.Collection();
+
+collection.url = 'clearance/contacts';
+
+collection.model = Contact = (function(_super) {
+  __extends(Contact, _super);
+
+  function Contact() {
+    return Contact.__super__.constructor.apply(this, arguments);
+  }
+
+  Contact.prototype.match = function(filter) {
+    return filter.test(this.get('name')) || this.get('emails').some(function(email) {
+      return filter.test(email);
+    });
+  };
+
+  return Contact;
+
+})(Backbone.Model);
+
+collection.fetch();
+
+module.exports = collection;
 
 });
 require.register("cozy-clearance/modal", function(exports, require, module){
@@ -6848,7 +6856,23 @@ buf.push("<p>" + (jade.escape(null == (jade.interp = t('only you can see')) ? ""
       var rule = $$obj[i];
 
 var key = rule.key
-buf.push("<li><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"show-link\"><i class=\"glyphicon glyphicon-link\"></i></a> &nbsp; &nbsp;" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)));
+buf.push("<li><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"show-link\"><i class=\"glyphicon glyphicon-link\"></i></a> &nbsp; &nbsp;");
+if ( rule.contact)
+{
+if ( rule.contact.get('hasPicture'))
+{
+buf.push("<img width=\"14\"" + (jade.attr("src", "clearance/contacts/" + rule.contact.id + ".jpg", true, false)) + "/>&nbsp;");
+}
+else
+{
+buf.push("<i class=\"icon icon-user\"></i>&nbsp;");
+}
+buf.push(jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp));
+}
+else
+{
+buf.push(jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp));
+}
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
 {
@@ -6890,7 +6914,23 @@ buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", 
       $$l++;      var rule = $$obj[i];
 
 var key = rule.key
-buf.push("<li><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"show-link\"><i class=\"glyphicon glyphicon-link\"></i></a> &nbsp; &nbsp;" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)));
+buf.push("<li><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"show-link\"><i class=\"glyphicon glyphicon-link\"></i></a> &nbsp; &nbsp;");
+if ( rule.contact)
+{
+if ( rule.contact.get('hasPicture'))
+{
+buf.push("<img width=\"14\"" + (jade.attr("src", "clearance/contacts/" + rule.contact.id + ".jpg", true, false)) + "/>&nbsp;");
+}
+else
+{
+buf.push("<i class=\"icon icon-user\"></i>&nbsp;");
+}
+buf.push(jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp));
+}
+else
+{
+buf.push(jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp));
+}
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
 {
@@ -6935,7 +6975,7 @@ buf.push("</ul>");
 module.exports = template;
 });
 require.register("cozy-clearance/modal_share_view", function(exports, require, module){
-    var CozyClearanceModal, Modal, clearanceDiff, contactTypeahead, randomString, request,
+    var CozyClearanceModal, Modal, clearanceDiff, contactCollection, contactTypeahead, randomString, request,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -6943,6 +6983,8 @@ require.register("cozy-clearance/modal_share_view", function(exports, require, m
 Modal = require("./modal");
 
 contactTypeahead = require("./contact_autocomplete");
+
+contactCollection = require("./contact_collection");
 
 randomString = function(length) {
   var string;
@@ -6990,6 +7032,7 @@ module.exports = CozyClearanceModal = (function(_super) {
     this.onClose = __bind(this.onClose, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
+    this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
     this.getRenderData = __bind(this.getRenderData, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
     this.makeURL = __bind(this.makeURL, this);
@@ -7085,11 +7128,27 @@ module.exports = CozyClearanceModal = (function(_super) {
     return {
       type: this.model.get('type'),
       model: this.model,
-      clearance: this.model.get('clearance'),
+      clearance: this.getClearanceWithContacts(),
       makeURL: this.makeURL,
       possible_permissions: this.permissions(),
       t: t
     };
+  };
+
+  CozyClearanceModal.prototype.getClearanceWithContacts = function() {
+    var clearance;
+    clearance = this.model.get('clearance') || [];
+    if (clearance === 'public') {
+      return 'public';
+    }
+    return clearance.map(function(rule) {
+      var out;
+      out = _.clone(rule);
+      if (out.contactid) {
+        out.contact = contactCollection.get(rule.contactid);
+      }
+      return out;
+    });
   };
 
   CozyClearanceModal.prototype.refresh = function() {
@@ -7128,9 +7187,10 @@ module.exports = CozyClearanceModal = (function(_super) {
   CozyClearanceModal.prototype.changePerm = function(event) {
     var select;
     select = event.currentTarget;
-    return this.model.get('clearance').filter(function(rule) {
+    this.model.get('clearance').filter(function(rule) {
       return rule.key === select.dataset.key;
     })[0].perm = select.options[select.selectedIndex].value;
+    return this.refresh();
   };
 
   CozyClearanceModal.prototype.onClose = function(saving) {
@@ -7157,9 +7217,7 @@ module.exports = CozyClearanceModal = (function(_super) {
   };
 
   CozyClearanceModal.prototype.doSave = function(sendmail, clearances) {
-    return request('PUT', "clearance/" + this.model.id, {
-      clearance: this.model.get('clearance')
-    }, {
+    return request('PUT', "clearance/" + this.model.id, this.saveData(), {
       error: function() {
         return Modal.error('server error occured');
       },
@@ -7180,6 +7238,12 @@ module.exports = CozyClearanceModal = (function(_super) {
         };
       })(this)
     });
+  };
+
+  CozyClearanceModal.prototype.saveData = function() {
+    return {
+      clearance: this.model.get('clearance')
+    };
   };
 
   CozyClearanceModal.prototype.showLink = function(event) {

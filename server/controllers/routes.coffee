@@ -46,6 +46,8 @@ module.exports =
         param: sharing.fetch
     'clearance/contacts':
         get: sharing.contactList
+    'clearance/contacts/:contactid.jpg':
+        get: sharing.contactPicture
     'clearance/:shareid':
         get: sharing.details
         put: sharing.change

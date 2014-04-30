@@ -44,8 +44,9 @@ module.exports = class ModalShareView extends CozyClearanceModal
 
     # force 'public' display if forced public by inheritance
     getRenderData: ->
-        clearance = if @forcedPublic then 'public' else @model.get('clearance')
-        _.extend super, {clearance}
+        out = super
+        out.clearance = 'public' if @forcedPublic
+        return out
 
     # ignore click on 'public' button when forced public by inheritance
     makePublic: ->
@@ -80,14 +81,17 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 list.append item for item in listitems
                 @$('#share-list').after summary, list
 
-    # doSave: (sendmail, newClearances) =>
-    #     client.put "share/#{@type}/#{@model.id}", clearance: @model.get('clearance'),
-    #         error: -> ModalView.error 'server error occured'
-    #         success: (data) =>
-    #             if not sendmail
-    #                 @$el.modal 'hide'
-    #             else
-    #                 client.post "share/#{@type}/#{@model.id}/send", newClearances,
-    #                     error: -> ModalView.error 'mail not send'
-    #                     success: (data) =>
-    #                         @$el.modal 'hide'
+        # if there is a writing guest
+        guestCanWrite = _.findWhere @model.get('clearance'), perm: 'rw'
+        if guestCanWrite
+            checkbox = $('<input id="notifs" type="checkbox">')
+            checkbox.prop 'checked', @model.get 'changeNotification'
+            text = t('change notif')
+            label = $('<label for="notifs">').append checkbox, text
+            @$('#share-list').after label
+
+
+    # include the changes notification in PUT request
+    saveData: ->
+        changeNotification = @$('#notifs').prop('checked') or false
+        _.extend super, changeNotification: changeNotification

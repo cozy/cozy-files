@@ -70,7 +70,11 @@ module.exports.create = (req, res) ->
                                         console.log err
                                         res.send error: true, msg: "Couldn't index: : #{err}", 500
                                     else
-                                        res.send newFolder, 200
+                                        sharing.notifyChanges newFolder, (err) ->
+                                            # ignore this error
+                                            console.log err if err
+
+                                            res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
@@ -348,6 +352,16 @@ module.exports.publicList = (req, res) ->
                 (cb) -> CozyInstance.getLocale cb
                 (cb) -> Folder.byFolder key:key, cb
                 (cb) -> File.byFolder key:key, cb
+                (cb) ->
+                    # change the notifications setting
+                    return cb() if req.query.notifications is undefined
+                    notif = req.query.notifications
+                    notif = notif and notif isnt 'false'
+                    clearance = folder.clearance
+                    for r in clearance when r.key is rule.key
+                        rule.notifications = r.notifications = notif
+                    folder.updateAttributes clearance: clearance, cb
+
             ], (err, results) ->
                 return errortemplate err if err
                 [lang, folders, files] = results
@@ -378,6 +392,7 @@ module.exports.publicList = (req, res) ->
                     files
                     folders
                     canupload: rule.perm is 'rw'
+                    notifications: rule.notifications or false
                     keyquery: "?key=#{req.query.key}"
                     t: translate
                 }

@@ -94,8 +94,23 @@ module.exports.details = function(req, res, next) {
   })(this));
 };
 
-module.exports.change = clearanceCtl.change;
+module.exports.change = function(req, res, next) {
+  var body, changeNotification, _ref;
+  _ref = req.body, clearance = _ref.clearance, changeNotification = _ref.changeNotification;
+  body = {
+    clearance: clearance,
+    changeNotification: changeNotification
+  };
+  return req.doc.updateAttributes(body, function(err) {
+    if (err) {
+      return next(err);
+    }
+    return res.send(req.doc);
+  });
+};
 
 module.exports.sendAll = clearanceCtl.sendAll;
 
 module.exports.contactList = clearanceCtl.contactList;
+
+module.exports.contactPicture = clearanceCtl.contactPicture;
