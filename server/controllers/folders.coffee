@@ -70,7 +70,8 @@ module.exports.create = (req, res) ->
                                         console.log err
                                         res.send error: true, msg: "Couldn't index: : #{err}", 500
                                     else
-                                        sharing.notifyChanges newFolder, (err) ->
+                                        who = req.guestEmail or 'owner'
+                                        sharing.notifyChanges who, newFolder, (err) ->
                                             # ignore this error
                                             console.log err if err
 

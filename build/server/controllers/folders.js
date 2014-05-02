@@ -91,6 +91,7 @@ module.exports.create = function(req, res) {
                     }, 500);
                   } else {
                     return newFolder.index(["name"], function(err) {
+                      var who;
                       if (err) {
                         console.log(err);
                         return res.send({
@@ -98,7 +99,8 @@ module.exports.create = function(req, res) {
                           msg: "Couldn't index: : " + err
                         }, 500);
                       } else {
-                        return sharing.notifyChanges(newFolder, function(err) {
+                        who = req.guestEmail || 'owner';
+                        return sharing.notifyChanges(who, newFolder, function(err) {
                           if (err) {
                             console.log(err);
                           }
