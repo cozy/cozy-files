@@ -78,7 +78,7 @@ module.exports =
     # clearance modal
     "also have access"                : "Aceste persoane au acces, deoarece au acces la un director părinte"
     "cancel"                          : "Anulare"
-    "copy paste link"                 : "Copiați această adresă : "
+    "copy paste link"                 : "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: "
     "details"                         : "Detalii"
     "inherited from"                  : "moștenit de la"
     "modal question folder shareable" : "Alegeți modul de partajare pentru acest director"

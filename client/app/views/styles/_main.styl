@@ -307,8 +307,14 @@ tr.folder-row
     margin-top 5px
     padding-left 5px
 
-  select
-    margin-left 5px
+    select
+        margin-left 5px
+        background: white
+        border-bottom: 1px solid lightcolor
+
+    &:focus
+        outline: none
+        
 
 #inherited-share-list
   li.header
@@ -319,11 +325,35 @@ tr.folder-row
 .linkshow
   margin-bottom 5px
   margin-left -5px
-  padding-left 15px
-  border-bottom 1px solid lightgray
+  padding-left 10px
+  line-height: 20px
+
   label
-    width 30%
+      margin-top: 10px
+      font-weight: normal
 
   input
     color #444
     width 70%
+
+.typeahead.dropdown-menu > li > a
+    padding: 3px 6px 3px 3px
+
+.typeahead.dropdown-menu > li > a > img
+    margin: 0 3px 0 0
+
+.clearance-name
+    font-size: 15px
+    margin-left: 5px
+
+.clearance-btn
+    font-size: 20px
+    margin-left: 10px
+
+.clearance-btn.revoke
+    font-size: 12px
+
+.clearance-line
+    line-height: 47px
+    border-bottom: 1px solid lightcolor
+    padding-bottom: 5px

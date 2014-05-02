@@ -75,7 +75,7 @@ module.exports =
      # clearance modal
     "also have access"                : "Ces personnes ont égalment accès, car ils ont accès à un dossier parent"
     "cancel"                          : "Annuler"
-    "copy paste link"                 : "Copier ce lien : "
+    "copy paste link"                 : "Pour donner accès à votre contact envoyez lui ce lien : "
     "details"                         : "Details"
     "inherited from"                  : "hérité de"
     "modal question folder shareable" : "Choisissez le mode de partage pour ce dossier"
