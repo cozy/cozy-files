@@ -87,7 +87,8 @@ module.exports = class ModalShareView extends CozyClearanceModal
             checkbox = $('<input id="notifs" type="checkbox">')
             checkbox.prop 'checked', @model.get 'changeNotification'
             text = t('change notif')
-            label = $('<label for="notifs">').append checkbox, text
+            html = '<label class="notifs-label" for="notifs">'
+            label = $(html).append checkbox, text
             @$('#share-list').after label
 
 

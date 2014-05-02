@@ -2625,7 +2625,7 @@ tr.folder-row .file-type {
   background: #fff;
   border-bottom: 1px solid #eee;
 }
-#share-list:focus {
+#share-list select:focus {
   outline: none;
 }
 #inherited-share-list li.header {
@@ -2668,6 +2668,13 @@ tr.folder-row .file-type {
   line-height: 47px;
   border-bottom: 1px solid #eee;
   padding-bottom: 5px;
+}
+.notifs-label {
+  margin-top: 30px;
+  font-weight: normal;
+}
+.notifs-label input {
+  margin-right: 5px;
 }
 @media (max-width: 480px) {
   body {

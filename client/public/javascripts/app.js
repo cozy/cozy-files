@@ -2039,7 +2039,7 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.afterRender = function() {
-    var checkbox, folder, guestCanWrite, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+    var checkbox, folder, guestCanWrite, html, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedPublic) {
       text = t('forced public') + this.forcedPublic;
@@ -2083,7 +2083,8 @@ module.exports = ModalShareView = (function(_super) {
       checkbox = $('<input id="notifs" type="checkbox">');
       checkbox.prop('checked', this.model.get('changeNotification'));
       text = t('change notif');
-      label = $('<label for="notifs">').append(checkbox, text);
+      html = '<label class="notifs-label" for="notifs">';
+      label = $(html).append(checkbox, text);
       return this.$('#share-list').after(label);
     }
   };
