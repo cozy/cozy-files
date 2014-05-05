@@ -11,7 +11,7 @@ describe "Sharing management", ->
 
     describe "No regression on #25", ->
         it "When I get contacts list", (done) ->
-            client.get "contacts",  (err, res, body) =>
+            client.get "clearance/contacts",  (err, res, body) =>
                 should.not.exist err
                 res.statusCode.should.equal 200
                 done()
