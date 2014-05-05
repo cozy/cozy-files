@@ -48,6 +48,9 @@
     "Folder": {
       "description": "Store folders in your cozy"
     },
+    "Notification": {
+      "description": "Display a notification when guests change file"
+    },
     "send mail": {
       "description": "Send links by mail"
     },
