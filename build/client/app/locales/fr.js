@@ -52,7 +52,7 @@ module.exports = {
   "B": "o",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
   "cancel": "Annuler",
-  "copy paste link": "Copier ce lien : ",
+  "copy paste link": "Pour donner accès à votre contact envoyez lui ce lien : ",
   "details": "Details",
   "inherited from": "hérité de",
   "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
@@ -73,5 +73,6 @@ module.exports = {
   "perm": "peut ",
   "perm r file": "télécharger ce fichier",
   "perm r folder": "parcourir ce dossier",
-  "perm rw folder": "parcourir ce dossier et ajouter des fichiers"
+  "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
+  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
 };

@@ -55,7 +55,7 @@ module.exports = {
   "B": "B",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
-  "copy paste link": "Copy this link:",
+  "copy paste link": "To give access to your contact send him/her the link below:",
   "details": "Details",
   "inherited from": "inherited from",
   "modal question folder shareable": "Select share mode for this folder",
@@ -77,5 +77,6 @@ module.exports = {
   "perm": "can ",
   "perm r file": "download this file",
   "perm r folder": "browse this folder",
-  "perm rw folder": "browse and upload files"
+  "perm rw folder": "browse and upload files",
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
 };

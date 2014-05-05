@@ -820,7 +820,8 @@ module.exports = {
   "perm": "can ",
   "perm r file": "download this file",
   "perm r folder": "browse this folder",
-  "perm rw folder": "browse and upload files"
+  "perm rw folder": "browse and upload files",
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
 };
 
 });
@@ -900,7 +901,8 @@ module.exports = {
   "perm": "peut ",
   "perm r file": "télécharger ce fichier",
   "perm r folder": "parcourir ce dossier",
-  "perm rw folder": "parcourir ce dossier et ajouter des fichiers"
+  "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
+  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
 };
 
 });
@@ -984,7 +986,8 @@ module.exports = {
   "perm": "poate ",
   "perm r file": "descărca acest fișier",
   "perm r folder": "parcurge acest dosar ",
-  "perm rw folder": "parcurge acest dosar și încărca fișiere"
+  "perm rw folder": "parcurge acest dosar și încărca fișiere",
+  "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar."
 };
 
 });

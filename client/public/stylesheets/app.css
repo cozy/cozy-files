@@ -2672,6 +2672,7 @@ tr.folder-row .file-type {
 .notifs-label {
   margin-top: 30px;
   font-weight: normal;
+  margin-bottom: 0px;
 }
 .notifs-label input {
   margin-right: 5px;

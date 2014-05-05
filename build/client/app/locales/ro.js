@@ -55,7 +55,7 @@ module.exports = {
   "B": "o",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
-  "copy paste link": "Copiați această adresă : ",
+  "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",
   "details": "Detalii",
   "inherited from": "moștenit de la",
   "modal question folder shareable": "Alegeți modul de partajare pentru acest director",
@@ -77,5 +77,6 @@ module.exports = {
   "perm": "poate ",
   "perm r file": "descărca acest fișier",
   "perm r folder": "parcurge acest dosar ",
-  "perm rw folder": "parcurge acest dosar și încărca fișiere"
+  "perm rw folder": "parcurge acest dosar și încărca fișiere",
+  "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar."
 };
