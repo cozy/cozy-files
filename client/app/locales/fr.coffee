@@ -97,3 +97,6 @@ module.exports =
     "perm r file"                     : "télécharger ce fichier"
     "perm r folder"                   : "parcourir ce dossier"
     "perm rw folder"                  : "parcourir ce dossier et ajouter des fichiers"
+    "change notif"                    : """
+        Cocher cette case pour recevoir une notification cozy quand un contact
+        ajoute un fichier à ce dossier."""

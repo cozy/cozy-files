@@ -101,3 +101,6 @@ module.exports =
     "perm r file"                     : "download this file"
     "perm r folder"                   : "browse this folder"
     "perm rw folder"                  : "browse and upload files"
+    "change notif"                    : """
+        Check this box to be notified when a contact
+        add a file to this folder."""
