@@ -39,6 +39,9 @@ module.exports = class FileView extends BaseView
     onEditClicked: ->
         width = @$(".caption").width() + 10
         @$el.html @templateEdit(model: @model.toJSON())
+        @tags = new TagsView
+            el: @$('.tags')
+            model: @model
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
 

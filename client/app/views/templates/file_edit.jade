@@ -1,9 +1,10 @@
 td
-  if model.type && model.type == "folder"
-    i.fa.fa-folder
-  else
-    i.fa.fa-file-o
-  input.caption.file-edit-name(value=model.name)
+  span.caption
+    if model.type && model.type == "folder"
+      i.fa.fa-folder
+    else
+      i.fa.fa-file-o
+    input.caption.file-edit-name(value=model.name)
   a.btn.btn-sm.btn-cozy.file-edit-save
     | #{t("file edit save")}
   a.btn.btn-sm.btn-link.file-edit-cancel

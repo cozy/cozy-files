@@ -138,12 +138,17 @@ table#table-items
     opacity: 0.5
 
   td
-      padding: 3px 0 0 0
+      padding: 8px 5px 0 0
+      height: 40px
 
   td.type-column-cell
   td.size-column-cell
   td.date-column-cell
       padding-top: 6px
+      width: 100px
+
+  td.date-column-cell
+      width: 120px
 
   .table-headers
     
@@ -174,6 +179,9 @@ tr.folder-row
 
     .file-path
       color: mediumcolor
+
+  span.caption
+    padding-left: 6px
 
   // the filename
   .caption
@@ -211,6 +219,9 @@ tr.folder-row
     padding-top: 0
     padding-bottom: 0
 
+    .tagit-new
+        display: none
+
     .tagit-close:hover
       span.text-icon
         text-color: orange
@@ -224,6 +235,7 @@ tr.folder-row
 
       .tagit-label
         color: blue - 40%
+        user-select: none
 
     .tagit-choice
       &:hover
@@ -236,6 +248,10 @@ tr.folder-row
       &:focus
       &:active
         box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+
+  ul.tags:hover
+    .tagit-new
+      display: inline-block
 
   ul.tagit
     display: inline-block
@@ -251,8 +267,12 @@ tr.folder-row
       input:focus
         visibility visible !important
 
-     .tagit-new:hover
-        border: 1px solid orange
+    .tagit-new
+        &:hover
+          border: 1px solid orange
+
+        &:focus
+          border: 1px solid blue
 
   &:hover .tagit-new
     visibility: visible !important

@@ -1313,6 +1313,10 @@ module.exports = FileView = (function(_super) {
     this.$el.html(this.templateEdit({
       model: this.model.toJSON()
     }));
+    this.tags = new TagsView({
+      el: this.$('.tags'),
+      model: this.model
+    });
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
   };
@@ -2461,7 +2465,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<td>');
+buf.push('<td><span class="caption">');
 if ( model.type && model.type == "folder")
 {
 buf.push('<i class="fa fa-folder"></i>');
@@ -2472,7 +2476,7 @@ buf.push('<i class="fa fa-file-o"></i>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a><ul class="tags pull-right">');
+buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a><ul class="tags pull-right">');
 if ( model.tags)
 {
 // iterate model.tags

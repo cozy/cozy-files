@@ -2447,12 +2447,17 @@ table#table-items .unactive {
   filter: alpha(opacity=50);
 }
 table#table-items td {
-  padding: 3px 0 0 0;
+  padding: 8px 5px 0 0;
+  height: 40px;
 }
 table#table-items td.type-column-cell,
 table#table-items td.size-column-cell,
 table#table-items td.date-column-cell {
   padding-top: 6px;
+  width: 100px;
+}
+table#table-items td.date-column-cell {
+  width: 120px;
 }
 table#table-items .table-headers td {
   border-top: 0;
@@ -2477,6 +2482,9 @@ tr.folder-row:hover .glyphicon.no-hover {
 }
 tr.folder-row:hover .file-path {
   color: #bdbdbd;
+}
+tr.folder-row span.caption {
+  padding-left: 6px;
 }
 tr.folder-row .caption {
   font-size: 16px;
@@ -2512,6 +2520,9 @@ tr.folder-row ul.tags {
   padding-top: 0;
   padding-bottom: 0;
 }
+tr.folder-row ul.tags .tagit-new {
+  display: none;
+}
 tr.folder-row ul.tags .tagit-close:hover span.text-icon {
   text-color: #fe8800;
 }
@@ -2525,6 +2536,10 @@ tr.folder-row ul.tags .tagit-choice {
 }
 tr.folder-row ul.tags .tagit-choice .tagit-label {
   color: #0067b8;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 tr.folder-row ul.tags .tagit-choice:hover {
   background-color: #fff3e5;
@@ -2536,6 +2551,9 @@ tr.folder-row ul.tags .tagit-choice:focus,
 tr.folder-row ul.tags .tagit-choice:active {
   -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
   box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+}
+tr.folder-row ul.tags:hover .tagit-new {
+  display: inline-block;
 }
 tr.folder-row ul.tagit {
   display: inline-block;
@@ -2555,6 +2573,9 @@ tr.folder-row ul.tagit .tagit-new input:focus {
 }
 tr.folder-row ul.tagit .tagit-new:hover {
   border: 1px solid #fe8800;
+}
+tr.folder-row ul.tagit .tagit-new:focus {
+  border: 1px solid #34a6ff;
 }
 tr.folder-row:hover .tagit-new {
   visibility: visible !important;
