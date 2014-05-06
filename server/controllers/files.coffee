@@ -5,6 +5,7 @@ moment = require 'moment'
 File = require '../models/file'
 Folder = require '../models/folder'
 sharing = require '../helpers/sharing'
+pathHelpers = require '../helpers/path'
 
 log = require('printit')
     prefix: 'files'
@@ -51,13 +52,8 @@ module.exports.create = (req, res, next) ->
         next new Error "Invalid arguments"
     else
         File.all (err, files) =>
-            avalailable = true
-            fullPath = "#{req.body.path}/#{req.body.name}"
-            for fileDoc in files
-                fileFullPath = "#{fileDoc.path}/#{fileDoc.name}"
-                available = false if fullPath is fileFullPath
-
-            if available
+            available = pathHelpers.checkIfPathAvailable req.body, files
+            if not available
                 res.send error:true, msg: "This file already exists", 400
             else
                 file = req.files["file"]
@@ -109,56 +105,56 @@ module.exports.find = (req, res) ->
 
 
 module.exports.modify = (req, res) ->
-    validRequest = false
-    if req.body.name and req.body.name.trim() isnt ""
-        validRequest = true
-        fileToModify = req.file
-        newName = req.body.name
-        isPublic = req.body.public
-        newPath = fileToModify.path + '/' + newName
 
-        # test if the filename is available
-        hasntTheSamePathOrIsTheSame = (file, cb) ->
-            if (fileToModify.id is file.id)
-                cb true
+    log.info "File modification of #{req.file.name}..."
+    file = req.file
+    body = req.body
+
+    if body.tags and (Array.isArray body.tags) and
+       file.tags?.toString() isnt body.tags?.toString()
+        tags = body.tags
+        tags = tags.filter (tag) -> typeof tag is 'string'
+        file.updateAttributes tags: tags, (err) =>
+            if err
+                next new Error "Cannot change tags: #{err}"
             else
-                cb (newPath isnt (file.path + '/' + file.name))
+                log.info "Tags changed for #{file.name}: #{tags}"
+                res.send success: 'Tags successfully changed', 200
+
+    else if not body.name or body.name is ""
+        log.info "No arguments, no modification performed for #{req.file.name}"
+        next new Error "Invalid arguments, name should be specified."
+
+    else
+        newName = body.name
+        isPublic = body.public
+        newPath = "#{file.path}/#{newName}"
 
         File.all (err, files) =>
 
-            async.every files, hasntTheSamePathOrIsTheSame, (available) ->
-                if not available
-                    res.send error: true, msg: "The name already in use", 400
+            modificationSuccess =  (err) ->
+                if err
+                    next new Error  "Error indexing: #{err}"
                 else
-                    data =
-                         name: newName
-                         public: isPublic
-                    data.clearance = req.body.clearance if req.body.clearance
-                    fileToModify.updateAttributes data, (err) =>
-                        if err
-                            console.log err
-                            res.send error: 'Cannot modify file', 500
-                        else
-                            fileToModify.index ["name"], (err) ->
-                                if err
-                                    res.send error: true, msg: "Error indexing: #{err}", 500
-                                else
-                                    res.send success: 'File successfully modified', 200
+                    log.info "File name changed from #{file.name} to #{newName}"
+                    res.send success: 'File successfully modified'
 
-    if req.body.tags and Array.isArray req.body.tags
-        validRequest = true
-        file = req.file
-        tags = req.body.tags
-        tags = tags.filter (e) -> typeof e is 'string'
-        file.updateAttributes tags: tags, (err) =>
-            if err
-                console.log err
-                res.send error: 'Cannot change tags', 500
+            available = pathHelpers.checkIfPathAvailable file, files, file.id
+            if not available
+                log.info "No modification: Name #{newName} already exists."
+                res.send
+                    error: true
+                    msg: "The name is already in use.", 400
             else
-                res.send success: 'Tags successfully changed', 200
-
-    if not validRequest
-        res.send error: true, msg: "No data specified", 400
+                data =
+                     name: newName
+                     public: isPublic
+                data.clearance = body.clearance if body.clearance
+                file.updateAttributes data, (err) =>
+                    if err
+                        next new Error 'Cannot modify file'
+                    else
+                        file.index ["name"], modificationSuccess
 
 
 module.exports.destroy = (req, res) ->
@@ -180,15 +176,18 @@ module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
 
 
+# Download by a guest can only be performed if the guest has the good rights.
 module.exports.publicDownloadAttachment = (req, res) ->
     sharing.checkClearance req.file, req, (authorized) ->
         if not authorized then res.send 404
         else processAttachement req, res, true
 
 
+# Creation by a guest. The creation is performed only if the guest has the good
+# rights.
 module.exports.publicCreate = (req, res, next) ->
-    toCreate = new File(req.body)
-    sharing.checkClearance toCreate, req, 'w', (authorized, rule) ->
+    file = new File req.body
+    sharing.checkClearance file, req, 'w', (authorized, rule) ->
         if not rule then res.send 401
         else
             req.guestEmail = rule.email
@@ -196,6 +195,9 @@ module.exports.publicCreate = (req, res, next) ->
             module.exports.create req, res, next
 
 
+# Check if the research should be performed on tag or not.
+# For tag, it will use the Data System request. Else it will use the Cozy
+# Indexer.
 module.exports.search = (req, res) ->
     sendResults = (err, files) ->
         if err
@@ -208,7 +210,7 @@ module.exports.search = (req, res) ->
 
     if query.indexOf('tag:') isnt -1
         parts = query.split()
-        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        parts = parts.filter (tag) -> tag.indexOf 'tag:' isnt -1
         tag = parts[0].split('tag:')[1]
         File.request 'byTag', key: tag, sendResults
     else
