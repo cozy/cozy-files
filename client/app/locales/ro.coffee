@@ -74,6 +74,8 @@ module.exports =
     "KB"                        : "Ko"
     "B"                         : "o"
 
+    "enable notifications": "Enable notifications"
+    "disable notifications": "Disable notifications"
 
     # clearance modal
     "also have access"                : "Aceste persoane au acces, deoarece au acces la un director părinte"

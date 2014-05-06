@@ -9,11 +9,13 @@ html
 
     style.
       #download-link, #button-upload-new-file, #button-new-folder{
-        margin-top: 20px;
         margin-left: 10px;
-        padding: 5px;
         height: 35px;
-        width: 35px;
+        text-align: center;
+      }
+      #download-link i.icon-arrow-down {
+        margin-top: -7px;
+        vertical-align: middle;
       }
       #button-upload-new-file img, #button-new-folder img, #download-link i{
         font-size: 20px;
@@ -28,9 +30,10 @@ html
       .row.content-shadow
         #content.col-lg-12
 
-          a#download-link.button.cozy-button.pull-right(
+          a#download-link.btn.btn-cozy.pull-right(
             href=path[path.length-1].id + '.zip' + keyquery
             title=t("download"))
+            | #{t("download")}&nbsp;
             i.icon-arrow-down.icon-white
 
           if canupload
@@ -131,14 +134,3 @@ html
                 .modal-footer
                   button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
                   button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
-
-      script(src="../assets/javascripts/vendor.js")
-      script(src="../assets/javascripts/app.js")
-      script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
-      script.
-        var polyglot = new Polyglot();
-        polyglot.extend(require("locales/en"));
-        window.t = polyglot.t.bind(polyglot);
-        var PublicFolderView = require('views/public_folder');
-        new PublicFolderView({folder: window.folder});
-

@@ -74,6 +74,8 @@ module.exports =
     "KB"                        : "KB"
     "B"                         : "B"
 
+    "enable notifications": "Enable notifications"
+    "disable notifications": "Disable notifications"
 
     # clearance modal
     "also have access"                : "These people also have access, because they have access to a parent folder"
