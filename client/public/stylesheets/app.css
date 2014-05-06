@@ -2459,6 +2459,9 @@ table#table-items td.date-column-cell {
 table#table-items td.date-column-cell {
   width: 120px;
 }
+table#table-items .table-headers td:first-child {
+  padding-left: 3px;
+}
 table#table-items .table-headers td {
   border-top: 0;
 }
@@ -2498,8 +2501,7 @@ tr.folder-row .caption:hover {
 }
 tr.folder-row .operations {
   font-size: 12px;
-  visibility: hidden;
-  display: inline;
+  display: none;
 }
 tr.folder-row .operations a {
   padding-left: 5px;

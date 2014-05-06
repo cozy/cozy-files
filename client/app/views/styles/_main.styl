@@ -152,17 +152,20 @@ table#table-items
 
   .table-headers
     
+    td:first-child
+      padding-left: 3px
+
     td
       border-top: 0
 
     span
-        line-height: 30px
+      line-height: 30px
 
     .btn
-        top: -2px
+      top: -2px
 
     a:hover
-        color: orange
+      color: orange
 
 
 
@@ -197,8 +200,7 @@ tr.folder-row
   // the toolbox - delete, rename, etc
   .operations
     font-size: 12px
-    visibility: hidden
-    display: inline
+    display: none
 
     a
       padding-left: 5px

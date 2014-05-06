@@ -2423,7 +2423,7 @@ else
 {
 buf.push('<i class="fa fa-lock"></i>');
 }
-buf.push('</a></div><ul class="tags pull-right">');
+buf.push('</a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags

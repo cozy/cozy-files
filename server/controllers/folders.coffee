@@ -416,6 +416,7 @@ module.exports.publicZip = (req, res) ->
             if not authorized then res.send 404
             else module.exports.zip req, res
 
+
 module.exports.publicCreate = (req, res, next) ->
     folder = new Folder req.body
     sharing.checkClearance folder, req, 'w', (authorized) ->
