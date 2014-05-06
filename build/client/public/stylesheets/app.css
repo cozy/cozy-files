@@ -2620,8 +2620,13 @@ tr.folder-row .file-type {
   margin-top: 5px;
   padding-left: 5px;
 }
-select {
+#share-list select {
   margin-left: 5px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+#share-list select:focus {
+  outline: none;
 }
 #inherited-share-list li.header {
   list-style-type: none;
@@ -2631,15 +2636,45 @@ select {
 .linkshow {
   margin-bottom: 5px;
   margin-left: -5px;
-  padding-left: 15px;
-  border-bottom: 1px solid #d3d3d3;
+  padding-left: 10px;
+  line-height: 20px;
 }
 .linkshow label {
-  width: 30%;
+  margin-top: 10px;
+  font-weight: normal;
 }
 .linkshow input {
   color: #444;
   width: 70%;
+}
+.typeahead.dropdown-menu > li > a {
+  padding: 3px 6px 3px 3px;
+}
+.typeahead.dropdown-menu > li > a > img {
+  margin: 0 3px 0 0;
+}
+.clearance-name {
+  font-size: 15px;
+  margin-left: 5px;
+}
+.clearance-btn {
+  font-size: 20px;
+  margin-left: 10px;
+}
+.clearance-btn.revoke {
+  font-size: 12px;
+}
+.clearance-line {
+  line-height: 47px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+.notifs-label {
+  margin-top: 30px;
+  font-weight: normal;
+}
+.notifs-label input {
+  margin-right: 5px;
 }
 @media (max-width: 480px) {
   body {

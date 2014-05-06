@@ -798,7 +798,7 @@ module.exports = {
   "B": "B",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
-  "copy paste link": "Copy this link:",
+  "copy paste link": "To give access to your contact send him/her the link below:",
   "details": "Details",
   "inherited from": "inherited from",
   "modal question folder shareable": "Select share mode for this folder",
@@ -879,7 +879,7 @@ module.exports = {
   "B": "o",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
   "cancel": "Annuler",
-  "copy paste link": "Copier ce lien : ",
+  "copy paste link": "Pour donner accès à votre contact envoyez lui ce lien : ",
   "details": "Details",
   "inherited from": "hérité de",
   "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
@@ -962,7 +962,7 @@ module.exports = {
   "B": "o",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
-  "copy paste link": "Copiați această adresă : ",
+  "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",
   "details": "Detalii",
   "inherited from": "moștenit de la",
   "modal question folder shareable": "Alegeți modul de partajare pentru acest director",
@@ -2039,7 +2039,7 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.afterRender = function() {
-    var checkbox, folder, guestCanWrite, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+    var checkbox, folder, guestCanWrite, html, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedPublic) {
       text = t('forced public') + this.forcedPublic;
@@ -2083,7 +2083,8 @@ module.exports = ModalShareView = (function(_super) {
       checkbox = $('<input id="notifs" type="checkbox">');
       checkbox.prop('checked', this.model.get('changeNotification'));
       text = t('change notif');
-      label = $('<label for="notifs">').append(checkbox, text);
+      html = '<label class="notifs-label" for="notifs">';
+      label = $(html).append(checkbox, text);
       return this.$('#share-list').after(label);
     }
   };
