@@ -1,5 +1,6 @@
 File = require '../models/file'
 Folder = require '../models/folder'
+User = require '../models/user'
 helpers = require '../helpers/sharing'
 clearance = require 'cozy-clearance'
 async = require 'async'
@@ -10,12 +11,18 @@ templatefile = require('path').join __dirname, '../views/sharemail.jade'
 mailTemplate = jade.compile fs.readFileSync templatefile, 'utf8'
 
 clearanceCtl = clearance.controller
-    mailTemplate: (options) ->
+    mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
-        mailTemplate options
-    mailSubject: (options) ->
+        User.getDisplayName (displayName) ->
+            options.displayName = displayName or "Someone"
+            callback null, mailTemplate options
+
+    mailSubject: (options, callback) ->
         type = options.doc.docType.toLowerCase()
-        "Cozy-file: someone has shared a #{type} with you"
+        name = options.doc.name
+        User.getDisplayName (displayName) ->
+            displayName = displayName or "Someone"
+            callback null, "#{displayName} shared \"#{name}\" with you"
 
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->

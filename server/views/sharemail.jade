@@ -1,9 +1,14 @@
-h1 Someone has shared a #{type} with you!
+h1 #{displayName} shared a #{type} with you!
 
-h2= name
+- var prefix = ''
+if type == 'file'
+    - prefix = 'view'
+else
+    - prefix = 'browse'
 
 p
-    | You can now access this #{type} here:
-    a(href=url)= url
+    a(href=url) Click here to #{prefix}
+    | &nbsp;this #{type}.
 p
-    | Sent from Cozy Cloud.
+    | Sent from #{displayName}'s&nbsp;
+    a(href="http://cozy.io") Cozy.

@@ -13,3 +13,6 @@ module.exports =
 
     contact:
         all: (doc) -> emit doc._id, doc
+
+    user:
+        all: (doc) -> emit doc._id, doc

@@ -21,7 +21,7 @@ publicURL = (doc) ->
     if doc instanceof File
         "#{cozydomain}public/files/files/#{doc.id}"
     else if doc instanceof Folder
-        "#{cozydomain}public/files/folder/#{doc.id}"
+        "#{cozydomain}public/files/folders/#{doc.id}"
     else throw new Error('wrong usage')
 
 # helpers functions to handle inherited clearance
@@ -90,7 +90,7 @@ module.exports.notifyChanges = (who, file, callback) ->
                     uniq = rule.key + folder.name
                     mailsToSend[uniq] =
                         name: folder.name
-                        url: publicURL(folder) + '&key=' + rule.key
+                        url: publicURL(folder) + '?key=' + rule.key
                         to: rule.email
 
             if who isnt 'owner' and folder.changeNotification
@@ -114,7 +114,7 @@ doSendNotif = ->
 
         mailOptions =
             to: item.to
-            subject: "Cozy-file: #{item.name} has changed "
+            subject: "Cozy-Files: #{item.name} has changed "
             content: item.url
             html: notiftemplate name: item.name, url: item.url
 
