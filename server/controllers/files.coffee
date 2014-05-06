@@ -13,13 +13,34 @@ log = require('printit')
 
 ## Helpers ##
 
+
+# Put right headers in response, then stream file to the response.
 processAttachement = (req, res, download) ->
     id = req.params.id
     file = req.file
-    res.setHeader 'Content-Disposition', (if download then "attachment; filename=" + file.name else "inline")
+
+    if download
+        contentHeader = "attachment; filename=#{file.name}"
+    else
+        contentHeader = "inline"
+    res.setHeader 'Content-Disposition', contentHeader
+
     stream = file.getBinary "file", (err, resp, body) =>
         next err if err
     stream.pipe res
+
+
+updateParentModifDate = (file, callback) ->
+    Folder.byFullPath key: file.path, (err, parents) =>
+        if err
+            callback err
+        else if parents.length > 0
+            parent = parents[0]
+            parent.lastModification = moment().toISOString()
+            parent.save callback
+        else
+            callback()
+
 
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
@@ -35,12 +56,18 @@ module.exports.fetch = (req, res, next, id) ->
 
 ## Actions ##
 
+
+module.exports.find = (req, res) ->
+    res.send req.file
+
+
 module.exports.all = (req, res) ->
     File.all (err, files) ->
         if err
             next err
         else
             res.send files
+
 
 # Prior to file creation it ensures that all parameters are correct and that no
 # file already exists with the same name. Then it builds the file document from
@@ -51,47 +78,36 @@ module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
         next new Error "Invalid arguments"
     else
-        File.all (err, files) =>
-            available = pathHelpers.checkIfPathAvailable req.body, files
-            if not available
+
+        fullPath = "#{req.body.path}/#{req.body.name}"
+        File.byFullPath key: fullPath, (err, sameFiles) =>
+            if sameFiles.length > 0
                 res.send error:true, msg: "This file already exists", 400
             else
                 file = req.files["file"]
                 now = moment().toISOString()
 
-                # calculate metadata
-                data                  = {}
-                data.name             = req.body.name
-                data.path             = req.body.path
-                data.creationDate     = now
-                data.lastModification = now
-                data.mime             = file.type
-                data.size             = file.size
                 switch file.type.split('/')[0]
-                    when 'image' then data.class = "image"
-                    when 'application' then data.class = "document"
-                    when 'text' then data.class = "document"
-                    when 'audio' then data.class = "music"
-                    when 'video' then data.class = "video"
+                    when 'image' then fileClass = "image"
+                    when 'application' then fileClass = "document"
+                    when 'text' then fileClass = "document"
+                    when 'audio' then fileClass = "music"
+                    when 'video' then fileClass = "video"
                     else
-                        data.class = "file"
+                        fileClass = "file"
 
-                # find parent folder
-                Folder.all (err, folders) =>
-                    return callback err if err
+                # calculate metadata
+                data =
+                    name: req.body.name
+                    path: req.body.path
+                    creationDate: now
+                    lastModification: now
+                    mime: file.type
+                    size: file.size
+                    tags: []
+                    class: fileClass
 
-                    fullPath = data.path
-                    parents = folders.filter (tested) ->
-                        fullPath is tested.getFullPath()
-
-                    # inherit its tags
-                    if parents.length
-                        parent = parents[0]
-                        data.tags = parent.tags
-                    else
-                        data.tags = []
-
-                    # create the file
+                createFile = ->
                     File.createNewFile data, file, (err, newfile) =>
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newfile, (err) ->
@@ -99,11 +115,25 @@ module.exports.create = (req, res, next) ->
                             console.log err if err
                             res.send newfile, 200
 
+                # find parent folder
+                Folder.byFullPath key: data.path, (err, parents) =>
+                    if parents.length > 0
+                        # inherit parent folder tags and update its last
+                        # modification date
+                        parent = parents[0]
+                        data.tags = parent.tags
+                        parent.lastModification = now
+                        parent.save (err) ->
+                            if err then next err
+                            else createFile()
+                    else
+                        createFile()
 
-module.exports.find = (req, res) ->
-    res.send req.file
 
-
+# There is two ways to modify a file:
+# * change its tags: simple modification
+# * change its name: it requires to check that no file has the same name, then
+# it requires a new indexation.
 module.exports.modify = (req, res) ->
 
     log.info "File modification of #{req.file.name}..."
@@ -126,46 +156,59 @@ module.exports.modify = (req, res) ->
         next new Error "Invalid arguments, name should be specified."
 
     else
+        previousName = file.name
         newName = body.name
         isPublic = body.public
         newPath = "#{file.path}/#{newName}"
 
-        File.all (err, files) =>
+        fullPath = "#{req.body.path}/#{req.body.name}"
+        File.byFullPath key: fullPath, (err, sameFiles) =>
+            return next err if err
 
             modificationSuccess =  (err) ->
                 if err
                     next new Error  "Error indexing: #{err}"
                 else
-                    log.info "File name changed from #{file.name} to #{newName}"
+                    log.info "File name changed from #{previousName} " + \
+                             "to #{newName}"
                     res.send success: 'File successfully modified'
 
-            available = pathHelpers.checkIfPathAvailable file, files, file.id
-            if not available
+            if sameFiles.length > 0
                 log.info "No modification: Name #{newName} already exists."
                 res.send
                     error: true
                     msg: "The name is already in use.", 400
             else
                 data =
-                     name: newName
-                     public: isPublic
+                    name: newName
+                    public: isPublic
+                    lastModification: moment().toISOString()
+
                 data.clearance = body.clearance if body.clearance
                 file.updateAttributes data, (err) =>
                     if err
                         next new Error 'Cannot modify file'
                     else
-                        file.index ["name"], modificationSuccess
+                        updateParentModifDate file, (err) ->
+                            log.raw err if err
+                            file.index ["name"], modificationSuccess
 
 
 module.exports.destroy = (req, res) ->
     file = req.file
     file.removeBinary "file", (err, resp, body) =>
-        file.destroy (err) =>
-            if err
-                console.log err
-                res.send error: 'Cannot delete file', 500
-            else
-                res.send success: 'File successfully deleted', 200
+        if err
+            log.error "Cannot Remove binary for #{file.id}"
+            next err
+        else
+            file.destroy (err) =>
+                if err
+                    log.error "Cannot destroy document #{file.id}"
+                    next err
+                else
+                    updateParentModifDate file, (err) ->
+                        log.raw err if err
+                        res.send success: 'File successfully deleted'
 
 
 module.exports.getAttachment = (req, res) ->

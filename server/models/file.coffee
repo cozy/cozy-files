@@ -24,6 +24,10 @@ File.all = (params, callback) ->
 File.byFolder = (params, callback) ->
     File.request "byFolder", params, callback
 
+File.byFullPath = (params, callback) ->
+    File.request "byFullPath", params, callback
+
+
 # Perform all operation required to create a new file:
 # * Create document.
 # * Create a binary Document and attach file to it.

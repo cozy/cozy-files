@@ -100,6 +100,7 @@ describe "Files management", ->
                 done()
 
         it "And I send a request to rename the file", (done) ->
+            @timeout 3000
             file =
                 name: "new_test3"
                 path: ""
@@ -143,6 +144,7 @@ describe "Files management", ->
                 done()
 
         it "And I send a request to remove the file", (done) ->
+            @timeout 3000
             client.del "files/#{@id}", (err, res, body) =>
                 @err = err
                 @res = res

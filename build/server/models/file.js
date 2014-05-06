@@ -35,6 +35,10 @@ File.byFolder = function(params, callback) {
   return File.request("byFolder", params, callback);
 };
 
+File.byFullPath = function(params, callback) {
+  return File.request("byFullPath", params, callback);
+};
+
 File.createNewFile = (function(_this) {
   return function(data, file, callback) {
     var attachBinary, index, unlink;

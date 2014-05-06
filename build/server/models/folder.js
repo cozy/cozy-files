@@ -30,6 +30,10 @@ Folder.byFolder = function(params, callback) {
   return Folder.request("byFolder", params, callback);
 };
 
+Folder.byFullPath = function(params, callback) {
+  return Folder.request("byFullPath", params, callback);
+};
+
 Folder.createNewFolder = function(folder, callback) {
   return Folder.create(folder, function(err, newFolder) {
     if (err) {
