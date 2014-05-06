@@ -1,8 +1,13 @@
-File = require '../models/file'
-Folder = require '../models/folder'
 fs = require 'fs'
 async = require 'async'
+moment = require 'moment'
+
+File = require '../models/file'
+Folder = require '../models/folder'
 sharing = require '../helpers/sharing'
+
+log = require('printit')
+    prefix: 'files'
 
 
 ## Helpers ##
@@ -36,75 +41,72 @@ module.exports.all = (req, res) ->
         else
             res.send files
 
+# Prior to file creation it ensures that all parameters are correct and that no
+# file already exists with the same name. Then it builds the file document from
+# given information and uploaded file metadata. Once done, it performs all
+# database operation and index the file name. Finally, it tags the file if the
+# parent folder is tagged.
 module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
-        res.send error: true, msg: "Invalid arguments", 500
+        next new Error "Invalid arguments"
     else
         File.all (err, files) =>
+            avalailable = true
+            fullPath = "#{req.body.path}/#{req.body.name}"
+            for fileDoc in files
+                fileFullPath = "#{fileDoc.path}/#{fileDoc.name}"
+                available = false if fullPath is fileFullPath
 
-            hasntTheSamePath = (file, cb) ->
-                cb ((req.body.path + '/' + req.body.name) isnt (file.path + '/' + file.name))
+            if available
+                res.send error:true, msg: "This file already exists", 400
+            else
+                file = req.files["file"]
+                now = moment().toISOString()
 
-            # check that the name is not already taken
-            async.every files, hasntTheSamePath, (available) ->
-                if not available
-                    res.send error:true, msg: "This file already exists", 400
-                else
-                    file = req.files["file"]
+                # calculate metadata
+                data                  = {}
+                data.name             = req.body.name
+                data.path             = req.body.path
+                data.creationDate     = now
+                data.lastModification = now
+                data.mime             = file.type
+                data.size             = file.size
+                switch file.type.split('/')[0]
+                    when 'image' then data.class = "image"
+                    when 'application' then data.class = "document"
+                    when 'text' then data.class = "document"
+                    when 'audio' then data.class = "music"
+                    when 'video' then data.class = "video"
+                    else
+                        data.class = "file"
 
-                    # calculate metadata
-                    data                  = {}
-                    data.name             = req.body.name
-                    data.path             = req.body.path
-                    data.lastModification = req.body.lastModification
-                    data.mime             = file.type
-                    data.size             = file.size
-                    switch file.type.split('/')[0]
-                        when 'image' then data.class = "image"
-                        when 'application' then data.class = "document"
-                        when 'text' then data.class = "document"
-                        when 'audio' then data.class = "music"
-                        when 'video' then data.class = "video"
-                        else
-                            data.class = "file"
+                # find parent folder
+                Folder.all (err, folders) =>
+                    return callback err if err
 
-                    # find parent folder
-                    Folder.all (err, folders) =>
-                        return callback err if err
+                    fullPath = data.path
+                    parents = folders.filter (tested) ->
+                        fullPath is tested.getFullPath()
 
-                        fullPath = data.path
-                        parents = folders.filter (tested) ->
-                            fullPath is tested.getFullPath()
+                    # inherit its tags
+                    if parents.length
+                        parent = parents[0]
+                        data.tags = parent.tags
+                    else
+                        data.tags = []
 
-                        # inherit its tags
-                        if parents.length
-                            parent = parents[0]
-                            data.tags = parent.tags
-                        else
-                            data.tags = []
+                    # create the file
+                    File.createNewFile data, file, (err, newfile) =>
+                        who = req.guestEmail or 'owner'
+                        sharing.notifyChanges who, newfile, (err) ->
+                            # ignore this err
+                            console.log err if err
+                            res.send newfile, 200
 
-                        # create the file
-                        File.create data, (err, newfile) =>
-                            return next new Error "Server error while creating file; #{err}" if err
-
-                            newfile.attachBinary file.path, {"name": "file"}, (err) ->
-                                return next new Error "Error attaching binary: #{err}" if err
-
-                                newfile.index ["name"], (err) ->
-                                    return next new Error "Error indexing: #{err}" if err
-
-                                    fs.unlink file.path, (err) ->
-                                        return next new Error "Error removing uploaded file: #{err}" if err
-
-                                        who = req.guestEmail or 'owner'
-                                        sharing.notifyChanges who, newfile, (err) ->
-                                            # ignore this err
-                                            console.log err if err
-
-                                            res.send newfile, 200
 
 module.exports.find = (req, res) ->
     res.send req.file
+
 
 module.exports.modify = (req, res) ->
     validRequest = false
@@ -158,6 +160,7 @@ module.exports.modify = (req, res) ->
     if not validRequest
         res.send error: true, msg: "No data specified", 400
 
+
 module.exports.destroy = (req, res) ->
     file = req.file
     file.removeBinary "file", (err, resp, body) =>
@@ -168,16 +171,20 @@ module.exports.destroy = (req, res) ->
             else
                 res.send success: 'File successfully deleted', 200
 
+
 module.exports.getAttachment = (req, res) ->
     processAttachement req, res, false
 
+
 module.exports.downloadAttachment = (req, res) ->
     processAttachement req, res, true
+
 
 module.exports.publicDownloadAttachment = (req, res) ->
     sharing.checkClearance req.file, req, (authorized) ->
         if not authorized then res.send 404
         else processAttachement req, res, true
+
 
 module.exports.publicCreate = (req, res, next) ->
     toCreate = new File(req.body)
@@ -188,10 +195,11 @@ module.exports.publicCreate = (req, res, next) ->
             req.guestId = rule.contactid
             module.exports.create req, res, next
 
+
 module.exports.search = (req, res) ->
     sendResults = (err, files) ->
         if err
-            res.send error: true, msg: err, 500
+            next err
         else
             res.send files
 
