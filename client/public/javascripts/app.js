@@ -1603,18 +1603,25 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.displayChevron = function(order, type) {
     this.$('#up-name').show();
+    this.$('#up-name').addClass('unactive');
     this.$('#down-name').hide();
     this.$('#up-size').show();
+    this.$('#up-size').addClass('unactive');
     this.$('#down-size').hide();
     this.$('#up-class').show();
+    this.$('#up-class').addClass('unactive');
     this.$('#down-class').hide();
     this.$('#up-lastModification').show();
+    this.$('#up-lastModification').addClass('unactive');
     this.$('#down-lastModification').hide();
-    this.$("#" + order + "-" + type).show();
-    if (order === "up") {
-      return this.$("#" + order + "-" + type)[0].removeAttribute('disabled');
+    if (order === "down") {
+      this.$("#up-" + type).show();
+      this.$("#down-" + type).hide();
+      return this.$("#up-" + type).removeClass('unactive');
     } else {
-      return this.$("#up-" + type).hide();
+      this.$("#up-" + type).hide();
+      this.$("#down-" + type).show();
+      return this.$("#down-" + type).removeClass('unactive');
     }
   };
 
@@ -1848,18 +1855,14 @@ module.exports = FolderView = (function(_super) {
     infos = event.target.id.split('-');
     way = infos[0];
     type = infos[1];
-    this.$(".glyphicon-chevron-up").addClass('unactive');
-    this.$("#up-" + type).removeClass('unactive');
     this.displayChevron(way, type);
     this.filesCollection.type = type;
     if (this.filesCollection.order === "incr") {
       this.filesCollection.order = "decr";
-      this.filesCollection.sort();
-      return this.displayChevron('down', this.filesCollection.type);
+      return this.filesCollection.sort();
     } else {
       this.filesCollection.order = "incr";
-      this.filesCollection.sort();
-      return this.displayChevron('up', this.filesCollection.type);
+      return this.filesCollection.sort();
     }
   };
 
