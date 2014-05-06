@@ -2238,6 +2238,7 @@ module.exports = TagsView = (function(_super) {
 
   function TagsView() {
     this.refresh = __bind(this.refresh, this);
+    this.tagClicked = __bind(this.tagClicked, this);
     this.tagRemoved = __bind(this.tagRemoved, this);
     this.tagAdded = __bind(this.tagAdded, this);
     return TagsView.__super__.constructor.apply(this, arguments);
@@ -2249,7 +2250,8 @@ module.exports = TagsView = (function(_super) {
       availableTags: [],
       placeholderText: t('tag'),
       afterTagAdded: this.tagAdded,
-      afterTagRemoved: this.tagRemoved
+      afterTagRemoved: this.tagRemoved,
+      onTagClicked: this.tagClicked
     });
     this.duringRefresh = false;
     $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
@@ -2262,7 +2264,7 @@ module.exports = TagsView = (function(_super) {
     return this;
   };
 
-  TagsView.prototype.tagAdded = function(e, ui) {
+  TagsView.prototype.tagAdded = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
       this.model.save();
@@ -2278,11 +2280,15 @@ module.exports = TagsView = (function(_super) {
     })(this));
   };
 
-  TagsView.prototype.tagRemoved = function(er, ui) {
+  TagsView.prototype.tagRemoved = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
       return this.model.save();
     }
+  };
+
+  TagsView.prototype.tagClicked = function(event, ui) {
+    return console.log(ui.tag);
   };
 
   TagsView.prototype.refresh = function() {

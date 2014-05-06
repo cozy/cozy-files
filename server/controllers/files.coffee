@@ -245,12 +245,10 @@ module.exports.publicCreate = (req, res, next) ->
 # Check if the research should be performed on tag or not.
 # For tag, it will use the Data System request. Else it will use the Cozy
 # Indexer.
-module.exports.search = (req, res) ->
+module.exports.search = (req, res, next) ->
     sendResults = (err, files) ->
-        if err
-            next err
-        else
-            res.send files
+        if err then next err
+        else res.send files
 
     query = req.body.id
     query = query.trim()

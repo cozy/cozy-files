@@ -2467,10 +2467,14 @@ tr.folder-row:hover .file-path {
   color: #bdbdbd;
 }
 tr.folder-row .caption {
-  font-size: 18px;
+  font-size: 16px;
+  font-family: main;
   padding: 0;
   margin-left: 10px;
   margin-right: 10px;
+}
+tr.folder-row .caption:hover {
+  color: #e57a00;
 }
 tr.folder-row .operations {
   font-size: 18px;
@@ -2479,6 +2483,30 @@ tr.folder-row .operations {
 }
 tr.folder-row .operations a {
   padding-left: 5px;
+}
+tr.folder-row .operations a span:hover,
+tr.folder-row .operations a i:hover {
+  color: #fe8800;
+}
+tr.folder-row .operations a:hover {
+  color: #fe8800;
+}
+tr.folder-row ul.tags .tagit-choice {
+  border: 0;
+  background-color: #d6edff;
+  cursor: pointer;
+  font-family: styled;
+}
+tr.folder-row ul.tags .tagit-close:hover {
+  text-color: #fe8800;
+}
+tr.folder-row ul.tags .tagit-choice:hover {
+  background-color: #ffe7cc;
+}
+tr.folder-row ul.tags .tagit-choice:focus,
+tr.folder-row ul.tags .tagit-choice:active {
+  -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
 }
 tr.folder-row ul.tagit {
   display: inline-block;
@@ -2495,6 +2523,9 @@ tr.folder-row ul.tagit .tagit-new {
 }
 tr.folder-row ul.tagit .tagit-new input:focus {
   visibility: visible !important;
+}
+tr.folder-row ul.tagit .tagit-new:hover {
+  border: 1px solid #fe8800;
 }
 tr.folder-row:hover .tagit-new {
   visibility: visible !important;
@@ -2517,7 +2548,7 @@ tr.folder-row:hover .operations a {
   color: #d3d3d3;
 }
 tr.folder-row:hover .operations a:hover {
-  color: #428bca;
+  color: #fe8800;
 }
 tr.folder-row:hover .operations a:active {
   color: #fe8800;
@@ -2611,6 +2642,9 @@ tr.folder-row .file-type {
 }
 .table-headers .btn {
   top: -2px;
+}
+.table-headers a:hover {
+  color: #fe8800;
 }
 #clearancemanager label {
   font-weight: normal;
