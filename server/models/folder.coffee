@@ -19,6 +19,20 @@ Folder.all = (params, callback) ->
 Folder.byFolder = (params, callback) ->
     Folder.request "byFolder", params, callback
 
+# New folder Creation process:
+# * Create new folder.
+# * Index the folder name.
+Folder.createNewFolder = (folder, callback) ->
+    Folder.create folder, (err, newFolder) ->
+        if err
+            callback new Error "Server error while creating file: #{err}"
+        else
+            newFolder.index ["name"], (err) ->
+                if err
+                    callback new Error "Couldn't index: : #{err}"
+                else
+                    callback null, newFolder
+
 Folder::getFullPath = ->
     @path + '/' + @name
 

@@ -30,6 +30,22 @@ Folder.byFolder = function(params, callback) {
   return Folder.request("byFolder", params, callback);
 };
 
+Folder.createNewFolder = function(folder, callback) {
+  return Folder.create(folder, function(err, newFolder) {
+    if (err) {
+      return callback(new Error("Server error while creating file: " + err));
+    } else {
+      return newFolder.index(["name"], function(err) {
+        if (err) {
+          return callback(new Error("Couldn't index: : " + err));
+        } else {
+          return callback(null, newFolder);
+        }
+      });
+    }
+  });
+};
+
 Folder.prototype.getFullPath = function() {
   return this.path + '/' + this.name;
 };

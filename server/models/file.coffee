@@ -1,5 +1,6 @@
 fs = require 'fs'
 americano = require 'americano-cozy'
+
 Folder = require './folder'
 CozyInstance = require './cozy_instance'
 
