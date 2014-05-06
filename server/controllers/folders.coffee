@@ -1,10 +1,13 @@
 Folder = require '../models/folder'
 File = require '../models/file'
 CozyInstance = require '../models/cozy_instance'
+
 jade = require 'jade'
 async = require 'async'
 sharing = require '../helpers/sharing'
+pathHelpers = require '../helpers/path'
 archiver = require 'archiver'
+moment = require 'moment'
 
 publicfoldertemplate = require('path').join __dirname, '../views/publicfolder.jade'
 
@@ -32,50 +35,45 @@ getFolderPath = (id, cb) ->
 
 ## Actions ##
 
+# New folder creation operations:
+# * Check if given name is valid
+# * Check if folder already exists
+# * Tag folder with parent folder tags
+# * Create Folder and index its name
+# * Send notification if required
 module.exports.create = (req, res) ->
-    if (not req.body.name) or (req.body.name == "")
-        res.send error:true, msg: "Invalid arguments", 500
+    folder = req.body
+    if (not folder.name) or (folder.name is "")
+        next new Error "Invalid arguments"
     else
         Folder.all (err, folders) =>
+            available = pathHelpers.checkIfPathAvailable folder, folders
+            if not available
+                res.send error: true, msg: "This folder already exists", 400
+            else
+                fullPath = folder.path
+                parents = folders.filter (tested) ->
+                    fullPath is tested.getFullPath()
 
-            hasntTheSamePath = (folder, cb) ->
-                cb ((req.body.path + '/' + req.body.name) isnt (folder.path + '/' + folder.name))
-
-            # check that the name is not already taken
-            async.every folders, hasntTheSamePath, (available) ->
-                if not available
-                    res.send error:true, msg: "This folder already exists", 400
+                # inherit its tags
+                if parents.length
+                    parent = parents[0]
+                    folder.tags = parent.tags
                 else
-                    # find parent folder
-                    Folder.all (err, folders) =>
-                        return callback err if err
+                    folder.tags = []
 
-                        fullPath = req.body.path
-                        parents = folders.filter (tested) ->
-                            fullPath is tested.getFullPath()
+                now = moment().toISOString()
+                folder.creationDate = now
+                folder.lastModification = now
 
-                        # inherit its tags
-                        if parents.length
-                            parent = parents[0]
-                            req.body.tags = parent.tags
-                        else
-                            req.body.tags = []
+                Folder.createNewFolder folder, (err, newFolder) ->
+                    who = req.guestEmail or 'owner'
+                    sharing.notifyChanges who, newFolder, (err) ->
 
-                        Folder.create req.body, (err, newFolder) ->
-                            if err
-                                res.send error: true, msg: "Server error while creating file: #{err}", 500
-                            else
-                                newFolder.index ["name"], (err) ->
-                                    if err
-                                        console.log err
-                                        res.send error: true, msg: "Couldn't index: : #{err}", 500
-                                    else
-                                        who = req.guestEmail or 'owner'
-                                        sharing.notifyChanges who, newFolder, (err) ->
-                                            # ignore this error
-                                            console.log err if err
+                    # ignore this error
+                    console.log err if err
+                    res.send newFolder, 200
 
-                                            res.send newFolder, 200
 
 module.exports.find = (req, res) ->
     findFolder req.params.id, (err, folder) ->
@@ -83,6 +81,7 @@ module.exports.find = (req, res) ->
             res.send error: true, msg: err, 404
         else
             res.send folder, 200
+
 
 module.exports.tree = (req, res) ->
     findFolder req.params.id, (err, folderChild) ->
@@ -418,7 +417,7 @@ module.exports.publicZip = (req, res) ->
             else module.exports.zip req, res
 
 module.exports.publicCreate = (req, res, next) ->
-    toCreate = new Folder(req.body)
-    sharing.checkClearance toCreate, req, 'w', (authorized) ->
+    folder = new Folder req.body
+    sharing.checkClearance folder, req, 'w', (authorized) ->
         if not authorized then res.send 401
         else module.exports.create req, res, next
