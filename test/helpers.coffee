@@ -31,10 +31,8 @@ _init = (ctx, port, done) ->
 # This function remove everythin from the db
 _cleanDb = helpers.cleanDb = (callback) ->
     Folder.destroyAll (err) ->
-        console.log err
-        return callback err if err
-        File.destroyAll (err) ->
-            return callback err
+        if err then callback err
+        else File.destroyAll callback
 
 helpers.setup = (port) ->
     (done) ->
