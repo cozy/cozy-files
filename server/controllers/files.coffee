@@ -42,6 +42,19 @@ updateParentModifDate = (file, callback) ->
             callback()
 
 
+
+getFileClass = (file) ->
+    switch file.type.split('/')[0]
+        when 'image' then fileClass = "image"
+        when 'application' then fileClass = "document"
+        when 'text' then fileClass = "document"
+        when 'audio' then fileClass = "music"
+        when 'video' then fileClass = "video"
+        else
+            fileClass = "file"
+    fileClass
+
+
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
         if err or not file or file.length is 0
@@ -86,15 +99,7 @@ module.exports.create = (req, res, next) ->
             else
                 file = req.files["file"]
                 now = moment().toISOString()
-
-                switch file.type.split('/')[0]
-                    when 'image' then fileClass = "image"
-                    when 'application' then fileClass = "document"
-                    when 'text' then fileClass = "document"
-                    when 'audio' then fileClass = "music"
-                    when 'video' then fileClass = "video"
-                    else
-                        fileClass = "file"
+                fileClass = getFileClass file
 
                 # calculate metadata
                 data =
@@ -111,7 +116,6 @@ module.exports.create = (req, res, next) ->
                     File.createNewFile data, file, (err, newfile) =>
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newfile, (err) ->
-                            # ignore this err
                             console.log err if err
                             res.send newfile, 200
 
