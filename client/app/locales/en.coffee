@@ -74,6 +74,8 @@ module.exports =
     "KB"                        : "KB"
     "B"                         : "B"
 
+    "enable notifications": "Enable notifications"
+    "disable notifications": "Disable notifications"
 
     # clearance modal
     "also have access"                : "These people also have access, because they have access to a parent folder"
@@ -88,7 +90,7 @@ module.exports =
     "modal question file shareable"   : "Select share mode for this file"
     "modal shared file custom msg"    : "Enter email and press enter"
     "modal shared file link msg"      : "Send this link to let people access this file"
-    "only you can see"                : "Only you and the people listed below can access this"
+    "only you can see"                : "Only you and the people listed below can access this resource"
     "public"                          : "Public"
     "private"                         : "Private"
     "save"                            : "Save"

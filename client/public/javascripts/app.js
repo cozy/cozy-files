@@ -796,6 +796,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
   "copy paste link": "To give access to your contact send him/her the link below:",
@@ -808,7 +810,7 @@ module.exports = {
   "modal question file shareable": "Select share mode for this file",
   "modal shared file custom msg": "Enter email and press enter",
   "modal shared file link msg": "Send this link to let people access this file",
-  "only you can see": "Only you and the people listed below can access this",
+  "only you can see": "Only you and the people listed below can access this resource",
   "public": "Public",
   "private": "Private",
   "save": "Save",
@@ -854,22 +856,24 @@ module.exports = {
   "tooltip share": "Partager",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
-  "upload caption": "Télécharger un fichier",
-  "upload msg": "Choisir un fichier à télécharger :",
+  "upload caption": "Téléverser un fichier",
+  "upload msg": "Choisir un fichier à téléverser :",
   "upload close": "Annuler",
   "upload send": "Ajouter",
-  "upload button": "Télécharger un fichier",
+  "upload button": "Téléverser un fichier",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
   "new folder send": "Créer",
+  "new folder button": "Créer un nouveau dossier",
+  "upload folder msg": "Téléverser un dossier",
   "folder": "Dossier",
   "image": "Image",
   "document": "Document",
   "music": "Musique",
   "video": "Vidéo",
-  "Yes": "Oui",
-  "No": "Non",
+  "yes": "Oui",
+  "no": "Non",
   "name": "Nom",
   "type": "Type",
   "size": "Taille",
@@ -878,6 +882,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "enable notifications": "Activer les notifications",
+  "disable notifications": "Désactiver les notifications",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
   "cancel": "Annuler",
   "copy paste link": "Pour donner accès à votre contact envoyez lui ce lien : ",
@@ -889,7 +895,7 @@ module.exports = {
   "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
   "modal shared file custom msg": "Entrez un email et appuyez sur enter",
   "modal shared file link msg": "Envoyez ce lien pour qu'ils puissent accéder à ce dossier",
-  "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder.",
+  "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource.",
   "public": "Publique",
   "private": "Privé",
   "save": "Sauvegarder",
@@ -899,7 +905,7 @@ module.exports = {
   "send mails question": "Envoyer un email de notification à : ",
   "modal send mails": "Envoyer une notification",
   "perm": "peut ",
-  "perm r file": "télécharger ce fichier",
+  "perm r file": "consulter ce fichier",
   "perm r folder": "parcourir ce dossier",
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
@@ -962,6 +968,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
   "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",
@@ -1311,10 +1319,14 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onEditClicked = function() {
-    var width;
+    var model, width;
     width = this.$(".caption").width() + 10;
+    model = this.model.toJSON();
+    if (model["class"] == null) {
+      model["class"] = 'folder';
+    }
     this.$el.html(this.templateEdit({
-      model: this.model.toJSON()
+      model: model
     }));
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
@@ -2009,12 +2021,12 @@ module.exports = ModalShareView = (function(_super) {
   ModalShareView.prototype.permissions = function() {
     if (this.type === 'folder') {
       return {
-        'r': 'perm r folder',
-        'rw': 'perm rw folder'
+        'r': t('perm r folder'),
+        'rw': t('perm rw folder')
       };
     } else {
       return {
-        'r': 'perm r file'
+        'r': t('perm r file')
       };
     }
   };
@@ -2076,9 +2088,11 @@ module.exports = ModalShareView = (function(_super) {
           item = listitems[_k];
           list.append(item);
         }
+        console.log(summary, list);
         this.$('#share-list').after(summary, list);
       }
     }
+    console.debug(this.model);
     guestCanWrite = _.findWhere(this.model.get('clearance'), {
       perm: 'rw'
     });
@@ -2622,7 +2636,19 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>Size</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>Type</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>Date</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
+buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
+var __val__ = t('name')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');
+var __val__ = t('size')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>');
+var __val__ = t('type')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>');
+var __val__ = t('date')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
