@@ -41,17 +41,20 @@ module.exports =
     "file edit cancel"          : "Annuler"
 
     # folder template
-    "upload caption"            : "Télécharger un fichier"
-    "upload msg"                : "Choisir un fichier à télécharger :"
+    "upload caption"            : "Téléverser un fichier"
+    "upload msg"                : "Choisir un fichier à téléverser :"
     "upload close"              : "Annuler"
     "upload send"               : "Ajouter"
+    "upload button"             : "Téléverser un fichier"
 
-    "upload button"             : "Télécharger un fichier"
 
     "new folder caption"        : "Créer un nouveau dossier"
     "new folder msg"            : "Entrer le nom du dossier :"
     "new folder close"          : "Annuler"
     "new folder send"           : "Créer"
+    "new folder button"         : "Créer un nouveau dossier"
+
+    "upload folder msg"         : "Téléverser un dossier"
 
     "folder"                    : "Dossier"
     "image"                     : "Image"
@@ -59,8 +62,8 @@ module.exports =
     "music"                     : "Musique"
     "video"                     : "Vidéo"
 
-    "Yes"                       : "Oui"
-    "No"                        : "Non"
+    "yes"                       : "Oui"
+    "no"                        : "Non"
 
     "name"                      : "Nom"
     "type"                      : "Type"
@@ -87,7 +90,7 @@ module.exports =
     "modal question file shareable"   : "Choisissez le mode de partage pour ce fichier"
     "modal shared file custom msg"    : "Entrez un email et appuyez sur enter"
     "modal shared file link msg"      : "Envoyez ce lien pour qu'ils puissent accéder à ce dossier"
-    "only you can see"                : "Seul vous et les personnes ci-dessous peuvent accéder."
+    "only you can see"                : "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource."
     "public"                          : "Publique"
     "private"                         : "Privé"
     "save"                            : "Sauvegarder"
@@ -97,7 +100,7 @@ module.exports =
     "send mails question"             : "Envoyer un email de notification à : "
     "modal send mails"                : "Envoyer une notification"
     "perm"                            : "peut "
-    "perm r file"                     : "télécharger ce fichier"
+    "perm r file"                     : "consulter ce fichier"
     "perm r folder"                   : "parcourir ce dossier"
     "perm rw folder"                  : "parcourir ce dossier et ajouter des fichiers"
     "change notif"                    : """
