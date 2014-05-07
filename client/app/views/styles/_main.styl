@@ -138,17 +138,18 @@ table#table-items
     opacity: 0.5
 
   td
-      padding: 8px 5px 0 0
+      padding: 0px 5px 0 0
       height: 40px
 
   td.type-column-cell
   td.size-column-cell
   td.date-column-cell
+      color: gray
       padding-top: 6px
       width: 100px
 
   td.date-column-cell
-      width: 120px
+      width: 150px
 
   .table-headers
     
@@ -168,20 +169,30 @@ table#table-items
       color: orange
 
 
-
 tr.folder-row
-
-  // colors change on hover
-  color: mediumcolor
 
   &:hover
     color: mediumcolor-contrast
+    
+    .operations
+      display: inline
 
     .glyphicon.no-hover
       color: mediumcolor
 
     .file-path
       color: mediumcolor
+
+  td
+    vertical-align: middle
+
+    div
+    span
+    ul
+    li
+    a
+    i
+      vertical-align: middle
 
   span.caption
     padding-left: 6px
@@ -199,11 +210,12 @@ tr.folder-row
 
   // the toolbox - delete, rename, etc
   .operations
-    font-size: 12px
+    font-size: 16px
     display: none
 
     a
       padding-left: 5px
+      color: blue
       
       span:hover
       i:hover
@@ -212,17 +224,20 @@ tr.folder-row
     a:hover
       color: orange
 
+    .fa-lock
+    .fa-users
+    .fa-globe
+        padding-top: 6px
+
   .caption-wrapper
     display: inline
     height: 100%
 
   ul.tags
     margin-bottom: 0
-    padding-top: 0
+    padding-top: 5px
+    padding-left: 10px
     padding-bottom: 0
-
-    .tagit-new
-        display: none
 
     .tagit-close:hover
       span.text-icon
@@ -298,8 +313,6 @@ tr.folder-row
     a:active
       color: orange
 
-  .file-date, .file-size, .file-type
-    padding-top: 13px
 
 .visible-lg.visible-md.visible-inline
   display: inline!important

@@ -1,24 +1,27 @@
 if model.type && model.type == "folder"
   td
-    a.caption.btn.btn-link(
-        href="#folders/#{model.id}", title="#{t('open folder')}")
-      i.fa.fa-folder
-      | #{model.name}
+    div.caption-wrapper
+      a.caption.btn.btn-link(
+          href="#folders/#{model.id}", title="#{t('open folder')}")
+        i.fa.fa-folder
+        | #{model.name}
     .operations
-      a.file-delete(title="#{t('tooltip delete')}")
-        span.glyphicon.glyphicon-remove-circle
-      a.file-edit(title="#{t('tooltip edit')}")
-        span.glyphicon.glyphicon-edit
-      a.file-download(href="folders/#{model.id}/zip/#{model.name}", target="_blank")(title="#{t('tooltip download')}")
-        span.glyphicon.glyphicon-cloud-download
       a.file-share(title="#{t('tooltip share')}")
         if model.clearance == 'public'
-          i.fa.fa-globe
+          span.fa.fa-globe
         else if model.clearance && model.clearance.length > 0
-          i.fa.fa-users #{model.clearance.length}
+          span.fa.fa-users #{model.clearance.length}
         else
-          i.fa.fa-lock
-    ul.tags.pull-right
+          span.fa.fa-lock
+      a.file-edit(title="#{t('tooltip edit')}")
+        span.glyphicon.glyphicon-edit
+            a.file-download(
+                href="folders/#{model.id}/zip/#{model.name}", 
+                target="_blank", title="#{t('tooltip download')}")
+      a.file-delete(title="#{t('tooltip delete')}")
+        span.glyphicon.glyphicon-remove-circle
+        span.glyphicon.glyphicon-cloud-download
+    ul.tags
       if model.tags
         for tag in model.tags
           li #{tag}
@@ -26,6 +29,8 @@ if model.type && model.type == "folder"
   td.type-column-cell
     span.pull-left #{t('folder')}
   td.date-column-cell
+    if model.lastModification
+      span #{moment(model.lastModification).calendar()}
 else
   td
     div.caption-wrapper
@@ -35,19 +40,19 @@ else
         i.fa.fa-file-o
         | #{model.name}
     .operations
-      a.file-delete(title="#{t('tooltip delete')}")
-        span.glyphicon.glyphicon-remove-circle
+      a.file-share(title="#{t('tooltip share')}")
+        if model.clearance == 'public'
+          span.fa.fa-globe
+        else if model.clearance && model.clearance.length > 0
+          span.fa.fa-users #{model.clearance.length}
+        else
+          span.fa.fa-lock
       a.file-edit
         span.glyphicon.glyphicon-edit(title="#{t('tooltip edit')}")
       a.file-download(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")(title="#{t('tooltip download')}")
         span.glyphicon.glyphicon-cloud-download
-      a.file-share(title="#{t('tooltip share')}")
-        if model.clearance == 'public'
-          i.fa.fa-globe
-        else if model.clearance && model.clearance.length > 0
-          i.fa.fa-users #{model.clearance.length}
-        else
-          i.fa.fa-lock
+      a.file-delete(title="#{t('tooltip delete')}")
+        span.glyphicon.glyphicon-remove-circle
     ul.tags
       if model.tags
         for tag in model.tags

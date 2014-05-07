@@ -2348,30 +2348,30 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><a');
+buf.push('<td><div class="caption-wrapper"><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
-buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
-buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
 {
-buf.push('<i class="fa fa-globe"></i>');
+buf.push('<span class="fa fa-globe"></span>');
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
 }
 else
 {
-buf.push('<i class="fa fa-lock"></i>');
+buf.push('<span class="fa fa-lock"></span>');
 }
-buf.push('</a></div><ul class="tags pull-right">');
+buf.push('</a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-edit"><a');
+buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
+buf.push('></a></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2396,34 +2396,39 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }).call(this);
 
 }
-buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
+buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
 }
 else
 {
 buf.push('<td><div class="caption-wrapper"><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
 buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a class="file-edit"><span');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
-buf.push('></span></a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
 {
-buf.push('<i class="fa fa-globe"></i>');
+buf.push('<span class="fa fa-globe"></span>');
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
 }
 else
 {
-buf.push('<i class="fa fa-lock"></i>');
+buf.push('<span class="fa fa-lock"></span>');
 }
-buf.push('</a></div><ul class="tags">');
+buf.push('</a><a class="file-edit"><span');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
+buf.push('></span></a><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags

@@ -2447,17 +2447,18 @@ table#table-items .unactive {
   filter: alpha(opacity=50);
 }
 table#table-items td {
-  padding: 8px 5px 0 0;
+  padding: 0px 5px 0 0;
   height: 40px;
 }
 table#table-items td.type-column-cell,
 table#table-items td.size-column-cell,
 table#table-items td.date-column-cell {
+  color: #808080;
   padding-top: 6px;
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 120px;
+  width: 150px;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
@@ -2474,17 +2475,28 @@ table#table-items .table-headers .btn {
 table#table-items .table-headers a:hover {
   color: #fe8800;
 }
-tr.folder-row {
-  color: #bdbdbd;
-}
 tr.folder-row:hover {
   color: #428bca;
+}
+tr.folder-row:hover .operations {
+  display: inline;
 }
 tr.folder-row:hover .glyphicon.no-hover {
   color: #bdbdbd;
 }
 tr.folder-row:hover .file-path {
   color: #bdbdbd;
+}
+tr.folder-row td {
+  vertical-align: middle;
+}
+tr.folder-row td div,
+tr.folder-row td span,
+tr.folder-row td ul,
+tr.folder-row td li,
+tr.folder-row td a,
+tr.folder-row td i {
+  vertical-align: middle;
 }
 tr.folder-row span.caption {
   padding-left: 6px;
@@ -2500,11 +2512,12 @@ tr.folder-row .caption:hover {
   color: #e57a00;
 }
 tr.folder-row .operations {
-  font-size: 12px;
+  font-size: 16px;
   display: none;
 }
 tr.folder-row .operations a {
   padding-left: 5px;
+  color: #34a6ff;
 }
 tr.folder-row .operations a span:hover,
 tr.folder-row .operations a i:hover {
@@ -2513,17 +2526,20 @@ tr.folder-row .operations a i:hover {
 tr.folder-row .operations a:hover {
   color: #fe8800;
 }
+tr.folder-row .operations .fa-lock,
+tr.folder-row .operations .fa-users,
+tr.folder-row .operations .fa-globe {
+  padding-top: 6px;
+}
 tr.folder-row .caption-wrapper {
   display: inline;
   height: 100%;
 }
 tr.folder-row ul.tags {
   margin-bottom: 0;
-  padding-top: 0;
+  padding-top: 5px;
+  padding-left: 10px;
   padding-bottom: 0;
-}
-tr.folder-row ul.tags .tagit-new {
-  display: none;
 }
 tr.folder-row ul.tags .tagit-close:hover span.text-icon {
   text-color: #fe8800;
@@ -2600,11 +2616,6 @@ tr.folder-row:hover .operations a:hover {
 }
 tr.folder-row:hover .operations a:active {
   color: #fe8800;
-}
-tr.folder-row .file-date,
-tr.folder-row .file-size,
-tr.folder-row .file-type {
-  padding-top: 13px;
 }
 .visible-lg.visible-md.visible-inline {
   display: inline !important;
