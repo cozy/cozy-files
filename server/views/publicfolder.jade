@@ -134,3 +134,14 @@ html
                 .modal-footer
                   button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
                   button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
+
+
+    script(src="../assets/javascripts/vendor.js")
+    script(src="../assets/javascripts/app.js")
+    script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
+    script.
+        var polyglot = new Polyglot();
+        polyglot.extend(require("locales/#{lang}"));
+        window.t = polyglot.t.bind(polyglot);
+        var PublicFolderView = require('views/public_folder');
+        new PublicFolderView({folder: window.folder});

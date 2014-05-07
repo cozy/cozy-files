@@ -26,6 +26,6 @@ User.getDisplayName = (callback) ->
                 name = words.map((word) ->
                     return word.charAt(0).toUpperCase() + word.slice 1
                 ).join ' '
-            callback name
+            callback null, name
         else
-            callback null
+            callback null, null

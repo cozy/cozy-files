@@ -1,11 +1,10 @@
 File = require '../models/file'
 Folder = require '../models/folder'
 CozyInstance = require '../models/cozy_instance'
+User = require '../models/user'
 clearance = require 'cozy-clearance'
-async = require 'async'
-jade = require 'jade'
-fs = require 'fs'
 NotificationHelper = require 'cozy-notifications-helper'
+localization = require '../lib/localization_manager'
 
 try CozyAdapter = require('americano-cozy/node_modules/jugglingdb-cozy-adapter')
 catch e then CozyAdapter = require('jugglingdb-cozy-adapter')
@@ -22,7 +21,7 @@ publicURL = (doc) ->
         "#{cozydomain}public/files/files/#{doc.id}"
     else if doc instanceof Folder
         "#{cozydomain}public/files/folders/#{doc.id}"
-    else throw new Error('wrong usage')
+    else throw new Error 'wrong usage'
 
 # helpers functions to handle inherited clearance
 
@@ -94,9 +93,12 @@ module.exports.notifyChanges = (who, file, callback) ->
                         to: rule.email
 
             if who isnt 'owner' and folder.changeNotification
-                uniq = 'udapte' + folder.id
+                uniq = 'update' + folder.id
                 params =
-                    text: "#{who} uploaded file #{file.name} into #{folder.name}"
+                    text: localization.t 'notification new file',
+                            who: who
+                            fileName: file.name
+                            folderName: folder.name
                     resource:
                         app: 'files'
                         url: "#folder/#{folder.id}"
@@ -107,19 +109,24 @@ module.exports.notifyChanges = (who, file, callback) ->
         callback null
 
 # send notif mails
-templatefile = require('path').join __dirname, '../views/notifmail.jade'
-notiftemplate = jade.compile fs.readFileSync templatefile, 'utf8'
+notiftemplate = localization.getEmailTemplate 'notifmail.jade'
 doSendNotif = ->
-    for key, item of mailsToSend
+    User.getDisplayName (err, displayName) ->
 
-        mailOptions =
-            to: item.to
-            subject: "Cozy-Files: #{item.name} has changed "
-            content: item.url
-            html: notiftemplate name: item.name, url: item.url
+        for key, item of mailsToSend
+            mailOptions =
+                to: item.to
+                subject: localization.t 'email change subject',
+                            displayName: displayName
+                            itemName: item.name
+                content: item.url
+                html: notiftemplate
+                    name: item.name
+                    url: item.url
+                    displayName: displayName
 
-        CozyAdapter.sendMailFromUser mailOptions, (err) ->
-            console.log 'sent update mail to ', item.to
-            console.log err if err
+            CozyAdapter.sendMailFromUser mailOptions, (err) ->
+                console.log 'sent update mail to ', item.to
+                console.log err if err
 
-    mailsToSend = {}
+        mailsToSend = {}

@@ -1,0 +1,15 @@
+h1 #{displayName} a partagé un #{type} avec vous !
+
+- var prefix = ''
+if type == 'file'
+    - prefix = 'voir ce fichier'
+else
+    - prefix = 'naviguer dans ce dossier'
+
+p
+    a(href=url) Cliquez ici pour #{prefix}
+    | .
+p
+    | Envoyé depuis le
+    a(href="http://cozy.io") Cozy
+    | &nbsp; de #{displayName}.
