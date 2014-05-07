@@ -13,14 +13,16 @@ mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
-        User.getDisplayName (displayName) ->
+        User.getDisplayName (err, displayName) ->
             options.displayName = displayName or localization.t 'default user name'
+            options.localized_type = localization.t options.type
+            options.localized_link = localization.t "link #{options.type} content"
             callback null, mailTemplate options
 
     mailSubject: (options, callback) ->
         type = options.doc.docType.toLowerCase()
         name = options.doc.name
-        User.getDisplayName (displayName) ->
+        User.getDisplayName (err, displayName) ->
             displayName = displayName or localization.t 'default user name'
             callback null, localization.t 'email sharing subject',
                                 displayName: displayName
