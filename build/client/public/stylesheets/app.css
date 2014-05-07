@@ -2181,7 +2181,7 @@ ul.tagit input[type="text"] {
 }
 @font-face {
   font-family: main;
-  src: url("/fonts/signika-regular.ttf");
+  src: url("/fonts/signika-light.ttf");
 }
 a {
   color: #34a6ff;
@@ -2299,14 +2299,6 @@ textarea:active {
   border: 1px solid #ccc;
   -webkit-box-shadow: none;
   box-shadow: none;
-}
-@font-face {
-  font-family: styled;
-  src: url("/fonts/maven-pro-light-300.otf");
-}
-@font-face {
-  font-family: main;
-  src: url("/fonts/signika-regular.ttf");
 }
 html,
 body {
@@ -2447,18 +2439,47 @@ div#affixbar img {
   padding-top: 45px;
 }
 table#table-items {
-  margin-top: 20px;
+  margin-top: 30px;
 }
 table#table-items .unactive {
   opacity: 0.5;
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
   filter: alpha(opacity=50);
 }
-tr.folder-row {
-  color: #bdbdbd;
+table#table-items td {
+  padding: 0px 5px 0 0;
+  height: 40px;
+}
+table#table-items td.type-column-cell,
+table#table-items td.size-column-cell,
+table#table-items td.date-column-cell {
+  color: #808080;
+  padding-top: 6px;
+  width: 100px;
+}
+table#table-items td.date-column-cell {
+  width: 150px;
+}
+table#table-items .table-headers td:first-child {
+  padding-left: 3px;
+}
+table#table-items .table-headers td {
+  border-top: 0;
+}
+table#table-items .table-headers span {
+  line-height: 30px;
+}
+table#table-items .table-headers .btn {
+  top: -2px;
+}
+table#table-items .table-headers a:hover {
+  color: #fe8800;
 }
 tr.folder-row:hover {
   color: #428bca;
+}
+tr.folder-row:hover .operations {
+  display: inline;
 }
 tr.folder-row:hover .glyphicon.no-hover {
   color: #bdbdbd;
@@ -2466,23 +2487,37 @@ tr.folder-row:hover .glyphicon.no-hover {
 tr.folder-row:hover .file-path {
   color: #bdbdbd;
 }
+tr.folder-row td {
+  vertical-align: middle;
+}
+tr.folder-row td div,
+tr.folder-row td span,
+tr.folder-row td ul,
+tr.folder-row td li,
+tr.folder-row td a,
+tr.folder-row td i {
+  vertical-align: middle;
+}
+tr.folder-row span.caption {
+  padding-left: 6px;
+}
 tr.folder-row .caption {
   font-size: 16px;
   font-family: main;
   padding: 0;
-  margin-left: 10px;
+  margin-left: 0px;
   margin-right: 10px;
 }
 tr.folder-row .caption:hover {
   color: #e57a00;
 }
 tr.folder-row .operations {
-  font-size: 18px;
-  visibility: hidden;
-  display: inline-block;
+  font-size: 16px;
+  display: none;
 }
 tr.folder-row .operations a {
   padding-left: 5px;
+  color: #34a6ff;
 }
 tr.folder-row .operations a span:hover,
 tr.folder-row .operations a i:hover {
@@ -2491,22 +2526,52 @@ tr.folder-row .operations a i:hover {
 tr.folder-row .operations a:hover {
   color: #fe8800;
 }
+tr.folder-row .operations .fa-lock,
+tr.folder-row .operations .fa-users,
+tr.folder-row .operations .fa-globe {
+  padding-top: 6px;
+}
+tr.folder-row .caption-wrapper {
+  display: inline;
+  height: 100%;
+}
+tr.folder-row ul.tags {
+  margin-bottom: 0;
+  padding-top: 5px;
+  padding-left: 10px;
+  padding-bottom: 0;
+}
+tr.folder-row ul.tags .tagit-close:hover span.text-icon {
+  text-color: #fe8800;
+}
 tr.folder-row ul.tags .tagit-choice {
   border: 0;
-  background-color: #d6edff;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  background-color: #ebf6ff;
   cursor: pointer;
   font-family: styled;
 }
-tr.folder-row ul.tags .tagit-close:hover {
-  text-color: #fe8800;
+tr.folder-row ul.tags .tagit-choice .tagit-label {
+  color: #0067b8;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 tr.folder-row ul.tags .tagit-choice:hover {
-  background-color: #ffe7cc;
+  background-color: #fff3e5;
+}
+tr.folder-row ul.tags .tagit-choice:hover .tagit-label {
+  color: #985200;
 }
 tr.folder-row ul.tags .tagit-choice:focus,
 tr.folder-row ul.tags .tagit-choice:active {
   -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
   box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+}
+tr.folder-row ul.tags:hover .tagit-new {
+  display: inline-block;
 }
 tr.folder-row ul.tagit {
   display: inline-block;
@@ -2527,16 +2592,15 @@ tr.folder-row ul.tagit .tagit-new input:focus {
 tr.folder-row ul.tagit .tagit-new:hover {
   border: 1px solid #fe8800;
 }
+tr.folder-row ul.tagit .tagit-new:focus {
+  border: 1px solid #34a6ff;
+}
 tr.folder-row:hover .tagit-new {
   visibility: visible !important;
 }
-tr.folder-row .img-folder img {
+tr.folder-row i.fa {
+  margin: 0 15px 0 0;
   width: 20px;
-  margin-right: -3px;
-}
-tr.folder-row .img-file img {
-  width: 20px;
-  margin-right: -3px;
 }
 tr.folder-row .icon {
   font-size: 14px;
@@ -2552,11 +2616,6 @@ tr.folder-row:hover .operations a:hover {
 }
 tr.folder-row:hover .operations a:active {
   color: #fe8800;
-}
-tr.folder-row .file-date,
-tr.folder-row .file-size,
-tr.folder-row .file-type {
-  padding-top: 13px;
 }
 .visible-lg.visible-md.visible-inline {
   display: inline !important;
@@ -2637,15 +2696,6 @@ tr.folder-row .file-type {
 .table .tbody .td span {
   display: none;
 }
-.table-headers span {
-  line-height: 30px;
-}
-.table-headers .btn {
-  top: -2px;
-}
-.table-headers a:hover {
-  color: #fe8800;
-}
 #clearancemanager label {
   font-weight: normal;
 }
@@ -2706,9 +2756,16 @@ tr.folder-row .file-type {
 .notifs-label {
   margin-top: 30px;
   font-weight: normal;
+  margin-bottom: 0px;
 }
 .notifs-label input {
   margin-right: 5px;
+}
+#affixbar #crumbs ul {
+  margin-top: 0;
+}
+#affixbar #crumbs li a {
+  margin-top: 0;
 }
 @media (max-width: 480px) {
   body {

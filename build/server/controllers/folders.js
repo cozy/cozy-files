@@ -603,6 +603,7 @@ module.exports.publicList = function(req, res) {
           path: path,
           files: files,
           folders: folders,
+          lang: lang,
           canupload: rule.perm === 'rw',
           notifications: rule.notifications || false,
           keyquery: "?key=" + req.query.key,

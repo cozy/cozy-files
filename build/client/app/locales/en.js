@@ -53,6 +53,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
   "copy paste link": "To give access to your contact send him/her the link below:",
@@ -65,7 +67,7 @@ module.exports = {
   "modal question file shareable": "Select share mode for this file",
   "modal shared file custom msg": "Enter email and press enter",
   "modal shared file link msg": "Send this link to let people access this file",
-  "only you can see": "Only you and the people listed below can access this",
+  "only you can see": "Only you and the people listed below can access this resource",
   "public": "Public",
   "private": "Private",
   "save": "Save",
@@ -77,5 +79,6 @@ module.exports = {
   "perm": "can ",
   "perm r file": "download this file",
   "perm r folder": "browse this folder",
-  "perm rw folder": "browse and upload files"
+  "perm rw folder": "browse and upload files",
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
 };

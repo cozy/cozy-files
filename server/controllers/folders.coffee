@@ -391,6 +391,7 @@ module.exports.publicList = (req, res) ->
                     path
                     files
                     folders
+                    lang
                     canupload: rule.perm is 'rw'
                     notifications: rule.notifications or false
                     keyquery: "?key=#{req.query.key}"

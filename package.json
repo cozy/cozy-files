@@ -28,7 +28,8 @@
     "archiver": "0.4.10",
     "printit": "~0.1.3",
     "cozy-clearance": "0.1.2",
-    "cozy-notifications-helper": "1.0.2"
+    "cozy-notifications-helper": "1.0.2",
+    "node-polyglot": "^0.3.0"
   },
   "devDependencies": {
     "should": "= 1.2.0",
@@ -48,6 +49,9 @@
     },
     "Folder": {
       "description": "Store folders in your cozy"
+    },
+    "Notification": {
+      "description": "Display a notification when guests change file"
     },
     "send mail": {
       "description": "Send links by mail"

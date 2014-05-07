@@ -74,6 +74,8 @@ module.exports =
     "KB"                        : "Ko"
     "B"                         : "o"
 
+    "enable notifications": "Enable notifications"
+    "disable notifications": "Disable notifications"
 
     # clearance modal
     "also have access"                : "Aceste persoane au acces, deoarece au acces la un director părinte"
@@ -101,3 +103,6 @@ module.exports =
     "perm r file"                     : "descărca acest fișier"
     "perm r folder"                   : "parcurge acest dosar "
     "perm rw folder"                  : "parcurge acest dosar și încărca fișiere"
+    "change notif"                    : """Bifați această casetă pentru a fi notificat atunci când o persoană de contact
+         adăuga un fișier în acest dosar.
+    """

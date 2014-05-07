@@ -50,5 +50,10 @@ module.exports = {
     all: function(doc) {
       return emit(doc._id, doc);
     }
+  },
+  user: {
+    all: function(doc) {
+      return emit(doc._id, doc);
+    }
   }
 };
