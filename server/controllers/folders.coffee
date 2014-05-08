@@ -71,7 +71,7 @@ getFolderPath = (id, cb) ->
 # * Tag folder with parent folder tags
 # * Create Folder and index its name
 # * Send notification if required
-module.exports.create = (req, res) ->
+module.exports.create = (req, res, next) ->
     folder = req.body
     if (not folder.name) or (folder.name is "")
         next new Error "Invalid arguments"
@@ -112,11 +112,11 @@ module.exports.create = (req, res) ->
                     folder.tags = []
                     createFolder()
 
-module.exports.find = (req, res) ->
+module.exports.find = (req, res, next) ->
     res.send req.folder
 
 
-module.exports.tree = (req, res) ->
+module.exports.tree = (req, res, next) ->
     folderChild = req.folder
     Folder.getParents (err, folders) =>
         if err then next err
@@ -124,7 +124,7 @@ module.exports.tree = (req, res) ->
             res.send parents, 200
 
 
-module.exports.modify = (req, res) ->
+module.exports.modify = (req, res, next) ->
     folderToModify = req.folder
 
     if not req.body.name? and not req.body.public?
@@ -207,7 +207,7 @@ module.exports.modify = (req, res) ->
 
 # Prior to deleting target folder, it deletes its subfolders and the files
 # listed in the folder.
-module.exports.destroy = (req, res) ->
+module.exports.destroy = (req, res, next) ->
     currentFolder = req.folder
     directory = "#{currentFolder.path}/#{currentFolder.name}"
 
@@ -256,7 +256,7 @@ module.exports.destroy = (req, res) ->
                             success: "Folder succesfuly deleted: #{directory}"
 
 
-module.exports.findFiles = (req, res) ->
+module.exports.findFiles = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
         if err then next err
         else
@@ -266,7 +266,14 @@ module.exports.findFiles = (req, res) ->
                     res.send files, 200
 
 
-module.exports.findFolders = (req, res) ->
+module.exports.allFolders = (req, res, next) ->
+    Folder.all (err, folders) ->
+        if err then next err
+        else res.send folders
+
+
+
+module.exports.findFolders = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
         if err then next err
         else
@@ -276,7 +283,7 @@ module.exports.findFolders = (req, res) ->
                     res.send files, 200
 
 
-module.exports.search = (req, res) ->
+module.exports.search = (req, res, next) ->
     sendResults = (err, files) ->
         if err then next err
         else
@@ -297,7 +304,7 @@ module.exports.search = (req, res) ->
 
 # List files contained in the folder and return them as a zip archive.
 # TODO: add subfolders
-module.exports.zip = (req, res) ->
+module.exports.zip = (req, res, next) ->
     folder = req.folder
     archive = archiver('zip')
 
@@ -336,7 +343,7 @@ module.exports.zip = (req, res) ->
             makeZip zipName, selectedFiles
 
 
-module.exports.publicList = (req, res) ->
+module.exports.publicList = (req, res, next) ->
     folder = req.folder
 
     errortemplate = (err) ->
@@ -406,7 +413,7 @@ module.exports.publicList = (req, res) ->
                 errortemplate err
 
 
-module.exports.publicZip = (req, res) ->
+module.exports.publicZip = (req, res, next) ->
     errortemplate = (err) ->
         res.send err.stack or err
 
