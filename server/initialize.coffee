@@ -3,6 +3,7 @@ RealtimeAdapter = require 'cozy-realtime-adapter'
 
 module.exports.beforeStart = (callback) ->
     localization.initialize callback
+
 module.exports.afterStart = (app, server, callback) ->
 
     # retrieve locale and set polyglot object
