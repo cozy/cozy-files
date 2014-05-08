@@ -55,7 +55,7 @@ File.createNewFile = (function(_this) {
     };
     index = function(newFile) {
       return newFile.index(["name"], function(err) {
-        if (er) {
+        if (err) {
           console.log(err);
         }
         return unlink(newFile);
