@@ -33,6 +33,18 @@ module.exports.fetch = (req, res, next, id) ->
             next()
 
 
+updateParentModifDate = (folder, callback) ->
+    Folder.byFullPath key: folder.path, (err, parents) =>
+        if err
+            callback err
+        else if parents.length > 0
+            parent = parents[0]
+            parent.lastModification = moment().toISOString()
+            parent.save callback
+        else
+            callback()
+
+
 findFolder = (id, callback) ->
     Folder.find id, (err, folder) =>
         if err or not folder
@@ -59,7 +71,6 @@ getFolderPath = (id, cb) ->
 # * Tag folder with parent folder tags
 # * Create Folder and index its name
 # * Send notification if required
-# TODO update parent folder date
 module.exports.create = (req, res) ->
     folder = req.body
     if (not folder.name) or (folder.name is "")
@@ -74,25 +85,32 @@ module.exports.create = (req, res) ->
                 parents = folders.filter (tested) ->
                     fullPath is tested.getFullPath()
 
+                now = moment().toISOString()
+                createFolder = ->
+                    folder.creationDate = now
+                    folder.lastModification = now
+
+                    Folder.createNewFolder folder, (err, newFolder) ->
+                        return next err if err
+                        who = req.guestEmail or 'owner'
+                        sharing.notifyChanges who, newFolder, (err) ->
+                            # ignore this error
+                            console.log err if err
+                            res.send newFolder, 200
+
                 # inherit its tags
-                if parents.length
+                if parents.length > 0
                     parent = parents[0]
+
                     folder.tags = parent.tags
+
+                    parent.lastModification = now
+                    parent.save (err) ->
+                        if err then next err
+                        else createFolder()
                 else
                     folder.tags = []
-
-                now = moment().toISOString()
-                folder.creationDate = now
-                folder.lastModification = now
-
-                Folder.createNewFolder folder, (err, newFolder) ->
-                    return next err if err
-                    who = req.guestEmail or 'owner'
-                    sharing.notifyChanges who, newFolder, (err) ->
-                        # ignore this error
-                        console.log err if err
-                        res.send newFolder, 200
-
+                    createFolder()
 
 module.exports.find = (req, res) ->
     res.send req.folder
@@ -106,8 +124,6 @@ module.exports.tree = (req, res) ->
             res.send parents, 200
 
 
-# TODO update parent folder date
-# TODO manage tag deletion?
 module.exports.modify = (req, res) ->
     folderToModify = req.folder
 
@@ -136,7 +152,11 @@ module.exports.modify = (req, res) ->
                 if tags.indexOf tag is -1
                     tags.push tag
 
-            file.updateAttributes path: modifiedPath, tags: tags, cb
+            data =
+                path: modifiedPath
+                tags: tags
+
+            file.updateAttributes data, cb
         else
             cb null
 
@@ -146,16 +166,19 @@ module.exports.modify = (req, res) ->
             name: newName
             public: isPublic
             tags: newTags
+            lastModification: moment().toISOString()
 
         data.clearance = req.body.clearance if req.body.clearance
 
         folderToModify.updateAttributes data, (err) =>
             return next err if err
 
-            # update index too
-            folderToModify.index ["name"], (err) ->
+            updateParentModifDate folderToModify, (err) ->
                 log.raw err if err
-                res.send success: 'File succesfuly modified', 200
+
+                folderToModify.index ["name"], (err) ->
+                    log.raw err if err
+                    res.send success: 'File succesfuly modified', 200
 
     updateFoldersAndFiles = (folders)->
         # update all folders
@@ -184,7 +207,6 @@ module.exports.modify = (req, res) ->
 
 # Prior to deleting target folder, it deletes its subfolders and the files
 # listed in the folder.
-# TODO: change parent modification date
 module.exports.destroy = (req, res) ->
     currentFolder = req.folder
     directory = "#{currentFolder.path}/#{currentFolder.name}"
@@ -228,7 +250,10 @@ module.exports.destroy = (req, res) ->
             currentFolder.destroy (err) ->
                 if err then next err
                 else
-                    res.send success: "Folder succesfuly deleted: #{directory}"
+                    updateParentModifDate currentFolder, (err) ->
+                        log.raw err if err
+                        res.send
+                            success: "Folder succesfuly deleted: #{directory}"
 
 
 module.exports.findFiles = (req, res) ->
