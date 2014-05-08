@@ -107,30 +107,26 @@ module.exports.tree = (req, res) ->
 
 
 # TODO update parent folder date
+# TODO manage tag deletion?
 module.exports.modify = (req, res) ->
-    folder = req.folder
+    folderToModify = req.folder
 
     if not req.body.name? and not req.body.public?
         return res.send error: true, msg: "Data required", 400
 
     newName = req.body.name
     isPublic = req.body.public
-    oldPath = folderToModify.path + '/' + folderToModify.name + "/"
-    newPath = folderToModify.path + '/' + newName + "/"
+    oldPath = "#{folderToModify.path}/#{folderToModify.name}/"
+    newPath = "#{folderToModify.path}/#{newName}/"
     newTags = req.body.tags or []
-    newTags = newTags.filter (e) -> typeof e is 'string'
+    newTags = newTags.filter (tag) -> typeof tag is 'string'
 
-    hasntTheSamePathOrIsTheSame = (folder, cb) ->
-        if (folderToModify.id is folder.id)
-            cb true
-        else
-            cb (newPath isnt (folder.path + '/' + folder.name + "/"))
+    oldRealPath = "#{folderToModify.path}/#{folderToModify.name}"
+    newRealPath = "#{folderToModify.path}/#{newName}"
 
     updateIfIsSubFolder = (file, cb) ->
-        if ((file.path + "/").indexOf(oldPath) is 0)
 
-            oldRealPath = folderToModify.path + '/' + folderToModify.name
-            newRealPath = folderToModify.path + '/' + newName
+        if "#{file.path}/".indexOf(oldPath) is 0
             modifiedPath = file.path.replace oldRealPath, newRealPath
 
             # add new tags from parent, keeping the old ones
@@ -158,39 +154,32 @@ module.exports.modify = (req, res) ->
 
             # update index too
             folderToModify.index ["name"], (err) ->
-                if err
-                    res.send error: true, msg: "Couldn't index: #{err}", 500
-                else
-                    res.send success: 'File succesfuly modified', 200
+                log.raw err if err
+                res.send success: 'File succesfuly modified', 200
 
     updateFoldersAndFiles = (folders)->
         # update all folders
         async.each folders, updateIfIsSubFolder, (err) ->
-            if err
-                res.send error: true, msg: "Error updating folders: #{err}", 500
+            if err then next err
             else
                 # update all files
                 File.all (err, files) =>
-                    if err
-                        res.send error: true, msg: "Server error occured: #{err}", 500
+                    if err then next err
                     else
                         async.each files, updateIfIsSubFolder, (err) ->
-                            if err
-                                res.send error: true, msg: "Error updating files: #{err}", 500
+                            if err then next err
                             else
                                 updateTheFolder()
 
+    Folder.byFullPath key: newRealPath, (err, sameFolders) ->
+        return next err if err
 
-    Folder.all (err, folders) =>
-        if err
-            res.send error: true, msg:  "Server error occured: #{err}", 500
+        if sameFolders.length > 0
+            res.send error: true, msg: "The name already in use", 400
         else
-            # check that the new name isn't taken
-            async.every folders, hasntTheSamePathOrIsTheSame, (available) ->
-                if not available
-                    res.send error: true, msg: "The name already in use", 400
-                else
-                    updateFoldersAndFiles folders
+            Folder.all (err, folders) ->
+                return next err if err
+                updateFoldersAndFiles folders
 
 
 # Prior to deleting target folder, it deletes its subfolders and the files
