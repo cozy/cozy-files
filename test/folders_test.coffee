@@ -321,3 +321,71 @@ describe "Folders management", ->
             client.get "files/#{@fileId}/" , (err, res, body) ->
                 res.statusCode.should.equal 404
                 done()
+
+
+    describe "Change last modification date on file operations", =>
+
+        it "When I send a request to create a folder", (done) ->
+
+            folder =
+                name: "rootfile"
+                path: ""
+            client.post "folders/", folder, (err, res, body) =>
+                done()
+
+        it "And I send a request to create a file in that folder", (done) ->
+            file =
+                name: "test"
+                path: "/rootfile"
+            @now = moment()
+            client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
+                @id = (JSON.parse body).id
+                done()
+
+        it "Then root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'rootfile'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
+
+        it "And I send a request to rename a file in that folder", (done) ->
+            file =
+                name: "new_test3"
+                path: "/rootfile"
+            @now = moment()
+            client.put "files/#{@id}", file, (err, res, body) =>
+                @err = err
+                @res = res
+                done()
+
+        it "Then root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'rootfile'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
+
+        it "And I send a request to delete a file in that folder", (done) ->
+            file =
+                name: "new_test3"
+                path: "/rootfile"
+            @now = moment()
+            client.del "files/#{@id}", (err, res, body) =>
+                done()
+
+        it "Then root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'rootfile'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
