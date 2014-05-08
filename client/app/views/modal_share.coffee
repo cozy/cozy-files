@@ -32,10 +32,10 @@ module.exports = class ModalShareView extends CozyClearanceModal
     # allow rw permissions for folder, customize message depending on type
     permissions: ->
         if @type is 'folder'
-            'r': 'perm r folder'
-            'rw': 'perm rw folder'
+            'r': t 'perm r folder'
+            'rw': t 'perm rw folder'
         else
-            'r': 'perm r file'
+            'r': t 'perm r file'
 
     # do not allow adding permissions for user who already have them by inheritance
     typeaheadFilter: (item) =>
@@ -79,8 +79,9 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 summary.append $('<a>').text t('details')
                 list = $('<ul id="inherited-share-list">').hide()
                 list.append item for item in listitems
+                console.log summary, list
                 @$('#share-list').after summary, list
-
+        console.debug @model
         # if there is a writing guest
         guestCanWrite = _.findWhere @model.get('clearance'), perm: 'rw'
         if guestCanWrite

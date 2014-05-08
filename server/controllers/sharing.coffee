@@ -1,21 +1,32 @@
 File = require '../models/file'
 Folder = require '../models/folder'
+User = require '../models/user'
 helpers = require '../helpers/sharing'
 clearance = require 'cozy-clearance'
 async = require 'async'
-jade = require 'jade'
-fs = require 'fs'
+
+localization = require '../lib/localization_manager'
 
 templatefile = require('path').join __dirname, '../views/sharemail.jade'
-mailTemplate = jade.compile fs.readFileSync templatefile, 'utf8'
+mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 
 clearanceCtl = clearance.controller
-    mailTemplate: (options) ->
+    mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
-        mailTemplate options
-    mailSubject: (options) ->
+        User.getDisplayName (err, displayName) ->
+            options.displayName = displayName or localization.t 'default user name'
+            options.localized_type = localization.t options.type
+            options.localized_link = localization.t "link #{options.type} content"
+            callback null, mailTemplate options
+
+    mailSubject: (options, callback) ->
         type = options.doc.docType.toLowerCase()
-        "Cozy-file: someone has shared a #{type} with you"
+        name = options.doc.name
+        User.getDisplayName (err, displayName) ->
+            displayName = displayName or localization.t 'default user name'
+            callback null, localization.t 'email sharing subject',
+                                displayName: displayName
+                                name: name
 
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->
@@ -29,7 +40,7 @@ module.exports.fetch = (req, res, next, id) ->
             req.doc = doc
             next()
         else
-            err = new Error('bad usage')
+            err = new Error 'bad usage'
             err.status = 400
             next err
 

@@ -1,4 +1,6 @@
+fs = require 'fs'
 americano = require 'americano-cozy'
+
 Folder = require './folder'
 CozyInstance = require './cozy_instance'
 
@@ -21,6 +23,41 @@ File.all = (params, callback) ->
 
 File.byFolder = (params, callback) ->
     File.request "byFolder", params, callback
+
+File.byFullPath = (params, callback) ->
+    File.request "byFullPath", params, callback
+
+
+# Perform all operation required to create a new file:
+# * Create document.
+# * Create a binary Document and attach file to it.
+# * Index file name for better search
+# * Remove temporary created file.
+File.createNewFile = (data, file, callback) =>
+    attachBinary = (newFile) ->
+        newFile.attachBinary file.path, {"name": "file"}, (err) ->
+            if err
+                callback new Error "Error attaching binary: #{err}"
+            else
+                index newFile
+
+    index = (newFile) ->
+        newFile.index ["name"], (err) ->
+            console.log err if err
+            unlink newFile
+
+    unlink = (newFile) ->
+       fs.unlink file.path, (err) ->
+            if err
+                callback new Error "Error removing uploaded file: #{err}"
+            else
+                callback null, newFile
+
+    File.create data, (err, newFile) =>
+        if err
+            callback new Error "Server error while creating file; #{err}"
+        else
+            attachBinary newFile
 
 File::getFullPath = ->
     @path + '/' + @name

@@ -2,21 +2,12 @@
 @import '_colors'
 
 
-/*      FONTS        */
-@font-face
-  font-family: styled
-  src: url('/fonts/maven-pro-light-300.otf')
-
-@font-face
-  font-family: main
-  src: url('/fonts/signika-regular.ttf')
-
 html, body
   height: 100%
 
 body
   font-family: styled, helvetica
-  //background-image: url('../images/Melamine-wood-004.png');
+  background-image: url('../images/background.jpg');
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
   font-family: styled, helvetica
@@ -141,17 +132,50 @@ div#affixbar
 
 /*      ITEMS           */
 table#table-items
-  margin-top: 20px
+  margin-top: 30px
 
   .unactive
     opacity: 0.5
 
+  td
+      padding: 0px 5px 0 0
+      height: 40px
+
+  td.type-column-cell
+  td.size-column-cell
+  td.date-column-cell
+      color: gray
+      padding-top: 6px
+      width: 100px
+
+  td.date-column-cell
+      width: 150px
+
+  .table-headers
+    
+    td:first-child
+      padding-left: 3px
+
+    td
+      border-top: 0
+
+    span
+      line-height: 30px
+
+    .btn
+      top: -2px
+
+    a:hover
+      color: orange
+
+
 tr.folder-row
 
-  // colors change on hover
-  color: mediumcolor
   &:hover
     color: mediumcolor-contrast
+    
+    .operations
+      display: inline
 
     .glyphicon.no-hover
       color: mediumcolor
@@ -159,25 +183,98 @@ tr.folder-row
     .file-path
       color: mediumcolor
 
+  td
+    vertical-align: middle
+
+    div
+    span
+    ul
+    li
+    a
+    i
+      vertical-align: middle
+
+  span.caption
+    padding-left: 6px
+
   // the filename
   .caption
-    font-size: 18px
+    font-size: 16px
+    font-family: main
     padding: 0
-    margin-left: 10px
+    margin-left: 0px
     margin-right: 10px
+
+  .caption:hover
+    color: orange - 10%
 
   // the toolbox - delete, rename, etc
   .operations
-    font-size: 18px
-    visibility: hidden
-    display: inline-block
+    font-size: 16px
+    display: none
+
     a
       padding-left: 5px
+      color: blue
+      
+      span:hover
+      i:hover
+        color: orange
+
+    a:hover
+      color: orange
+
+    .fa-lock
+    .fa-users
+    .fa-globe
+        padding-top: 6px
+
+  .caption-wrapper
+    display: inline
+    height: 100%
+
+  ul.tags
+    margin-bottom: 0
+    padding-top: 5px
+    padding-left: 10px
+    padding-bottom: 0
+
+    .tagit-close:hover
+      span.text-icon
+        text-color: orange
+
+    .tagit-choice
+      border: 0
+      border-radius: 0
+      background-color: blue + 90%
+      cursor: pointer
+      font-family: styled
+
+      .tagit-label
+        color: blue - 40%
+        user-select: none
+
+    .tagit-choice
+      &:hover
+        background-color: orange + 90%
+
+        .tagit-label
+          color: orange - 40%
+
+    .tagit-choice
+      &:focus
+      &:active
+        box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+
+  ul.tags:hover
+    .tagit-new
+      display: inline-block
 
   ul.tagit
     display: inline-block
     border: none
     font-size: 1.3rem
+
     .tagit-new
       border: 1px solid lightgray
       border-radius: 6px
@@ -186,18 +283,20 @@ tr.folder-row
       visibility: hidden
       input:focus
         visibility visible !important
+
+    .tagit-new
+        &:hover
+          border: 1px solid orange
+
+        &:focus
+          border: 1px solid blue
+
   &:hover .tagit-new
     visibility: visible !important
 
-  .img-folder
-    img
-      width: 20px
-      margin-right: -3px
-
-  .img-file
-    img
-      width: 20px
-      margin-right: -3px
+  i.fa
+    margin: 0 15px 0 0
+    width: 20px
 
   .icon
     font-size: 14px
@@ -209,13 +308,11 @@ tr.folder-row
       color: lightgray
 
     a:hover
-      color: mediumcolor-contrast
+      color: orange
 
     a:active
-      color: actioncolor
+      color: orange
 
-  .file-date, .file-size, .file-type
-    padding-top: 13px
 
 .visible-lg.visible-md.visible-inline
   display: inline!important
@@ -291,13 +388,6 @@ tr.folder-row
       span
         display none
 
-.table-headers
-    span
-        line-height: 30px
-
-    .btn
-        top: -2px
-
 #clearancemanager
   label
     font-weight normal
@@ -365,3 +455,12 @@ tr.folder-row
 
   input
     margin-right: 5px
+
+#affixbar
+  #crumbs
+    ul
+      margin-top: 0
+
+    li
+      a
+        margin-top: 0

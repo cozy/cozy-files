@@ -1,14 +1,19 @@
 td
-  if model.type && model.type == "folder"
-    a.img-folder
-      img(src="images/folder.png")
-  else
-    span.glyphicon.glyphicon-file.no-hover.icon
-  input.caption.file-edit-name(value=model.name)
+  span.caption
+    if model.type && model.type == "folder"
+      i.fa.fa-folder
+    else
+      i.fa.fa-file-o
+    input.caption.file-edit-name(value=model.name)
   a.btn.btn-sm.btn-cozy.file-edit-save
     | #{t("file edit save")}
   a.btn.btn-sm.btn-link.file-edit-cancel
     | #{t("file edit cancel")}
+
+  ul.tags.pull-right
+    if model.tags
+      for tag in model.tags
+        li #{tag}
 td.file-size
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}

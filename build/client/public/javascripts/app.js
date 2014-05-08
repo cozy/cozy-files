@@ -796,6 +796,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
   "copy paste link": "To give access to your contact send him/her the link below:",
@@ -808,7 +810,7 @@ module.exports = {
   "modal question file shareable": "Select share mode for this file",
   "modal shared file custom msg": "Enter email and press enter",
   "modal shared file link msg": "Send this link to let people access this file",
-  "only you can see": "Only you and the people listed below can access this",
+  "only you can see": "Only you and the people listed below can access this resource",
   "public": "Public",
   "private": "Private",
   "save": "Save",
@@ -854,22 +856,24 @@ module.exports = {
   "tooltip share": "Partager",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
-  "upload caption": "Télécharger un fichier",
-  "upload msg": "Choisir un fichier à télécharger :",
+  "upload caption": "Téléverser un fichier",
+  "upload msg": "Choisir un fichier à téléverser :",
   "upload close": "Annuler",
   "upload send": "Ajouter",
-  "upload button": "Télécharger un fichier",
+  "upload button": "Téléverser un fichier",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
   "new folder send": "Créer",
+  "new folder button": "Créer un nouveau dossier",
+  "upload folder msg": "Téléverser un dossier",
   "folder": "Dossier",
   "image": "Image",
   "document": "Document",
   "music": "Musique",
   "video": "Vidéo",
-  "Yes": "Oui",
-  "No": "Non",
+  "yes": "Oui",
+  "no": "Non",
   "name": "Nom",
   "type": "Type",
   "size": "Taille",
@@ -878,6 +882,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "enable notifications": "Activer les notifications",
+  "disable notifications": "Désactiver les notifications",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
   "cancel": "Annuler",
   "copy paste link": "Pour donner accès à votre contact envoyez lui ce lien : ",
@@ -889,7 +895,7 @@ module.exports = {
   "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
   "modal shared file custom msg": "Entrez un email et appuyez sur enter",
   "modal shared file link msg": "Envoyez ce lien pour qu'ils puissent accéder à ce dossier",
-  "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder.",
+  "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource.",
   "public": "Publique",
   "private": "Privé",
   "save": "Sauvegarder",
@@ -899,7 +905,7 @@ module.exports = {
   "send mails question": "Envoyer un email de notification à : ",
   "modal send mails": "Envoyer une notification",
   "perm": "peut ",
-  "perm r file": "télécharger ce fichier",
+  "perm r file": "consulter ce fichier",
   "perm r folder": "parcourir ce dossier",
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
@@ -962,6 +968,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
   "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",
@@ -1311,11 +1319,19 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onEditClicked = function() {
-    var width;
+    var model, width;
     width = this.$(".caption").width() + 10;
+    model = this.model.toJSON();
+    if (model["class"] == null) {
+      model["class"] = 'folder';
+    }
     this.$el.html(this.templateEdit({
-      model: this.model.toJSON()
+      model: model
     }));
+    this.tags = new TagsView({
+      el: this.$('.tags'),
+      model: this.model
+    });
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
   };
@@ -1602,18 +1618,25 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.displayChevron = function(order, type) {
     this.$('#up-name').show();
+    this.$('#up-name').addClass('unactive');
     this.$('#down-name').hide();
     this.$('#up-size').show();
+    this.$('#up-size').addClass('unactive');
     this.$('#down-size').hide();
     this.$('#up-class').show();
+    this.$('#up-class').addClass('unactive');
     this.$('#down-class').hide();
     this.$('#up-lastModification').show();
+    this.$('#up-lastModification').addClass('unactive');
     this.$('#down-lastModification').hide();
-    this.$("#" + order + "-" + type).show();
-    if (order === "up") {
-      return this.$("#" + order + "-" + type)[0].removeAttribute('disabled');
+    if (order === "down") {
+      this.$("#up-" + type).show();
+      this.$("#down-" + type).hide();
+      return this.$("#up-" + type).removeClass('unactive');
     } else {
-      return this.$("#up-" + type).hide();
+      this.$("#up-" + type).hide();
+      this.$("#down-" + type).show();
+      return this.$("#down-" + type).removeClass('unactive');
     }
   };
 
@@ -1847,18 +1870,14 @@ module.exports = FolderView = (function(_super) {
     infos = event.target.id.split('-');
     way = infos[0];
     type = infos[1];
-    this.$(".glyphicon-chevron-up").addClass('unactive');
-    this.$("#up-" + type).removeClass('unactive');
     this.displayChevron(way, type);
     this.filesCollection.type = type;
     if (this.filesCollection.order === "incr") {
       this.filesCollection.order = "decr";
-      this.filesCollection.sort();
-      return this.displayChevron('down', this.filesCollection.type);
+      return this.filesCollection.sort();
     } else {
       this.filesCollection.order = "incr";
-      this.filesCollection.sort();
-      return this.displayChevron('up', this.filesCollection.type);
+      return this.filesCollection.sort();
     }
   };
 
@@ -1902,10 +1921,10 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.onYes = function() {
+    this.$('#modal-dialog').modal('hide');
     if (this.cb) {
       this.cb(true);
     }
-    this.$('#modal-dialog').modal('hide');
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();
@@ -2009,12 +2028,12 @@ module.exports = ModalShareView = (function(_super) {
   ModalShareView.prototype.permissions = function() {
     if (this.type === 'folder') {
       return {
-        'r': 'perm r folder',
-        'rw': 'perm rw folder'
+        'r': t('perm r folder'),
+        'rw': t('perm rw folder')
       };
     } else {
       return {
-        'r': 'perm r file'
+        'r': t('perm r file')
       };
     }
   };
@@ -2076,9 +2095,11 @@ module.exports = ModalShareView = (function(_super) {
           item = listitems[_k];
           list.append(item);
         }
+        console.log(summary, list);
         this.$('#share-list').after(summary, list);
       }
     }
+    console.debug(this.model);
     guestCanWrite = _.findWhere(this.model.get('clearance'), {
       perm: 'rw'
     });
@@ -2265,7 +2286,7 @@ module.exports = TagsView = (function(_super) {
     return this;
   };
 
-  TagsView.prototype.tagAdded = function(e, ui) {
+  TagsView.prototype.tagAdded = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
       this.model.save();
@@ -2281,7 +2302,7 @@ module.exports = TagsView = (function(_super) {
     })(this));
   };
 
-  TagsView.prototype.tagRemoved = function(er, ui) {
+  TagsView.prototype.tagRemoved = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
       return this.model.save();
@@ -2344,32 +2365,30 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
-buf.push('><img src="images/folder.png"/></a><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
-buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
+buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
 {
-buf.push('<i class="fa fa-globe"></i>');
+buf.push('<span class="fa fa-globe"></span>');
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
 }
 else
 {
-buf.push('<i class="fa fa-lock"></i>');
+buf.push('<span class="fa fa-lock"></span>');
 }
-buf.push('</a></div><ul class="tags pull-right">');
+buf.push('</a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
+buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2394,45 +2413,39 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }).call(this);
 
 }
-buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell"></td>');
+buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
 }
 else
 {
-buf.push('<td><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('img-file') }, {"href":true,"target":true}));
-buf.push('>');
-if ( model.class == "music")
-{
-buf.push('<img src="images/music.png"/>');
-}
-else
-{
-buf.push('<img src="images/file.png"/>');
-}
-buf.push('</a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a class="file-edit"><span');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
-buf.push('></span></a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
+buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
 {
-buf.push('<i class="fa fa-globe"></i>');
+buf.push('<span class="fa fa-globe"></span>');
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<i class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</i>');
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
 }
 else
 {
-buf.push('<i class="fa fa-lock"></i>');
+buf.push('<span class="fa fa-lock"></span>');
 }
-buf.push('</a></div><ul class="tags pull-right">');
+buf.push('</a><a class="file-edit"><span');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
+buf.push('></span></a><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2459,10 +2472,10 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }
 buf.push('</ul></td><td class="file-size size-column-cell">');
  options = {base: 2}
-buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
 {
-buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
 }
 buf.push('</td>');
 }
@@ -2477,18 +2490,43 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<td>');
+buf.push('<td><span class="caption">');
 if ( model.type && model.type == "folder")
 {
-buf.push('<a class="img-folder"><img src="images/folder.png"/></a>');
+buf.push('<i class="fa fa-folder"></i>');
 }
 else
 {
-buf.push('<span class="glyphicon glyphicon-file no-hover icon"></span>');
+buf.push('<i class="fa fa-file-o"></i>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td class="file-size">');
+buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a><ul class="tags pull-right">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul></td><td class="file-size">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
@@ -2622,7 +2660,19 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="crumbs"></div><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>Name</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>Size</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>Type</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>Date</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
+buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
+var __val__ = t('name')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');
+var __val__ = t('size')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>');
+var __val__ = t('type')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>');
+var __val__ = t('date')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
@@ -2655,8 +2705,8 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div class="progress progress-striped active"><div');
-buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-success') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
+buf.push('<div class="progress active"><div');
+buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-info') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
 buf.push('></div></div>');
 }
 return buf.join("");

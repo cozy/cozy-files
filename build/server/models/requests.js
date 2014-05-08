@@ -11,6 +11,9 @@ module.exports = {
     byFolder: function(doc) {
       return emit(doc.path, doc);
     },
+    byFullPath: function(doc) {
+      return emit(doc.path + '/' + doc.name, doc);
+    },
     byTag: function(doc) {
       var tag, _i, _len, _ref, _results;
       _ref = doc.tags || [];
@@ -29,6 +32,9 @@ module.exports = {
     byFolder: function(doc) {
       return emit(doc.path, doc);
     },
+    byFullPath: function(doc) {
+      return emit(doc.path + '/' + doc.name, doc);
+    },
     byTag: function(doc) {
       var tag, _i, _len, _ref, _results;
       _ref = doc.tags || [];
@@ -41,6 +47,11 @@ module.exports = {
     }
   },
   contact: {
+    all: function(doc) {
+      return emit(doc._id, doc);
+    }
+  },
+  user: {
     all: function(doc) {
       return emit(doc._id, doc);
     }

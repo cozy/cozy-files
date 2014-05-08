@@ -19,6 +19,20 @@ Folder.all = (params, callback) ->
 Folder.byFolder = (params, callback) ->
     Folder.request "byFolder", params, callback
 
+Folder.byFullPath = (params, callback) ->
+    Folder.request "byFullPath", params, callback
+
+# New folder Creation process:
+# * Create new folder.
+# * Index the folder name.
+Folder.createNewFolder = (folder, callback) ->
+    Folder.create folder, (err, newFolder) ->
+        if err then callback err
+        else
+            newFolder.index ["name"], (err) ->
+                console.log err if err
+                callback null, newFolder
+
 Folder::getFullPath = ->
     @path + '/' + @name
 

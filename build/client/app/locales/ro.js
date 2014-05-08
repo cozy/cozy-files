@@ -53,6 +53,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
   "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",

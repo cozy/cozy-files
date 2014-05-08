@@ -58,24 +58,32 @@ module.exports = class FolderView extends BaseView
         # add breadcrumbs view
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
-        @displayChevron('up', 'name')
+        @displayChevron 'up', 'name'
 
 
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
         @$('#up-name').show()
+        @$('#up-name').addClass 'unactive'
         @$('#down-name').hide()
         @$('#up-size').show()
+        @$('#up-size').addClass 'unactive'
         @$('#down-size').hide()
         @$('#up-class').show()
+        @$('#up-class').addClass 'unactive'
         @$('#down-class').hide()
         @$('#up-lastModification').show()
+        @$('#up-lastModification').addClass 'unactive'
         @$('#down-lastModification').hide()
-        @$("##{order}-#{type}").show()
-        if order is "up"
-            @$("##{order}-#{type}")[0].removeAttribute('disabled')
+
+        if order is "down"
+            @$("#up-#{type}").show()
+            @$("#down-#{type}").hide()
+            @$("#up-#{type}").removeClass 'unactive'
         else
             @$("#up-#{type}").hide()
+            @$("#down-#{type}").show()
+            @$("#down-#{type}").removeClass 'unactive'
 
     # Display and re-render the contents of the folder
     changeActiveFolder: (folder) ->
@@ -273,16 +281,12 @@ module.exports = class FolderView extends BaseView
         way = infos[0]
         type = infos[1]
 
-        @$(".glyphicon-chevron-up").addClass 'unactive'
-        @$("#up-#{type}").removeClass 'unactive'
         @displayChevron way, type
         @filesCollection.type = type
 
         if @filesCollection.order is "incr"
             @filesCollection.order = "decr"
             @filesCollection.sort()
-            @displayChevron 'down', @filesCollection.type
         else
             @filesCollection.order = "incr"
             @filesCollection.sort()
-            @displayChevron 'up', @filesCollection.type

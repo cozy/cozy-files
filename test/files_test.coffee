@@ -1,8 +1,10 @@
-should = require('should')
-americano = require('americano')
+should = require 'should'
+americano = require 'americano'
+moment = require 'moment'
+helpers = require './helpers'
+
 Client = require('request-json').JsonClient
 client = new Client "http://localhost:8888/"
-helpers = require './helpers'
 
 describe "Files management", ->
 
@@ -20,6 +22,7 @@ describe "Files management", ->
                     path: ""
                 client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
                     @res = res
+                    @body = body
                     done()
 
             it "Then error should not exist", ->
@@ -28,12 +31,24 @@ describe "Files management", ->
             it "And 200 should be returned as response code", ->
                 @res.statusCode.should.be.equal 200
 
+            it "And creationDate and modificationDate should be set", ->
+                now = moment()
+                body = JSON.parse @body
+
+                should.exist body.creationDate
+                should.exist body.lastModification
+                body.creationDate.should.be.equal body.lastModification
+                creationDate = moment(body.creationDate)
+                creationDate.date().should.be.equal now.date()
+                creationDate.month().should.be.equal now.month()
+
         describe "Try to create the same file", ->
-            it "When I send a request to create a folder", (done) ->
+            it "When I send a request to create a file", (done) ->
                 file =
                     name: "test"
                     path: ""
-                client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
+                path = './test/test.txt'
+                client.sendFile 'files/', path, file, (err, res, body) =>
                     @err = err
                     @res = res
                     @body = body
@@ -85,6 +100,7 @@ describe "Files management", ->
                 done()
 
         it "And I send a request to rename the file", (done) ->
+            @timeout 3000
             file =
                 name: "new_test3"
                 path: ""
@@ -128,6 +144,7 @@ describe "Files management", ->
                 done()
 
         it "And I send a request to remove the file", (done) ->
+            @timeout 3000
             client.del "files/#{@id}", (err, res, body) =>
                 @err = err
                 @res = res

@@ -1,7 +1,10 @@
-http = require('http')
-Client = require('request-json').JsonClient
 americano = require 'americano'
 path = require 'path'
+http = require('http')
+Client = require('request-json').JsonClient
+
+initialize = require '../server/initialize'
+
 clientDS = new Client 'http://localhost:9101'
 
 
@@ -23,18 +26,17 @@ Folder = require helpers.prefix + '/server/models/folder'
 # usage : before helpers.init port
 _init = (ctx, port, done) ->
     params = name: 'files', port: port, root: helpers.prefix
-    americano.start params, (app, server) =>
-        app.server = server
-        ctx.app = app
-        done()
+    initialize.beforeStart ->
+        americano.start params, (app, server) =>
+            app.server = server
+            ctx.app = app
+            done()
 
 # This function remove everythin from the db
 _cleanDb = helpers.cleanDb = (callback) ->
     Folder.destroyAll (err) ->
-        console.log err
-        return callback err if err
-        File.destroyAll (err) ->
-            return callback err
+        if err then callback err
+        else File.destroyAll callback
 
 helpers.setup = (port) ->
     (done) ->
