@@ -32,6 +32,18 @@ describe "Folders management", ->
             it "And 200 should be returned as response code", ->
                 @res.statusCode.should.be.equal 200
 
+            it "And creationDate and modificationDate should be set", ->
+                now = moment()
+                body = JSON.parse @body
+
+                should.exist body.creationDate
+                should.exist body.lastModification
+                body.creationDate.should.be.equal body.lastModification
+                creationDate = moment body.creationDate
+                creationDate.date().should.be.equal now.date()
+                creationDate.month().should.be.equal now.month()
+
+
         describe "Try to create the same folder", ->
             it "When I send a request to create a folder", (done) ->
                 folder =
