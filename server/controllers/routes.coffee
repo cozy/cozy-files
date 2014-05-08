@@ -20,15 +20,18 @@ module.exports =
         get: files.downloadAttachment
 
 
+    'folderid':
+        param: folders.fetch
+
     'folders':
         post: folders.create
-    'folder/tree/:id':
+    'folder/tree/:folderid':
         get: folders.tree
-    'folders/:id':
+    'folders/:folderid':
         get: folders.find
         put: folders.modify
         delete: folders.destroy
-    'folders/:id/zip/:name':
+    'folders/:folderid/zip/:name':
         get: folders.zip
 
     'folders/files':
@@ -61,7 +64,7 @@ module.exports =
         post: files.publicCreate
     'public/files/:fileid':
         get: files.publicDownloadAttachment
-    'public/folders/:id.zip':
+    'public/folders/:folderid.zip':
         get: folders.publicZip
-    'public/folders/:id':
+    'public/folders/:folderid':
         get: folders.publicList

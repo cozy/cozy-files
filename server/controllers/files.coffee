@@ -42,7 +42,6 @@ updateParentModifDate = (file, callback) ->
             callback()
 
 
-
 getFileClass = (file) ->
     switch file.type.split('/')[0]
         when 'image' then fileClass = "image"
@@ -59,7 +58,7 @@ module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
         if err or not file or file.length is 0
             if err
-                next new Error "File not found"
+                next err
             else
                 res.send error:true, msg: 'File not found', 404
         else
