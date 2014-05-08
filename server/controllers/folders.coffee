@@ -59,6 +59,7 @@ getFolderPath = (id, cb) ->
 # * Tag folder with parent folder tags
 # * Create Folder and index its name
 # * Send notification if required
+# TODO update parent folder date
 module.exports.create = (req, res) ->
     folder = req.body
     if (not folder.name) or (folder.name is "")
@@ -98,27 +99,14 @@ module.exports.find = (req, res) ->
 
 
 module.exports.tree = (req, res) ->
-    folder = req.folder
-    Folder.all (err, folders) =>
-
-        isParent = (folder, cb) ->
-            if (folderChild.path+"/").indexOf(folder.path + "/" + folder.name + "/") is 0
-                cb null, [folder]
-            else
-                cb null, []
-
-        # check that the name is not already taken
-        async.concat folders, isParent, (err, parents) ->
-            if err
-                res.send error: true, msg: "Couldn't find the tree: : #{err}", 500
-            else
-                parents = parents.sort (a, b) ->
-                    if a.path + "/" + a.name < b.path + "/" + b.name then return -1
-                    else return 1
-
-                res.send parents, 200
+    folderChild = req.folder
+    Folder.getParents (err, folders) =>
+        if err then next err
+        else
+            res.send parents, 200
 
 
+# TODO update parent folder date
 module.exports.modify = (req, res) ->
     folder = req.folder
 
@@ -205,9 +193,12 @@ module.exports.modify = (req, res) ->
                     updateFoldersAndFiles folders
 
 
+# Prior to deleting target folder, it deletes its subfolders and the files
+# listed in the folder.
+# TODO: change parent modification date
 module.exports.destroy = (req, res) ->
-    folder = req.folder
-    directory = currentFolder.path + '/' + currentFolder.name
+    currentFolder = req.folder
+    directory = "#{currentFolder.path}/#{currentFolder.name}"
 
     destroyIfIsSubdirectory = (file, cb) ->
         if (file.path.indexOf(directory) is 0)
@@ -222,59 +213,58 @@ module.exports.destroy = (req, res) ->
         else
             cb null
 
-    Folder.all (err, folders) =>
-        if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
-        else
-            # Remove folders in the current folder
-            async.each folders, destroyIfIsSubdirectory, (err) ->
-                if err
-                    res.send error: true, msg: "Server error occured while deleting subdirectories: #{err}", 500
-                else
+    destroySubFolders = (callback) ->
+        Folder.all (err, folders) ->
+            if err then next err
+            else
+                # Remove folders in the current folder
+                async.each folders, destroyIfIsSubdirectory, (err) ->
+                    if err then next err
+                    else
+                        callback()
 
-                    File.all (err, files) =>
-                        if err
-                            res.send error: true, msg:  "Server error occured: #{err}", 500
-                        else
-                            # Remove files in this directory
-                            async.each files, destroyIfIsSubdirectory, (err) ->
-                                if err
-                                    res.send error: true, msg: "Server error occured when deleting sub files: #{err}", 500
-                                else
-                                     # Remove the current folder
-                                    currentFolder.destroy (err) ->
-                                        if err
-                                            res.send error: "Cannot destroy folder: #{err}", 500
-                                        else
-                                            res.send success: "Folder succesfuly deleted: #{err}", 200
+    destroySubFiles = (callback) ->
+        File.all (err, files) =>
+            if err then next err
+            else
+                # Remove files in this directory
+                async.each files, destroyIfIsSubdirectory, (err) ->
+                    if err then next err
+                    else
+                        callback()
+
+    destroySubFolders ->
+        # Remove the current folder
+        destroySubFiles ->
+            currentFolder.destroy (err) ->
+                if err then next err
+                else
+                    res.send success: "Folder succesfuly deleted: #{directory}"
+
 
 module.exports.findFiles = (req, res) ->
     getFolderPath req.body.id, (err, key) ->
-        if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
+        if err then next err
         else
             File.byFolder key: key ,(err, files) ->
-                if err
-                    res.send error: true, msg: "Server error occured: #{err}", 500
+                if err then next err
                 else
                     res.send files, 200
 
+
 module.exports.findFolders = (req, res) ->
     getFolderPath req.body.id, (err, key) ->
-        if err
-            res.send error: true, msg: "Server error occured: #{err}", 500
+        if err then next err
         else
             Folder.byFolder key: key ,(err, files) ->
-                if err
-                    res.send error: true, msg: "Server error occured: #{err}", 500
+                if err then next err
                 else
                     res.send files, 200
 
 
 module.exports.search = (req, res) ->
     sendResults = (err, files) ->
-        if err
-            res.send error: true, msg: err, 500
+        if err then next err
         else
             res.send files
 
@@ -283,13 +273,16 @@ module.exports.search = (req, res) ->
 
     if query.indexOf('tag:') isnt -1
         parts = query.split()
-        parts = parts.filter (e) -> e.indexOf 'tag:' isnt -1
+        parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
         tag = parts[0].split('tag:')[1]
         Folder.request 'byTag', key: tag, sendResults
     else
         Folder.search "*#{query}*", sendResults
 
 
+
+# List files contained in the folder and return them as a zip archive.
+# TODO: add subfolders
 module.exports.zip = (req, res) ->
     folder = req.folder
     archive = archiver('zip')
@@ -323,10 +316,8 @@ module.exports.zip = (req, res) ->
             zipName = folder.name?.replace(/\W/g, '')
 
             # check that the name is not already taken
-            selectedFiles = []
-            for file in files
-                if ("#{file.path}/").indexOf("#{key}/") is 0
-                    selectedFiles.push file
+            selectedFiles = files.filter (file) ->
+                "#{file.path}/".indexOf("#{key}/") is 0
 
             makeZip zipName, selectedFiles
 

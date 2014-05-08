@@ -27,14 +27,11 @@ Folder.byFullPath = (params, callback) ->
 # * Index the folder name.
 Folder.createNewFolder = (folder, callback) ->
     Folder.create folder, (err, newFolder) ->
-        if err
-            callback new Error "Server error while creating file: #{err}"
+        if err then callback err
         else
             newFolder.index ["name"], (err) ->
-                if err
-                    callback new Error "Couldn't index: : #{err}"
-                else
-                    callback null, newFolder
+                console.log err if err
+                callback null, newFolder
 
 Folder::getFullPath = ->
     @path + '/' + @name
