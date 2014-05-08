@@ -1921,10 +1921,10 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.onYes = function() {
+    this.$('#modal-dialog').modal('hide');
     if (this.cb) {
       this.cb(true);
     }
-    this.$('#modal-dialog').modal('hide');
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();
@@ -2705,8 +2705,8 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div class="progress progress-striped active"><div');
-buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-success') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
+buf.push('<div class="progress active"><div');
+buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-info') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
 buf.push('></div></div>');
 }
 return buf.join("");

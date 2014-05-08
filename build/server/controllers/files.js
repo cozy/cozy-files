@@ -19,7 +19,7 @@ log = require('printit')({
   prefix: 'files'
 });
 
-processAttachement = function(req, res, download) {
+processAttachement = function(req, res, next, download) {
   var contentHeader, file, id, stream;
   id = req.params.id;
   file = req.file;
@@ -106,7 +106,7 @@ module.exports.find = function(req, res) {
   return res.send(req.file);
 };
 
-module.exports.all = function(req, res) {
+module.exports.all = function(req, res, next) {
   return File.all(function(err, files) {
     if (err) {
       return next(err);
@@ -185,7 +185,7 @@ module.exports.create = function(req, res, next) {
   }
 };
 
-module.exports.modify = function(req, res) {
+module.exports.modify = function(req, res, next) {
   var body, file, fullPath, isPublic, newName, newPath, previousName, tags, _ref, _ref1;
   log.info("File modification of " + req.file.name + "...");
   file = req.file;
@@ -228,13 +228,12 @@ module.exports.modify = function(req, res) {
         }
         modificationSuccess = function(err) {
           if (err) {
-            return next(new Error("Error indexing: " + err));
-          } else {
-            log.info(("File name changed from " + previousName + " ") + ("to " + newName));
-            return res.send({
-              success: 'File successfully modified'
-            });
+            log.raw(err);
           }
+          log.info(("File name changed from " + previousName + " ") + ("to " + newName));
+          return res.send({
+            success: 'File successfully modified'
+          });
         };
         if (sameFiles.length > 0) {
           log.info("No modification: Name " + newName + " already exists.");
@@ -269,7 +268,7 @@ module.exports.modify = function(req, res) {
   }
 };
 
-module.exports.destroy = function(req, res) {
+module.exports.destroy = function(req, res, next) {
   var file;
   file = req.file;
   return file.removeBinary("file", (function(_this) {
@@ -298,15 +297,15 @@ module.exports.destroy = function(req, res) {
   })(this));
 };
 
-module.exports.getAttachment = function(req, res) {
-  return processAttachement(req, res, false);
+module.exports.getAttachment = function(req, res, next) {
+  return processAttachement(req, res, next, false);
 };
 
-module.exports.downloadAttachment = function(req, res) {
-  return processAttachement(req, res, true);
+module.exports.downloadAttachment = function(req, res, next) {
+  return processAttachement(req, res, next, true);
 };
 
-module.exports.publicDownloadAttachment = function(req, res) {
+module.exports.publicDownloadAttachment = function(req, res, next) {
   return sharing.checkClearance(req.file, req, function(authorized) {
     if (!authorized) {
       return res.send(404);

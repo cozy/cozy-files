@@ -35,6 +35,13 @@ module.exports = {
   'folder/tree/:folderid': {
     get: folders.tree
   },
+  'folders/files': {
+    post: folders.findFiles
+  },
+  'folders/folders': {
+    get: folders.allFolders,
+    post: folders.findFolders
+  },
   'folders/:folderid': {
     get: folders.find,
     put: folders.modify,
@@ -42,12 +49,6 @@ module.exports = {
   },
   'folders/:folderid/zip/:name': {
     get: folders.zip
-  },
-  'folders/files': {
-    post: folders.findFiles
-  },
-  'folders/folders': {
-    post: folders.findFolders
   },
   'search/folders': {
     post: folders.search

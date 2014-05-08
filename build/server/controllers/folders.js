@@ -94,7 +94,7 @@ getFolderPath = function(id, cb) {
   }
 };
 
-module.exports.create = function(req, res) {
+module.exports.create = function(req, res, next) {
   var folder;
   folder = req.body;
   if ((!folder.name) || (folder.name === "")) {
@@ -153,11 +153,11 @@ module.exports.create = function(req, res) {
   }
 };
 
-module.exports.find = function(req, res) {
+module.exports.find = function(req, res, next) {
   return res.send(req.folder);
 };
 
-module.exports.tree = function(req, res) {
+module.exports.tree = function(req, res, next) {
   var folderChild;
   folderChild = req.folder;
   return Folder.getParents((function(_this) {
@@ -171,7 +171,7 @@ module.exports.tree = function(req, res) {
   })(this));
 };
 
-module.exports.modify = function(req, res) {
+module.exports.modify = function(req, res, next) {
   var folderToModify, isPublic, newName, newPath, newRealPath, newTags, oldPath, oldRealPath, updateFoldersAndFiles, updateIfIsSubFolder, updateTheFolder;
   folderToModify = req.folder;
   if ((req.body.name == null) && (req.body["public"] == null)) {
@@ -288,7 +288,7 @@ module.exports.modify = function(req, res) {
   });
 };
 
-module.exports.destroy = function(req, res) {
+module.exports.destroy = function(req, res, next) {
   var currentFolder, destroyIfIsSubdirectory, destroySubFiles, destroySubFolders, directory;
   currentFolder = req.folder;
   directory = "" + currentFolder.path + "/" + currentFolder.name;
@@ -361,7 +361,7 @@ module.exports.destroy = function(req, res) {
   });
 };
 
-module.exports.findFiles = function(req, res) {
+module.exports.findFiles = function(req, res, next) {
   return getFolderPath(req.body.id, function(err, key) {
     if (err) {
       return next(err);
@@ -379,7 +379,17 @@ module.exports.findFiles = function(req, res) {
   });
 };
 
-module.exports.findFolders = function(req, res) {
+module.exports.allFolders = function(req, res, next) {
+  return Folder.all(function(err, folders) {
+    if (err) {
+      return next(err);
+    } else {
+      return res.send(folders);
+    }
+  });
+};
+
+module.exports.findFolders = function(req, res, next) {
   return getFolderPath(req.body.id, function(err, key) {
     if (err) {
       return next(err);
@@ -397,7 +407,7 @@ module.exports.findFolders = function(req, res) {
   });
 };
 
-module.exports.search = function(req, res) {
+module.exports.search = function(req, res, next) {
   var parts, query, sendResults, tag;
   sendResults = function(err, files) {
     if (err) {
@@ -422,7 +432,7 @@ module.exports.search = function(req, res) {
   }
 };
 
-module.exports.zip = function(req, res) {
+module.exports.zip = function(req, res, next) {
   var addToArchive, archive, folder, key, makeZip;
   folder = req.folder;
   archive = archiver('zip');
@@ -478,7 +488,7 @@ module.exports.zip = function(req, res) {
   });
 };
 
-module.exports.publicList = function(req, res) {
+module.exports.publicList = function(req, res, next) {
   var errortemplate, folder;
   folder = req.folder;
   errortemplate = function(err) {
@@ -565,7 +575,7 @@ module.exports.publicList = function(req, res) {
   });
 };
 
-module.exports.publicZip = function(req, res) {
+module.exports.publicZip = function(req, res, next) {
   var errortemplate;
   errortemplate = function(err) {
     return res.send(err.stack || err);
