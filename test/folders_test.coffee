@@ -1,8 +1,11 @@
-should = require('should')
-americano = require('americano')
+should = require 'should'
+americano = require 'americano'
+moment = require 'moment'
 Client = require('request-json').JsonClient
-client = new Client "http://localhost:8888/"
+
 helpers = require './helpers'
+
+client = new Client "http://localhost:8888/"
 
 
 describe "Folders management", ->
@@ -18,13 +21,17 @@ describe "Folders management", ->
         describe "Create a new folder", ->
             it "When I send a request to create a folder", (done) ->
                 folder =
-                    name: "test"
-                    path: "/root"
+                    name: "root"
+                    path: ""
                 client.post "folders/", folder, (err, res, body) =>
-                    @err = err
-                    @res = res
-                    @body = body
-                    done()
+                    folder =
+                        name: "test"
+                        path: "/root"
+                    client.post "folders/", folder, (err, res, body) =>
+                        @err = err
+                        @res = res
+                        @body = body
+                        done()
 
             it "Then error should not exist", ->
                 should.not.exist @err
@@ -34,7 +41,7 @@ describe "Folders management", ->
 
             it "And creationDate and modificationDate should be set", ->
                 now = moment()
-                body = JSON.parse @body
+                body = @body
 
                 should.exist body.creationDate
                 should.exist body.lastModification
@@ -64,6 +71,7 @@ describe "Folders management", ->
             folder =
                 name: "test2"
                 path: "/root"
+            @now = moment()
             client.post "folders/", folder, (err, res, body) =>
                 @id = body.id
                 done()
@@ -85,6 +93,15 @@ describe "Folders management", ->
             @body.name.should.be.equal "test2"
             @body.path.should.be.equal "/root"
 
+        it "And root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'root'
+                    folder = folders.pop()
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
+
 
     describe "Rename folder", =>
 
@@ -92,6 +109,7 @@ describe "Folders management", ->
             folder =
                 name: "test_folder"
                 path: "/root"
+            @now = moment()
             client.post "folders/", folder, (err, res, body) =>
                 @id = body.id
                 done()
@@ -129,23 +147,31 @@ describe "Folders management", ->
             @body.name.should.be.equal "test_new_folder"
             @body.path.should.be.equal "/root"
 
+        it "And root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'root'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
+
 
     describe "Find folders in a specific folder", =>
 
-        it "When I send a request to create a root folder", (done) ->
-            folder =
-                name: "root"
-                path: ""
-            client.post "folders/", folder, (err, res, body) =>
-                @id = body.id
-                done()
+        it "When I send a request to get the root folder", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'root'
+                    folder = folders.pop()
+                @id = folder.id
 
-   	    it "And I send a request to get a folder", (done) ->
-            client.post "folders/folders", {id: @id}, (err, res, body) =>
-                @err = err
-                @res = res
-                @body = body
-                done()
+                client.post "folders/folders", id: @id, (err, res, body) =>
+                    @err = err
+                    @res = res
+                    @body = body
+                    done()
 
         it "Then error should not exist", ->
             should.not.exist @err
@@ -230,6 +256,14 @@ describe "Folders management", ->
                 @testId = body.id
                 done()
 
+        it "And I send a request to create a second sub-folder", (done) ->
+            folder =
+                name: "test4"
+                path: "/root2"
+            client.post "folders/", folder, (err, res, body) =>
+                @testSubId = body.id
+                done()
+
         it "And I send a request to create a sub-file", (done) ->
             file =
                 name: "file"
@@ -240,7 +274,27 @@ describe "Folders management", ->
                 done()
 
 
-   	    it "And I send a request to remove the folder", (done) ->
+   	    it "And I send a request to remove a subfolder", (done) ->
+            @now = moment()
+            client.del "folders/#{@testSubId}/", (err, res, body) =>
+                @err = err
+                @res = res
+                @body = body
+                done()
+
+
+        it "Then root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and folder.name isnt 'root2'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
+
+
+   	    it "When I send a request to remove the root folder", (done) ->
             client.del "folders/#{@rootId}/", (err, res, body) =>
                 @err = err
                 @res = res
