@@ -88,7 +88,7 @@ module.exports.fetch = function(req, res, next, id) {
   }, function(err, file) {
     if (err || !file || file.length === 0) {
       if (err) {
-        return next(new Error("File not found"));
+        return next(err);
       } else {
         return res.send({
           error: true,

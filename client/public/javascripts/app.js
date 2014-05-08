@@ -2384,11 +2384,11 @@ buf.push('<span class="fa fa-lock"></span>');
 }
 buf.push('</a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-edit"><a');
-buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('></a></span></a><a');
+buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
+buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
