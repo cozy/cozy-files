@@ -1212,11 +1212,13 @@ module.exports = Router = (function(_super) {
 });
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
-var BaseView, BreadcrumbsView,
+var BaseView, BreadcrumbsView, ModalShareView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 BaseView = require('../lib/base_view');
+
+ModalShareView = require('./modal_share');
 
 module.exports = BreadcrumbsView = (function(_super) {
   __extends(BreadcrumbsView, _super);
@@ -1224,6 +1226,10 @@ module.exports = BreadcrumbsView = (function(_super) {
   BreadcrumbsView.prototype.itemview = require('./templates/breadcrumbs_element');
 
   BreadcrumbsView.prototype.tagName = "ul";
+
+  BreadcrumbsView.prototype.events = {
+    'click .share-state': 'onShareClicked'
+  };
 
   function BreadcrumbsView(collection) {
     this.collection = collection;
@@ -1236,8 +1242,20 @@ module.exports = BreadcrumbsView = (function(_super) {
     return this.listenTo(this.collection, "remove", this.render);
   };
 
+  BreadcrumbsView.prototype.onShareClicked = function() {
+    var lastModel;
+    if (!(this.collection.length > 1)) {
+      return;
+    }
+    lastModel = this.collection.at(this.collection.length - 1);
+    this.listenTo(lastModel, 'change', this.render);
+    return new ModalShareView({
+      model: lastModel
+    });
+  };
+
   BreadcrumbsView.prototype.render = function() {
-    var folder, _i, _len, _ref;
+    var clearance, folder, shareState, _i, _len, _ref;
     this.$el.html("");
     _ref = this.collection.models;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1245,6 +1263,18 @@ module.exports = BreadcrumbsView = (function(_super) {
       this.$el.append(this.itemview({
         model: folder
       }));
+    }
+    if (this.collection.length > 1) {
+      shareState = $('<li class="share-state"></li>');
+      clearance = folder.get('clearance');
+      if (clearance === 'public') {
+        shareState.append($('<span class="fa fa-globe"></span>'));
+      } else if (clearance && clearance.length > 0) {
+        shareState.append($("<span class='fa fa-users'>" + ("" + clearance.length + "</span>")));
+      } else {
+        shareState.append($('<span class="fa fa-lock"></span>'));
+      }
+      this.$el.append(shareState);
     }
     return this;
   };
@@ -2036,12 +2066,12 @@ module.exports = ModalShareView = (function(_super) {
   ModalShareView.prototype.permissions = function() {
     if (this.type === 'folder') {
       return {
-        'r': t('perm r folder'),
-        'rw': t('perm rw folder')
+        'r': 'perm r folder',
+        'rw': 'perm rw folder'
       };
     } else {
       return {
-        'r': t('perm r file')
+        'r': 'perm r file'
       };
     }
   };

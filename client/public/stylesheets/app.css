@@ -2353,6 +2353,14 @@ a:focus,
   background-color: #fe8800;
   border-color: #fe8800;
 }
+.btn.btn-cozy.toggled {
+  background-color: #008af6;
+  -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+}
+.btn.btn-cozy.toggled:hover {
+  background-color: #cb6d00;
+}
 .btn.btn-cozy-contrast {
   background-color: #5c5;
   border-color: #5c5;
@@ -2707,6 +2715,20 @@ tr.folder-row:hover .operations a:active {
 #crumbs ul li:last-child a:after {
   display: none;
 }
+#crumbs ul li.share-state {
+  margin-left: 20px;
+}
+#crumbs ul li.share-state span {
+  height: 35px;
+  display: inline-block;
+  line-height: 35px;
+  color: #000;
+  font-size: 18px;
+}
+#crumbs ul li.share-state span:hover {
+  color: #fe8800;
+  cursor: pointer;
+}
 .table .tbody .td span {
   display: none;
 }
@@ -2778,7 +2800,10 @@ tr.folder-row:hover .operations a:active {
 #table-items .folder-row td {
   padding-left: 0;
 }
-.table-headers .date-column-cell {
+#table-items .table-headers .date-column-cell,
+#table-items .table-headers .size-column-cell,
+#table-items .table-headers .type-column-cell {
+  padding-left: 0;
   text-align: left;
 }
 @media (max-width: 480px) {

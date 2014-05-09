@@ -32,10 +32,10 @@ module.exports = class ModalShareView extends CozyClearanceModal
     # allow rw permissions for folder, customize message depending on type
     permissions: ->
         if @type is 'folder'
-            'r': t 'perm r folder'
-            'rw': t 'perm rw folder'
+            'r': 'perm r folder'
+            'rw': 'perm rw folder'
         else
-            'r': t 'perm r file'
+            'r': 'perm r file'
 
     # do not allow adding permissions for user who already have them by inheritance
     typeaheadFilter: (item) =>

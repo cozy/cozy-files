@@ -76,6 +76,8 @@ module.exports =
 
     "enable notifications": "Activer les notifications"
     "disable notifications": "Désactiver les notifications"
+    "notifications enabled": "Notifications activées"
+    "notifications disabled": "Notifications désactivées"
 
     "open folder": "Ouvrir le dossier"
     "download file": "Consulter le fichier"
