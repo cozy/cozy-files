@@ -2698,6 +2698,20 @@ tr.folder-row:hover .operations a:active {
 #crumbs ul li:last-child a:after {
   display: none;
 }
+#crumbs ul li.share-state {
+  margin-left: 20px;
+}
+#crumbs ul li.share-state span {
+  height: 35px;
+  display: inline-block;
+  line-height: 35px;
+  color: #000;
+  font-size: 18px;
+}
+#crumbs ul li.share-state span:hover {
+  color: #fe8800;
+  cursor: pointer;
+}
 .table .tbody .td span {
   display: none;
 }
