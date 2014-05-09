@@ -2426,6 +2426,12 @@ div#affixbar img {
   height: 20px;
   color: #c60;
 }
+div#affixbar #crumbs ul {
+  margin-top: 0;
+}
+div#affixbar #crumbs li a {
+  margin-top: 0;
+}
 .affix-top {
   color: #34a6ff;
 }
@@ -2462,8 +2468,8 @@ table#table-items td.date-column-cell {
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 165px;
-  text-align: center;
+  width: 190px;
+  text-align: left;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
@@ -2545,6 +2551,7 @@ tr.folder-row ul.tags {
   padding-top: 5px;
   padding-left: 10px;
   padding-bottom: 0;
+  list-style-type: none;
 }
 tr.folder-row ul.tags .tagit-close:hover span.text-icon {
   text-color: #fe8800;
@@ -2765,12 +2772,6 @@ tr.folder-row:hover .operations a:active {
 }
 .notifs-label input {
   margin-right: 5px;
-}
-#affixbar #crumbs ul {
-  margin-top: 0;
-}
-#affixbar #crumbs li a {
-  margin-top: 0;
 }
 @media (max-width: 480px) {
   body {
