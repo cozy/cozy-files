@@ -7232,6 +7232,7 @@ module.exports = CozyClearanceModal = (function(_super) {
       },
       success: (function(_this) {
         return function(data) {
+          _this.model.trigger('change');
           if (!sendmail) {
             return _this.$el.modal('hide');
           } else {
