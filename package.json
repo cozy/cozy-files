@@ -67,6 +67,9 @@
     },
     "Contact": {
       "description": "To easily find your contact when sharing files & folders."
+    },
+    "User": {
+      "description": "Need information for the from part of email sent."
     }
   }
 }
