@@ -798,6 +798,8 @@ module.exports = {
   "B": "B",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
+  "notifications enabled": "Notifications enabled",
+  "notifications disabled": "Notifications disabled",
   "open folder": "Open the folder",
   "download file": "View the file",
   "also have access": "These people also have access, because they have access to a parent folder",
@@ -886,6 +888,8 @@ module.exports = {
   "B": "o",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
+  "notifications enabled": "Notifications activées",
+  "notifications disabled": "Notifications désactivées",
   "open folder": "Ouvrir le dossier",
   "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
@@ -2528,7 +2532,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<td><span class="caption">');
+buf.push('<td><span class="caption caption-edit">');
 if ( model.type && model.type == "folder")
 {
 buf.push('<i class="fa fa-folder"></i>');
@@ -2539,32 +2543,7 @@ buf.push('<i class="fa fa-file-o"></i>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a><ul class="tags pull-right">');
-if ( model.tags)
-{
-// iterate model.tags
-;(function(){
-  if ('number' == typeof model.tags.length) {
-
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  }
-}).call(this);
-
-}
-buf.push('</ul></td><td class="file-size">');
+buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td class="file-size">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
@@ -2722,7 +2701,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search" class="pull-right"/><div id="upload-buttons" class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
+buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search" class="pull-right"/></p><p class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
 var __val__ = t('name')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');

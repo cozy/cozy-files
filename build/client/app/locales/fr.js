@@ -54,6 +54,8 @@ module.exports = {
   "B": "o",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
+  "notifications enabled": "Notifications activées",
+  "notifications disabled": "Notifications désactivées",
   "open folder": "Ouvrir le dossier",
   "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",

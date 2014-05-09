@@ -174,7 +174,6 @@ module.exports.tree = function(req, res, next) {
 module.exports.modify = function(req, res, next) {
   var folderToModify, isPublic, newName, newPath, newRealPath, newTags, oldPath, oldRealPath, updateFoldersAndFiles, updateIfIsSubFolder, updateTheFolder;
   folderToModify = req.folder;
-  log.debug(req.body);
   if ((req.body.name == null) && (req.body["public"] == null) && (req.body.tags == null)) {
     return res.send({
       error: true,
@@ -274,7 +273,6 @@ module.exports.modify = function(req, res, next) {
     if (err) {
       return next(err);
     }
-    log.debug(sameFolders);
     if (sameFolders.length > 0 && sameFolders[0].id !== req.body.id) {
       return res.send({
         error: true,
@@ -583,17 +581,12 @@ module.exports.publicZip = function(req, res, next) {
   errortemplate = function(err) {
     return res.send(err.stack || err);
   };
-  return findFolder(req.params.id, function(err, folder) {
-    if (err) {
-      return errortemplate(err);
+  return sharing.checkClearance(req.folder, req, function(authorized) {
+    if (!authorized) {
+      return res.send(404);
+    } else {
+      return module.exports.zip(req, res);
     }
-    return sharing.checkClearance(folder, req, function(authorized) {
-      if (!authorized) {
-        return res.send(404);
-      } else {
-        return module.exports.zip(req, res);
-      }
-    });
   });
 };
 
