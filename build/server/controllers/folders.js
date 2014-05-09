@@ -520,7 +520,7 @@ module.exports.publicList = function(req, res, next) {
         }
         notif = req.query.notifications;
         notif = notif && notif !== 'false';
-        clearance = folder.clearance;
+        clearance = path[0].clearance || [];
         for (_i = 0, _len = clearance.length; _i < _len; _i++) {
           r = clearance[_i];
           if (r.key === rule.key) {
