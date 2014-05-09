@@ -2353,6 +2353,14 @@ a:focus,
   background-color: #fe8800;
   border-color: #fe8800;
 }
+.btn.btn-cozy.toggled {
+  background-color: #008af6;
+  -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+}
+.btn.btn-cozy.toggled:hover {
+  background-color: #cb6d00;
+}
 .btn.btn-cozy-contrast {
   background-color: #5c5;
   border-color: #5c5;
@@ -2374,10 +2382,12 @@ input:focus {
   border-color: #34a6ff;
 }
 ::selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 ::-moz-selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 input#search-box {
   height: 35px;
@@ -2426,6 +2436,12 @@ div#affixbar img {
   height: 20px;
   color: #c60;
 }
+div#affixbar #crumbs ul {
+  margin-top: 0;
+}
+div#affixbar #crumbs li a {
+  margin-top: 0;
+}
 .affix-top {
   color: #34a6ff;
 }
@@ -2451,7 +2467,7 @@ table#table-items .unactive {
   filter: alpha(opacity=50);
 }
 table#table-items td {
-  padding: 0px 5px 0 0;
+  padding: 6px 5px 0 0;
   height: 40px;
 }
 table#table-items td.type-column-cell,
@@ -2462,8 +2478,8 @@ table#table-items td.date-column-cell {
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 165px;
-  text-align: center;
+  width: 190px;
+  text-align: left;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
@@ -2545,6 +2561,7 @@ tr.folder-row ul.tags {
   padding-top: 5px;
   padding-left: 10px;
   padding-bottom: 0;
+  list-style-type: none;
 }
 tr.folder-row ul.tags .tagit-close:hover span.text-icon {
   text-color: #fe8800;
@@ -2698,6 +2715,20 @@ tr.folder-row:hover .operations a:active {
 #crumbs ul li:last-child a:after {
   display: none;
 }
+#crumbs ul li.share-state {
+  margin-left: 20px;
+}
+#crumbs ul li.share-state span {
+  height: 35px;
+  display: inline-block;
+  line-height: 35px;
+  color: #000;
+  font-size: 18px;
+}
+#crumbs ul li.share-state span:hover {
+  color: #fe8800;
+  cursor: pointer;
+}
 .table .tbody .td span {
   display: none;
 }
@@ -2766,11 +2797,14 @@ tr.folder-row:hover .operations a:active {
 .notifs-label input {
   margin-right: 5px;
 }
-#affixbar #crumbs ul {
-  margin-top: 0;
+#table-items .folder-row td {
+  padding-left: 0;
 }
-#affixbar #crumbs li a {
-  margin-top: 0;
+#table-items .table-headers .date-column-cell,
+#table-items .table-headers .size-column-cell,
+#table-items .table-headers .type-column-cell {
+  padding-left: 0;
+  text-align: left;
 }
 @media (max-width: 480px) {
   body {

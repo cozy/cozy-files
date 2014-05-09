@@ -174,7 +174,8 @@ module.exports.tree = function(req, res, next) {
 module.exports.modify = function(req, res, next) {
   var folderToModify, isPublic, newName, newPath, newRealPath, newTags, oldPath, oldRealPath, updateFoldersAndFiles, updateIfIsSubFolder, updateTheFolder;
   folderToModify = req.folder;
-  if ((req.body.name == null) && (req.body["public"] == null)) {
+  log.debug(req.body);
+  if ((req.body.name == null) && (req.body["public"] == null) && (req.body.tags == null)) {
     return res.send({
       error: true,
       msg: "Data required"
@@ -202,6 +203,7 @@ module.exports.modify = function(req, res, next) {
           tags.push(tag);
         }
       }
+      log.debug(tags);
       data = {
         path: modifiedPath,
         tags: tags
@@ -272,7 +274,8 @@ module.exports.modify = function(req, res, next) {
     if (err) {
       return next(err);
     }
-    if (sameFolders.length > 0) {
+    log.debug(sameFolders);
+    if (sameFolders.length > 0 && sameFolders[0].id !== req.body.id) {
       return res.send({
         error: true,
         msg: "The name already in use"
@@ -561,7 +564,7 @@ module.exports.publicList = function(req, res, next) {
         lang: lang,
         canupload: rule.perm === 'rw',
         notifications: rule.notifications || false,
-        keyquery: "?key=" + req.query.key,
+        keyquery: req.query.key != null ? "?key=" + req.query.key : "",
         t: translate
       };
       try {

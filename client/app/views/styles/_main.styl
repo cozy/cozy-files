@@ -33,6 +33,7 @@ a:focus,
 
 /*      COZY BUTTONS    */
 .btn
+
   &.btn-cozy
     background-color: basecolor
     border-color: basecolor
@@ -41,6 +42,13 @@ a:focus,
     &:hover
       background-color: actioncolor
       border-color: actioncolor
+
+  &.btn-cozy.toggled
+    background-color: basecolor - 20%
+    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+
+    &:hover
+      background-color: actioncolor - 20%
 
   &.btn-cozy-contrast
     background-color: contrastcolor
@@ -64,9 +72,11 @@ input:focus
     border-color: basecolor
 
 ::selection
-    background: actioncolor
+    background: actioncolor - 10%
+    color: white
 ::-moz-selection
-    background: actioncolor
+    background: actioncolor - 10%
+    color: white
 
 input#search-box
     height: 35px
@@ -117,6 +127,14 @@ div#affixbar
     height: 20px
     color: #C60
 
+  #crumbs
+    ul
+      margin-top: 0
+
+    li
+      a
+        margin-top: 0
+
 .affix-top
   color: blue
 
@@ -141,7 +159,7 @@ table#table-items
     opacity: 0.5
 
   td
-      padding: 0px 5px 0 0
+      padding: 6px 5px 0 0
       height: 40px
 
   td.type-column-cell
@@ -152,8 +170,8 @@ table#table-items
       width: 100px
 
   td.date-column-cell
-      width 165px
-      text-align center
+      width 190px
+      text-align left
 
   .table-headers
 
@@ -242,6 +260,7 @@ tr.folder-row
     padding-top: 5px
     padding-left: 10px
     padding-bottom: 0
+    list-style-type: none
 
     .tagit-close:hover
       span.text-icon
@@ -385,6 +404,17 @@ tr.folder-row
           border-bottom-right-radius 10px
           &:after
             display none
+      &.share-state
+        margin-left 20px
+        span
+          height 35px
+          display inline-block
+          line-height 35px
+          color #000
+          font-size 18px
+          &:hover
+            color orange
+            cursor pointer
 
 .table
   .tbody
@@ -436,6 +466,9 @@ tr.folder-row
 .typeahead.dropdown-menu > li > a > img
   margin: 0 3px 0 0
 
+
+// Clearance widget.
+
 .clearance-name
   font-size: 15px
   margin-left: 5px
@@ -460,11 +493,16 @@ tr.folder-row
   input
     margin-right: 5px
 
-#affixbar
-  #crumbs
-    ul
-      margin-top: 0
+/* Public folder */
 
-    li
-      a
-        margin-top: 0
+#table-items
+  .folder-row
+    td 
+      padding-left: 0
+
+  .table-headers
+    .date-column-cell
+    .size-column-cell
+    .type-column-cell
+      padding-left: 0
+      text-align left

@@ -798,6 +798,8 @@ module.exports = {
   "B": "B",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
+  "notifications enabled": "Notifications enabled",
+  "notifications disabled": "Notifications disabled",
   "open folder": "Open the folder",
   "download file": "View the file",
   "also have access": "These people also have access, because they have access to a parent folder",
@@ -886,6 +888,8 @@ module.exports = {
   "B": "o",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
+  "notifications enabled": "Notifications activées",
+  "notifications disabled": "Notifications désactivées",
   "open folder": "Ouvrir le dossier",
   "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
@@ -1212,11 +1216,13 @@ module.exports = Router = (function(_super) {
 });
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
-var BaseView, BreadcrumbsView,
+var BaseView, BreadcrumbsView, ModalShareView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 BaseView = require('../lib/base_view');
+
+ModalShareView = require('./modal_share');
 
 module.exports = BreadcrumbsView = (function(_super) {
   __extends(BreadcrumbsView, _super);
@@ -1224,6 +1230,10 @@ module.exports = BreadcrumbsView = (function(_super) {
   BreadcrumbsView.prototype.itemview = require('./templates/breadcrumbs_element');
 
   BreadcrumbsView.prototype.tagName = "ul";
+
+  BreadcrumbsView.prototype.events = {
+    'click .share-state': 'onShareClicked'
+  };
 
   function BreadcrumbsView(collection) {
     this.collection = collection;
@@ -1236,8 +1246,20 @@ module.exports = BreadcrumbsView = (function(_super) {
     return this.listenTo(this.collection, "remove", this.render);
   };
 
+  BreadcrumbsView.prototype.onShareClicked = function() {
+    var lastModel;
+    if (!(this.collection.length > 1)) {
+      return;
+    }
+    lastModel = this.collection.at(this.collection.length - 1);
+    this.listenTo(lastModel, 'change', this.render);
+    return new ModalShareView({
+      model: lastModel
+    });
+  };
+
   BreadcrumbsView.prototype.render = function() {
-    var folder, _i, _len, _ref;
+    var clearance, folder, shareState, _i, _len, _ref;
     this.$el.html("");
     _ref = this.collection.models;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1245,6 +1267,18 @@ module.exports = BreadcrumbsView = (function(_super) {
       this.$el.append(this.itemview({
         model: folder
       }));
+    }
+    if (this.collection.length > 1) {
+      shareState = $('<li class="share-state"></li>');
+      clearance = folder.get('clearance');
+      if (clearance === 'public') {
+        shareState.append($('<span class="fa fa-globe"></span>'));
+      } else if (clearance && clearance.length > 0) {
+        shareState.append($("<span class='fa fa-users'>" + ("" + clearance.length + "</span>")));
+      } else {
+        shareState.append($('<span class="fa fa-lock"></span>'));
+      }
+      this.$el.append(shareState);
     }
     return this;
   };
@@ -1338,6 +1372,7 @@ module.exports = FileView = (function(_super) {
       el: this.$('.tags'),
       model: this.model
     });
+    this.tags.render();
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
   };
@@ -1384,10 +1419,11 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.afterRender = function() {
-    return this.tags = new TagsView({
+    this.tags = new TagsView({
       el: this.$('.tags'),
       model: this.model
     });
+    return this.tags.render();
   };
 
   return FileView;
@@ -1927,10 +1963,10 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.onYes = function() {
+    this.$('#modal-dialog').modal('hide');
     if (this.cb) {
       this.cb(true);
     }
-    this.$('#modal-dialog').modal('hide');
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();
@@ -2034,12 +2070,12 @@ module.exports = ModalShareView = (function(_super) {
   ModalShareView.prototype.permissions = function() {
     if (this.type === 'folder') {
       return {
-        'r': t('perm r folder'),
-        'rw': t('perm rw folder')
+        'r': 'perm r folder',
+        'rw': 'perm rw folder'
       };
     } else {
       return {
-        'r': t('perm r file')
+        'r': 'perm r file'
       };
     }
   };
@@ -2267,17 +2303,22 @@ module.exports = TagsView = (function(_super) {
   function TagsView() {
     this.refresh = __bind(this.refresh, this);
     this.tagRemoved = __bind(this.tagRemoved, this);
+    this.tagClicked = __bind(this.tagClicked, this);
     this.tagAdded = __bind(this.tagAdded, this);
     return TagsView.__super__.constructor.apply(this, arguments);
   }
 
   TagsView.prototype.initialize = function() {
-    TagsView.__super__.initialize.apply(this, arguments);
+    return TagsView.__super__.initialize.apply(this, arguments);
+  };
+
+  TagsView.prototype.afterRender = function() {
     this.$el.tagit({
       availableTags: [],
       placeholderText: t('tag'),
       afterTagAdded: this.tagAdded,
-      afterTagRemoved: this.tagRemoved
+      afterTagRemoved: this.tagRemoved,
+      onTagClicked: this.tagClicked
     });
     this.duringRefresh = false;
     $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
@@ -2293,17 +2334,14 @@ module.exports = TagsView = (function(_super) {
   TagsView.prototype.tagAdded = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
-      this.model.save();
+      return this.model.save();
     }
-    return ui.tag.click((function(_this) {
-      return function() {
-        var tagLabel;
-        tagLabel = ui.tag.find('.tagit-label').text();
-        $("#filterfield").val(tagLabel);
-        $("#filterfield").trigger('keyup');
-        return $(".dropdown-menu").hide();
-      };
-    })(this));
+  };
+
+  TagsView.prototype.tagClicked = function(event, ui) {
+    $("#search-box").val("tag:" + ui.tagLabel);
+    $("#search-box").trigger('keyup');
+    return $(".dropdown-menu").hide();
   };
 
   TagsView.prototype.tagRemoved = function(event, ui) {
@@ -2551,11 +2589,30 @@ with (locals || {}) {
 var interp;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('img-folder') }, {"href":true}));
-buf.push('><img src="images/folder.png"/></a><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"></span></a></div><ul class="tags pull-right">');
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
+buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
+buf.push('>');
+if ( model.clearance == 'public')
+{
+buf.push('<span class="fa fa-globe"></span>');
+}
+else if ( model.clearance && model.clearance.length > 0)
+{
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
+}
+else
+{
+buf.push('<span class="fa fa-lock"></span>');
+}
+buf.push('</a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
+buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2580,34 +2637,39 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }).call(this);
 
 }
-buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td></td><td></td><td></td>');
+buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
 }
 else
 {
-buf.push('<td><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('img-file') }, {"href":true,"target":true}));
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
+buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
-if ( model.mime == "application/pdf")
+if ( model.clearance == 'public')
 {
-buf.push('<img src="images/pdf.png"/>');
+buf.push('<span class="fa fa-globe"></span>');
 }
-else if ( model.mime == "image/jpeg")
+else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<img src="images/jpg.png"/>');
-}
-else if ( model.mime == "text/plain")
-{
-buf.push('<img src="images/txt.png"/>');
+buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
 }
 else
 {
-buf.push('<img src="images/file.png"/>');
+buf.push('<span class="fa fa-lock"></span>');
 }
-buf.push('</a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"target":true}));
-buf.push('>' + escape((interp = model.name) == null ? '' : interp) + '</a><div class="operations"><a class="file-delete"><span class="glyphicon glyphicon-remove-circle"> </span></a><a class="file-edit"><span class="glyphicon glyphicon-edit"> </span></a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + "") }, {"href":true,"download":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"> </span></a><a class="file-share"><span class="glyphicon glyphicon-share-alt"></span></a></div><ul class="tags pull-right">');
+buf.push('</a><a class="file-edit"><span');
+buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
+buf.push('></span></a><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
+buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2634,10 +2696,10 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }
 buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
  options = {base: 2}
-buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
 {
-buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
 }
 buf.push('</td>');
 }

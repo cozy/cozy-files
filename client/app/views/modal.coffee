@@ -17,8 +17,8 @@ module.exports = class ModalView extends BaseView
         @$('#modal-dialog').modal('show')
 
     onYes: ->
-        @cb true if @cb
         @$('#modal-dialog').modal('hide')
+        @cb true if @cb
         setTimeout () =>
             @destroy()
         , 1000

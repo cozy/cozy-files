@@ -45,15 +45,16 @@ html
                 a#button-new-folder.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
                   img(src="../assets/images/add-folder.png")
                 | &nbsp;
-                a#notifications.btn.btn-cozy(
-                  href= keyquery + '&notifications=' + !notifications)
-
-                  if notifications
-                    = t('disable notifications')
-                  else
-                    = t('enable notifications')
+                if notifications
+                  a#notifications.btn.btn-cozy.toggled(
+                    href= keyquery + '&notifications=' + !notifications)
+                      = t('notifications enabled')
+                else
+                  a#notifications.btn.btn-cozy(
+                    href= keyquery + '&notifications=' + !notifications)
+                      = t('notifications disabled')
                 | &nbsp;
-                a#download-link.btn.btn-cozy(
+                a#download-link.btn.btn-cozy-contrast(
                   href=path[path.length-1].id + '.zip' + keyquery
                   title=t("download"))
                   | #{t("download")}&nbsp;
@@ -88,7 +89,7 @@ html
                   td
                     div.caption-wrapper
                           a.caption.btn.btn-link(
-                              href="#{file.id}#{keyquery}",
+                              href="../files/#{file.id}#{keyquery}",
                               title="#{t('download file')}", target="_blank")
                             i.fa.fa-file-o
                             | #{file.name}
