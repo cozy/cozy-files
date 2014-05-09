@@ -1332,6 +1332,7 @@ module.exports = FileView = (function(_super) {
       el: this.$('.tags'),
       model: this.model
     });
+    this.tags.render();
     this.$(".file-edit-name").width(width);
     return this.$(".file-edit-name").focus();
   };
@@ -1378,10 +1379,11 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.afterRender = function() {
-    return this.tags = new TagsView({
+    this.tags = new TagsView({
       el: this.$('.tags'),
       model: this.model
     });
+    return this.tags.render();
   };
 
   return FileView;
@@ -1921,10 +1923,10 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.onYes = function() {
+    this.$('#modal-dialog').modal('hide');
     if (this.cb) {
       this.cb(true);
     }
-    this.$('#modal-dialog').modal('hide');
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();
@@ -2263,17 +2265,22 @@ module.exports = TagsView = (function(_super) {
   function TagsView() {
     this.refresh = __bind(this.refresh, this);
     this.tagRemoved = __bind(this.tagRemoved, this);
+    this.tagClicked = __bind(this.tagClicked, this);
     this.tagAdded = __bind(this.tagAdded, this);
     return TagsView.__super__.constructor.apply(this, arguments);
   }
 
   TagsView.prototype.initialize = function() {
-    TagsView.__super__.initialize.apply(this, arguments);
+    return TagsView.__super__.initialize.apply(this, arguments);
+  };
+
+  TagsView.prototype.afterRender = function() {
     this.$el.tagit({
       availableTags: [],
       placeholderText: t('tag'),
       afterTagAdded: this.tagAdded,
-      afterTagRemoved: this.tagRemoved
+      afterTagRemoved: this.tagRemoved,
+      onTagClicked: this.tagClicked
     });
     this.duringRefresh = false;
     $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
@@ -2289,17 +2296,14 @@ module.exports = TagsView = (function(_super) {
   TagsView.prototype.tagAdded = function(event, ui) {
     if (!(this.duringRefresh || ui.duringInitialization)) {
       this.model.set('tags', this.$el.tagit('assignedTags'));
-      this.model.save();
+      return this.model.save();
     }
-    return ui.tag.click((function(_this) {
-      return function() {
-        var tagLabel;
-        tagLabel = ui.tag.find('.tagit-label').text();
-        $("#filterfield").val(tagLabel);
-        $("#filterfield").trigger('keyup');
-        return $(".dropdown-menu").hide();
-      };
-    })(this));
+  };
+
+  TagsView.prototype.tagClicked = function(event, ui) {
+    $("#search-box").val("tag:" + ui.tagLabel);
+    $("#search-box").trigger('keyup');
+    return $(".dropdown-menu").hide();
   };
 
   TagsView.prototype.tagRemoved = function(event, ui) {

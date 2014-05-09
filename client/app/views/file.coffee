@@ -44,6 +44,7 @@ module.exports = class FileView extends BaseView
         @tags = new TagsView
             el: @$('.tags')
             model: @model
+        @tags.render()
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
 
@@ -75,3 +76,4 @@ module.exports = class FileView extends BaseView
         @tags = new TagsView
             el: @$('.tags')
             model: @model
+        @tags.render()
