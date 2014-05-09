@@ -43,10 +43,8 @@ File.createNewFile = (data, file, callback) =>
 
     index = (newFile) ->
         newFile.index ["name"], (err) ->
-            if err
-                callback new Error "Error indexing: #{err}"
-            else
-                unlink newFile
+            console.log err if err
+            unlink newFile
 
     unlink = (newFile) ->
        fs.unlink file.path, (err) ->

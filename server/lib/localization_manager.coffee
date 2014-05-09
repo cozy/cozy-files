@@ -1,6 +1,7 @@
-fs = require 'fs'
-Polyglot = require 'node-polyglot'
 jade = require 'jade'
+fs = require 'fs'
+
+Polyglot = require 'node-polyglot'
 Instance = require '../models/cozy_instance'
 
 class LocalizationManager
@@ -10,10 +11,11 @@ class LocalizationManager
     # should be run when app starts
     initialize: (callback = () ->) ->
         @retrieveLocale (err, locale) =>
-            if err? then callback err
+            if err?
+                @polyglot = @getPolyglotByLocale null
             else
                 @polyglot = @getPolyglotByLocale locale
-                callback null, @polyglot
+            callback null, @polyglot
 
     retrieveLocale: (callback) ->
         Instance.getLocale (err, locale) ->
@@ -21,9 +23,12 @@ class LocalizationManager
             callback err, locale
 
     getPolyglotByLocale: (locale) ->
-        try
-            phrases = require "../locales/#{locale}"
-        catch err
+        if locale?
+            try
+                phrases = require "../locales/#{locale}"
+            catch err
+                phrases = require '../locales/en'
+        else
             phrases = require '../locales/en'
         return new Polyglot locale: locale, phrases: phrases
 

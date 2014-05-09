@@ -15,7 +15,7 @@ log = require('printit')
 
 
 # Put right headers in response, then stream file to the response.
-processAttachement = (req, res, download) ->
+processAttachement = (req, res, next, download) ->
     id = req.params.id
     file = req.file
 
@@ -42,7 +42,6 @@ updateParentModifDate = (file, callback) ->
             callback()
 
 
-
 getFileClass = (file) ->
     switch file.type.split('/')[0]
         when 'image' then fileClass = "image"
@@ -59,7 +58,7 @@ module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
         if err or not file or file.length is 0
             if err
-                next new Error "File not found"
+                next err
             else
                 res.send error:true, msg: 'File not found', 404
         else
@@ -74,7 +73,7 @@ module.exports.find = (req, res) ->
     res.send req.file
 
 
-module.exports.all = (req, res) ->
+module.exports.all = (req, res, next) ->
     File.all (err, files) ->
         if err
             next err
@@ -138,7 +137,7 @@ module.exports.create = (req, res, next) ->
 # * change its tags: simple modification
 # * change its name: it requires to check that no file has the same name, then
 # it requires a new indexation.
-module.exports.modify = (req, res) ->
+module.exports.modify = (req, res, next) ->
 
     log.info "File modification of #{req.file.name}..."
     file = req.file
@@ -170,12 +169,10 @@ module.exports.modify = (req, res) ->
             return next err if err
 
             modificationSuccess =  (err) ->
-                if err
-                    next new Error  "Error indexing: #{err}"
-                else
-                    log.info "File name changed from #{previousName} " + \
-                             "to #{newName}"
-                    res.send success: 'File successfully modified'
+                log.raw err if err
+                log.info "File name changed from #{previousName} " + \
+                         "to #{newName}"
+                res.send success: 'File successfully modified'
 
             if sameFiles.length > 0
                 log.info "No modification: Name #{newName} already exists."
@@ -198,7 +195,7 @@ module.exports.modify = (req, res) ->
                             file.index ["name"], modificationSuccess
 
 
-module.exports.destroy = (req, res) ->
+module.exports.destroy = (req, res, next) ->
     file = req.file
     file.removeBinary "file", (err, resp, body) =>
         if err
@@ -215,16 +212,16 @@ module.exports.destroy = (req, res) ->
                         res.send success: 'File successfully deleted'
 
 
-module.exports.getAttachment = (req, res) ->
-    processAttachement req, res, false
+module.exports.getAttachment = (req, res, next) ->
+    processAttachement req, res, next, false
 
 
-module.exports.downloadAttachment = (req, res) ->
-    processAttachement req, res, true
+module.exports.downloadAttachment = (req, res, next) ->
+    processAttachement req, res, next, true
 
 
 # Download by a guest can only be performed if the guest has the good rights.
-module.exports.publicDownloadAttachment = (req, res) ->
+module.exports.publicDownloadAttachment = (req, res, next) ->
     sharing.checkClearance req.file, req, (authorized) ->
         if not authorized then res.send 404
         else processAttachement req, res, true

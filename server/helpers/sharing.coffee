@@ -95,10 +95,10 @@ module.exports.notifyChanges = (who, file, callback) ->
             if who isnt 'owner' and folder.changeNotification
                 uniq = 'update' + folder.id
                 params =
-                    text: localization.t 'notification new file',
+                    text: localization.t('notification new file',
                             who: who
                             fileName: file.name
-                            folderName: folder.name
+                            folderName: folder.name)
                     resource:
                         app: 'files'
                         url: "#folder/#{folder.id}"
@@ -116,9 +116,9 @@ doSendNotif = ->
         for key, item of mailsToSend
             mailOptions =
                 to: item.to
-                subject: localization.t 'email change subject',
+                subject: localization.t('email change subject',
                             displayName: displayName
-                            itemName: item.name
+                            itemName: item.name)
                 content: item.url
                 html: notiftemplate
                     name: item.name

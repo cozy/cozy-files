@@ -15,11 +15,11 @@ if model.type && model.type == "folder"
           span.fa.fa-lock
       a.file-edit(title="#{t('tooltip edit')}")
         span.glyphicon.glyphicon-edit
-            a.file-download(
-                href="folders/#{model.id}/zip/#{model.name}", 
-                target="_blank", title="#{t('tooltip download')}")
       a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle
+      a.file-download(
+          href="folders/#{model.id}/zip/#{model.name}", 
+          target="_blank", title="#{t('tooltip download')}")
         span.glyphicon.glyphicon-cloud-download
     ul.tags
       if model.tags

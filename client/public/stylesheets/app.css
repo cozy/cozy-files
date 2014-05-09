@@ -2306,6 +2306,7 @@ body {
 }
 body {
   font-family: styled, helvetica;
+  background-image: url("../images/background.jpg");
 }
 h1,
 h2,

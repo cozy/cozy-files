@@ -56,10 +56,9 @@ File.createNewFile = (function(_this) {
     index = function(newFile) {
       return newFile.index(["name"], function(err) {
         if (err) {
-          return callback(new Error("Error indexing: " + err));
-        } else {
-          return unlink(newFile);
+          console.log(err);
         }
+        return unlink(newFile);
       });
     };
     unlink = function(newFile) {
