@@ -353,7 +353,6 @@ module.exports.publicList = (req, res, next) ->
     sharing.limitedTree folder, req, (path, rule) ->
         authorized = path.length isnt 0
         return res.send 404 unless authorized
-
         key = "#{folder.path}/#{folder.name}"
         async.parallel [
             (cb) -> CozyInstance.getLocale cb
@@ -365,7 +364,7 @@ module.exports.publicList = (req, res, next) ->
 
                 notif = req.query.notifications
                 notif = notif and notif isnt 'false'
-                clearance = folder.clearance
+                clearance = path[0].clearance or []
                 for r in clearance when r.key is rule.key
                     rule.notifications = r.notifications = notif
                 folder.updateAttributes clearance: clearance, cb
