@@ -79,9 +79,8 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 summary.append $('<a>').text t('details')
                 list = $('<ul id="inherited-share-list">').hide()
                 list.append item for item in listitems
-                console.log summary, list
                 @$('#share-list').after summary, list
-        console.debug @model
+
         # if there is a writing guest
         guestCanWrite = _.findWhere @model.get('clearance'), perm: 'rw'
         if guestCanWrite

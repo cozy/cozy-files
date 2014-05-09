@@ -2101,11 +2101,9 @@ module.exports = ModalShareView = (function(_super) {
           item = listitems[_k];
           list.append(item);
         }
-        console.log(summary, list);
         this.$('#share-list').after(summary, list);
       }
     }
-    console.debug(this.model);
     guestCanWrite = _.findWhere(this.model.get('clearance'), {
       perm: 'rw'
     });
