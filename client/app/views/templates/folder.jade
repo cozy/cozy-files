@@ -44,18 +44,17 @@
         p.pull-right
           input#search-box(type="search")
           #upload-buttons.pull-right
-            a.btn.btn-cozy#share-state
+            a.btn.btn-cozy#share-state.btn-cozy-contrast
             | &nbsp;
-            a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
+            a#button-upload-new-file.btn.btn-cozy.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
               img(src="images/add-file.png")
             | &nbsp;
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
               img(src="images/add-folder.png")
             | &nbsp;
-            a#download-link.btn.btn-cozy(
-              title=t("download"))
-              | #{t("download")}&nbsp;
-              i.icon-arrow-down.icon-white
+            //a#download-link.btn.btn-cozy(title=t("download"))
+            //  i.icon-arrow-down.icon-white
+            span &nbsp;
 .container
   .row.content-shadow
     .col-lg-12#content
