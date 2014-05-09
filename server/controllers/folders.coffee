@@ -419,12 +419,9 @@ module.exports.publicZip = (req, res, next) ->
     errortemplate = (err) ->
         res.send err.stack or err
 
-    findFolder req.params.id, (err, folder) ->
-        return errortemplate err if err
-
-        sharing.checkClearance folder, req, (authorized) ->
-            if not authorized then res.send 404
-            else module.exports.zip req, res
+    sharing.checkClearance req.folder, req, (authorized) ->
+        if not authorized then res.send 404
+        else module.exports.zip req, res
 
 
 module.exports.publicCreate = (req, res, next) ->
