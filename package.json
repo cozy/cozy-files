@@ -56,12 +56,6 @@
     "send mail": {
       "description": "Send links by mail"
     },
-    "send mail from user": {
-      "description": "Send links by mail"
-    },
-    "send mail to user": {
-      "description": "Send links by mail"
-    },
     "CozyInstance": {
       "description": "To display the application in the right language, the application requires access to your instance informations."
     },
@@ -70,6 +64,12 @@
     },
     "User": {
       "description": "Need information for the from part of email sent."
+    },
+    "send mail from user": {
+      "description": "Send links by mail"
+    },
+    "send mail to user": {
+      "description": "Send links by mail"
     }
   }
 }
