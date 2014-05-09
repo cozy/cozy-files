@@ -1929,10 +1929,10 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.onYes = function() {
+    this.$('#modal-dialog').modal('hide');
     if (this.cb) {
       this.cb(true);
     }
-    this.$('#modal-dialog').modal('hide');
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();

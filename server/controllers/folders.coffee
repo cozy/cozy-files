@@ -127,7 +127,6 @@ module.exports.tree = (req, res, next) ->
 module.exports.modify = (req, res, next) ->
     folderToModify = req.folder
 
-    log.debug req.body
     if (not req.body.name?) and (not req.body.public?) and (not req.body.tags?)
         return res.send error: true, msg: "Data required", 400
 
@@ -200,7 +199,6 @@ module.exports.modify = (req, res, next) ->
     Folder.byFullPath key: newRealPath, (err, sameFolders) ->
         return next err if err
 
-        log.debug sameFolders
         if sameFolders.length > 0 and \
            sameFolders[0].id isnt req.body.id
             res.send error: true, msg: "The name already in use", 400
