@@ -2348,6 +2348,7 @@ a:focus,
   background-color: #34a6ff;
   border-color: #34a6ff;
   color: #fff;
+  font-weight: bold;
 }
 .btn.btn-cozy:hover {
   background-color: #fe8800;
@@ -2365,6 +2366,7 @@ a:focus,
   background-color: #5c5;
   border-color: #5c5;
   color: #fff;
+  font-weight: bold;
 }
 .btn.btn-cozy-contrast:hover {
   background-color: #fe8800;
@@ -2440,6 +2442,7 @@ div#affixbar #crumbs ul {
   margin-top: 0;
 }
 div#affixbar #crumbs li a {
+  font-weight: bold;
   margin-top: 0;
 }
 .affix-top {
@@ -2798,7 +2801,17 @@ tr.folder-row:hover .operations a:active {
   margin-right: 5px;
 }
 #table-items .folder-row td {
+  vertical-align: middle;
   padding-left: 0;
+  padding-top: 0;
+}
+#table-items .folder-row td .file-edit-name,
+#table-items .folder-row td .file-edit-save,
+#table-items .folder-row td .file-edit-cancel {
+  margin-top: 4px;
+}
+#table-items .folder-row td .caption-edit .fa {
+  margin-right: 9px;
 }
 #table-items .table-headers .date-column-cell,
 #table-items .table-headers .size-column-cell,
