@@ -72,6 +72,7 @@ module.exports = {
   "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource.",
   "public": "Publique",
   "private": "Privé",
+  "shared": "Partagé",
   "save": "Sauvegarder",
   "see link": "Voir le lien",
   "sharing": "Partage",

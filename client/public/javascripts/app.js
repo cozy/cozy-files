@@ -817,6 +817,7 @@ module.exports = {
   "only you can see": "Only you and the people listed below can access this resource",
   "public": "Public",
   "private": "Private",
+  "shared": "Shared",
   "save": "Save",
   "see link": "See link",
   "send mails question": "Send a notification email to:",
@@ -906,6 +907,7 @@ module.exports = {
   "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource.",
   "public": "Publique",
   "private": "Privé",
+  "shared": "Partagé",
   "save": "Sauvegarder",
   "see link": "Voir le lien",
   "sharing": "Partage",
@@ -995,6 +997,7 @@ module.exports = {
   "only you can see": "Numai Dvs. și persoanele de mai jos au acces",
   "public": "Public",
   "private": "Privat",
+  "shared": "Shared",
   "save": "Salvare",
   "see link": "Vedeți adresă",
   "send mails question": "Trimiteți e-mail de notificare la: ",
@@ -1216,13 +1219,11 @@ module.exports = Router = (function(_super) {
 });
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
-var BaseView, BreadcrumbsView, ModalShareView,
+var BaseView, BreadcrumbsView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 BaseView = require('../lib/base_view');
-
-ModalShareView = require('./modal_share');
 
 module.exports = BreadcrumbsView = (function(_super) {
   __extends(BreadcrumbsView, _super);
@@ -1230,10 +1231,6 @@ module.exports = BreadcrumbsView = (function(_super) {
   BreadcrumbsView.prototype.itemview = require('./templates/breadcrumbs_element');
 
   BreadcrumbsView.prototype.tagName = "ul";
-
-  BreadcrumbsView.prototype.events = {
-    'click .share-state': 'onShareClicked'
-  };
 
   function BreadcrumbsView(collection) {
     this.collection = collection;
@@ -1246,20 +1243,8 @@ module.exports = BreadcrumbsView = (function(_super) {
     return this.listenTo(this.collection, "remove", this.render);
   };
 
-  BreadcrumbsView.prototype.onShareClicked = function() {
-    var lastModel;
-    if (!(this.collection.length > 1)) {
-      return;
-    }
-    lastModel = this.collection.at(this.collection.length - 1);
-    this.listenTo(lastModel, 'change', this.render);
-    return new ModalShareView({
-      model: lastModel
-    });
-  };
-
   BreadcrumbsView.prototype.render = function() {
-    var clearance, folder, shareState, _i, _len, _ref;
+    var folder, _i, _len, _ref;
     this.$el.html("");
     _ref = this.collection.models;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1267,18 +1252,6 @@ module.exports = BreadcrumbsView = (function(_super) {
       this.$el.append(this.itemview({
         model: folder
       }));
-    }
-    if (this.collection.length > 1) {
-      shareState = $('<li class="share-state"></li>');
-      clearance = folder.get('clearance');
-      if (clearance === 'public') {
-        shareState.append($('<span class="fa fa-globe"></span>'));
-      } else if (clearance && clearance.length > 0) {
-        shareState.append($("<span class='fa fa-users'>" + ("" + clearance.length + "</span>")));
-      } else {
-        shareState.append($('<span class="fa fa-lock"></span>'));
-      }
-      this.$el.append(shareState);
     }
     return this;
   };
@@ -1569,7 +1542,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, Helpers, ModalView, ProgressbarView,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, Helpers, ModalShareView, ModalView, ProgressbarView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1583,6 +1556,8 @@ BreadcrumbsView = require("./breadcrumbs");
 ProgressbarView = require("./progressbar");
 
 ModalView = require("./modal");
+
+ModalShareView = require('./modal_share');
 
 File = require('../models/file');
 
@@ -1611,6 +1586,7 @@ module.exports = FolderView = (function(_super) {
       'click #cancel-new-folder': 'onCancelFolder',
       'click #upload-file-send': 'onAddFile',
       'click #cancel-new-file': 'onCancelFile',
+      'click #share-state': 'onShareClicked',
       'click #up-name': 'onChangeOrder',
       'click #down-name': 'onChangeOrder',
       'click #up-class': 'onChangeOrder',
@@ -1683,8 +1659,12 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.changeActiveFolder = function(folder) {
-    var _ref;
+    var clearance, shareState, zipLink, _ref;
+    this.stopListening(this.model);
     this.model = folder;
+    this.listenTo(this.model, 'change', function() {
+      return this.changeActiveFolder(this.model);
+    });
     this.breadcrumbs.push(folder);
     if (folder.id === "root") {
       this.$("#crumbs").css({
@@ -1700,6 +1680,26 @@ module.exports = FolderView = (function(_super) {
     } else {
       this.$("#upload-buttons").hide();
     }
+    shareState = $('#share-state');
+    if (this.model.id !== "root") {
+      shareState.show();
+      clearance = this.model.get('clearance');
+      if (clearance === 'public') {
+        shareState.html("" + (t('public')) + "&nbsp;");
+        shareState.append($('<span class="fa fa-globe"></span>'));
+      } else if (clearance && clearance.length > 0) {
+        shareState.html("" + (t('shared')) + "&nbsp;");
+        shareState.append($("<span class='fa fa-users'>" + "</span>"));
+        shareState.append($("<span>&nbsp;" + clearance.length + "</span>"));
+      } else {
+        shareState.html("" + (t('private')) + "&nbsp;");
+        shareState.append($('<span class="fa fa-lock"></span>'));
+      }
+    } else {
+      shareState.hide();
+    }
+    zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
+    this.$('#download-link').attr('href', zipLink);
     if ((_ref = this.filesList) != null) {
       _ref.$el.html(null);
     }
@@ -1921,6 +1921,12 @@ module.exports = FolderView = (function(_super) {
       this.filesCollection.order = "incr";
       return this.filesCollection.sort();
     }
+  };
+
+  FolderView.prototype.onShareClicked = function() {
+    return new ModalShareView({
+      model: this.model
+    });
   };
 
   return FolderView;
@@ -2701,7 +2707,9 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search" class="pull-right"/></p><p class="pull-right"><a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
+buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy"></a>&nbsp;<a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a>&nbsp;<a');
+buf.push(attrs({ 'id':('download-link'), 'title':(t("download")), "class": ('btn') + ' ' + ('btn-cozy') }, {"title":true}));
+buf.push('>' + escape((interp = t("download")) == null ? '' : interp) + '&nbsp;<i class="icon-arrow-down icon-white"></i></a></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
 var __val__ = t('name')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');

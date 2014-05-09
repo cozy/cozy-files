@@ -42,13 +42,20 @@
       .col-lg-12
         #crumbs.pull-left
         p.pull-right
-          input#search-box.pull-right(type="search")
-        p.pull-right
+          input#search-box(type="search")
+          #upload-buttons.pull-right
+            a.btn.btn-cozy#share-state
+            | &nbsp;
             a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
               img(src="images/add-file.png")
             | &nbsp;
             a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
               img(src="images/add-folder.png")
+            | &nbsp;
+            a#download-link.btn.btn-cozy(
+              title=t("download"))
+              | #{t("download")}&nbsp;
+              i.icon-arrow-down.icon-white
 .container
   .row.content-shadow
     .col-lg-12#content

@@ -98,6 +98,7 @@ module.exports =
     "only you can see"                : "Only you and the people listed below can access this resource"
     "public"                          : "Public"
     "private"                         : "Private"
+    "shared"                          : "Shared"
     "save"                            : "Save"
     "see link"                        : "See link"
     "send mails question"             : "Send a notification email to:"

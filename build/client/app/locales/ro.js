@@ -72,6 +72,7 @@ module.exports = {
   "only you can see": "Numai Dvs. și persoanele de mai jos au acces",
   "public": "Public",
   "private": "Privat",
+  "shared": "Shared",
   "save": "Salvare",
   "see link": "Vedeți adresă",
   "send mails question": "Trimiteți e-mail de notificare la: ",

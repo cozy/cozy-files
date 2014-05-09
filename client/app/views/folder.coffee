@@ -3,6 +3,7 @@ FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 ProgressbarView = require "./progressbar"
 ModalView = require "./modal"
+ModalShareView = require './modal_share'
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
@@ -20,6 +21,7 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #upload-file-send'      : 'onAddFile'
         'click #cancel-new-file'       : 'onCancelFile'
+        'click #share-state'           : 'onShareClicked'
 
         'click #up-name'               : 'onChangeOrder'
         'click #down-name'             : 'onChangeOrder'
@@ -60,7 +62,6 @@ module.exports = class FolderView extends BaseView
         @$("#crumbs").append @breadcrumbsView.render().$el
         @displayChevron 'up', 'name'
 
-
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
         @$('#up-name').show()
@@ -88,7 +89,9 @@ module.exports = class FolderView extends BaseView
     # Display and re-render the contents of the folder
     changeActiveFolder: (folder) ->
         # register the model
+        @stopListening @model
         @model = folder
+        @listenTo @model, 'change', -> @changeActiveFolder @model
 
         # update breadcrumbs
         @breadcrumbs.push folder
@@ -103,9 +106,30 @@ module.exports = class FolderView extends BaseView
         else
             @$("#upload-buttons").hide()
 
+        # manage share state button
+        shareState = $ '#share-state'
+        if @model.id isnt "root"
+            shareState.show()
+            clearance = @model.get 'clearance'
+            if clearance is 'public'
+                shareState.html "#{t('public')}&nbsp;"
+                shareState.append $ '<span class="fa fa-globe"></span>'
+            else if clearance and clearance.length > 0
+                shareState.html "#{t('shared')}&nbsp;"
+                shareState.append $ "<span class='fa fa-users'>" \
+                                    + "</span>"
+                shareState.append $ "<span>&nbsp;#{clearance.length}</span>"
+            else
+                shareState.html "#{t('private')}&nbsp;"
+                shareState.append $ '<span class="fa fa-lock"></span>'
+        else
+            shareState.hide()
+
+        # folder 'download zip' link
+        zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
+        @$('#download-link').attr 'href', zipLink
 
         # add files view
-
         @filesList?.$el.html null
         @$("#loading-indicator").spin 'small'
         @model.findFiles
@@ -290,3 +314,10 @@ module.exports = class FolderView extends BaseView
         else
             @filesCollection.order = "incr"
             @filesCollection.sort()
+
+    onShareClicked: ->
+        #@listenTo @model, 'change', (model) ->
+        #    console.log model
+        #    @changeActiveFolder model
+        #    @stopListening model
+        new ModalShareView model: @model
