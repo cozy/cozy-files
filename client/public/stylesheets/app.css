@@ -2374,10 +2374,12 @@ input:focus {
   border-color: #34a6ff;
 }
 ::selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 ::-moz-selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 input#search-box {
   height: 35px;
@@ -2457,7 +2459,7 @@ table#table-items .unactive {
   filter: alpha(opacity=50);
 }
 table#table-items td {
-  padding: 0px 5px 0 0;
+  padding: 6px 5px 0 0;
   height: 40px;
 }
 table#table-items td.type-column-cell,
@@ -2772,6 +2774,12 @@ tr.folder-row:hover .operations a:active {
 }
 .notifs-label input {
   margin-right: 5px;
+}
+#table-items .folder-row td {
+  padding-left: 0;
+}
+.table-headers .date-column-cell {
+  text-align: left;
 }
 @media (max-width: 480px) {
   body {

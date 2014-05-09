@@ -64,9 +64,11 @@ input:focus
     border-color: basecolor
 
 ::selection
-    background: actioncolor
+    background: actioncolor - 10%
+    color: white
 ::-moz-selection
-    background: actioncolor
+    background: actioncolor - 10%
+    color: white
 
 input#search-box
     height: 35px
@@ -149,7 +151,7 @@ table#table-items
     opacity: 0.5
 
   td
-      padding: 0px 5px 0 0
+      padding: 6px 5px 0 0
       height: 40px
 
   td.type-column-cell
@@ -471,4 +473,15 @@ tr.folder-row
 
   input
     margin-right: 5px
+
+/* Public folder */
+
+#table-items
+  .folder-row
+    td 
+      padding-left: 0
+
+.table-headers
+  .date-column-cell
+    text-align left
 
