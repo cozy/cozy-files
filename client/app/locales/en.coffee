@@ -77,6 +77,9 @@ module.exports =
     "enable notifications": "Enable notifications"
     "disable notifications": "Disable notifications"
 
+    "open folder": "Open the folder"
+    "download file": "View the file"
+
     # clearance modal
     "also have access"                : "These people also have access, because they have access to a parent folder"
     "cancel"                          : "Cancel"

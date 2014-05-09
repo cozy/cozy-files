@@ -127,7 +127,8 @@ module.exports.tree = (req, res, next) ->
 module.exports.modify = (req, res, next) ->
     folderToModify = req.folder
 
-    if not req.body.name? and not req.body.public?
+    log.debug req.body
+    if (not req.body.name?) and (not req.body.public?) and (not req.body.tags?)
         return res.send error: true, msg: "Data required", 400
 
     newName = req.body.name
@@ -151,6 +152,8 @@ module.exports.modify = (req, res, next) ->
             for tag in newTags
                 if tags.indexOf tag is -1
                     tags.push tag
+
+            log.debug tags
 
             data =
                 path: modifiedPath
@@ -197,7 +200,9 @@ module.exports.modify = (req, res, next) ->
     Folder.byFullPath key: newRealPath, (err, sameFolders) ->
         return next err if err
 
-        if sameFolders.length > 0
+        log.debug sameFolders
+        if sameFolders.length > 0 and \
+           sameFolders[0].id isnt req.body.id
             res.send error: true, msg: "The name already in use", 400
         else
             Folder.all (err, folders) ->
@@ -353,7 +358,6 @@ module.exports.publicList = (req, res, next) ->
     sharing.limitedTree folder, req, (path, rule) ->
         authorized = path.length isnt 0
         return res.send 404 unless authorized
-
         key = "#{folder.path}/#{folder.name}"
         async.parallel [
             (cb) -> CozyInstance.getLocale cb
@@ -365,7 +369,7 @@ module.exports.publicList = (req, res, next) ->
 
                 notif = req.query.notifications
                 notif = notif and notif isnt 'false'
-                clearance = folder.clearance
+                clearance = path[0].clearance or []
                 for r in clearance when r.key is rule.key
                     rule.notifications = r.notifications = notif
                 folder.updateAttributes clearance: clearance, cb

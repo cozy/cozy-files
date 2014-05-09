@@ -798,6 +798,8 @@ module.exports = {
   "B": "B",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
+  "open folder": "Open the folder",
+  "download file": "View the file",
   "also have access": "These people also have access, because they have access to a parent folder",
   "cancel": "Cancel",
   "copy paste link": "To give access to your contact send him/her the link below:",
@@ -884,6 +886,8 @@ module.exports = {
   "B": "o",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
+  "open folder": "Ouvrir le dossier",
+  "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont égalment accès, car ils ont accès à un dossier parent",
   "cancel": "Annuler",
   "copy paste link": "Pour donner accès à votre contact envoyez lui ce lien : ",
@@ -970,6 +974,8 @@ module.exports = {
   "B": "o",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
+  "open folder": "Browse the folder",
+  "download file": "View the file",
   "also have access": "Aceste persoane au acces, deoarece au acces la un director părinte",
   "cancel": "Anulare",
   "copy paste link": "Pentru a oferi acces la dvs. de contact trimite el/ea pe link-ul de mai jos: ",
@@ -2097,11 +2103,9 @@ module.exports = ModalShareView = (function(_super) {
           item = listitems[_k];
           list.append(item);
         }
-        console.log(summary, list);
         this.$('#share-list').after(summary, list);
       }
     }
-    console.debug(this.model);
     guestCanWrite = _.findWhere(this.model.get('clearance'), {
       perm: 'rw'
     });

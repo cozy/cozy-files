@@ -9,7 +9,6 @@ html
 
     style.
       #download-link, #button-upload-new-file, #button-new-folder{
-        margin-left: 10px;
         height: 35px;
         text-align: center;
       }
@@ -24,77 +23,78 @@ html
         width: 20px;
       }
 
+      table#table-items td {
+        padding: 8px;
+      }
+
   body.public
 
+    #affixbar(data-spy="affix", data-offset-top="1")
+      .container
+        .row
+          .col-lg-12
+            #crumbs.pull-left
+              ul
+                each folder in path
+                  li: a(href=folder.id + keyquery)= folder.name
+            p.pull-right
+              #upload-buttons.pull-right
+                a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
+                  img(src="../assets/images/add-file.png")
+                | &nbsp;
+                a#button-new-folder.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
+                  img(src="../assets/images/add-folder.png")
+                | &nbsp;
+                a#notifications.btn.btn-cozy(
+                  href= keyquery + '&notifications=' + !notifications)
+
+                  if notifications
+                    = t('disable notifications')
+                  else
+                    = t('enable notifications')
+                | &nbsp;
+                a#download-link.btn.btn-cozy(
+                  href=path[path.length-1].id + '.zip' + keyquery
+                  title=t("download"))
+                  | #{t("download")}&nbsp;
+                  i.icon-arrow-down.icon-white
     .container
       .row.content-shadow
-        #content.col-lg-12
-
-          a#download-link.btn.btn-cozy.pull-right(
-            href=path[path.length-1].id + '.zip' + keyquery
-            title=t("download"))
-            | #{t("download")}&nbsp;
-            i.icon-arrow-down.icon-white
-
-          if canupload
-
-            a#button-upload-new-file.btn.btn-cozy.pull-right(
-              data-toggle="modal",
-              data-target="#dialog-upload-file")
-
-              img(src="../assets/images/add-file.png")
-
-
-            a#button-new-folder.btn.btn-cozy.pull-right(
-              data-toggle="modal",
-              data-target="#dialog-new-folder")
-
-              img(src="../assets/images/add-folder.png")
-
-
-          a#notifications.btn.btn-cozy.pull-right(
-            href= keyquery + '&notifications=' + !notifications)
-
-            if notifications
-              = t('disable notifications')
-            else
-              = t('enable notifications')
-
-          #crumbs
-            ul
-              each folder in path
-                li: a(href=folder.id + keyquery)= folder.name
-
-
-
+        .col-lg-12#content
+          #loading-indicator
           table#table-items.table.table-hover
-            tbody.table-items-body
+            tbody#table-items-body
               tr.table-headers
-                td: span= t('name')
-                td.size-column-cell: span= t('size')
-                td.type-column-cell: span= t('type')
-                td.date-column-cell: span= t('date')
+                  td: span= t('name')
+                  td.size-column-cell: span= t('size')
+                  td.type-column-cell: span= t('type')
+                  td.date-column-cell: span= t('date')
 
               each folder in folders
                 tr.folder-row
-                  td: span
-                    a(href=folder.id + keyquery).img-folder
-                      img(src="../assets/images/folder.png")
-                    a(href=folder.id + keyquery).caption.btn.btn-link= folder.name
+                  td
+                    div.caption-wrapper
+                      a.caption.btn.btn-link(
+                          href="#{folder.id}#{keyquery}",
+                          title="#{t('open folder')}")
+                        i.fa.fa-folder
+                        | #{folder.name}
                   td.size-column-cell
-                  td.type-column-cell: span= t('Folder')
+                  td.type-column-cell: span= t('folder')
                   td.date-column-cell
 
               each file in files
                 tr.folder-row
-                  td: span
-                    a(href='../files/' + file.id + keyquery).img-file
-                      img(src="../assets/images/file.png")
-                    a(href='../files/' + file.id + keyquery).caption.btn.btn-link= file.name
+                  td
+                    div.caption-wrapper
+                          a.caption.btn.btn-link(
+                              href="#{file.id}#{keyquery}",
+                              title="#{t('download file')}", target="_blank")
+                            i.fa.fa-file-o
+                            | #{file.name}
                   td.size-column-cell: span= file.size
-                  td.type-column-cell: span= file.class
+                  td.type-column-cell: span= t(file.class)
                   td.date-column-cell: span= file.lastModification
-
 
     if canupload
       #dialog-upload-file.modal.fade(tabindex=-1)

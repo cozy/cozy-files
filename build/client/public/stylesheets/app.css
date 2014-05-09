@@ -2389,6 +2389,9 @@ input#search-box {
   background-repeat: no-repeat;
   background-position: 5px 8px;
 }
+input#search-box:focus {
+  outline: none;
+}
 .form-control {
   min-height: 34px;
   height: auto;
@@ -2459,7 +2462,8 @@ table#table-items td.date-column-cell {
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 150px;
+  width: 165px;
+  text-align: center;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
