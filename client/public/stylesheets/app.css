@@ -2459,7 +2459,8 @@ table#table-items td.date-column-cell {
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 150px;
+  width: 165px;
+  text-align: center;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
