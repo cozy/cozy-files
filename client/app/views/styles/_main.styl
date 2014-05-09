@@ -38,6 +38,7 @@ a:focus,
     background-color: basecolor
     border-color: basecolor
     color: white
+    font-weight: bold
 
     &:hover
       background-color: actioncolor
@@ -54,6 +55,7 @@ a:focus,
     background-color: contrastcolor
     border-color: contrastcolor
     color: white
+    font-weight: bold
 
     &:hover
       background-color: actioncolor
@@ -133,6 +135,7 @@ div#affixbar
 
     li
       a
+        font-weight: bold
         margin-top: 0
 
 .affix-top
@@ -493,12 +496,21 @@ tr.folder-row
   input
     margin-right: 5px
 
-/* Public folder */
-
 #table-items
   .folder-row
     td 
+      vertical-align: middle
       padding-left: 0
+      padding-top: 0
+
+      .file-edit-name
+      .file-edit-save
+      .file-edit-cancel
+        margin-top: 4px
+
+      .caption-edit
+        .fa
+          margin-right: 9px
 
   .table-headers
     .date-column-cell
@@ -506,3 +518,5 @@ tr.folder-row
     .type-column-cell
       padding-left: 0
       text-align left
+
+

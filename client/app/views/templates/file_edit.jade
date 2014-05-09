@@ -1,5 +1,5 @@
 td
-  span.caption
+  span.caption.caption-edit
     if model.type && model.type == "folder"
       i.fa.fa-folder
     else
@@ -10,10 +10,6 @@ td
   a.btn.btn-sm.btn-link.file-edit-cancel
     | #{t("file edit cancel")}
 
-  ul.tags.pull-right
-    if model.tags
-      for tag in model.tags
-        li #{tag}
 td.file-size
     - options = {base: 2}
     span.pull-left #{filesize(model.size || 0, options)}

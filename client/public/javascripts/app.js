@@ -2532,7 +2532,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<td><span class="caption">');
+buf.push('<td><span class="caption caption-edit">');
 if ( model.type && model.type == "folder")
 {
 buf.push('<i class="fa fa-folder"></i>');
@@ -2543,32 +2543,7 @@ buf.push('<i class="fa fa-file-o"></i>');
 }
 buf.push('<input');
 buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a><ul class="tags pull-right">');
-if ( model.tags)
-{
-// iterate model.tags
-;(function(){
-  if ('number' == typeof model.tags.length) {
-
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  }
-}).call(this);
-
-}
-buf.push('</ul></td><td class="file-size">');
+buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td class="file-size">');
  options = {base: 2}
 buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
