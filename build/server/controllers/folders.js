@@ -561,7 +561,7 @@ module.exports.publicList = function(req, res, next) {
         lang: lang,
         canupload: rule.perm === 'rw',
         notifications: rule.notifications || false,
-        keyquery: "?key=" + req.query.key,
+        keyquery: req.query.key != null ? "?key=" + req.query.key : "",
         t: translate
       };
       try {

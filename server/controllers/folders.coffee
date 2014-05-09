@@ -401,7 +401,7 @@ module.exports.publicList = (req, res, next) ->
                 lang
                 canupload: rule.perm is 'rw'
                 notifications: rule.notifications or false
-                keyquery: "?key=#{req.query.key}"
+                keyquery: if req.query.key? then "?key=#{req.query.key}" else ""
                 t: translate
             }
 
