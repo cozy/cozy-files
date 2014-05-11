@@ -2779,6 +2779,14 @@ tr.folder-row:hover .operations a:active {
 #affixbar #share-state span {
   font-size: 17px;
 }
+.caption-edit,
+.file-edit-save,
+.file-edit-cancel {
+  margin-top: 5px;
+}
+tr.folder-row .caption-edit i.fa {
+  margin-right: 9px;
+}
 @media (max-width: 480px) {
   body {
     text-rendering: optimizeSpeed;
