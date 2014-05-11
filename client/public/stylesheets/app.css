@@ -2347,15 +2347,24 @@ a:focus,
 .btn.btn-cozy {
   background-color: #34a6ff;
   border-color: #34a6ff;
+  font-family: main;
   color: #fff;
 }
 .btn.btn-cozy:hover {
   background-color: #fe8800;
   border-color: #fe8800;
 }
+.btn.btn-cozy.toggled {
+  -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  background-color: #1599ff;
+}
+.btn.btn-cozy.toggled:hover {
+  background-color: #e57a00;
+}
 .btn.btn-cozy-contrast {
-  background-color: #5c5;
-  border-color: #5c5;
+  background-color: #3fc53f;
+  border-color: #3fc53f;
   color: #fff;
 }
 .btn.btn-cozy-contrast:hover {
@@ -2374,10 +2383,12 @@ input:focus {
   border-color: #34a6ff;
 }
 ::selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 ::-moz-selection {
-  background: #fe8800;
+  background: #e57a00;
+  color: #fff;
 }
 input#search-box {
   height: 35px;
