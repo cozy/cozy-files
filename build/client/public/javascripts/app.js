@@ -2415,7 +2415,32 @@ if ( model.type && model.type == "folder")
 {
 buf.push('<td><div class="caption-wrapper"><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
-buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
@@ -2436,7 +2461,18 @@ buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
 buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
+}
+else
+{
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
+buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2461,18 +2497,7 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }).call(this);
 
 }
-buf.push('</ul></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
-if ( model.lastModification)
-{
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
-}
-buf.push('</td>');
-}
-else
-{
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
-buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push('</ul><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
@@ -2493,32 +2518,7 @@ buf.push('></span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><ul class="tags">');
-if ( model.tags)
-{
-// iterate model.tags
-;(function(){
-  if ('number' == typeof model.tags.length) {
-
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  }
-}).call(this);
-
-}
-buf.push('</ul></td><td class="file-size size-column-cell">');
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
@@ -2572,7 +2572,32 @@ if ( model.type && model.type == "folder")
 {
 buf.push('<td><div class="caption-wrapper"><a');
 buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
-buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  if ('number' == typeof model.tags.length) {
+
+    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
+      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in model.tags) {
+      $$l++;      var tag = model.tags[$index];
+
+buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+    }
+
+  }
+}).call(this);
+
+}
+buf.push('</ul><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
@@ -2593,7 +2618,18 @@ buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
 buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
 buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><ul class="tags">');
+buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+if ( model.lastModification)
+{
+buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+}
+buf.push('</td>');
+}
+else
+{
+buf.push('<td><div class="caption-wrapper"><a');
+buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
+buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
 if ( model.tags)
 {
 // iterate model.tags
@@ -2618,18 +2654,7 @@ buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
 }).call(this);
 
 }
-buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
-if ( model.lastModification)
-{
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
-}
-buf.push('</td>');
-}
-else
-{
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
-buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><div class="operations"><a');
+buf.push('</ul><div class="operations"><a');
 buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
 buf.push('>');
 if ( model.clearance == 'public')
@@ -2650,32 +2675,7 @@ buf.push('></span></a><a');
 buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
 buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
 buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><ul class="tags">');
-if ( model.tags)
-{
-// iterate model.tags
-;(function(){
-  if ('number' == typeof model.tags.length) {
-
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
-
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
-    }
-
-  }
-}).call(this);
-
-}
-buf.push('</ul><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
+buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
  options = {base: 2}
 buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
 if ( model.lastModification)
