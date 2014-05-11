@@ -2462,8 +2462,8 @@ table#table-items td.date-column-cell {
   width: 100px;
 }
 table#table-items td.date-column-cell {
-  width: 165px;
-  text-align: center;
+  width: 190px;
+  text-align: left;
 }
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
