@@ -5,6 +5,10 @@ if model.type && model.type == "folder"
           href="#folders/#{model.id}", title="#{t('open folder')}")
         i.fa.fa-folder
         | #{model.name}
+    ul.tags
+      if model.tags
+        for tag in model.tags
+          li #{tag}
     .operations
       a.file-share(title="#{t('tooltip share')}")
         if model.clearance == 'public'
@@ -21,10 +25,6 @@ if model.type && model.type == "folder"
           href="folders/#{model.id}/zip/#{model.name}", 
           target="_blank", title="#{t('tooltip download')}")
         span.glyphicon.glyphicon-cloud-download
-    ul.tags
-      if model.tags
-        for tag in model.tags
-          li #{tag}
     p.file-path
       | #{model.path}/#{model.name}
   td.size-column-cell
@@ -41,6 +41,10 @@ else
           title="#{t('download file')}", target="_blank")
         i.fa.fa-file-o
         | #{model.name}
+    ul.tags
+      if model.tags
+        for tag in model.tags
+          li #{tag}
     .operations
       a.file-share(title="#{t('tooltip share')}")
         if model.clearance == 'public'
@@ -55,10 +59,6 @@ else
         span.glyphicon.glyphicon-cloud-download
       a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle
-    ul.tags
-      if model.tags
-        for tag in model.tags
-          li #{tag}
     p.file-path
       | #{model.path}/#{model.name}
   td.file-size.size-column-cell
