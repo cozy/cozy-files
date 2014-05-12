@@ -7,8 +7,8 @@ client = helpers.getClient()
 
 describe "Folders management", ->
 
-    before helpers.cleanDB
     before helpers.startApp
+    before helpers.cleanDB
     after helpers.stopApp
     before helpers.cleanDB
 

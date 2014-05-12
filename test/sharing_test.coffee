@@ -5,8 +5,8 @@ client = helpers.getClient()
 
 describe "Sharing management", ->
 
-    before helpers.cleanDB
     before helpers.startApp
+    before helpers.cleanDB
     after helpers.stopApp
     after helpers.cleanDB
 
