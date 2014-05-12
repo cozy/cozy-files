@@ -2757,6 +2757,9 @@ tr.folder-row:hover .operations a:active {
   font-size: 15px;
   margin-left: 5px;
 }
+.clearance-name:first-child {
+  margin-left: 50px;
+}
 .clearance-btn {
   font-size: 20px;
   margin-left: 10px;
