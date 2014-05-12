@@ -50,14 +50,14 @@ task 'tests', "Run tests #{taskDetails}", (opts) ->
     command = "#{env} mocha " + files.join(" ") + " --reporter spec --colors "
     command += "--compilers coffee:coffee-script/register"
     exec command, (err, stdout, stderr) ->
-        logger.info stdout if stdout? and stdout.length > 0
-        #logger.error stderr if stderr? and stderr.length > 0
+        console.log stdout if stdout? and stdout.length > 0
+        #console.log stderr if stderr? and stderr.length > 0
         if err?
             err = err
-            logger.error "Running mocha caught exception:\n" + err
+            console.log "Running mocha caught exception:\n" + err
             process.exit 1
         else
-            logger.info "Tests succeeded!"
+            console.log "Tests succeeded!"
             process.exit 0
 
 task 'build', 'Build CoffeeScript to Javascript', ->
