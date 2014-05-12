@@ -353,3 +353,15 @@ module.exports.search = function(req, res, next) {
     return File.search("*" + query + "*", sendResults);
   }
 };
+
+module.exports.updateIndex = function(req, res, next) {
+  var file;
+  file = req.file;
+  return file.index(['name'], function(err) {
+    if (err) {
+      return next(err);
+    } else {
+      return res.send(200);
+    }
+  });
+};

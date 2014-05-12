@@ -21,12 +21,13 @@ module.exports = class SocketListener extends CozySocketListener
         mwd is cwd
 
     onRemoteCreate: (model) ->
-        if @isInCurrentFolder model
-            console.log "remote create"
-            console.log model
+        model.updateIndex () =>
+            if @isInCurrentFolder model
+                console.log "remote create"
+                console.log model
 
-            if not (@collection.get model.get("id"))
-                @collection.add model, merge:true
+                if not (@collection.get model.get("id"))
+                    @collection.add model, merge:true
 
     onRemoteDelete: (model) ->
         if @isInCurrentFolder model
@@ -35,10 +36,11 @@ module.exports = class SocketListener extends CozySocketListener
             @collection.remove model
 
     onRemoteUpdate: (model, collection) ->
-        if @isInCurrentFolder model
-            console.log "remote update"
-            console.log model
-            collection.add model, merge:true
+        model.updateIndex () =>
+            if @isInCurrentFolder model
+                console.log "remote update"
+                console.log model
+                collection.add model, merge:true
 
     process: (event) ->
         {doctype, operation, id} = event

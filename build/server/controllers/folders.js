@@ -601,3 +601,15 @@ module.exports.publicCreate = function(req, res, next) {
     }
   });
 };
+
+module.exports.updateIndex = function(req, res, next) {
+  var folder;
+  folder = req.folder;
+  return folder.index(['name'], function(err) {
+    if (err) {
+      return next(err);
+    } else {
+      return res.send(200);
+    }
+  });
+};

@@ -78,6 +78,11 @@ module.exports = class File extends Backbone.Model
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}#{@id}/zip/#{@name}", callbacks
 
+    updateIndex: (callbacks) ->
+        console.log('updatIndex')
+        @prepareCallbacks
+        client.put "#{@urlRoot()}#{@id}/index", {}, callbacks
+
     # FILE
     getAttachment: (file, callbacks) ->
         @prepareCallbacks callbacks

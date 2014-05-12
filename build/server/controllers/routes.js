@@ -26,6 +26,9 @@ module.exports = {
   'files/:fileid/download/:name': {
     get: files.downloadAttachment
   },
+  'files/:fileid/index': {
+    put: files.updateIndex
+  },
   'folderid': {
     param: folders.fetch
   },
@@ -49,6 +52,9 @@ module.exports = {
   },
   'folders/:folderid/zip/:name': {
     get: folders.zip
+  },
+  'folders/:folderid/index': {
+    put: folders.updateIndex
   },
   'search/folders': {
     post: folders.search
