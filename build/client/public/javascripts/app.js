@@ -2081,7 +2081,7 @@ module.exports = ModalShareView = (function(_super) {
       };
     } else {
       return {
-        'r': 'perm r file'
+        'r': t('perm r file')
       };
     }
   };
