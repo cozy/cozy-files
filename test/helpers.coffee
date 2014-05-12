@@ -42,8 +42,8 @@ helpers.stopApp = (done) ->
     , 1000
 
 # Bring models in context
-File = require helpers.prefix + '/server/models/file'
-Folder = require helpers.prefix + '/server/models/folder'
+File = require "#{helpers.prefix}server/models/file"
+Folder = require "#{helpers.prefix}server/models/folder"
 
 # This function remove everythin from the db
 helpers.cleanDB = (callback) ->
