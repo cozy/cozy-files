@@ -70,7 +70,7 @@ module.exports = {
   "modal shared file custom msg": "Entrez un email et appuyez sur enter",
   "modal shared file link msg": "Envoyez ce lien pour qu'ils puissent accéder à ce dossier",
   "only you can see": "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource.",
-  "public": "Publique",
+  "public": "Public",
   "private": "Privé",
   "shared": "Partagé",
   "save": "Sauvegarder",
