@@ -74,11 +74,11 @@ module.exports =
     "KB"                        : "Ko"
     "B"                         : "o"
 
-    "enable notifications": "Enable notifications"
-    "disable notifications": "Disable notifications"
+    "enable notifications": "Activare notificări"
+    "disable notifications": "Dezactivare notificări"
 
-    "open folder": "Browse the folder"
-    "download file": "View the file"
+    "open folder": "Accesare director"
+    "download file": "Descărcare fișier"
 
     # clearance modal
     "also have access"                : "Aceste persoane au acces, deoarece au acces la un director părinte"
@@ -96,7 +96,7 @@ module.exports =
     "only you can see"                : "Numai Dvs. și persoanele de mai jos au acces"
     "public"                          : "Public"
     "private"                         : "Privat"
-    "shared"                          : "Shared"
+    "shared"                          : "Partajat"
     "save"                            : "Salvare"
     "see link"                        : "Vedeți adresă"
     "send mails question"             : "Trimiteți e-mail de notificare la: "
