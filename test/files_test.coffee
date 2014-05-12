@@ -4,8 +4,6 @@ moment = require 'moment'
 
 helpers = require './helpers'
 client = helpers.getClient()
-Client = require 'request-json'.JsonClient
-clientDS = new Client('http://localhost:9101')
 
 describe "Files management", ->
 
@@ -205,4 +203,3 @@ describe "Files management", ->
         it "And file should have tags", ->
             @body.tags[0].should.be.equal "tag1"
             @body.tags[1].should.be.equal "tag2"
-
