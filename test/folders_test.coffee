@@ -10,6 +10,7 @@ describe "Folders management", ->
     before helpers.cleanDB
     before helpers.startApp
     after helpers.stopApp
+    before helpers.cleanDB
 
     describe "Create folder", ->
 
