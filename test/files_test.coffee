@@ -1,19 +1,18 @@
-should = require 'should'
+should = require('chai').should()
 americano = require 'americano'
 moment = require 'moment'
-helpers = require './helpers'
 
-Client = require('request-json').JsonClient
-client = new Client "http://localhost:8888/"
+helpers = require './helpers'
+client = helpers.getClient()
 
 describe "Files management", ->
 
-    before helpers.setup 8888
-
-    after helpers.takeDown
+    before helpers.cleanDB
+    before helpers.startApp
+    after helpers.stopApp
+    after helpers.cleanDB
 
     describe "Create file", ->
-        #before helpers.cleanDb
 
         describe "Create a new file", ->
             it "When I send a request to create a file", (done) ->

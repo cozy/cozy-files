@@ -1,13 +1,14 @@
-should = require('should')
-Client = require('request-json').JsonClient
-client = new Client "http://localhost:8888/"
-helpers = require './helpers'
+should = require('chai').should()
 
+helpers = require './helpers'
+client = helpers.getClient()
 
 describe "Sharing management", ->
 
-    before helpers.setup 8888
-    after helpers.takeDown
+    before helpers.cleanDB
+    before helpers.startApp
+    after helpers.stopApp
+    after helpers.cleanDB
 
     describe "No regression on #25", ->
         it "When I get contacts list", (done) ->
