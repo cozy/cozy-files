@@ -2715,6 +2715,9 @@ tr.folder-row:hover .operations a:active {
 #clearancemanager label {
   font-weight: normal;
 }
+#cozy-clearance-modal .modal-dialog {
+  width: 700px;
+}
 #share-list {
   list-style-type: none;
   margin-top: 5px;
