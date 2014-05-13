@@ -10,6 +10,10 @@ FileCollection = require '../collections/files'
 
 Helpers = require '../lib/folder_helpers'
 
+
+showError = (msg) ->
+    new ModalView t("modal error"), t(msg), t("modal ok")
+
 module.exports = class FolderView extends BaseView
 
     template: require './templates/folder'
@@ -160,11 +164,11 @@ module.exports = class FolderView extends BaseView
                         @$("#loading-indicator").spin()
                     error: (error) =>
                         console.log error
-                        new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
+                        showError t "modal error get folders"
                         @$("#loading-indicator").spin()
             error: (error) =>
                 console.log error
-                new ModalView t("modal error"), t("modal error get files"), t("modal ok")
+                showError t "modal error get files"
 
     onUploadNewFileClicked: ->
         $("#dialog-upload-file .progress-name").remove()
@@ -209,7 +213,7 @@ module.exports = class FolderView extends BaseView
         files = @$('#folder-uploader')[0].files
 
         if not files.length and folder.validate()
-            new ModalView t("modal error"), t("modal error no data"), t("modal ok")
+            showError t "modal error no data"
             return
 
         if not folder.validate()
@@ -261,7 +265,7 @@ module.exports = class FolderView extends BaseView
         atLeastOne = false
         for attach in e.dataTransfer.files
             if attach.type is ""
-                new ModalView t("modal error"), "#{attach.name} #{t('modal error file invalid')}", t("modal ok")
+                showError t "#{attach.name} #{t('modal error file invalid')}"
             else
                 @filesList.addFile attach
                 atLeastOne = true
@@ -316,8 +320,4 @@ module.exports = class FolderView extends BaseView
             @filesCollection.sort()
 
     onShareClicked: ->
-        #@listenTo @model, 'change', (model) ->
-        #    console.log model
-        #    @changeActiveFolder model
-        #    @stopListening model
         new ModalShareView model: @model
