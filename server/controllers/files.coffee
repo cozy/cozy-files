@@ -257,10 +257,3 @@ module.exports.search = (req, res, next) ->
         File.request 'byTag', key: tag, sendResults
     else
         File.search "*#{query}*", sendResults
-
-# Update indexer
-module.exports.updateIndex = (req, res, next) ->
-    file = req.file
-    file.index ['name'], (err) ->
-        if err then next err
-        else res.send 200

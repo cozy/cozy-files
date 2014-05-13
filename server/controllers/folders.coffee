@@ -429,11 +429,3 @@ module.exports.publicCreate = (req, res, next) ->
     sharing.checkClearance folder, req, 'w', (authorized) ->
         if not authorized then res.send 401
         else module.exports.create req, res, next
-
-
-# Update indexer
-module.exports.updateIndex = (req, res, next) ->
-    folder = req.folder
-    folder.index ['name'], (err) ->
-        if err then next err
-        else res.send 200

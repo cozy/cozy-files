@@ -363,18 +363,15 @@ window.require.register("helpers/socket", function(exports, require, module) {
     };
 
     SocketListener.prototype.onRemoteCreate = function(model) {
-      var _this = this;
-      return model.updateIndex(function() {
-        if (_this.isInCurrentFolder(model)) {
-          console.log("remote create");
-          console.log(model);
-          if (!(_this.collection.get(model.get("id")))) {
-            return _this.collection.add(model, {
-              merge: true
-            });
-          }
+      if (this.isInCurrentFolder(model)) {
+        console.log("remote create");
+        console.log(model);
+        if (!(this.collection.get(model.get("id")))) {
+          return this.collection.add(model, {
+            merge: true
+          });
         }
-      });
+      }
     };
 
     SocketListener.prototype.onRemoteDelete = function(model) {
@@ -386,16 +383,13 @@ window.require.register("helpers/socket", function(exports, require, module) {
     };
 
     SocketListener.prototype.onRemoteUpdate = function(model, collection) {
-      var _this = this;
-      return model.updateIndex(function() {
-        if (_this.isInCurrentFolder(model)) {
-          console.log("remote update");
-          console.log(model);
-          return collection.add(model, {
-            merge: true
-          });
-        }
-      });
+      if (this.isInCurrentFolder(model)) {
+        console.log("remote update");
+        console.log(model);
+        return collection.add(model, {
+          merge: true
+        });
+      }
     };
 
     SocketListener.prototype.process = function(event) {
@@ -1157,12 +1151,6 @@ window.require.register("models/file", function(exports, require, module) {
     File.prototype.getZip = function(file, callbacks) {
       this.prepareCallbacks(callbacks);
       return client.post("" + (this.urlRoot()) + this.id + "/zip/" + this.name, callbacks);
-    };
-
-    File.prototype.updateIndex = function(callbacks) {
-      console.log('updatIndex');
-      this.prepareCallbacks;
-      return client.put("" + (this.urlRoot()) + this.id + "/index", {}, callbacks);
     };
 
     File.prototype.getAttachment = function(file, callbacks) {
