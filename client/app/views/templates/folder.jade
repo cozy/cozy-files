@@ -15,26 +15,6 @@
             button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
 
 #dialog-new-folder.modal.fade(tabindex=-1)
-    .modal-dialog
-        .modal-content
-          .modal-header
-            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
-            h4.modal-title #{t("new folder caption")}
-          .modal-body
-            fieldset
-              .form-group
-                label(for='inputName')
-                  | #{t("new folder msg")}
-                input#inputName.form-control(type="text")
-              .form-group.hide#folder-upload-form
-                br
-                p.text-center or
-                label(for='inputName')
-                  | #{t("upload folder msg")}
-                input#folder-uploader.form-control(type="file", directory, mozdirectory, webkitdirectory)
-          .modal-footer
-            button.btn.btn-link#cancel-new-folder(type='button', data-dismiss='modal') #{t("new folder close")}
-            button.btn.btn-cozy#new-folder-send(type='button') #{t("new folder send")}
 
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
@@ -46,15 +26,18 @@
           #upload-buttons.pull-right
             a.btn.btn-cozy#share-state.btn-cozy-contrast
             | &nbsp;
-            a#button-upload-new-file.btn.btn-cozy.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
+            a#button-upload-new-file.btn.btn-cozy.btn-cozy(
+                data-toggle="modal",data-target="#dialog-upload-file")
               img(src="images/add-file.png")
             | &nbsp;
-            a.btn.btn-cozy#button-new-folder(data-toggle="modal",data-target="#dialog-new-folder")
+            a.btn.btn-cozy#button-new-folder
               img(src="images/add-folder.png")
             | &nbsp;
             //a#download-link.btn.btn-cozy(title=t("download"))
             //  i.icon-arrow-down.icon-white
             span &nbsp;
+
+
 .container
   .row.content-shadow
     .col-lg-12#content

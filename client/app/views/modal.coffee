@@ -9,15 +9,16 @@ module.exports = class ModalView extends BaseView
         "click #modal-dialog-no"  : "onNo"
         "click #modal-dialog-yes" : "onYes"
 
-    constructor: (@title, @msg, @yes, @no, @cb) ->
+    constructor: (@title, @msg, @yes, @no, @cb, @hideOnYes) ->
         super()
+        @hideOnYes = true unless @hideOnYes?
 
     initialize: ->
         @render()
-        @$('#modal-dialog').modal('show')
+        @hide()
 
     onYes: ->
-        @$('#modal-dialog').modal('hide')
+        @hide()
         @cb true if @cb
         setTimeout () =>
             @destroy()
@@ -25,10 +26,16 @@ module.exports = class ModalView extends BaseView
 
     onNo: ->
         @cb false if @cb
-        @$('#modal-dialog').modal('hide')
+        @hide() if @hideOnYes
         setTimeout () =>
             @destroy()
         , 1000
+
+    show: ->
+        @$('#modal-dialog').modal 'show'
+
+    hide: ->
+        @$('#modal-dialog').modal 'hide'
 
     render: ->
         @$el.append @template(title: @title, msg: @msg, yes: @yes, no: @no)
@@ -36,4 +43,5 @@ module.exports = class ModalView extends BaseView
         @
 
 module.exports.error = (code, cb) ->
-    new ModalView t("modal error"), t(code), t("modal ok"), false, cb
+    modal = new ModalView t("modal error"), t(code), t("modal ok"), false, cb
+    modal.show()

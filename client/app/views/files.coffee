@@ -69,7 +69,7 @@ module.exports = class FilesView extends ViewCollection
             error: =>
                 new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
 
-    addFolder: (folder, noDisplay) ->
+    addFolder: (folder, noDisplay, callback) ->
         found = @collection.findWhere(name: folder.get("name"), path: folder.get("path"))
 
         if not found
@@ -77,7 +77,10 @@ module.exports = class FilesView extends ViewCollection
                 success: (data) =>
                     if not noDisplay
                         @collection.add folder
+                    callback() if callback?
                 error: (error) =>
-                    new ModalView t("modal error"), t("modal error folder create"), t("modal ok")
+                    error.txt = "modal error folder create"
+                    callback error
         else
-            new ModalView t("modal error"), t("modal error folder exists"), t("modal ok")
+            error.txt = "modal error folder exists"
+            callback error

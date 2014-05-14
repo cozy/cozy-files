@@ -51,7 +51,7 @@ module.exports =
     "new folder caption"        : "Add a new folder"
     "new folder msg"            : "Create a folder named:"
     "new folder close"          : "Close"
-    "new folder send"           : "OK"
+    "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
     "upload folder msg"         : "Upload a folder"

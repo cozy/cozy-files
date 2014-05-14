@@ -3,16 +3,14 @@ FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 ProgressbarView = require "./progressbar"
 ModalView = require "./modal"
+ModalFolderView = require './modal_folder'
 ModalShareView = require './modal_share'
+showError = require('./modal').error
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
-Helpers = require '../lib/folder_helpers'
 
-
-showError = (msg) ->
-    new ModalView t("modal error"), t(msg), t("modal ok")
 
 module.exports = class FolderView extends BaseView
 
@@ -61,10 +59,14 @@ module.exports = class FolderView extends BaseView
         model: @model
 
     afterRender: ->
-        # add breadcrumbs view
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
         @displayChevron 'up', 'name'
+
+        @modalFolder = new ModalFolderView
+        @modalFolder.afterRender()
+        @modalFolder.hide()
+
 
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
@@ -135,7 +137,7 @@ module.exports = class FolderView extends BaseView
 
         # add files view
         @filesList?.$el.html null
-        @$("#loading-indicator").spin 'small'
+        #@$("#loading-indicator").spin 'small'
         @model.findFiles
             success: (files) =>
 
@@ -161,11 +163,12 @@ module.exports = class FolderView extends BaseView
                         @filesList = new FilesView @filesCollection, @model
                         @$('#files').html @filesList.$el
                         @filesList.render()
-                        @$("#loading-indicator").spin()
+                        @modalFolder.filesList = @filesList
+                        #@$("#loading-indicator").spin()
                     error: (error) =>
                         console.log error
                         showError t "modal error get folders"
-                        @$("#loading-indicator").spin()
+                        #@$("#loading-indicator").spin()
             error: (error) =>
                 console.log error
                 showError t "modal error get files"
@@ -175,79 +178,12 @@ module.exports = class FolderView extends BaseView
 
     # Upload/ new folder
     prepareNewFolder: ->
-        # display upload folder form only if it is supported
-        uploadDirectoryInput = @$("#folder-uploader")[0]
-        supportsDirectoryUpload = uploadDirectoryInput.directory or
-                                  uploadDirectoryInput.mozdirectory or
-                                  uploadDirectoryInput.webkitdirectory or
-                                  uploadDirectoryInput.msdirectory
-
-        $("#dialog-new-folder .progress-name").remove()
-
-        if supportsDirectoryUpload
-          @$("#folder-upload-form").removeClass('hide')
-
-        setTimeout () =>
-            @$("#inputName").focus()
-        , 500
+        @modalFolder.showModal @model.get 'path'
 
     onCancelFolder: ->
         @$("#inputName").val("")
 
 
-    onAddFolderEnter: (e) ->
-        if e.keyCode is 13
-            e.preventDefault()
-            e.stopPropagation()
-            @onAddFolder()
-
-    onAddFolder: =>
-        prefix = @model.repository()
-
-        folder = new File
-            name: @$('#inputName').val()
-            path: prefix
-            type: "folder"
-        @$("#inputName").val("")
-
-        files = @$('#folder-uploader')[0].files
-
-        if not files.length and folder.validate()
-            showError t "modal error no data"
-            return
-
-        if not folder.validate()
-            @filesList.addFolder folder
-
-        if files.length
-            # create the necessary (nested) folder structure
-            dirsToCreate = Helpers.nestedDirs(files)
-            for dir in dirsToCreate
-                # figure out the name and path for the folder
-                dir = Helpers.removeTralingSlash(dir)
-                parts = dir.split('/')
-                path = prefix + "/" + parts[...-1].join('/')
-                path = Helpers.removeTralingSlash(path)
-
-                nFolder = new File
-                    name: parts[-1..][0]
-                    path: path
-                    type: "folder"
-                response = @filesList.addFolder nFolder, true
-                # stop if the folder already exists
-                if response instanceof ModalView
-                    return
-
-            # now that the required folder structure was created, upload files
-            # filter out . and ..
-            files = (file for file in files when (file.name isnt "." and file.name isnt ".."))
-            for file in files
-                relPath = file.relativePath or file.mozRelativePath or file.webkitRelativePath or file.msRelativePath
-                file.path = prefix + "/" + Helpers.dirName(relPath)
-                response = @filesList.addFile file, true
-                # stop if the file already exists
-                if response instanceof ModalView
-                    return
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files
