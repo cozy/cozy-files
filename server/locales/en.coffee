@@ -7,4 +7,4 @@ module.exports =
     "file": "file"
     "folder": "folder"
     "link file content": "Click here to view this file"
-    "link folder content": "Click here to browse this folder"
+    "link folder content": "Click hereto browse this folder"

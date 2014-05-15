@@ -124,6 +124,7 @@ doSendNotif = ->
                     name: item.name
                     url: item.url
                     displayName: displayName
+                    localization: localization
 
             CozyAdapter.sendMailFromUser mailOptions, (err) ->
                 console.log 'sent update mail to ', item.to
