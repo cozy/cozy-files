@@ -5,8 +5,11 @@ module.exports =
     "modal ok"                  : "OK"
     "modal error get files"     : "A apărut o eroare în transferul de fișiere de la server"
     "modal error get folders"   : "A apărut o eroare în transferul de directoare de la server"
+    "modal error get content"   : "An error occurred while retrieving content of folder \"%{folderName}\" from the server"
     "modal error empty name"    : "Numele nu poate fi vid"
     "modal error file invalid"  : "Fișierul nu pare a fi valid"
+
+    "root folder name"          : "root"
 
     # breadcrumbs
     "breadcrumbs search title"  : "Căutare"

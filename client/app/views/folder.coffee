@@ -132,39 +132,31 @@ module.exports = class FolderView extends BaseView
         # add files view
         @filesList?.$el.html null
         @$("#loading-indicator").spin 'small'
-        @model.findFiles
-            success: (files) =>
+        @model.findContent
+            success: (content) =>
+                for item in content
+                    if item.docType.toLowerCase() is "file"
+                        item.type = "file"
+                    else
+                        item.type = "folder"
 
-                # mark files as files
-                for file in files
-                    file.type = "file"
+                @stopListening @filesCollection if @filesCollection?
+                @filesCollection = new FileCollection content
+                @listenTo @filesCollection, "sync", @hideUploadForm
 
-                @model.findFolders
-                    success: (folders) =>
+                # render the collection
+                @filesList?.destroy() if @filesList
+                @filesList = new FilesView @filesCollection, @model
+                @$('#files').html @filesList.$el
+                @filesList.render()
+                @$("#loading-indicator").spin()
 
-                        # mark folders as folders
-                        for folder in folders
-                            folder.type = "folder"
-
-                        # new collection
-                        if @filesCollection
-                            @stopListening @filesCollection
-                        @filesCollection = new FileCollection folders.concat(files)
-                        @listenTo @filesCollection, "sync", @hideUploadForm
-
-                        # render the collection
-                        @filesList?.destroy() if @filesList
-                        @filesList = new FilesView @filesCollection, @model
-                        @$('#files').html @filesList.$el
-                        @filesList.render()
-                        @$("#loading-indicator").spin()
-                    error: (error) =>
-                        console.log error
-                        new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
-                        @$("#loading-indicator").spin()
             error: (error) =>
-                console.log error
-                new ModalView t("modal error"), t("modal error get files"), t("modal ok")
+                folderName = @model.get 'name'
+                new ModalView t("modal error"), \
+                              t("modal error get content", {folderName}), \
+                              t("modal ok")
+                @$("#loading-indicator").spin()
 
     onUploadNewFileClicked: ->
         $("#dialog-upload-file .progress-name").remove()

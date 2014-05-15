@@ -1,3 +1,4 @@
+index = require './index'
 files = require './files'
 folders = require './folders'
 sharing = require './sharing'
@@ -27,6 +28,7 @@ module.exports =
         post: folders.create
     'folder/tree/:folderid':
         get: folders.tree
+    'folders/content': post: folders.findContent
     'folders/files':
         post: folders.findFiles
     'folders/folders':

@@ -5,8 +5,11 @@ module.exports =
     "modal ok"                  : "OK"
     "modal error get files"     : "Error getting files from server"
     "modal error get folders"   : "Error getting folders from server"
+    "modal error get content"   : "An error occurred while retrieving content of folder \"%{folderName}\" from the server"
     "modal error empty name"    : "The name can't be empty"
     "modal error file invalid"  : "doesn't seem to be a valid file"
+
+    "root folder name"          : "root"
 
     # breadcrumbs
     "breadcrumbs search title"  : "Search"
