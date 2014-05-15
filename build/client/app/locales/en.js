@@ -55,6 +55,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "files": "files",
+  "no file in folder": "This folder is empty.",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
   "notifications enabled": "Notifications enabled",

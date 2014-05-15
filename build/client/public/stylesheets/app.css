@@ -2851,6 +2851,9 @@ body.error-404 .error-frame .headline {
   font-size: 30px;
   color: #34a6ff;
 }
+.public #content {
+  padding-top: 70px;
+}
 @media (max-width: 480px) {
   body {
     text-rendering: optimizeSpeed;

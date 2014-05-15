@@ -787,6 +787,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "files": "files",
+  "no file in folder": "This folder is empty.",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
   "notifications enabled": "Notifications enabled",
@@ -880,6 +882,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "files": "fichiers",
+  "no file in folder": "Ce dossier est vide.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
   "notifications enabled": "Notifications activées",
@@ -1197,7 +1201,7 @@ module.exports = Router = (function(_super) {
     return folder.fetch({
       success: (function(_this) {
         return function(data) {
-          folder.set(data);
+          folder.set(data.attributes);
           return app.folderView.changeActiveFolder(folder);
         };
       })(this)
@@ -1489,7 +1493,9 @@ module.exports = FilesView = (function(_super) {
     this.model = options.model;
     this.firstRender = true;
     this.collection = new FileCollection;
-    return this.listenTo(this.collection, "reset", this.updateNbFiles);
+    this.listenTo(this.collection, "reset", this.updateNbFiles);
+    this.listenTo(this.collection, "add", this.updateNbFiles);
+    return this.listenTo(this.collection, "remove", this.updateNbFiles);
   };
 
   FilesView.prototype.afterRender = function() {
@@ -1560,11 +1566,15 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.upload = function(file, noDisplay) {
-    var formdata;
+    var formdata, path;
+    path = file.get('path');
+    if (path === '/root') {
+      path = '';
+    }
     formdata = new FormData();
     formdata.append('cid', file.cid);
     formdata.append('name', file.get('name'));
-    formdata.append('path', file.get('path'));
+    formdata.append('path', path);
     formdata.append('file', file.file);
     formdata.append('lastModification', file.get('lastModification'));
     return file.save(null, {
@@ -1805,7 +1815,8 @@ module.exports = FolderView = (function(_super) {
           }
           _this.stopListening(_this.filesList.collection);
           _this.filesList.collection.reset(content);
-          _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
+          _this.filesList.model = _this.model;
+          _this.listenTo(_this.filesList.collection, "sync", _this.hideUploadForm);
           return _this.$("#loading-indicator").spin();
         };
       })(this),

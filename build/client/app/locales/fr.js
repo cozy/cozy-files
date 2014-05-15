@@ -54,6 +54,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "files": "fichiers",
+  "no file in folder": "Ce dossier est vide.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
   "notifications enabled": "Notifications activées",
