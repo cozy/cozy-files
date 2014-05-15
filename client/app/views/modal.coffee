@@ -40,6 +40,7 @@ module.exports = class ModalView extends BaseView
     render: ->
         @$el.append @template(title: @title, msg: @msg, yes: @yes, no: @no)
         $("body").append @$el
+        @afterRender()
         @
 
 module.exports.error = (code, cb) ->

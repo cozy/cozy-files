@@ -25,11 +25,6 @@ module.exports = class ModalUploadView extends Modal
         @callback = callback
         @validator = options.validator
 
-    render: =>
-        super
-        @afterRender()
-        @
-
     afterRender: =>
         @input = @$ '#uploader input'
         @label = @$ '#uploader .text'
