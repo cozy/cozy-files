@@ -1,0 +1,34 @@
+doctype
+html
+  head
+    title 404 - File not found
+    link(rel="stylesheet", type="text/css", href="../assets/stylesheets/app.css", media="all")
+    link(rel="stylesheet", type="text/css", href="../assets/stylesheets/clippy.css", media="all")
+
+  body.error-404
+    .container
+      .row
+        .col-lg-12.error-frame
+          p.headline= localization.t('404 headline')
+          p= localization.t('404 option a')
+          p= localization.t('404 option separator')
+          p= localization.t('404 option b')
+
+    script(src="../assets/javascripts/vendor.js")
+    script(src="../assets/javascripts/clippy.min.js")
+    script.
+      clippy.load('Clippy', function(agent) {
+        agent.show()
+        //agent.play("Searching");
+        agent.speak("#{localization.t('404 clippy sorry')}");
+        setTimeout(function() {
+          agent.speak("#{localization.t('404 clippy contact')}");
+          setTimeout(function() {
+            agent.play("SendMail");
+            setInterval(function() {
+              agent.animate();
+            }, 15000);
+          }, 5000);
+        }, 5000);
+
+      });
