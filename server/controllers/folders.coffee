@@ -274,7 +274,20 @@ module.exports.allFolders = (req, res, next) ->
         if err then next err
         else res.send folders
 
+module.exports.findContent = (req, res, next) ->
+    getFolderPath req.body.id, (err, key) ->
+        if err? then next err
+        else
+            async.parallel [
+                (cb) -> Folder.byFolder key: key, cb
+                (cb) -> File.byFolder key: key, cb
+            ], (err, results) ->
 
+                if err? then next err
+                else
+                    [folders, files] = results
+                    content = folders.concat files
+                    res.send 200, content
 
 module.exports.findFolders = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->

@@ -57,10 +57,13 @@ getFileClass = (file) ->
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
         if err or not file or file.length is 0
-            if err
-                next err
-            else
-                res.send error:true, msg: 'File not found', 404
+            unless err?
+                err = new Error 'File not found'
+                err.status = 404
+                err.template =
+                    name: '404'
+                    params: localization: require '../lib/localization_manager'
+            next err
         else
             req.file = file[0]
             next()
@@ -223,7 +226,13 @@ module.exports.downloadAttachment = (req, res, next) ->
 # Download by a guest can only be performed if the guest has the good rights.
 module.exports.publicDownloadAttachment = (req, res, next) ->
     sharing.checkClearance req.file, req, (authorized) ->
-        if not authorized then res.send 404
+        if not authorized
+            err = new Error 'File not found'
+            err.status = 404
+            err.template =
+                name: '404'
+                params: localization: require '../lib/localization_manager'
+            next err
         else processAttachement req, res, true
 
 

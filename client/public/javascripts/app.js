@@ -110,7 +110,7 @@ module.exports = {
     this.root = new File({
       id: "root",
       path: "",
-      name: "",
+      name: t('root folder name'),
       type: "folder"
     });
     this.folderView = new FolderView({
@@ -433,7 +433,7 @@ var app;
 app = require('application');
 
 $(function() {
-  var initializeLocale, locale;
+  var err, locale, locales, polyglot;
   jQuery.event.props.push('dataTransfer');
   $.fn.spin = function(opts, color) {
     var nullapp, presets;
@@ -488,30 +488,18 @@ $(function() {
       return nullapp = require('application');
     }
   };
-  locale = "en";
-  $.ajax("cozy-locale.json", {
-    success: function(data) {
-      locale = data.locale;
-      return initializeLocale(locale);
-    },
-    error: function() {
-      return initializeLocale(locale);
-    }
-  });
-  return initializeLocale = function(locale) {
-    var err, locales, polyglot;
-    locales = {};
-    try {
-      locales = require("locales/" + locale);
-    } catch (_error) {
-      err = _error;
-      locales = require("locales/en");
-    }
-    polyglot = new Polyglot();
-    polyglot.extend(locales);
-    window.t = polyglot.t.bind(polyglot);
-    return app.initialize();
-  };
+  locale = window.locale || "en";
+  locales = {};
+  try {
+    locales = require("locales/" + locale);
+  } catch (_error) {
+    err = _error;
+    locales = require("locales/en");
+  }
+  polyglot = new Polyglot();
+  polyglot.extend(locales);
+  window.t = polyglot.t.bind(polyglot);
+  return app.initialize();
 });
 
 });
@@ -748,8 +736,10 @@ module.exports = {
   "modal ok": "OK",
   "modal error get files": "Error getting files from server",
   "modal error get folders": "Error getting folders from server",
+  "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
+  "root folder name": "root",
   "breadcrumbs search title": "Search",
   "modal error file exists": "Sorry, a file or folder having this name already exists",
   "modal error file upload": "File could not be sent to server",
@@ -797,6 +787,8 @@ module.exports = {
   "MB": "MB",
   "KB": "KB",
   "B": "B",
+  "files": "files",
+  "no file in folder": "This folder is empty.",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
   "notifications enabled": "Notifications enabled",
@@ -840,8 +832,10 @@ module.exports = {
   "modal ok": "OK",
   "modal error get files": "Une erreur s'est produite en récupérant les fichiers du serveur",
   "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
+  "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
   "modal error empty name": "Le nom ne peut pas être vide",
   "modal error file invalid": "Le fichier ne parait pas être valide",
+  "root folder name": "racine",
   "breadcrumbs search title": "Recherche",
   "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
   "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
@@ -888,6 +882,8 @@ module.exports = {
   "MB": "Mo",
   "KB": "Ko",
   "B": "o",
+  "files": "fichiers",
+  "no file in folder": "Ce dossier est vide.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
   "notifications enabled": "Notifications activées",
@@ -930,8 +926,10 @@ module.exports = {
   "modal ok": "OK",
   "modal error get files": "A apărut o eroare în transferul de fișiere de la server",
   "modal error get folders": "A apărut o eroare în transferul de directoare de la server",
+  "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
   "modal error empty name": "Numele nu poate fi vid",
   "modal error file invalid": "Fișierul nu pare a fi valid",
+  "root folder name": "root",
   "breadcrumbs search title": "Căutare",
   "modal error file exists": "Ne pare rău, există deja un document cu acest nume",
   "modal error file upload": "Fișierul nu a putut fi trimis server-ului",
@@ -1125,6 +1123,13 @@ module.exports = File = (function(_super) {
     }
   };
 
+  File.prototype.findContent = function(callbacks) {
+    this.prepareCallbacks(callbacks);
+    return client.post("" + (this.urlRoot()) + "content", {
+      id: this.id
+    }, callbacks);
+  };
+
   File.prototype.findFiles = function(callbacks) {
     this.prepareCallbacks(callbacks);
     return client.post("" + (this.urlRoot()) + "files", {
@@ -1196,7 +1201,7 @@ module.exports = Router = (function(_super) {
     return folder.fetch({
       success: (function(_this) {
         return function(data) {
-          folder.set(data);
+          folder.set(data.attributes);
           return app.folderView.changeActiveFolder(folder);
         };
       })(this)
@@ -1488,7 +1493,9 @@ module.exports = FilesView = (function(_super) {
     this.model = options.model;
     this.firstRender = true;
     this.collection = new FileCollection;
-    return this.listenTo(this.collection, "reset", this.updateNbFiles);
+    this.listenTo(this.collection, "reset", this.updateNbFiles);
+    this.listenTo(this.collection, "add", this.updateNbFiles);
+    return this.listenTo(this.collection, "remove", this.updateNbFiles);
   };
 
   FilesView.prototype.afterRender = function() {
@@ -1559,11 +1566,15 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.upload = function(file, noDisplay) {
-    var formdata;
+    var formdata, path;
+    path = file.get('path');
+    if (path === '/root') {
+      path = '';
+    }
     formdata = new FormData();
     formdata.append('cid', file.cid);
     formdata.append('name', file.get('name'));
-    formdata.append('path', file.get('path'));
+    formdata.append('path', path);
     formdata.append('file', file.file);
     formdata.append('lastModification', file.get('lastModification'));
     return file.save(null, {
@@ -1788,37 +1799,35 @@ module.exports = FolderView = (function(_super) {
     }
     zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
     this.$('#download-link').attr('href', zipLink);
-    this.$("#loading-indicator").spin('tiny');
-    return this.model.findFiles({
+    this.filesList.collection.reset([]);
+    this.$("#loading-indicator").spin('small');
+    return this.model.findContent({
       success: (function(_this) {
-        return function(files) {
-          var file, _i, _len;
-          for (_i = 0, _len = files.length; _i < _len; _i++) {
-            file = files[_i];
-            file.type = "file";
-          }
-          return _this.model.findFolders({
-            success: function(folders) {
-              var _j, _len1;
-              for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
-                folder = folders[_j];
-                folder.type = "folder";
-              }
-              _this.filesList.collection.reset(folders.concat(files));
-              return _this.$("#loading-indicator").spin();
-            },
-            error: function(error) {
-              console.log(error);
-              new ModalView(t("modal error"), t("modal error get folders"), t("modal ok"));
-              return _this.$("#loading-indicator").spin();
+        return function(content) {
+          var item, _i, _len;
+          for (_i = 0, _len = content.length; _i < _len; _i++) {
+            item = content[_i];
+            if (item.docType.toLowerCase() === "file") {
+              item.type = "file";
+            } else {
+              item.type = "folder";
             }
-          });
+          }
+          _this.stopListening(_this.filesList.collection);
+          _this.filesList.collection.reset(content);
+          _this.filesList.model = _this.model;
+          _this.listenTo(_this.filesList.collection, "sync", _this.hideUploadForm);
+          return _this.$("#loading-indicator").spin();
         };
       })(this),
       error: (function(_this) {
         return function(error) {
-          console.log(error);
-          return new ModalView(t("modal error"), t("modal error get files"), t("modal ok"));
+          var folderName;
+          folderName = _this.model.get('name');
+          new ModalView(t("modal error"), t("modal error get content", {
+            folderName: folderName
+          }), t("modal ok"));
+          return _this.$("#loading-indicator").spin();
         };
       })(this)
     });
@@ -2138,7 +2147,7 @@ module.exports = ModalShareView = (function(_super) {
       };
     } else {
       return {
-        'r': 'perm r file'
+        'r': t('perm r file')
       };
     }
   };

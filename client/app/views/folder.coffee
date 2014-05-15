@@ -98,28 +98,28 @@ module.exports = class FolderView extends BaseView
         zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
         @$('#download-link').attr 'href', zipLink
 
-        @$("#loading-indicator").spin 'tiny'
-        # add files view
-        @model.findFiles
-            success: (files) =>
+        @filesList.collection.reset []
+        @$("#loading-indicator").spin 'small'
+        @model.findContent
+            success: (content) =>
+                for item in content
+                    if item.docType.toLowerCase() is "file"
+                        item.type = "file"
+                    else
+                        item.type = "folder"
 
-                # mark files as files
-                file.type = "file" for file in files
+                @stopListening @filesList.collection
+                @filesList.collection.reset content
+                @filesList.model = @model
+                @listenTo @filesList.collection, "sync", @hideUploadForm
+                @$("#loading-indicator").spin()
 
-                @model.findFolders
-                    success: (folders) =>
-
-                        # mark folders as folders
-                        folder.type = "folder" for folder in folders
-                        @filesList.collection.reset folders.concat(files)
-                        @$("#loading-indicator").spin()
-                    error: (error) =>
-                        console.log error
-                        new ModalView t("modal error"), t("modal error get folders"), t("modal ok")
-                        @$("#loading-indicator").spin()
             error: (error) =>
-                console.log error
-                new ModalView t("modal error"), t("modal error get files"), t("modal ok")
+                folderName = @model.get 'name'
+                new ModalView t("modal error"), \
+                              t("modal error get content", {folderName}), \
+                              t("modal ok")
+                @$("#loading-indicator").spin()
 
     onUploadNewFileClicked: ->
         $("#dialog-upload-file .progress-name").remove()

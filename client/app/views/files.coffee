@@ -25,8 +25,6 @@ class FileList extends ViewCollection
         super options
 
 
-
-
 module.exports = class FilesView extends BaseView
     template: require './templates/files'
     id: 'files'
@@ -51,6 +49,8 @@ module.exports = class FilesView extends BaseView
         @firstRender = true
         @collection = new FileCollection
         @listenTo @collection, "reset", @updateNbFiles
+        @listenTo @collection, "add", @updateNbFiles
+        @listenTo @collection, "remove", @updateNbFiles
 
     afterRender: ->
         super
@@ -114,10 +114,12 @@ module.exports = class FilesView extends BaseView
             new ModalView t("modal error"), "#{t('modal error file exists')}: #{attach.name}", t("modal ok")
 
     upload: (file, noDisplay) =>
+        path = file.get 'path'
+        path = '' if path is '/root'
         formdata = new FormData()
         formdata.append 'cid', file.cid
         formdata.append 'name', file.get 'name'
-        formdata.append 'path', file.get 'path'
+        formdata.append 'path', path
         formdata.append 'file', file.file
         formdata.append 'lastModification', file.get 'lastModification'
         file.save null,

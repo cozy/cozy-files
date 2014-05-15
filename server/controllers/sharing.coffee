@@ -14,9 +14,10 @@ clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
         User.getDisplayName (err, displayName) ->
-            options.displayName = displayName or localization.t 'default user name'
-            options.localized_type = localization.t options.type
-            options.localized_link = localization.t "link #{options.type} content"
+            options.displayName = displayName or \
+                                  localization.t 'default user name'
+
+            options.localization = localization
             callback null, mailTemplate options
 
     mailSubject: (options, callback) ->

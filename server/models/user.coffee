@@ -21,7 +21,7 @@ User.getDisplayName = (callback) ->
             # display name management
             if user.public_name?.length > 0 then name = user.public_name
             else
-                name = helpers.hideEmail user.email
+                name = hideEmail user.email
                 words = name.split ' '
                 name = words.map((word) ->
                     return word.charAt(0).toUpperCase() + word.slice 1
@@ -29,3 +29,8 @@ User.getDisplayName = (callback) ->
             callback null, name
         else
             callback null, null
+
+hideEmail = (email) ->
+    email.split('@')[0]
+        .replace '.', ' '
+        .replace '-', ' '

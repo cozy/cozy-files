@@ -1,22 +1,18 @@
-should = require 'should'
+should = require('chai').should()
 americano = require 'americano'
 moment = require 'moment'
-Client = require('request-json').JsonClient
 
 helpers = require './helpers'
-
-client = new Client "http://localhost:8888/"
-
+client = helpers.getClient()
 
 describe "Folders management", ->
 
-
-    before helpers.setup 8888
-
-    after helpers.takeDown
+    before helpers.startApp
+    before helpers.cleanDB
+    after helpers.stopApp
+    before helpers.cleanDB
 
     describe "Create folder", ->
-        #before helpers.cleanDb
 
         describe "Create a new folder", ->
             it "When I send a request to create a folder", (done) ->
