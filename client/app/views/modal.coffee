@@ -2,6 +2,10 @@ BaseView = require '../lib/base_view'
 
 module.exports = class ModalView extends BaseView
 
+    id: "dialog-modal"
+    className: "modal fade"
+    attributes:
+        'tab-index': -1
     template: require './templates/modal'
     value: 0
 
@@ -18,8 +22,8 @@ module.exports = class ModalView extends BaseView
         @show()
 
     onYes: ->
-        @hide()
         @cb true if @cb
+        @hide()
         setTimeout () =>
             @destroy()
         , 1000
@@ -32,10 +36,10 @@ module.exports = class ModalView extends BaseView
         , 1000
 
     show: ->
-        @$('#modal-dialog').modal 'show'
+        @$el.modal 'show'
 
     hide: ->
-        @$('#modal-dialog').modal 'hide'
+        @$el.modal 'hide'
 
     render: ->
         @$el.append @template(title: @title, msg: @msg, yes: @yes, no: @no)

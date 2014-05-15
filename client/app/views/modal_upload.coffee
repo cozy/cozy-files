@@ -25,6 +25,10 @@ module.exports = class ModalUploadView extends Modal
         @callback = callback
         @validator = options.validator
 
+        if @files = options.files
+            @onYes()
+
+
     afterRender: =>
         @input = @$ '#uploader input'
         @label = @$ '#uploader .text'
@@ -40,9 +44,6 @@ module.exports = class ModalUploadView extends Modal
             @input.val("")
             @callback?()
             # super
-
-    show: -> @$el.modal('show')
-    hide: -> @$el.modal('hide')
 
     handleUploaderActive: =>
         @$('#uploader').addClass 'active'

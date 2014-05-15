@@ -2,9 +2,8 @@ BaseView = require '../lib/base_view'
 Modal = require "./modal"
 Helpers = require '../lib/folder_helpers'
 File = require '../models/file'
-ModalView = require "./modal"
+ModalUploadView = require './modal_upload'
 
-showError = require('./modal').error
 Client = require "../helpers/client"
 
 # extends the cozy-clearance modal to files specifics
@@ -16,9 +15,22 @@ module.exports = class ModalFolderView extends Modal
         'tab-index': -1
     template: require './templates/modal_folder'
 
+    constructor: (options, callback) ->
+        # do not use modal short constructor
+        Modal.__super__.constructor.apply this, arguments
+        @callback = callback
+        @validator = options.validator
+
+
     events: ->
         _.extend super,
-            "keyup #inputName" : "onKeyUp"
+            'keyup #inputName' : 'onKeyUp'
+            'change #folder-uploader': 'onUploaderChange'
+
+
+    initialize: ->
+        super
+        @prefix = @model.repository()
 
     # - display upload folder form only if it is supported
     # - Register submit button
@@ -32,86 +44,114 @@ module.exports = class ModalFolderView extends Modal
         if supportsDirectoryUpload
             @$("#folder-upload-form").removeClass('hide')
 
-        @submitButton = @$ "#new-folder-send"
-        @submitButton.spin()
-        @showModal()
+
+        @uploader = @$('#folder-uploader')
+        @inputName = @$('#inputName')
+
+        @submitButton = @$ "#modal-dialog-yes"
+        # @submitButton.spin()
+        # @showModal()
+
+    hideAndDestroy: =>
+        @hide()
+        setTimeout =>
+            @destroy()
+        , 500
 
     onKeyUp: (event) =>
         if event.keyCode is 13 #enter
             event.preventDefault()
             event.stopPropagation()
             @onYes()
+        else
+            # make action clear
+            @action = 'create'
+            @uploader.val ''
 
-    onYes: =>
-        prefix = @prefix
+    onUploaderChange: =>
+        console.log "THIS TRIGGER"
+        # make action clear
+        @action = 'upload'
+        @inputName.val ''
 
+
+    doSaveFolder: (folder, callback) ->
+        # let parent view decide if this exists
+        if err = @validator folder
+            return Modal.error t "modal error folder exists"
+
+        @submitButton.html('&nbsp;').spin('tiny')
+        folder.save null,
+            always: ->
+                @submitButton.spin().text t 'new folder send'
+
+            success: (data) =>
+                @hideAndDestroy()
+                callback null
+
+            error: (_, err) ->
+                if err.status is 400
+                    Modal.error t "modal error folder exists"
+                else
+                    Modal.error t "modal error folder create"
+
+                callback err
+
+    doCreateFolder: (callback) =>
         folder = new File
             name: @$('#inputName').val()
-            path: prefix
+            path: @prefix
             type: "folder"
 
+        if errors = folder.validate()
+            return Modal.error t "modal error no data"
+
+        @doSaveFolder folder, callback
+
+
+    doUploadFolder: (callback) =>
         files = @$('#folder-uploader')[0].files
 
-        if not files.length and folder.validate()
-            showError t "modal error no data"
-            return
+        if not files.length
+            return Modal.error t "modal error no data"
 
-        if not folder.validate()
-            @submitButton.spin 'tiny'
-            @filesList.addFolder folder, true, =>
-                @submitButton.spin()
-                @hide()
+        dirs = Helpers.nestedDirs files
 
-        if files.length
-            # create the necessary (nested) folder structure
-            dirsToCreate = Helpers.nestedDirs files
+        async.each dirs, (dir, cb) =>
+            dir = Helpers.removeTralingSlash dir
+            parts = dir.split '/'
+            path = "#{@prefix}/#{parts[...-1].join '/'}"
+            path = Helpers.removeTralingSlash path
 
-            createDir = ->
-                if dirsToCreate.length > 0
-                    dir = dirsToCreate.pop()
-                    # figure out the name and path for the folder
-                    dir = Helpers.removeTralingSlash dir
-                    parts = dir.split '/'
-                    path = "#{prefix}/#{parts[...-1].join '/'}"
-                    path = Helpers.removeTralingSlash path
-                    console.log path
 
-                    nFolder = new File
-                        name: parts[-1..][0]
-                        path: path
-                        type: "folder"
+            folder = new File
+                name: parts[-1..][0]
+                path: path
+                type: "folder"
 
-                    response = @filesList.addFolder nFolder, true, (err) =>
-                        if err
-                            showError err.txt
-                            alert 'finished'
-                            @hide()
-                        else
-                            createDir()
-                else
-                    alert 'finished'
-                    @hide()
+            @doSaveFolder folder, (err) ->
+                console.log err if err
+                cb null
 
-            # now that the required folder structure was created, upload files
-            # filter out . and ..
-            #files = (file for file in files when (file.name isnt "." and file.name isnt ".."))
-            #for file in files
-                #relPath = file.relativePath or
-                          #file.mozRelativePath or
-                          #file.webkitRelativePath or
-                          #file.msRelativePath
-                #file.path = "#{prefix}/#{Helpers.dirName relPath }"
-                #response = @filesList.addFile file, true
+        , (err) =>
 
-                ## stop if the file already exists
-                #return if response instanceof ModalView
+            files = _.filter files, (file) ->
+                file.name not in ['.', '..']
 
-    # Clean everythin before showing modal. Once displayed, focus the input.
-    showModal: (prefix) ->
-        $("#dialog-new-folder .progress-name").remove()
-        @$("#inputName").val ""
-        @prefix = prefix
-        @$el.modal 'show'
-        setTimeout ->
-            @$("#inputName").focus()
-        , 500
+            for file in files
+                relPath = file.relativePath or
+                          file.mozRelativePath or
+                          file.webkitRelativePath or
+                          file.msRelativePath
+                file.path = "#{@prefix}/#{Helpers.dirName relPath }"
+
+            new ModalUploadView
+                files: files
+                validator: -> null
+
+
+    onYes: =>
+        doStuff = if @action is 'upload' then @doUploadFolder else @doCreateFolder
+
+        doStuff ->
+            console.log arguments

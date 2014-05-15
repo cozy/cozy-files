@@ -42,7 +42,11 @@ module.exports =
 
     # folder template
     "upload caption"            : "Upload a new file"
-    "upload msg"                : "Choose the file to upload:"
+    "upload msg"                : "Drag files or click here to choose files."
+    "upload msg selected"       : """
+        You have selected %{smart_count} file, click Add to upload it. ||||
+        You have selected %{smart_count} files, click Add to upload them.
+    """
     "upload close"              : "Close"
     "upload send"               : "Add"
 

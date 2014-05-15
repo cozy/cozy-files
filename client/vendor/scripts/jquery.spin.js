@@ -47,9 +47,9 @@ $.fn.spin = function(opts, color) {
         { color: color || $this.css('color') },
         $.fn.spin.presets[opts] || opts
       )
-      console.log(opts);
+      // console.log(opts);
       data.spinner = new Spinner(opts).spin(this)
-      console.log(data.spinner);
+      // console.log(data.spinner);
     }
   });
 }

@@ -156,7 +156,7 @@ module.exports = class FolderView extends BaseView
                         @filesList = new FilesView @filesCollection, @model
                         @$('#files').html @filesList.$el
                         @filesList.render()
-                        @modalFolder.filesList = @filesList
+                        # @modalFolder.filesList = @filesList
                         #@$("#loading-indicator").spin()
                     error: (error) =>
                         console.log error
