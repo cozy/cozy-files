@@ -5,6 +5,8 @@ sharing = require './sharing'
 
 module.exports =
 
+    '': get: index.main
+
     'fileid':
         param: files.fetch
 
