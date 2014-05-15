@@ -6476,7 +6476,7 @@ if (!jQuery) { throw new Error("Bootstrap requires jQuery") }
     highlighter: function(contact) {
       var img, old;
       old = $.fn.typeahead.Constructor.prototype.highlighter;
-      img = contact.hasPicture ? '<img width="40" src="clearance/contacts/' + contact.id + '.jpg">&nbsp;' : '<i class="icon icon-user"></i>&nbsp;';
+      img = contact.hasPicture ? '<img width="40" src="clearance/contacts/' + contact.id + '.jpg">&nbsp;' : '<img width="40" src="images/defaultpicture.png">&nbsp;';
       return img + old.call(this, contact.display);
     },
     updater: (function(_this) {
@@ -6844,6 +6844,8 @@ module.exports = CozyClearanceModal = (function(_super) {
     this.makeURL = __bind(this.makeURL, this);
     return CozyClearanceModal.__super__.constructor.apply(this, arguments);
   }
+
+  CozyClearanceModal.prototype.id = 'cozy-clearance-modal';
 
   CozyClearanceModal.prototype.template_content = require('./modal_share_template');
 
