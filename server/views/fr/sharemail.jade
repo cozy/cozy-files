@@ -1,9 +1,28 @@
-h1 #{displayName} a partagé le #{localized_type} "#{doc.name}" avec vous !
+doctype
+html
+  head
+    meta(name="viewport", content="width=device-width")
+    meta(http-equiv="Content-Type", content="text/html; charset=UTF-8")
 
-p
-    a(href=url)= localized_link
-    | .
-p
-    | Envoyé depuis le&nbsp;
-    a(href="http://cozy.io") Cozy
-    | &nbsp;de #{displayName}.
+  body
+    table(cellspacing="0", style="border-radius: 5px; border: 5px solid #34A6FF; margin: auto; width: 75%; padding: 20px 20px 10px 20px")
+      tr
+        th(style="color: #34A6FF; font-size: 20px") #{displayName} a partagé le #{localization.t(type)} "#{doc.name}" avec vous !
+      tr
+        td(style="padding: 45px 0; text-align: center; font-size: 18px")
+          a(href=url, style="background: #34A6FF; color: #fff; padding: 8px; border-radius: 5px; text-decoration: none;")
+            | #{localization.t('link ' + type + ' content')}.
+      if type == 'folder'
+        tr
+          td
+            | Vous pouvez :
+            ul
+              li Consulter les fichiers de ce dossier
+              if type == 'folder' && rule.perm == 'rw'
+                li Ajouter des fichiers au dossier
+              li Vous abonner aux notifications de changement de ce dossier
+      tr
+        td(style="text-align: right; font-size: 12px; padding-top: 10px;")
+          | Envoyé depuis le&nbsp;
+          a(href="http://cozy.io", style="color: #34A6FF;") Cozy
+          | &nbsp;de #{displayName}.

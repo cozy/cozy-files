@@ -66,7 +66,8 @@ a
 /*      INPUTS          */
 input
     border: 1px solid #ccc
-    color: #ccc
+    color: #33
+
 input:focus
     color: #333
     border-color: basecolor
@@ -144,8 +145,9 @@ div#affixbar
 
 
 /*      ITEMS           */
+table
 table#table-items
-  margin-top: 30px
+  margin-bottom: 10px
 
   .unactive
     opacity: 0.5
@@ -490,14 +492,60 @@ tr.folder-row
     font-size 14px
     line-height 21px
     span
+      margin-left: 5px
       font-size 17px
 
 .caption-edit
 .file-edit-save
 .file-edit-cancel
-   margin-top: 5px
+  margin-top: 5px
 
 tr.folder-row
   .caption-edit
     i.fa
       margin-right: 9px
+
+.footer
+  text-align: center
+  color: grey
+  font-style: italic
+
+#content
+  background: white
+  padding-bottom: 10px
+
+#files
+  padding-top: 30px
+
+
+// 404 page (not found)
+
+body.error-404
+  background #fff
+
+body.error-404 .container
+  display table
+  overflow hidden
+  position relative
+  height 100%
+
+body.error-404 .row
+  display table-cell
+  vertical-align middle
+
+body.error-404 .error-frame
+  padding 80px 40px
+  background #fff
+  border 10px solid blue
+  font-size 25px
+  text-align center
+
+  .headline
+    margin-bottom 50px
+    font-size 30px
+    color blue
+
+.public
+    #content
+        padding-top: 70px
+

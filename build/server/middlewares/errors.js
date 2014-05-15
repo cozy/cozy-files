@@ -8,12 +8,29 @@ logger = require('printit')({
 });
 
 module.exports = function(err, req, res, next) {
-  var message, statusCode;
+  var header, message, statusCode, templateName, value, _ref;
   statusCode = err.status || 500;
   message = err instanceof Error ? err.message : err.error;
-  logger.error("An error occured: " + message);
-  console.log(err.stack);
-  return res.send(statusCode, {
-    error: message
-  });
+  message = message || 'Server error occurred';
+  if ((err.headers != null) && Object.keys(err.headers).length > 0) {
+    _ref = err.headers;
+    for (header in _ref) {
+      value = _ref[header];
+      res.set(header, value);
+    }
+  }
+  if ((err.template != null) && (req != null ? req.accepts('html') : void 0) === 'html') {
+    templateName = "" + err.template.name + ".jade";
+    res.render(templateName, err.template.params, function(err, html) {
+      return res.send(statusCode, html);
+    });
+  } else {
+    res.send(statusCode, {
+      error: message
+    });
+  }
+  if (err instanceof Error) {
+    logger.error(err.message);
+    return logger.error(err.stack);
+  }
 };

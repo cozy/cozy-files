@@ -24,8 +24,7 @@ clearanceCtl = clearance.controller({
     options.type = options.doc.docType.toLowerCase();
     return User.getDisplayName(function(err, displayName) {
       options.displayName = displayName || localization.t('default user name');
-      options.localized_type = localization.t(options.type);
-      options.localized_link = localization.t("link " + options.type + " content");
+      options.localization = localization;
       return callback(null, mailTemplate(options));
     });
   },

@@ -27,7 +27,11 @@
     "jade": "1.3.1",
     "archiver": "0.4.10",
     "printit": "0.1.3",
+<<<<<<< HEAD
+    "cozy-clearance": "0.1.9",
+=======
     "cozy-clearance": "0.1.8",
+>>>>>>> 19aceda910a3f9613d115a6f8a214132bd54bc07
     "cozy-notifications-helper": "1.0.2",
     "node-polyglot": "0.3.0"
   },

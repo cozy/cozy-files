@@ -15,15 +15,11 @@ BaseView = require 'lib/base_view'
 
 module.exports = class ViewCollection extends BaseView
 
-    itemview: null
-
-    views: {}
-
-    template: -> ''
-
-    itemViewOptions: ->
-
     collectionEl: null
+    template: -> ''
+    itemview: null
+    views: {}
+    itemViewOptions: ->
 
     # add 'empty' class to view when there is no subview
     onChange: ->
@@ -41,8 +37,7 @@ module.exports = class ViewCollection extends BaseView
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
 
-        if not @collectionEl?
-            collectionEl = el
+        @collectionEl = el if not @collectionEl?
 
     # if we have views before a render call, we detach them
     render: ->
@@ -51,7 +46,7 @@ module.exports = class ViewCollection extends BaseView
 
     # after render, we reattach the views
     afterRender: ->
-        @$collectionEl = $(@collectionEl)
+        @$collectionEl = $ @collectionEl unless @$collectionEl?
         @appendView view.$el for id, view of @views
         @onReset @collection
         @onChange @views
@@ -68,8 +63,8 @@ module.exports = class ViewCollection extends BaseView
 
     # event listeners for add
     addItem: (model) =>
-        options = _.extend {}, {model: model}, @itemViewOptions(model)
-        view = new @itemview(options)
+        options = _.extend {}, model: model, @itemViewOptions(model)
+        view = new @itemview options
         @views[model.cid] = view.render()
         @appendView view
         @onChange @views

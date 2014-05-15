@@ -87,14 +87,17 @@ module.exports.fetch = function(req, res, next, id) {
     key: id
   }, function(err, file) {
     if (err || !file || file.length === 0) {
-      if (err) {
-        return next(err);
-      } else {
-        return res.send({
-          error: true,
-          msg: 'File not found'
-        }, 404);
+      if (err == null) {
+        err = new Error('File not found');
+        err.status = 404;
+        err.template = {
+          name: '404',
+          params: {
+            localization: require('../lib/localization_manager')
+          }
+        };
       }
+      return next(err);
     } else {
       req.file = file[0];
       return next();
@@ -307,8 +310,17 @@ module.exports.downloadAttachment = function(req, res, next) {
 
 module.exports.publicDownloadAttachment = function(req, res, next) {
   return sharing.checkClearance(req.file, req, function(authorized) {
+    var err;
     if (!authorized) {
-      return res.send(404);
+      err = new Error('File not found');
+      err.status = 404;
+      err.template = {
+        name: '404',
+        params: {
+          localization: require('../lib/localization_manager')
+        }
+      };
+      return next(err);
     } else {
       return processAttachement(req, res, true);
     }
