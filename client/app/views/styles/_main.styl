@@ -510,3 +510,64 @@ tr.folder-row
 .spinner
     display: inline-block
 
+
+.progress-name
+  margin-bottom 8px
+  height 20px
+  line-height 20px
+
+  span
+    display inline-block
+    overflow hidden
+
+  .name
+    font-weight bold
+    white-space nowrap
+    text-overflow ellipsis
+    width: 150px
+  .error
+    color red
+  .success
+    color green
+  .progressview
+    display inline-block
+    width: 380px
+    .progress
+      margin-bottom 0px
+
+#uploader
+    position: relative
+    overflow: hidden
+    cursor: pointer
+    color white
+    padding 6px 12px
+    line-height 1.5
+    min-height 34px
+    width 100%
+    background-color basecolor
+
+    &:hover
+      background-color basecolor + 10%
+    &.active
+      background-color orange
+
+    .text
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        text-align: center
+        line-height: 37px
+
+    input
+        cursor: pointer
+        position: absolute
+        width: 4000px
+        display: block
+        height: 3000px
+        font-size: 300px
+        top: 0px
+        right: 0px
+        line-height: 300px
+        opacity: 0.01

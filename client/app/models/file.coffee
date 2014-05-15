@@ -2,19 +2,30 @@ client = require "../helpers/client"
 
 module.exports = class File extends Backbone.Model
 
-    # patch Model.sync so it could trigger progress event
     sync: (method, model, options)->
-        progress = (e)->
-            model.trigger('progress', e)
 
-        _.extend options,
-            xhr: ()->
-                xhr = $.ajaxSettings.xhr()
-                if xhr instanceof window.XMLHttpRequest
-                    xhr.addEventListener 'progress', progress, false
-                if xhr.upload
-                    xhr.upload.addEventListener 'progress', progress, false
-                xhr
+        # this is a new model, let's upload it as a multipart
+        if model.file
+            formdata = new FormData()
+            formdata.append 'name', model.get 'name'
+            formdata.append 'path', model.get 'path'
+            formdata.append 'file', model.file
+            formdata.append 'lastModification', model.get 'lastModification'
+
+            # trigger upload progress on the model
+            progress = (e) -> model.trigger('progress', e)
+
+            _.extend options,
+                contentType: false
+                data: formdata
+                # patch Model.sync so it could trigger progress event
+                xhr: ->
+                    xhr = $.ajaxSettings.xhr()
+                    if xhr instanceof window.XMLHttpRequest
+                        xhr.addEventListener 'progress', progress, false
+                    if xhr.upload
+                        xhr.upload.addEventListener 'progress', progress, false
+                    xhr
 
         Backbone.sync.apply @, arguments
 

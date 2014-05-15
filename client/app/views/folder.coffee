@@ -2,7 +2,7 @@ BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 ProgressbarView = require "./progressbar"
-ModalView = require "./modal"
+ModalUploadView = require './modal_upload'
 ModalFolderView = require './modal_folder'
 ModalShareView = require './modal_share'
 showError = require('./modal').error
@@ -17,11 +17,10 @@ module.exports = class FolderView extends BaseView
     template: require './templates/folder'
 
     events: ->
-        'click a#button-upload-new-file': 'onUploadNewFileClicked'
         'click #button-new-folder'     : 'onNewFolderClicked'
+        'click #button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
-        'click #upload-file-send'      : 'onAddFile'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
 
@@ -168,42 +167,24 @@ module.exports = class FolderView extends BaseView
                 showError t "modal error get files"
 
     onUploadNewFileClicked: ->
-        $("#dialog-upload-file .progress-name").remove()
+        @modal = new ModalUploadView
+            model: @model
+            validator: @validateNewModel
 
-
-    onAddFile: =>
-        for attach in @$('#uploader')[0].files
-            @filesList.addFile attach
-        @$('#uploader').val("")
-
-    onCancelFile: ->
-        @$("#uploader").val("")
-
-    onDragAndDrop: (e) =>
-        e.preventDefault()
-        e.stopPropagation()
-
-        # send file
-        atLeastOne = false
-        for attach in e.dataTransfer.files
-            if attach.type is ""
-                showError t "#{attach.name} #{t('modal error file invalid')}"
-            else
-                @filesList.addFile attach
-                atLeastOne = true
     onNewFolderClicked: ->
         @modal = new ModalFolderView
             model: @model
             validator: @validateNewModel
 
+    validateNewModel: (model) =>
+        myChildren = model.get('path') is @model.repository()
+        found = @filesList.collection.findWhere name: model.get 'name'
+        if myChildren and found
+            return t 'modal error file exists'
+        else
+            return null
 
-        if atLeastOne
-            # show a status bar
-            $("#dialog-upload-file").modal("show")
 
-    hideUploadForm: ->
-        $('#dialog-upload-file').modal('hide')
-        $('#dialog-new-folder').modal('hide')
 
 
     ###

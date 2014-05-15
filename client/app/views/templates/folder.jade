@@ -1,21 +1,3 @@
-#dialog-upload-file.modal.fade(tabindex=-1)
-    .modal-dialog
-        .modal-content
-          .modal-header
-            button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
-            h4.modal-title #{t("upload caption")}
-          .modal-body
-            fieldset
-              .form-group
-                label(for='uploader')
-                  | #{t("upload msg")}
-                input#uploader.form-control(type="file", multiple)
-          .modal-footer
-            button.btn.btn-link#cancel-new-file(type='button', data-dismiss='modal') #{t("upload close")}
-            button.btn.btn-cozy-contrast#upload-file-send(type='button') #{t("upload send")}
-
-#dialog-new-folder.modal.fade(tabindex=-1)
-
 #affixbar(data-spy="affix", data-offset-top="1")
   .container
     .row
@@ -26,8 +8,7 @@
           #upload-buttons.pull-right
             a.btn.btn-cozy#share-state.btn-cozy-contrast
             | &nbsp;
-            a#button-upload-new-file.btn.btn-cozy.btn-cozy(
-                data-toggle="modal",data-target="#dialog-upload-file")
+            a#button-upload-new-file.btn.btn-cozy.btn-cozy
               img(src="images/add-file.png")
             | &nbsp;
             a.btn.btn-cozy#button-new-folder
