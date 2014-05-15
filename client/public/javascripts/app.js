@@ -649,17 +649,17 @@ module.exports = ViewCollection = (function(_super) {
     return ViewCollection.__super__.constructor.apply(this, arguments);
   }
 
-  ViewCollection.prototype.itemview = null;
-
-  ViewCollection.prototype.views = {};
+  ViewCollection.prototype.collectionEl = null;
 
   ViewCollection.prototype.template = function() {
     return '';
   };
 
-  ViewCollection.prototype.itemViewOptions = function() {};
+  ViewCollection.prototype.itemview = null;
 
-  ViewCollection.prototype.collectionEl = null;
+  ViewCollection.prototype.views = {};
+
+  ViewCollection.prototype.itemViewOptions = function() {};
 
   ViewCollection.prototype.onChange = function() {
     return this.$el.toggleClass('empty', _.size(this.views) === 0);
@@ -670,14 +670,13 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.initialize = function() {
-    var collectionEl;
     ViewCollection.__super__.initialize.apply(this, arguments);
     this.views = {};
     this.listenTo(this.collection, "reset", this.onReset);
     this.listenTo(this.collection, "add", this.addItem);
     this.listenTo(this.collection, "remove", this.removeItem);
     if (this.collectionEl == null) {
-      return collectionEl = el;
+      return this.collectionEl = el;
     }
   };
 
@@ -693,7 +692,9 @@ module.exports = ViewCollection = (function(_super) {
 
   ViewCollection.prototype.afterRender = function() {
     var id, view, _ref;
-    this.$collectionEl = $(this.collectionEl);
+    if (this.$collectionEl == null) {
+      this.$collectionEl = $(this.collectionEl);
+    }
     _ref = this.views;
     for (id in _ref) {
       view = _ref[id];
@@ -1406,14 +1407,18 @@ module.exports = FileView = (function(_super) {
 });
 
 ;require.register("views/files", function(exports, require, module) {
-var File, FileCollection, FileView, FilesView, ModalView, ProgressbarView, SocketListener, ViewCollection,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+var BaseView, File, FileCollection, FileList, FileView, FilesView, ModalView, ProgressbarView, SocketListener, ViewCollection,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+BaseView = require('../lib/base_view');
 
 ViewCollection = require('../lib/view_collection');
 
 FileView = require('./file');
+
+FileCollection = require('../collections/files');
 
 ProgressbarView = require("./progressbar");
 
@@ -1424,6 +1429,31 @@ File = require('../models/file');
 FileCollection = require('../collections/files');
 
 SocketListener = require('../helpers/socket');
+
+FileList = (function(_super) {
+  __extends(FileList, _super);
+
+  function FileList() {
+    return FileList.__super__.constructor.apply(this, arguments);
+  }
+
+  FileList.prototype.itemview = FileView;
+
+  FileList.prototype.collectionEl = '#table-items-body';
+
+  FileList.prototype.initialize = function(options) {
+    this.collection = options.collection;
+    this.listenTo(this.collection, "sort", this.render);
+    this.listenTo(this.collection, "remove", this.render);
+    this.socket = new SocketListener();
+    this.socket.watch(this.collection);
+    this.$collectionEl = options.$collectionEl;
+    return FileList.__super__.initialize.call(this, options);
+  };
+
+  return FileList;
+
+})(ViewCollection);
 
 module.exports = FilesView = (function(_super) {
   __extends(FilesView, _super);
@@ -1436,21 +1466,68 @@ module.exports = FilesView = (function(_super) {
 
   FilesView.prototype.template = require('./templates/files');
 
-  FilesView.prototype.itemview = FileView;
+  FilesView.prototype.id = 'files';
 
-  FilesView.prototype.collectionEl = '#table-items-body';
+  FilesView.prototype.el = '#files';
+
+  FilesView.prototype.events = {
+    'click #up-name': 'onChangeOrder',
+    'click #down-name': 'onChangeOrder',
+    'click #up-class': 'onChangeOrder',
+    'click #down-class': 'onChangeOrder',
+    'click #up-size': 'onChangeOrder',
+    'click #down-size': 'onChangeOrder',
+    'click #up-lastModification': 'onChangeOrder',
+    'click #down-lastModification': 'onChangeOrder'
+  };
 
   FilesView.views = {};
 
-  FilesView.prototype.initialize = function(collection, model) {
-    this.collection = collection;
-    this.model = model;
-    FilesView.__super__.initialize.call(this);
-    this.listenTo(this.collection, "sort", this.render);
-    this.listenTo(this.collection, "remove", this.render);
-    this.listenTo(this.collection, "add", this.render);
-    this.socket = new SocketListener();
-    return this.socket.watch(this.collection);
+  FilesView.prototype.initialize = function(options) {
+    FilesView.__super__.initialize.call(this, options);
+    this.model = options.model;
+    this.firstRender = true;
+    this.collection = new FileCollection;
+    return this.listenTo(this.collection, "reset", this.updateNbFiles);
+  };
+
+  FilesView.prototype.afterRender = function() {
+    FilesView.__super__.afterRender.apply(this, arguments);
+    this.fileList = new FileList({
+      collection: this.collection,
+      $collectionEl: this.$('#table-items-body')
+    });
+    this.fileList.render();
+    this.$("#no-files-indicator").hide();
+    this.$("#file-amount-indicator").hide();
+    if (this.firstRender) {
+      return this.displayChevron('up', 'name');
+    }
+  };
+
+  FilesView.prototype.updateNbFiles = function() {
+    var model, nbFiles, _i, _len, _ref;
+    nbFiles = 0;
+    _ref = this.collection.models;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      model = _ref[_i];
+      if (model.get('type') === 'file') {
+        nbFiles += 1;
+      }
+    }
+    if (nbFiles > 0) {
+      this.$("#file-amount-indicator").show();
+      this.$("#no-files-indicator").hide();
+      this.$("#file-amount").html(nbFiles);
+    } else {
+      this.$("#file-amount-indicator").hide();
+      if (this.collection.models.length === 0) {
+        this.$("#no-files-indicator").show();
+      } else {
+        this.$("#no-files-indicator").hide();
+      }
+    }
+    return this.firstRender = false;
   };
 
   FilesView.prototype.addFile = function(attach, dirUpload) {
@@ -1535,9 +1612,49 @@ module.exports = FilesView = (function(_super) {
     }
   };
 
+  FilesView.prototype.displayChevron = function(order, type) {
+    this.$('#up-name').show();
+    this.$('#up-name').addClass('unactive');
+    this.$('#down-name').hide();
+    this.$('#up-size').show();
+    this.$('#up-size').addClass('unactive');
+    this.$('#down-size').hide();
+    this.$('#up-class').show();
+    this.$('#up-class').addClass('unactive');
+    this.$('#down-class').hide();
+    this.$('#up-lastModification').show();
+    this.$('#up-lastModification').addClass('unactive');
+    this.$('#down-lastModification').hide();
+    if (order === "down") {
+      this.$("#up-" + type).show();
+      this.$("#down-" + type).hide();
+      return this.$("#up-" + type).removeClass('unactive');
+    } else {
+      this.$("#up-" + type).hide();
+      this.$("#down-" + type).show();
+      return this.$("#down-" + type).removeClass('unactive');
+    }
+  };
+
+  FilesView.prototype.onChangeOrder = function(event) {
+    var infos, type, way;
+    infos = event.target.id.split('-');
+    way = infos[0];
+    type = infos[1];
+    this.displayChevron(way, type);
+    this.collection.type = type;
+    if (this.collection.order === "incr") {
+      this.collection.order = "decr";
+      return this.collection.sort();
+    } else {
+      this.collection.order = "incr";
+      return this.collection.sort();
+    }
+  };
+
   return FilesView;
 
-})(ViewCollection);
+})(BaseView);
 
 });
 
@@ -1587,14 +1704,6 @@ module.exports = FolderView = (function(_super) {
       'click #upload-file-send': 'onAddFile',
       'click #cancel-new-file': 'onCancelFile',
       'click #share-state': 'onShareClicked',
-      'click #up-name': 'onChangeOrder',
-      'click #down-name': 'onChangeOrder',
-      'click #up-class': 'onChangeOrder',
-      'click #down-class': 'onChangeOrder',
-      'click #up-size': 'onChangeOrder',
-      'click #down-size': 'onChangeOrder',
-      'click #up-lastModification': 'onChangeOrder',
-      'click #down-lastModification': 'onChangeOrder',
       'keyup input#search-box': 'onSearchKeyPress',
       'keyup input#inputName': 'onAddFolderEnter'
     };
@@ -1603,8 +1712,7 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.initialize = function(options) {
     this.model = options.model;
     this.breadcrumbs = options.breadcrumbs;
-    this.breadcrumbs.setRoot(this.model);
-    return this.setDragNDrop();
+    return this.breadcrumbs.setRoot(this.model);
   };
 
   FolderView.prototype.setDragNDrop = function() {
@@ -1631,35 +1739,15 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.afterRender = function() {
     this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
     this.$("#crumbs").append(this.breadcrumbsView.render().$el);
-    return this.displayChevron('up', 'name');
-  };
-
-  FolderView.prototype.displayChevron = function(order, type) {
-    this.$('#up-name').show();
-    this.$('#up-name').addClass('unactive');
-    this.$('#down-name').hide();
-    this.$('#up-size').show();
-    this.$('#up-size').addClass('unactive');
-    this.$('#down-size').hide();
-    this.$('#up-class').show();
-    this.$('#up-class').addClass('unactive');
-    this.$('#down-class').hide();
-    this.$('#up-lastModification').show();
-    this.$('#up-lastModification').addClass('unactive');
-    this.$('#down-lastModification').hide();
-    if (order === "down") {
-      this.$("#up-" + type).show();
-      this.$("#down-" + type).hide();
-      return this.$("#up-" + type).removeClass('unactive');
-    } else {
-      this.$("#up-" + type).hide();
-      this.$("#down-" + type).show();
-      return this.$("#down-" + type).removeClass('unactive');
-    }
+    this.filesList = new FilesView({
+      el: this.$("#files"),
+      model: this.model
+    });
+    return this.filesList.render();
   };
 
   FolderView.prototype.changeActiveFolder = function(folder) {
-    var clearance, shareState, zipLink, _ref;
+    var clearance, shareState, zipLink;
     this.stopListening(this.model);
     this.model = folder;
     this.listenTo(this.model, 'change', function() {
@@ -1700,10 +1788,7 @@ module.exports = FolderView = (function(_super) {
     }
     zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
     this.$('#download-link').attr('href', zipLink);
-    if ((_ref = this.filesList) != null) {
-      _ref.$el.html(null);
-    }
-    this.$("#loading-indicator").spin('small');
+    this.$("#loading-indicator").spin('tiny');
     return this.model.findFiles({
       success: (function(_this) {
         return function(files) {
@@ -1714,24 +1799,12 @@ module.exports = FolderView = (function(_super) {
           }
           return _this.model.findFolders({
             success: function(folders) {
-              var _j, _len1, _ref1;
+              var _j, _len1;
               for (_j = 0, _len1 = folders.length; _j < _len1; _j++) {
                 folder = folders[_j];
                 folder.type = "folder";
               }
-              if (_this.filesCollection) {
-                _this.stopListening(_this.filesCollection);
-              }
-              _this.filesCollection = new FileCollection(folders.concat(files));
-              _this.listenTo(_this.filesCollection, "sync", _this.hideUploadForm);
-              if (_this.filesList) {
-                if ((_ref1 = _this.filesList) != null) {
-                  _ref1.destroy();
-                }
-              }
-              _this.filesList = new FilesView(_this.filesCollection, _this.model);
-              _this.$('#files').html(_this.filesList.$el);
-              _this.filesList.render();
+              _this.filesList.collection.reset(folders.concat(files));
               return _this.$("#loading-indicator").spin();
             },
             error: function(error) {
@@ -1905,22 +1978,6 @@ module.exports = FolderView = (function(_super) {
     };
     search = new File(data);
     return this.changeActiveFolder(search);
-  };
-
-  FolderView.prototype.onChangeOrder = function(event) {
-    var infos, type, way;
-    infos = event.target.id.split('-');
-    way = infos[0];
-    type = infos[1];
-    this.displayChevron(way, type);
-    this.filesCollection.type = type;
-    if (this.filesCollection.order === "incr") {
-      this.filesCollection.order = "decr";
-      return this.filesCollection.sort();
-    } else {
-      this.filesCollection.order = "incr";
-      return this.filesCollection.sort();
-    }
   };
 
   FolderView.prototype.onShareClicked = function() {
@@ -2695,19 +2752,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<table id="table-items" class="table table-hover"><tbody id="table-items-body"></tbody></table>');
-}
-return buf.join("");
-};
-});
-
-;require.register("views/templates/folder", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
-var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy btn-cozy-contrast"></a>&nbsp;<a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t("download"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class="container"><div class="row content-shadow"><div id="content" class="col-lg-12"><div id="loading-indicator"></div><table id="table-items" class="table table-hover"><tbody id="table-items-body"><tr class="table-headers"><td><span>');
+buf.push('<table id="table-items" class="table table-hover"><thead><tr class="table-headers"><td><span>');
 var __val__ = t('name')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');
@@ -2719,7 +2764,19 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>');
 var __val__ = t('date')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></tbody></table><div id="files"></div></div></div></div>');
+buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></thead><tbody id="table-items-body"></tbody></table><div id="loading-indicator">&nbsp;</div><p id="file-amount-indicator" class="footer"><span id="file-amount"></span><span>&nbsp;</span><span>' + escape((interp = t('files')) == null ? '' : interp) + '</span></p><p id="no-files-indicator" class="footer">' + escape((interp = t('no file in folder')) == null ? '' : interp) + '</p>');
+}
+return buf.join("");
+};
+});
+
+;require.register("views/templates/folder", function(exports, require, module) {
+module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
+attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var buf = [];
+with (locals || {}) {
+var interp;
+buf.push('<div id="dialog-upload-file" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="uploader">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</label><input id="uploader" type="file" multiple="multiple" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-file" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="upload-file-send" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div></div><div id="dialog-new-folder" tabindex="-1" class="modal fade"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="cancel-new-folder" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="new-folder-send" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div></div><div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy btn-cozy-contrast"></a>&nbsp;<a id="button-upload-new-file" data-toggle="modal" data-target="#dialog-upload-file" class="btn btn-cozy btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" data-toggle="modal" data-target="#dialog-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t("download"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class="container"><div class="row"><div id="content" class="col-lg-12"><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };

@@ -1,6 +1,8 @@
+BaseView = require '../lib/base_view'
 ViewCollection = require '../lib/view_collection'
 
 FileView = require './file'
+FileCollection = require '../collections/files'
 ProgressbarView = require "./progressbar"
 ModalView = require "./modal"
 
@@ -9,20 +11,78 @@ FileCollection = require '../collections/files'
 
 SocketListener = require '../helpers/socket'
 
-module.exports = class FilesView extends ViewCollection
-
-    template: require('./templates/files')
+class FileList extends ViewCollection
     itemview: FileView
     collectionEl: '#table-items-body'
-    @views = {}
 
-    initialize: (@collection, @model) ->
-        super()
+    initialize: (options) ->
+        @collection = options.collection
         @listenTo @collection, "sort", @render
         @listenTo @collection, "remove", @render
-        @listenTo @collection, "add", @render
         @socket = new SocketListener()
         @socket.watch @collection
+        @$collectionEl = options.$collectionEl
+        super options
+
+
+
+
+module.exports = class FilesView extends BaseView
+    template: require './templates/files'
+    id: 'files'
+    el: '#files'
+
+    events:
+        'click #up-name'               : 'onChangeOrder'
+        'click #down-name'             : 'onChangeOrder'
+        'click #up-class'              : 'onChangeOrder'
+        'click #down-class'            : 'onChangeOrder'
+        'click #up-size'               : 'onChangeOrder'
+        'click #down-size'             : 'onChangeOrder'
+        'click #up-lastModification'   : 'onChangeOrder'
+        'click #down-lastModification' : 'onChangeOrder'
+
+
+    @views = {}
+
+    initialize: (options) ->
+        super options
+        @model = options.model
+        @firstRender = true
+        @collection = new FileCollection
+        @listenTo @collection, "reset", @updateNbFiles
+
+    afterRender: ->
+        super
+        @fileList = new FileList
+            collection: @collection
+            $collectionEl: @$ '#table-items-body'
+
+        @fileList.render()
+        @$("#no-files-indicator").hide()
+        @$("#file-amount-indicator").hide()
+        @displayChevron 'up', 'name' if @firstRender
+
+    updateNbFiles: ->
+        nbFiles = 0
+
+        for model in @collection.models
+            if model.get('type') is 'file'
+                nbFiles += 1
+
+        if nbFiles > 0
+            @$("#file-amount-indicator").show()
+            @$("#no-files-indicator").hide()
+            @$("#file-amount").html nbFiles
+        else
+            @$("#file-amount-indicator").hide()
+
+            if @collection.models.length is 0
+                @$("#no-files-indicator").show()
+            else
+                @$("#no-files-indicator").hide()
+
+        @firstRender = false
 
     addFile: (attach, dirUpload) =>
         found = @collection.findWhere name: attach.name
@@ -65,7 +125,7 @@ module.exports = class FilesView extends ViewCollection
             data: formdata
             success: (data) =>
                 if not noDisplay
-                    @collection.add file, merge:true
+                    @collection.add file, merge: true
             error: =>
                 new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
 
@@ -81,3 +141,45 @@ module.exports = class FilesView extends ViewCollection
                     new ModalView t("modal error"), t("modal error folder create"), t("modal ok")
         else
             new ModalView t("modal error"), t("modal error folder exists"), t("modal ok")
+
+
+    # Helpers to display correct chevron to sort files
+    displayChevron: (order, type) ->
+        @$('#up-name').show()
+        @$('#up-name').addClass 'unactive'
+        @$('#down-name').hide()
+        @$('#up-size').show()
+        @$('#up-size').addClass 'unactive'
+        @$('#down-size').hide()
+        @$('#up-class').show()
+        @$('#up-class').addClass 'unactive'
+        @$('#down-class').hide()
+        @$('#up-lastModification').show()
+        @$('#up-lastModification').addClass 'unactive'
+        @$('#down-lastModification').hide()
+
+        if order is "down"
+            @$("#up-#{type}").show()
+            @$("#down-#{type}").hide()
+            @$("#up-#{type}").removeClass 'unactive'
+        else
+            @$("#up-#{type}").hide()
+            @$("#down-#{type}").show()
+            @$("#down-#{type}").removeClass 'unactive'
+
+
+    # Changer sorting depending on the clicked chevron.
+    onChangeOrder: (event) ->
+        infos = event.target.id.split '-'
+        way = infos[0]
+        type = infos[1]
+
+        @displayChevron way, type
+        @collection.type = type
+
+        if @collection.order is "incr"
+            @collection.order = "decr"
+            @collection.sort()
+        else
+            @collection.order = "incr"
+            @collection.sort()
