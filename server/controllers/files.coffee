@@ -198,7 +198,7 @@ module.exports.modify = (req, res, next) ->
 module.exports.destroy = (req, res, next) ->
     file = req.file
     file.removeBinary "file", (err, resp, body) =>
-        if err
+        if err and err.toString('utf8').indexOf('not found') == -1
             log.error "Cannot Remove binary for #{file.id}"
             next err
         else
