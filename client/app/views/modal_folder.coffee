@@ -16,9 +16,9 @@ module.exports = class ModalFolderView extends Modal
         'tab-index': -1
     template: require './templates/modal_folder'
 
-    events:
-        "click #new-folder-send" : "onYes"
-        "keyup #inputName" : "onKeyUp"
+    events: ->
+        _.extend super,
+            "keyup #inputName" : "onKeyUp"
 
     # - display upload folder form only if it is supported
     # - Register submit button
@@ -33,12 +33,11 @@ module.exports = class ModalFolderView extends Modal
             @$("#folder-upload-form").removeClass('hide')
 
         @submitButton = @$ "#new-folder-send"
-        #@submitButton.css 'color', 'transparent'
         @submitButton.spin()
         @showModal()
 
     onKeyUp: (event) =>
-        if event.keyCode is 13
+        if event.keyCode is 13 #enter
             event.preventDefault()
             event.stopPropagation()
             @onYes()

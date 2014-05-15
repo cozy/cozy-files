@@ -17,8 +17,8 @@ module.exports = class FolderView extends BaseView
     template: require './templates/folder'
 
     events: ->
-        'click a#button-new-folder'    : 'prepareNewFolder'
         'click a#button-upload-new-file': 'onUploadNewFileClicked'
+        'click #button-new-folder'     : 'onNewFolderClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #upload-file-send'      : 'onAddFile'
@@ -35,7 +35,6 @@ module.exports = class FolderView extends BaseView
         'click #down-lastModification' : 'onChangeOrder'
 
         'keyup input#search-box'       : 'onSearchKeyPress'
-        'keyup input#inputName'        : 'onAddFolderEnter'
 
     initialize: (options) ->
         @model = options.model
@@ -62,11 +61,6 @@ module.exports = class FolderView extends BaseView
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
         @displayChevron 'up', 'name'
-
-        @modalFolder = new ModalFolderView
-        @modalFolder.afterRender()
-        @modalFolder.hide()
-
 
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
@@ -176,14 +170,6 @@ module.exports = class FolderView extends BaseView
     onUploadNewFileClicked: ->
         $("#dialog-upload-file .progress-name").remove()
 
-    # Upload/ new folder
-    prepareNewFolder: ->
-        @modalFolder.showModal @model.get 'path'
-
-    onCancelFolder: ->
-        @$("#inputName").val("")
-
-
 
     onAddFile: =>
         for attach in @$('#uploader')[0].files
@@ -205,6 +191,11 @@ module.exports = class FolderView extends BaseView
             else
                 @filesList.addFile attach
                 atLeastOne = true
+    onNewFolderClicked: ->
+        @modal = new ModalFolderView
+            model: @model
+            validator: @validateNewModel
+
 
         if atLeastOne
             # show a status bar

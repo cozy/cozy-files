@@ -51,7 +51,7 @@ module.exports = class FilesView extends ViewCollection
 
             @upload file, dirUpload
         else
-            new ModalView t("modal error"), "#{t('modal error file exists')}: #{attach.name}", t("modal ok")
+            ModalView.error "#{t('modal error file exists')}: #{attach.name}"
 
     upload: (file, noDisplay) =>
         formdata = new FormData()
@@ -67,7 +67,7 @@ module.exports = class FilesView extends ViewCollection
                 if not noDisplay
                     @collection.add file, merge:true
             error: =>
-                new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
+                ModalView.error t("modal error file upload")
 
     addFolder: (folder, noDisplay, callback) ->
         found = @collection.findWhere(name: folder.get("name"), path: folder.get("path"))

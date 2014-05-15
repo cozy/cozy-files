@@ -34,7 +34,7 @@ module.exports = class FileView extends BaseView
             if confirm
                 @model.destroy
                     error: ->
-                        new ModalView t("modal error"), t("modal delete error"), t("modal ok")
+                        ModalView.error t("modal delete error")
 
     onEditClicked: ->
         width = @$(".caption").width() + 10
@@ -62,11 +62,11 @@ module.exports = class FileView extends BaseView
                 error: (model, err) =>
                     console.log err
                     if err.status is 400
-                        new ModalView t("modal error"), t("modal error in use"), t("modal ok")
+                        ModalView.error t("modal error in use")
                     else
-                        new ModalView t("modal error"), t("modal error rename"), t("modal ok")
+                        ModalView.error t("modal error rename")
         else
-            new ModalView t("modal error"), t("modal error empty name"), t("modal ok")
+            ModalView.error t("modal error empty name")
 
     onKeyPress: (e) =>
         if e.keyCode is 13

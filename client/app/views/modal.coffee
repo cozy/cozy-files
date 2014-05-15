@@ -5,7 +5,7 @@ module.exports = class ModalView extends BaseView
     template: require './templates/modal'
     value: 0
 
-    events:
+    events: ->
         "click #modal-dialog-no"  : "onNo"
         "click #modal-dialog-yes" : "onYes"
 
@@ -15,7 +15,7 @@ module.exports = class ModalView extends BaseView
 
     initialize: ->
         @render()
-        @hide()
+        @show()
 
     onYes: ->
         @hide()
@@ -39,9 +39,8 @@ module.exports = class ModalView extends BaseView
 
     render: ->
         @$el.append @template(title: @title, msg: @msg, yes: @yes, no: @no)
-        $("body").append @el
+        $("body").append @$el
         @
 
 module.exports.error = (code, cb) ->
-    modal = new ModalView t("modal error"), t(code), t("modal ok"), false, cb
-    modal.show()
+    new ModalView t("modal error"), code, t("modal ok"), false, cb
