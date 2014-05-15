@@ -19,7 +19,6 @@ module.exports =
     'files/:fileid/download/:name':
         get: files.downloadAttachment
 
-
     'folderid':
         param: folders.fetch
 

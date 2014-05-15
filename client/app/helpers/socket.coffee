@@ -24,7 +24,6 @@ module.exports = class SocketListener extends CozySocketListener
         if @isInCurrentFolder model
             console.log "remote create"
             console.log model
-
             if not (@collection.get model.get("id"))
                 @collection.add model, merge:true
 
