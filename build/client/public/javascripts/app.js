@@ -716,6 +716,7 @@ module.exports = {
   "upload send": "Add",
   "upload button": "Upload a file",
   "upload success": "Upload successfuly completed!",
+  "upload end button": "Close",
   "new folder caption": "Add a new folder",
   "new folder msg": "Create a folder named:",
   "new folder close": "Close",
@@ -819,6 +820,7 @@ module.exports = {
   "upload send": "Ajouter",
   "upload button": "Ajouter un fichier",
   "upload success": "Ajouté avec succès !",
+  "upload end button": "Fermer",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
@@ -1941,11 +1943,11 @@ module.exports = ModalView = (function(_super) {
     if (this.hideOnYes) {
       this.hide();
     }
-    return setTimeout((function(_this) {
+    return setTimeout(((function(_this) {
       return function() {
         return _this.destroy();
       };
-    })(this), 1000);
+    })(this)), 500);
   };
 
   ModalView.prototype.show = function() {
@@ -2061,14 +2063,35 @@ module.exports = ModalFolderView = (function(_super) {
       return this.onYes();
     } else {
       this.action = 'create';
-      return this.uploader.val('');
+      this.uploader.val('');
+      if (this.inputName.val().length > 0) {
+        return this.enableCreateButtonState();
+      } else {
+        return this.disableCreateButtonState();
+      }
     }
   };
 
   ModalFolderView.prototype.onUploaderChange = function() {
-    console.log("THIS TRIGGER");
     this.action = 'upload';
-    return this.inputName.val('');
+    this.inputName.val('');
+    return this.enableCreateButtonState();
+  };
+
+  ModalFolderView.prototype.enableCreateButtonState = function() {
+    var element;
+    element = $('#modal-dialog-yes');
+    if (element.prop('disabled')) {
+      return element.prop('disabled', 'false').button('refresh');
+    }
+  };
+
+  ModalFolderView.prototype.disableCreateButtonState = function() {
+    var element;
+    element = $('#modal-dialog-yes');
+    if (!element.prop('disabled')) {
+      return element.prop('disabled', 'true');
+    }
   };
 
   ModalFolderView.prototype.doSaveFolder = function(folder, callback) {
@@ -2392,14 +2415,24 @@ module.exports = ModalUploadView = (function(_super) {
   ModalUploadView.prototype.onNo = function() {
     this.input.val("");
     this.hide();
-    return setTimeout(this.destroy, 500);
+    return setTimeout(((function(_this) {
+      return function() {
+        return _this.destroy();
+      };
+    })(this)), 500);
   };
 
   ModalUploadView.prototype.onYes = function() {
+    var noButton;
+    noButton = $('#modal-dialog-no');
+    noButton.html('&nbsp;');
+    noButton.spin('small');
     this.$('fieldset, #modal-dialog-yes').hide();
     return this.doUploadFiles((function(_this) {
       return function() {
         _this.input.val("");
+        noButton.spin(false);
+        noButton.html(t('upload end button'));
         return typeof _this.callback === "function" ? _this.callback() : void 0;
       };
     })(this));
@@ -2419,6 +2452,7 @@ module.exports = ModalUploadView = (function(_super) {
     msg = this.files.length ? t('upload msg selected', {
       smart_count: this.files.length
     }) : t('upload msg');
+    $('#modal-dialog-yes').prop("disabled", "false").button('refresh');
     return this.label.text(msg);
   };
 
@@ -3129,7 +3163,7 @@ var interp;
 buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">');
 var __val__ = t('upload folder separator')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div>');
+buf.push('</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" disabled="disabled" class="btn btn-cozy-contrast">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div>');
 }
 return buf.join("");
 };
@@ -3141,7 +3175,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><div id="uploader"><div class="text">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</div><input type="file" multiple="multiple"/></div></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div>');
+buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><div id="uploader"><div class="text">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</div><input type="file" multiple="multiple"/></div></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" disabled="disabled" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div>');
 }
 return buf.join("");
 };

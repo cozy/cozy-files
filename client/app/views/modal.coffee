@@ -31,9 +31,7 @@ module.exports = class ModalView extends BaseView
     onNo: ->
         @cb false if @cb
         @hide() if @hideOnYes
-        setTimeout () =>
-            @destroy()
-        , 1000
+        setTimeout (() => @destroy()), 500
 
     show: ->
         @$el.modal 'show'

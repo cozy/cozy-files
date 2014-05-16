@@ -67,13 +67,26 @@ module.exports = class ModalFolderView extends Modal
             # make action clear
             @action = 'create'
             @uploader.val ''
+            if @inputName.val().length > 0
+                @enableCreateButtonState()
+            else
+                @disableCreateButtonState()
 
     onUploaderChange: =>
-        console.log "THIS TRIGGER"
         # make action clear
         @action = 'upload'
         @inputName.val ''
+        @enableCreateButtonState()
 
+    enableCreateButtonState: ->
+        element = $ '#modal-dialog-yes'
+        if element.prop 'disabled'
+            element.prop('disabled', 'false').button 'refresh'
+
+    disableCreateButtonState: ->
+        element = $ '#modal-dialog-yes'
+        unless element.prop 'disabled'
+            element.prop 'disabled', 'true'
 
     doSaveFolder: (folder, callback) ->
         # let parent view decide if this exists

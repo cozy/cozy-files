@@ -54,6 +54,7 @@ module.exports =
     "upload send"               : "Ajouter"
     "upload button"             : "Ajouter un fichier"
     "upload success"            : "Ajouté avec succès !"
+    "upload end button"         : "Fermer"
 
     "new folder caption"        : "Créer un nouveau dossier"
     "new folder msg"            : "Entrer le nom du dossier :"

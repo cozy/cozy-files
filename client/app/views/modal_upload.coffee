@@ -34,16 +34,20 @@ module.exports = class ModalUploadView extends Modal
         @label = @$ '#uploader .text'
 
     onNo: ->
-        @input.val("")
+        @input.val ""
         @hide()
-        setTimeout @destroy, 500
+        setTimeout (() => @destroy()), 500
 
     onYes: ->
+        noButton = $ '#modal-dialog-no'
+        noButton.html '&nbsp;'
+        noButton.spin 'small'
         @$('fieldset, #modal-dialog-yes').hide()
         @doUploadFiles =>
-            @input.val("")
+            @input.val ""
+            noButton.spin false
+            noButton.html t 'upload end button'
             @callback?()
-            # super
 
     handleUploaderActive: =>
         @$('#uploader').addClass 'active'
@@ -55,6 +59,8 @@ module.exports = class ModalUploadView extends Modal
             t 'upload msg selected', smart_count: @files.length
         else
             t 'upload msg'
+
+        $('#modal-dialog-yes').prop("disabled", "false").button 'refresh'
         @label.text msg
 
     onUploaderChange: (e) =>
