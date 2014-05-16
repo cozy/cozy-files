@@ -1777,7 +1777,7 @@ module.exports = FolderView = (function(_super) {
           _this.filesList.collection.reset(content);
           _this.filesList.model = _this.model;
           _this.listenTo(_this.filesList.collection, "sync", _this.hideUploadForm);
-          return _this.$("#loading-indicator").spin();
+          return _this.$("#loading-indicator").spin(false);
         };
       })(this),
       error: (function(_this) {
@@ -1787,7 +1787,7 @@ module.exports = FolderView = (function(_super) {
           ModalView.error(t("modal error get content", {
             folderName: folderName
           }));
-          return _this.$("#loading-indicator").spin();
+          return _this.$("#loading-indicator").spin(false);
         };
       })(this)
     });
@@ -2064,7 +2064,7 @@ module.exports = ModalFolderView = (function(_super) {
     this.submitButton.html('&nbsp;').spin('tiny');
     return folder.save(null, {
       always: function() {
-        return this.submitButton.spin().text(t('new folder send'));
+        return this.submitButton.spin(false).text(t('new folder send'));
       },
       success: (function(_this) {
         return function(data) {
