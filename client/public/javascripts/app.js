@@ -1922,6 +1922,11 @@ module.exports = ModalView = (function(_super) {
   }
 
   ModalView.prototype.initialize = function() {
+    this.$el.on('hidden.bs.modal', (function(_this) {
+      return function() {
+        return _this.close();
+      };
+    })(this));
     this.render();
     return this.show();
   };
@@ -1930,12 +1935,7 @@ module.exports = ModalView = (function(_super) {
     if (this.cb) {
       this.cb(true);
     }
-    this.hide();
-    return setTimeout((function(_this) {
-      return function() {
-        return _this.destroy();
-      };
-    })(this), 1000);
+    return this.hide();
   };
 
   ModalView.prototype.onNo = function() {
@@ -1943,8 +1943,11 @@ module.exports = ModalView = (function(_super) {
       this.cb(false);
     }
     if (this.hideOnYes) {
-      this.hide();
+      return this.hide();
     }
+  };
+
+  ModalView.prototype.close = function() {
     return setTimeout(((function(_this) {
       return function() {
         return _this.destroy();
