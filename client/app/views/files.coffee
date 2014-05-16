@@ -115,7 +115,7 @@ module.exports = class FilesView extends BaseView
 
     upload: (file, noDisplay) =>
         path = file.get 'path'
-        path = '' if path is '/root'
+        path = '' if file.get('id') is 'root'
         formdata = new FormData()
         formdata.append 'cid', file.cid
         formdata.append 'name', file.get 'name'
