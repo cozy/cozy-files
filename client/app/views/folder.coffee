@@ -97,7 +97,6 @@ module.exports = class FolderView extends BaseView
         zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
         @$('#download-link').attr 'href', zipLink
 
-        @filesList.collection.reset []
         @$("#loading-indicator").spin 'small'
         @model.findContent
             success: (content) =>
