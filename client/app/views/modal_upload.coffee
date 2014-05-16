@@ -55,6 +55,8 @@ module.exports = class ModalUploadView extends Modal
             t 'upload msg selected', smart_count: @files.length
         else
             t 'upload msg'
+
+        $('#modal-dialog-yes').prop("disabled", "false").button 'refresh'
         @label.text msg
 
     onUploaderChange: (e) =>
