@@ -62,10 +62,10 @@ module.exports = class File extends Backbone.Model
             error jqXHR if error
 
     repository: ->
-        rep = (@get("path") + "/" + @get("name"))
-        if rep == "/"
-            rep = ""
-        rep
+        if @get('id') is "root"
+            return ""
+        else
+            return "#{@get("path")}/#{@get("name")}"
 
     endpoint: ->
         if @get("type") is "folder"

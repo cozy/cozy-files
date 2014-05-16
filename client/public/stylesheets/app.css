@@ -2464,6 +2464,9 @@ div#affixbar img {
 #content {
   padding-top: 45px;
 }
+#loading-indicator {
+  position: relative;
+}
 table,
 table#table-items {
   margin-bottom: 10px;
@@ -2493,6 +2496,10 @@ table td.date-column-cell,
 table#table-items td.date-column-cell {
   width: 190px;
   text-align: left;
+}
+table td.date-column-cell:first-letter,
+table#table-items td.date-column-cell:first-letter {
+  text-transform: capitalize;
 }
 table .table-headers td:first-child,
 table#table-items .table-headers td:first-child {
@@ -2911,6 +2918,9 @@ tr.folder-row .caption-edit i.fa {
 }
 #files {
   padding-top: 30px;
+}
+#files #no-files-indicator {
+  display: none;
 }
 body.error-404 {
   background: #fff;

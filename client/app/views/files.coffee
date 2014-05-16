@@ -59,13 +59,11 @@ module.exports = class FilesView extends BaseView
             $collectionEl: @$ '#table-items-body'
 
         @fileList.render()
-        @$("#no-files-indicator").hide()
         @$("#file-amount-indicator").hide()
         @displayChevron 'up', 'name' if @firstRender
 
     updateNbFiles: ->
         nbFiles = 0
-
         for model in @collection.models
             if model.get('type') is 'file'
                 nbFiles += 1
@@ -115,7 +113,8 @@ module.exports = class FilesView extends BaseView
 
     upload: (file, noDisplay) =>
         path = file.get 'path'
-        path = '' if path is '/root'
+        path = '' if file.get('id') is 'root'
+        console.log file.get('id'), path
         formdata = new FormData()
         formdata.append 'cid', file.cid
         formdata.append 'name', file.get 'name'

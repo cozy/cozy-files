@@ -436,6 +436,7 @@ $(function() {
   var err, locale, locales, polyglot;
   jQuery.event.props.push('dataTransfer');
   locale = window.locale || "en";
+  moment.lang(locale);
   locales = {};
   try {
     locales = require("locales/" + locale);
@@ -713,13 +714,15 @@ module.exports = {
   "upload msg selected": "You have selected %{smart_count} file, click Add to upload it. ||||\nYou have selected %{smart_count} files, click Add to upload them.",
   "upload close": "Close",
   "upload send": "Add",
-  "upload button": "Upload a file here",
+  "upload button": "Upload a file",
+  "upload success": "Upload successfuly completed!",
   "new folder caption": "Add a new folder",
   "new folder msg": "Create a folder named:",
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
   "upload folder msg": "Upload a folder",
+  "upload folder separator": "or",
   "folder": "Folder",
   "image": "Image",
   "document": "Document",
@@ -804,17 +807,20 @@ module.exports = {
   "tooltip share": "Partager",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
-  "upload caption": "Téléverser un fichier",
-  "upload msg": "Choisir un fichier à téléverser :",
+  "upload caption": "Ajouter des fichiers",
+  "upload msg": "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
+  "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
   "upload close": "Annuler",
   "upload send": "Ajouter",
-  "upload button": "Téléverser un fichier",
+  "upload button": "Ajouter un fichier",
+  "upload success": "Ajouté avec succès !",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
-  "upload folder msg": "Téléverser un dossier",
+  "upload folder msg": "Mettre en ligne un dossier",
+  "upload folder separator": "ou",
   "folder": "Dossier",
   "image": "Image",
   "document": "Document",
@@ -1064,12 +1070,11 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.repository = function() {
-    var rep;
-    rep = this.get("path") + "/" + this.get("name");
-    if (rep === "/") {
-      rep = "";
+    if (this.get('id') === "root") {
+      return "";
+    } else {
+      return "" + (this.get("path")) + "/" + (this.get("name"));
     }
-    return rep;
   };
 
   File.prototype.endpoint = function() {
@@ -1462,7 +1467,6 @@ module.exports = FilesView = (function(_super) {
       $collectionEl: this.$('#table-items-body')
     });
     this.fileList.render();
-    this.$("#no-files-indicator").hide();
     this.$("#file-amount-indicator").hide();
     if (this.firstRender) {
       return this.displayChevron('up', 'name');
@@ -1525,9 +1529,10 @@ module.exports = FilesView = (function(_super) {
   FilesView.prototype.upload = function(file, noDisplay) {
     var formdata, path;
     path = file.get('path');
-    if (path === '/root') {
+    if (file.get('id') === 'root') {
       path = '';
     }
+    console.log(file.get('id'), path);
     formdata = new FormData();
     formdata.append('cid', file.cid);
     formdata.append('name', file.get('name'));
@@ -1759,7 +1764,6 @@ module.exports = FolderView = (function(_super) {
     }
     zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
     this.$('#download-link').attr('href', zipLink);
-    this.filesList.collection.reset([]);
     this.$("#loading-indicator").spin('small');
     return this.model.findContent({
       success: (function(_this) {
@@ -3050,7 +3054,7 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<table id="table-items" class="table table-hover"><thead><tr class="table-headers"><td><span>');
+buf.push('<div id="loading-indicator">&nbsp;</div><table id="table-items" class="table table-hover"><thead><tr class="table-headers"><td><span>');
 var __val__ = t('name')
 buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');
@@ -3062,7 +3066,7 @@ buf.push(escape(null == __val__ ? "" : __val__));
 buf.push('</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>');
 var __val__ = t('date')
 buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></thead><tbody id="table-items-body"></tbody></table><div id="loading-indicator">&nbsp;</div><p id="file-amount-indicator" class="footer"><span id="file-amount"></span><span>&nbsp;</span><span>' + escape((interp = t('files')) == null ? '' : interp) + '</span></p><p id="no-files-indicator" class="footer">' + escape((interp = t('no file in folder')) == null ? '' : interp) + '</p>');
+buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></thead><tbody id="table-items-body"></tbody></table><p id="file-amount-indicator" class="footer"><span id="file-amount"></span><span>&nbsp;</span><span>' + escape((interp = t('files')) == null ? '' : interp) + '</span></p><p id="no-files-indicator" class="footer">' + escape((interp = t('no file in folder')) == null ? '' : interp) + '</p>');
 }
 return buf.join("");
 };
@@ -3074,7 +3078,11 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy btn-cozy-contrast"></a>&nbsp;<a id="button-upload-new-file" class="btn btn-cozy btn-cozy"><img src="images/add-file.png"/></a>&nbsp;<a id="button-new-folder" class="btn btn-cozy"><img src="images/add-folder.png"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t("download"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class="container"><div class="row"><div id="content" class="col-lg-12"><div id="files"></div></div></div></div>');
+buf.push('<div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy btn-cozy-contrast"></a>&nbsp;<a');
+buf.push(attrs({ 'id':('button-upload-new-file'), 'title':(t('upload button')), "class": ('btn') + ' ' + ('btn-cozy') + ' ' + ('btn-cozy') }, {"title":true}));
+buf.push('><img src="images/add-file.png"/></a>&nbsp;<a');
+buf.push(attrs({ 'id':('button-new-folder'), 'title':(t('new folder button')), "class": ('btn') + ' ' + ('btn-cozy') }, {"title":true}));
+buf.push('><img src="images/add-folder.png"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t("download"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class="container"><div class="row"><div id="content" class="col-lg-12"><div id="files"></div></div></div></div>');
 }
 return buf.join("");
 };
@@ -3107,7 +3115,10 @@ attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow |
 var buf = [];
 with (locals || {}) {
 var interp;
-buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">or</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div>');
+buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">');
+var __val__ = t('upload folder separator')
+buf.push(escape(null == __val__ ? "" : __val__));
+buf.push('</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div>');
 }
 return buf.join("");
 };

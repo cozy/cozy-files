@@ -52,8 +52,8 @@ module.exports =
     """
     "upload close"              : "Close"
     "upload send"               : "Add"
-
-    "upload button"             : "Upload a file here"
+    "upload button"             : "Upload a file"
+    "upload success"            : "Upload successfuly completed!"
 
     "new folder caption"        : "Add a new folder"
     "new folder msg"            : "Create a folder named:"
@@ -62,6 +62,7 @@ module.exports =
     "new folder button"         : "Create a new folder"
 
     "upload folder msg"         : "Upload a folder"
+    "upload folder separator"   : "or"
 
     "folder"                    : "Folder"
     "image"                     : "Image"
