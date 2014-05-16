@@ -24,10 +24,13 @@ MB = KB * KB
 module.exports.fetch = (req, res, next, id) ->
     Folder.request 'all', key: id, (err, folder) ->
         if err or not folder or folder.length is 0
-            if err
-                next err
-            else
-                res.send error:true, msg: 'File not found', 404
+            unless err?
+                err = new Error 'File not found'
+                err.status = 404
+                err.template =
+                    name: '404'
+                    params: localization: require '../lib/localization_manager'
+            next err
         else
             req.folder = folder[0]
             next()
@@ -363,8 +366,12 @@ module.exports.publicList = (req, res, next) ->
     folder = req.folder
 
     errortemplate = (err) ->
-        console.log err
-        res.send err.stack or err
+        err = new Error 'File not found'
+        err.status = 404
+        err.template =
+            name: '404'
+            params: localization: require '../lib/localization_manager'
+        next err
 
     sharing.limitedTree folder, req, (path, rule) ->
         authorized = path.length isnt 0
@@ -430,7 +437,12 @@ module.exports.publicList = (req, res, next) ->
 
 module.exports.publicZip = (req, res, next) ->
     errortemplate = (err) ->
-        res.send err.stack or err
+        err = new Error 'File not found'
+        err.status = 404
+        err.template =
+            name: '404'
+            params: localization: require '../lib/localization_manager'
+        next err
 
     sharing.checkClearance req.folder, req, (authorized) ->
         if not authorized then res.send 404
