@@ -11,7 +11,7 @@
             input#inputName.form-control(type="text")
           .form-group.hide#folder-upload-form
             br
-            p.text-center or
+            p.text-center= t('upload folder separator')
             label(for='inputName')
               | #{t("upload folder msg")}
             input#folder-uploader.form-control(type="file", directory, mozdirectory, webkitdirectory)
