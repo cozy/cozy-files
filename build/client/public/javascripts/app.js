@@ -717,6 +717,7 @@ module.exports = {
   "upload button": "Upload a file",
   "upload success": "Upload successfuly completed!",
   "upload end button": "Close",
+  "total progress": "Total progress",
   "new folder caption": "Add a new folder",
   "new folder msg": "Create a folder named:",
   "new folder close": "Close",
@@ -821,6 +822,7 @@ module.exports = {
   "upload button": "Ajouter un fichier",
   "upload success": "Ajouté avec succès !",
   "upload end button": "Fermer",
+  "total progress": "Progression totale",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
@@ -2612,7 +2614,8 @@ module.exports = ProgressbarView = (function(_super) {
 
   ProgressbarView.prototype.getRenderData = function() {
     return {
-      value: this.value
+      value: this.value,
+      name: this.model.get('name')
     };
   };
 
@@ -3189,7 +3192,7 @@ with (locals || {}) {
 var interp;
 buf.push('<div class="progress active"><div');
 buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-info') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
-buf.push('></div></div>');
+buf.push('>' + escape((interp = name) == null ? '' : interp) + ' ' + escape((interp = value) == null ? '' : interp) + '%</div></div>');
 }
 return buf.join("");
 };

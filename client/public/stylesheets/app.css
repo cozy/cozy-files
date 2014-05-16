@@ -2854,6 +2854,9 @@ tr.folder-row .caption-edit i.fa {
 .spinner {
   display: inline-block;
 }
+.progress-bar {
+  font-size: 14px;
+}
 .progress-name {
   margin-bottom: 8px;
   height: 20px;
