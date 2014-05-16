@@ -20,3 +20,4 @@ module.exports = class ProgressbarView extends BaseView
 
     getRenderData: ->
         value: @value
+        name: @model.get 'name'
