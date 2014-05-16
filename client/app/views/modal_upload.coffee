@@ -39,11 +39,15 @@ module.exports = class ModalUploadView extends Modal
         setTimeout (() => @destroy()), 500
 
     onYes: ->
+        noButton = $ '#modal-dialog-no'
+        noButton.html '&nbsp;'
+        noButton.spin 'small'
         @$('fieldset, #modal-dialog-yes').hide()
         @doUploadFiles =>
             @input.val ""
+            noButton.spin false
+            noButton.html t 'upload end button'
             @callback?()
-            # super
 
     handleUploaderActive: =>
         @$('#uploader').addClass 'active'
