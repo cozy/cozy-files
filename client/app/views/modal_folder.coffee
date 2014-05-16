@@ -83,7 +83,7 @@ module.exports = class ModalFolderView extends Modal
         @submitButton.html('&nbsp;').spin('tiny')
         folder.save null,
             always: ->
-                @submitButton.spin().text t 'new folder send'
+                @submitButton.spin(false).text t 'new folder send'
 
             success: (data) =>
                 @hideAndDestroy()

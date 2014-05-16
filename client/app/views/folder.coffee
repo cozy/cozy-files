@@ -111,12 +111,12 @@ module.exports = class FolderView extends BaseView
                 @filesList.collection.reset content
                 @filesList.model = @model
                 @listenTo @filesList.collection, "sync", @hideUploadForm
-                @$("#loading-indicator").spin()
+                @$("#loading-indicator").spin(false)
 
             error: (error) =>
                 folderName = @model.get 'name'
                 ModalView.error t("modal error get content", {folderName})
-                @$("#loading-indicator").spin()
+                @$("#loading-indicator").spin(false)
 
     onUploadNewFileClicked: ->
         @modal = new ModalUploadView
