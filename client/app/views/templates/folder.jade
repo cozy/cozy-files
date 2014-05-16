@@ -20,26 +20,6 @@
 
 
 .container
-  .row.content-shadow
+  .row
     .col-lg-12#content
-      #loading-indicator
-      table#table-items.table.table-hover
-        tbody#table-items-body
-          tr.table-headers
-              td
-                span= t('name')
-                a#down-name.btn.glyphicon.glyphicon-chevron-down
-                a#up-name.btn.glyphicon.glyphicon-chevron-up
-              td.size-column-cell
-                span= t('size')
-                a#down-size.glyphicon.glyphicon-chevron-down.btn
-                a#up-size.unactive.btn.glyphicon.glyphicon-chevron-up
-              td.type-column-cell
-                span= t('type')
-                a#down-class.btn.glyphicon.glyphicon-chevron-down
-                a#up-class.glyphicon.glyphicon-chevron-up.btn.unactive
-              td.date-column-cell
-                span= t('date')
-                a#down-lastModification.btn.glyphicon.glyphicon-chevron-down
-                a#up-lastModification.btn.glyphicon.glyphicon-chevron-up.unactive
       #files

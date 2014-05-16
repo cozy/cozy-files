@@ -74,6 +74,10 @@ module.exports = class File extends Backbone.Model
             "fileshare"
 
     # FOLDER
+    findContent: (callbacks) ->
+        @prepareCallbacks callbacks
+        client.post "#{@urlRoot()}content", id: @id, callbacks
+
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}files", id: @id, callbacks

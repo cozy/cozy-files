@@ -24,15 +24,6 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
 
-        'click #up-name'               : 'onChangeOrder'
-        'click #down-name'             : 'onChangeOrder'
-        'click #up-class'              : 'onChangeOrder'
-        'click #down-class'            : 'onChangeOrder'
-        'click #up-size'               : 'onChangeOrder'
-        'click #down-size'             : 'onChangeOrder'
-        'click #up-lastModification'   : 'onChangeOrder'
-        'click #down-lastModification' : 'onChangeOrder'
-
         'keyup input#search-box'       : 'onSearchKeyPress'
 
     initialize: (options) ->
@@ -40,7 +31,7 @@ module.exports = class FolderView extends BaseView
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
 
-        @setDragNDrop()
+        #@setDragNDrop()
 
 
     # Set Drag and drop properly.
@@ -59,31 +50,9 @@ module.exports = class FolderView extends BaseView
     afterRender: ->
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
-        @displayChevron 'up', 'name'
 
-    # Helpers to display correct chevron to sort files
-    displayChevron: (order, type) ->
-        @$('#up-name').show()
-        @$('#up-name').addClass 'unactive'
-        @$('#down-name').hide()
-        @$('#up-size').show()
-        @$('#up-size').addClass 'unactive'
-        @$('#down-size').hide()
-        @$('#up-class').show()
-        @$('#up-class').addClass 'unactive'
-        @$('#down-class').hide()
-        @$('#up-lastModification').show()
-        @$('#up-lastModification').addClass 'unactive'
-        @$('#down-lastModification').hide()
-
-        if order is "down"
-            @$("#up-#{type}").show()
-            @$("#down-#{type}").hide()
-            @$("#up-#{type}").removeClass 'unactive'
-        else
-            @$("#up-#{type}").hide()
-            @$("#down-#{type}").show()
-            @$("#down-#{type}").removeClass 'unactive'
+        @filesList = new FilesView el: @$("#files"), model: @model
+        @filesList.render()
 
     # Display and re-render the contents of the folder
     changeActiveFolder: (folder) ->
@@ -128,43 +97,26 @@ module.exports = class FolderView extends BaseView
         zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
         @$('#download-link').attr 'href', zipLink
 
-        # add files view
-        @filesList?.$el.html null
-        #@$("#loading-indicator").spin 'small'
-        @model.findFiles
-            success: (files) =>
+        @filesList.collection.reset []
+        @$("#loading-indicator").spin 'small'
+        @model.findContent
+            success: (content) =>
+                for item in content
+                    if item.docType.toLowerCase() is "file"
+                        item.type = "file"
+                    else
+                        item.type = "folder"
 
-                # mark files as files
-                for file in files
-                    file.type = "file"
+                @stopListening @filesList.collection
+                @filesList.collection.reset content
+                @filesList.model = @model
+                @listenTo @filesList.collection, "sync", @hideUploadForm
+                @$("#loading-indicator").spin()
 
-                @model.findFolders
-                    success: (folders) =>
-
-                        # mark folders as folders
-                        for folder in folders
-                            folder.type = "folder"
-
-                        # new collection
-                        if @filesCollection
-                            @stopListening @filesCollection
-                        @filesCollection = new FileCollection folders.concat(files)
-                        @listenTo @filesCollection, "sync", @hideUploadForm
-
-                        # render the collection
-                        @filesList?.destroy() if @filesList
-                        @filesList = new FilesView @filesCollection, @model
-                        @$('#files').html @filesList.$el
-                        @filesList.render()
-                        # @modalFolder.filesList = @filesList
-                        #@$("#loading-indicator").spin()
-                    error: (error) =>
-                        console.log error
-                        showError t "modal error get folders"
-                        #@$("#loading-indicator").spin()
             error: (error) =>
-                console.log error
-                showError t "modal error get files"
+                folderName = @model.get 'name'
+                ModalView.error t("modal error get content", {folderName})
+                @$("#loading-indicator").spin()
 
     onUploadNewFileClicked: ->
         @modal = new ModalUploadView
@@ -210,22 +162,6 @@ module.exports = class FolderView extends BaseView
 
         search = new File data
         @changeActiveFolder search
-
-    # Changer sorting depending on the clicked chevron.
-    onChangeOrder: (event) ->
-        infos = event.target.id.split '-'
-        way = infos[0]
-        type = infos[1]
-
-        @displayChevron way, type
-        @filesCollection.type = type
-
-        if @filesCollection.order is "incr"
-            @filesCollection.order = "decr"
-            @filesCollection.sort()
-        else
-            @filesCollection.order = "incr"
-            @filesCollection.sort()
 
     onShareClicked: ->
         new ModalShareView model: @model

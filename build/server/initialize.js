@@ -15,6 +15,6 @@ module.exports.afterStart = function(app, server, callback) {
     server: server
   }, ['file.*', 'folder.*', 'contact.*']);
   if (callback != null) {
-    return callback();
+    return callback(app, server);
   }
 };

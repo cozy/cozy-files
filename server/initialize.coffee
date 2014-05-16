@@ -10,4 +10,4 @@ module.exports.afterStart = (app, server, callback) ->
         # notification events should be proxied to client
         realtime = RealtimeAdapter server: server, ['file.*', 'folder.*', 'contact.*']
 
-        callback() if callback?
+        callback app, server if callback?

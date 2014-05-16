@@ -2376,7 +2376,7 @@ a {
 }
 input {
   border: 1px solid #ccc;
-  color: #ccc;
+  color: #333;
 }
 input:focus {
   color: #333;
@@ -2453,41 +2453,53 @@ div#affixbar img {
 #content {
   padding-top: 45px;
 }
+table,
 table#table-items {
-  margin-top: 30px;
+  margin-bottom: 10px;
 }
+table .unactive,
 table#table-items .unactive {
   opacity: 0.5;
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
   filter: alpha(opacity=50);
 }
+table td,
 table#table-items td {
   padding: 0px 5px 0 0;
   height: 40px;
 }
+table td.type-column-cell,
 table#table-items td.type-column-cell,
+table td.size-column-cell,
 table#table-items td.size-column-cell,
+table td.date-column-cell,
 table#table-items td.date-column-cell {
   color: #808080;
   padding-top: 6px;
   width: 100px;
 }
+table td.date-column-cell,
 table#table-items td.date-column-cell {
   width: 190px;
   text-align: left;
 }
+table .table-headers td:first-child,
 table#table-items .table-headers td:first-child {
   padding-left: 3px;
 }
+table .table-headers td,
 table#table-items .table-headers td {
   border-top: 0;
 }
+table .table-headers span,
 table#table-items .table-headers span {
   line-height: 30px;
 }
+table .table-headers .btn,
 table#table-items .table-headers .btn {
   top: -2px;
 }
+table .table-headers a:hover,
 table#table-items .table-headers a:hover {
   color: #fe8800;
 }
@@ -2715,6 +2727,9 @@ tr.folder-row:hover .operations a:active {
 #clearancemanager label {
   font-weight: normal;
 }
+#cozy-clearance-modal .modal-dialog {
+  width: 700px;
+}
 #share-list {
   list-style-type: none;
   margin-top: 5px;
@@ -2791,6 +2806,7 @@ tr.folder-row:hover .operations a:active {
   line-height: 21px;
 }
 #affixbar #share-state span {
+  margin-left: 5px;
   font-size: 17px;
 }
 .caption-edit,
@@ -2800,6 +2816,46 @@ tr.folder-row:hover .operations a:active {
 }
 tr.folder-row .caption-edit i.fa {
   margin-right: 9px;
+}
+.footer {
+  text-align: center;
+  color: #808080;
+  font-style: italic;
+}
+#content {
+  background: #fff;
+  padding-bottom: 10px;
+}
+#files {
+  padding-top: 30px;
+}
+body.error-404 {
+  background: #fff;
+}
+body.error-404 .container {
+  display: table;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+}
+body.error-404 .row {
+  display: table-cell;
+  vertical-align: middle;
+}
+body.error-404 .error-frame {
+  padding: 80px 40px;
+  background: #fff;
+  border: 10px solid #34a6ff;
+  font-size: 25px;
+  text-align: center;
+}
+body.error-404 .error-frame .headline {
+  margin-bottom: 50px;
+  font-size: 30px;
+  color: #34a6ff;
+}
+.public #content {
+  padding-top: 70px;
 }
 @media (max-width: 480px) {
   body {

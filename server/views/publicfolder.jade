@@ -1,4 +1,4 @@
-!!!
+doctype
 html
   head
     title Cozy - Files
@@ -39,21 +39,23 @@ html
                   li: a(href=folder.id + keyquery)= folder.name
             p.pull-right
               #upload-buttons.pull-right
-                a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
-                  img(src="../assets/images/add-file.png")
-                | &nbsp;
-                a#button-new-folder.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
-                  img(src="../assets/images/add-folder.png")
-                | &nbsp;
-                if notifications
-                  a#notifications.btn.btn-cozy.toggled(
-                    href= keyquery + '&notifications=' + !notifications)
-                      = t('notifications enabled')
-                else
-                  a#notifications.btn.btn-cozy(
-                    href= keyquery + '&notifications=' + !notifications)
-                      = t('notifications disabled')
-                | &nbsp;
+                if canupload
+                  a#button-upload-new-file.btn.btn-cozy(data-toggle="modal",data-target="#dialog-upload-file")
+                    img(src="../assets/images/add-file.png")
+                  | &nbsp;
+                  a#button-new-folder.btn.btn-cozy(data-toggle="modal",data-target="#dialog-new-folder")
+                    img(src="../assets/images/add-folder.png")
+                  | &nbsp;
+                if keyquery.length > 0
+                  if notifications
+                    a#notifications.btn.btn-cozy.toggled(
+                      href= keyquery + '&notifications=' + !notifications)
+                        = t('notifications enabled')
+                  else
+                    a#notifications.btn.btn-cozy(
+                      href= keyquery + '&notifications=' + !notifications)
+                        = t('notifications disabled')
+                  | &nbsp;
                 a#download-link.btn.btn-cozy-contrast(
                   href=path[path.length-1].id + '.zip' + keyquery
                   title=t("download"))

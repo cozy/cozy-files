@@ -390,6 +390,35 @@ module.exports.allFolders = function(req, res, next) {
   });
 };
 
+module.exports.findContent = function(req, res, next) {
+  return getFolderPath(req.body.id, function(err, key) {
+    if (err != null) {
+      return next(err);
+    } else {
+      return async.parallel([
+        function(cb) {
+          return Folder.byFolder({
+            key: key
+          }, cb);
+        }, function(cb) {
+          return File.byFolder({
+            key: key
+          }, cb);
+        }
+      ], function(err, results) {
+        var content, files, folders;
+        if (err != null) {
+          return next(err);
+        } else {
+          folders = results[0], files = results[1];
+          content = folders.concat(files);
+          return res.send(200, content);
+        }
+      });
+    }
+  });
+};
+
 module.exports.findFolders = function(req, res, next) {
   return getFolderPath(req.body.id, function(err, key) {
     if (err) {

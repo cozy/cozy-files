@@ -175,7 +175,8 @@ doSendNotif = function() {
         html: notiftemplate({
           name: item.name,
           url: item.url,
-          displayName: displayName
+          displayName: displayName,
+          localization: localization
         })
       };
       CozyAdapter.sendMailFromUser(mailOptions, function(err) {

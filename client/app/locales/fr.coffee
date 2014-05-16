@@ -5,8 +5,11 @@ module.exports =
     "modal ok"                  : "OK"
     "modal error get files"     : "Une erreur s'est produite en récupérant les fichiers du serveur"
     "modal error get folders"   : "Une erreur s'est produite en récupérant les dossiers du serveur"
+    "modal error get content"   : "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur"
     "modal error empty name"    : "Le nom ne peut pas être vide"
     "modal error file invalid"  : "Le fichier ne parait pas être valide"
+
+    "root folder name"          : "racine"
 
     # breadcrumbs
     "breadcrumbs search title"  : "Recherche"
@@ -73,6 +76,8 @@ module.exports =
     "MB"                        : "Mo"
     "KB"                        : "Ko"
     "B"                         : "o"
+    "files"                     : "fichiers"
+    "no file in folder"         : "Ce dossier est vide."
 
     "enable notifications": "Activer les notifications"
     "disable notifications": "Désactiver les notifications"

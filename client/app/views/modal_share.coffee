@@ -35,7 +35,7 @@ module.exports = class ModalShareView extends CozyClearanceModal
             'r': 'perm r folder'
             'rw': 'perm rw folder'
         else
-            'r': 'perm r file'
+            'r': t 'perm r file'
 
     # do not allow adding permissions for user who already have them by inheritance
     typeaheadFilter: (item) =>
