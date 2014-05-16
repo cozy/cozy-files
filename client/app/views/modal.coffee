@@ -18,19 +18,20 @@ module.exports = class ModalView extends BaseView
         @hideOnYes = true unless @hideOnYes?
 
     initialize: ->
+        @$el.on 'hidden.bs.modal', => @close()
+
         @render()
         @show()
 
     onYes: ->
         @cb true if @cb
         @hide()
-        setTimeout () =>
-            @destroy()
-        , 1000
 
     onNo: ->
         @cb false if @cb
         @hide() if @hideOnYes
+
+    close: ->
         setTimeout (() => @destroy()), 500
 
     show: ->
