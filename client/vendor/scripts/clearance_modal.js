@@ -114,6 +114,7 @@ module.exports = collection;
 
 require.register("cozy-clearance/modal", function(exports, require, module){
   var Modal,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -121,12 +122,18 @@ Modal = (function(_super) {
   __extends(Modal, _super);
 
   function Modal() {
+    this.closeOnEscape = __bind(this.closeOnEscape, this);
     return Modal.__super__.constructor.apply(this, arguments);
   }
 
   Modal.prototype.id = 'modal-dialog';
 
   Modal.prototype.className = 'modal fade';
+
+  Modal.prototype.attributes = {
+    'data-backdrop': "static",
+    'data-keyboard': "false"
+  };
 
   Modal.prototype.initialize = function(options) {
     if (this.title == null) {
@@ -147,30 +154,59 @@ Modal = (function(_super) {
     this.render();
     this.saving = false;
     this.$el.modal('show');
-    return this.$el.one('hide.bs.modal', (function(_this) {
+    this.backdrop = $('modal-backdrop fade in').last();
+    this.backdrop.on('click', (function(_this) {
       return function() {
-        setTimeout((function() {
-          return _this.remove();
-        }), 1000);
-        return _this.cb(_this.saving);
+        return _this.onNo();
       };
     })(this));
+    return $(document).on('keyup', this.closeOnEscape);
   };
 
   Modal.prototype.events = function() {
     return {
-      "click #modal-dialog-no": (function(_this) {
-        return function() {
-          return _this.$el.modal('hide');
-        };
-      })(this),
-      "click #modal-dialog-yes": (function(_this) {
-        return function() {
-          _this.saving = true;
-          return _this.$el.modal('hide');
-        };
-      })(this)
+      "click #modal-dialog-no": 'onNo',
+      "click #modal-dialog-yes": 'onYes'
     };
+  };
+
+  Modal.prototype.onNo = function() {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    this.$el.modal('hide');
+    setTimeout(((function(_this) {
+      return function() {
+        return _this.remove();
+      };
+    })(this)), 500);
+    return this.cb(false);
+  };
+
+  Modal.prototype.onYes = function() {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    this.$el.modal('hide');
+    setTimeout(((function(_this) {
+      return function() {
+        return _this.remove();
+      };
+    })(this)), 500);
+    return this.cb(true);
+  };
+
+  Modal.prototype.closeOnEscape = function(e) {
+    if (e.which === 27) {
+      return this.onNo();
+    }
+  };
+
+  Modal.prototype.remove = function() {
+    $(document).off('keyup', this.closeOnEscape);
+    return Modal.__super__.remove.apply(this, arguments);
   };
 
   Modal.prototype.render = function() {
@@ -238,7 +274,7 @@ buf.push("<p>" + (jade.escape(null == (jade.interp = t('modal shared ' + type + 
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade.interp = t('only you can see')) ? "" : jade.interp)) + "</p><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><ul id=\"share-list\">");
+buf.push("<p>" + (jade.escape(null == (jade.interp = t('only you can see')) ? "" : jade.interp)) + "</p><div class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + "/><a id=\"share-add-current\" class=\"btn btn-cozy\">Add</a></div><ul id=\"share-list\">");
 // iterate clearance
 ;(function(){
   var $$obj = clearance;
@@ -424,8 +460,11 @@ module.exports = CozyClearanceModal = (function(_super) {
   function CozyClearanceModal() {
     this.showLink = __bind(this.showLink, this);
     this.onClose = __bind(this.onClose, this);
+    this.onYes = __bind(this.onYes, this);
+    this.onNo = __bind(this.onNo, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
+    this.addCurrentEmail = __bind(this.addCurrentEmail, this);
     this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
     this.getRenderData = __bind(this.getRenderData, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
@@ -442,6 +481,7 @@ module.exports = CozyClearanceModal = (function(_super) {
       "click #share-public": "makePublic",
       "click #share-private": "makePrivate",
       'click #modal-dialog-share-save': 'onSave',
+      'click #share-add-current': 'addCurrentEmail',
       'click .revoke': 'revoke',
       'click .show-link': 'showLink',
       'change select.changeperm': 'changePerm'
@@ -552,6 +592,10 @@ module.exports = CozyClearanceModal = (function(_super) {
     return this.afterRender();
   };
 
+  CozyClearanceModal.prototype.addCurrentEmail = function() {
+    return this.onGuestAdded(this.$('#share-input').val());
+  };
+
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
     var contactid, email, key, perm, _ref;
     _ref = result.split(';'), email = _ref[0], contactid = _ref[1];
@@ -587,6 +631,42 @@ module.exports = CozyClearanceModal = (function(_super) {
       return rule.key === select.dataset.key;
     })[0].perm = select.options[select.selectedIndex].value;
     return this.refresh();
+  };
+
+  CozyClearanceModal.prototype.onNo = function() {
+    var clearance, diffLength, diffNews, hasChanged;
+    clearance = this.model.get('clearance');
+    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
+    diffLength = clearance.length !== this.initState.length;
+    hasChanged = diffNews || diffLength;
+    if (hasChanged) {
+      return Modal.confirm(t("confirm"), t('share confirm save'), t("yes"), t("no"), (function(_this) {
+        return function(confirmed) {
+          if (confirmed) {
+            return CozyClearanceModal.__super__.onNo.apply(_this, arguments);
+          }
+        };
+      })(this));
+    } else {
+      return CozyClearanceModal.__super__.onNo.apply(this, arguments);
+    }
+  };
+
+  CozyClearanceModal.prototype.onYes = function() {
+    var clearance, diffNews;
+    clearance = this.model.get('clearance');
+    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
+    if (this.$('#share-input').val() && !diffNews) {
+      return Modal.confirm(t("confirm"), t('share forgot add'), t("no forgot"), t("yes forgot"), (function(_this) {
+        return function(confirmed) {
+          if (confirmed) {
+            return CozyClearanceModal.__super__.onYes.apply(_this, arguments);
+          }
+        };
+      })(this));
+    } else {
+      return CozyClearanceModal.__super__.onYes.apply(this, arguments);
+    }
   };
 
   CozyClearanceModal.prototype.onClose = function(saving) {

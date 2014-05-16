@@ -2748,6 +2748,20 @@ tr.folder-row:hover .operations a:active {
 #cozy-clearance-modal .modal-dialog {
   width: 700px;
 }
+#cozy-clearance-modal .input-group {
+  width: 100%;
+}
+#cozy-clearance-modal .input-group input {
+  width: 90%;
+  height: 34px;
+  line-height: 1.428;
+  padding-left: 5px;
+}
+#cozy-clearance-modal .input-group a.btn {
+  width: 10%;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
 #share-list {
   list-style-type: none;
   margin-top: 5px;

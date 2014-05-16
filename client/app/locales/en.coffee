@@ -115,6 +115,15 @@ module.exports =
     "sharing"                         : "Sharing"
     "revoke"                          : "Revoke"
     "forced public"                   : "This is public because one of the parent folder is public:"
+    "confirm"                         : "Confirm"
+    "share forgot add"                : """
+        Looks like you forgot to click the Add button
+    """
+    "share confirm save"              : """
+        The changes you made to the permissions will not be saved. Is that what you want ?
+    """
+    "yes forgot"                      : "Back"
+    "no forgot"                       : "It's ok"
     "perm"                            : "can "
     "perm r file"                     : "download this file"
     "perm r folder"                   : "browse this folder"

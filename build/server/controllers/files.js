@@ -276,7 +276,7 @@ module.exports.destroy = function(req, res, next) {
   file = req.file;
   return file.removeBinary("file", (function(_this) {
     return function(err, resp, body) {
-      if (err) {
+      if (err && err.toString('utf8').indexOf('not found') === -1) {
         log.error("Cannot Remove binary for " + file.id);
         return next(err);
       } else {
