@@ -34,14 +34,14 @@ module.exports = class ModalUploadView extends Modal
         @label = @$ '#uploader .text'
 
     onNo: ->
-        @input.val("")
+        @input.val ""
         @hide()
-        setTimeout @destroy, 500
+        setTimeout (() => @destroy()), 500
 
     onYes: ->
         @$('fieldset, #modal-dialog-yes').hide()
         @doUploadFiles =>
-            @input.val("")
+            @input.val ""
             @callback?()
             # super
 
