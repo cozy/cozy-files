@@ -34,14 +34,17 @@ module.exports.fetch = function(req, res, next, id) {
     key: id
   }, function(err, folder) {
     if (err || !folder || folder.length === 0) {
-      if (err) {
-        return next(err);
-      } else {
-        return res.send({
-          error: true,
-          msg: 'File not found'
-        }, 404);
+      if (err == null) {
+        err = new Error('File not found');
+        err.status = 404;
+        err.template = {
+          name: '404',
+          params: {
+            localization: require('../lib/localization_manager')
+          }
+        };
       }
+      return next(err);
     } else {
       req.folder = folder[0];
       return next();
@@ -522,8 +525,15 @@ module.exports.publicList = function(req, res, next) {
   var errortemplate, folder;
   folder = req.folder;
   errortemplate = function(err) {
-    console.log(err);
-    return res.send(err.stack || err);
+    err = new Error('File not found');
+    err.status = 404;
+    err.template = {
+      name: '404',
+      params: {
+        localization: require('../lib/localization_manager')
+      }
+    };
+    return next(err);
   };
   return sharing.limitedTree(folder, req, function(path, rule) {
     var authorized, key;
@@ -608,7 +618,15 @@ module.exports.publicList = function(req, res, next) {
 module.exports.publicZip = function(req, res, next) {
   var errortemplate;
   errortemplate = function(err) {
-    return res.send(err.stack || err);
+    err = new Error('File not found');
+    err.status = 404;
+    err.template = {
+      name: '404',
+      params: {
+        localization: require('../lib/localization_manager')
+      }
+    };
+    return next(err);
   };
   return sharing.checkClearance(req.folder, req, function(authorized) {
     if (!authorized) {

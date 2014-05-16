@@ -2,7 +2,7 @@ BaseView = require '../lib/base_view'
 
 module.exports = class ProgressbarView extends BaseView
 
-    className: 'progress'
+    className: 'progressview'
     template: require './templates/progressbar'
     value: 0
 

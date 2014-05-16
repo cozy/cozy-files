@@ -2,29 +2,29 @@ BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 ProgressbarView = require "./progressbar"
-ModalView = require "./modal"
+ModalUploadView = require './modal_upload'
+ModalFolderView = require './modal_folder'
 ModalShareView = require './modal_share'
+showError = require('./modal').error
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
-Helpers = require '../lib/folder_helpers'
+
 
 module.exports = class FolderView extends BaseView
 
     template: require './templates/folder'
 
     events: ->
-        'click a#button-new-folder'    : 'prepareNewFolder'
-        'click a#button-upload-new-file': 'onUploadNewFileClicked'
+        'click #button-new-folder'     : 'onNewFolderClicked'
+        'click #button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
-        'click #upload-file-send'      : 'onAddFile'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
 
         'keyup input#search-box'       : 'onSearchKeyPress'
-        'keyup input#inputName'        : 'onAddFolderEnter'
 
     initialize: (options) ->
         @model = options.model
@@ -48,7 +48,6 @@ module.exports = class FolderView extends BaseView
         model: @model
 
     afterRender: ->
-        # add breadcrumbs view
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
 
@@ -112,122 +111,32 @@ module.exports = class FolderView extends BaseView
                 @filesList.collection.reset content
                 @filesList.model = @model
                 @listenTo @filesList.collection, "sync", @hideUploadForm
-                @$("#loading-indicator").spin()
+                @$("#loading-indicator").spin(false)
 
             error: (error) =>
                 folderName = @model.get 'name'
-                new ModalView t("modal error"), \
-                              t("modal error get content", {folderName}), \
-                              t("modal ok")
-                @$("#loading-indicator").spin()
+                ModalView.error t("modal error get content", {folderName})
+                @$("#loading-indicator").spin(false)
 
     onUploadNewFileClicked: ->
-        $("#dialog-upload-file .progress-name").remove()
+        @modal = new ModalUploadView
+            model: @model
+            validator: @validateNewModel
 
-    # Upload/ new folder
-    prepareNewFolder: ->
-        # display upload folder form only if it is supported
-        uploadDirectoryInput = @$("#folder-uploader")[0]
-        supportsDirectoryUpload = uploadDirectoryInput.directory or
-                                  uploadDirectoryInput.mozdirectory or
-                                  uploadDirectoryInput.webkitdirectory or
-                                  uploadDirectoryInput.msdirectory
+    onNewFolderClicked: ->
+        @modal = new ModalFolderView
+            model: @model
+            validator: @validateNewModel
 
-        $("#dialog-new-folder .progress-name").remove()
-
-        if supportsDirectoryUpload
-          @$("#folder-upload-form").removeClass('hide')
-
-        setTimeout () =>
-            @$("#inputName").focus()
-        , 500
-
-    onCancelFolder: ->
-        @$("#inputName").val("")
+    validateNewModel: (model) =>
+        myChildren = model.get('path') is @model.repository()
+        found = @filesList.collection.findWhere name: model.get 'name'
+        if myChildren and found
+            return t 'modal error file exists'
+        else
+            return null
 
 
-    onAddFolderEnter: (e) ->
-        if e.keyCode is 13
-            e.preventDefault()
-            e.stopPropagation()
-            @onAddFolder()
-
-    onAddFolder: =>
-        prefix = @model.repository()
-
-        folder = new File
-            name: @$('#inputName').val()
-            path: prefix
-            type: "folder"
-        @$("#inputName").val("")
-
-        files = @$('#folder-uploader')[0].files
-
-        if not files.length and folder.validate()
-            new ModalView t("modal error"), t("modal error no data"), t("modal ok")
-            return
-
-        if not folder.validate()
-            @filesList.addFolder folder
-
-        if files.length
-            # create the necessary (nested) folder structure
-            dirsToCreate = Helpers.nestedDirs(files)
-            for dir in dirsToCreate
-                # figure out the name and path for the folder
-                dir = Helpers.removeTralingSlash(dir)
-                parts = dir.split('/')
-                path = prefix + "/" + parts[...-1].join('/')
-                path = Helpers.removeTralingSlash(path)
-
-                nFolder = new File
-                    name: parts[-1..][0]
-                    path: path
-                    type: "folder"
-                response = @filesList.addFolder nFolder, true
-                # stop if the folder already exists
-                if response instanceof ModalView
-                    return
-
-            # now that the required folder structure was created, upload files
-            # filter out . and ..
-            files = (file for file in files when (file.name isnt "." and file.name isnt ".."))
-            for file in files
-                relPath = file.relativePath or file.mozRelativePath or file.webkitRelativePath or file.msRelativePath
-                file.path = prefix + "/" + Helpers.dirName(relPath)
-                response = @filesList.addFile file, true
-                # stop if the file already exists
-                if response instanceof ModalView
-                    return
-
-    onAddFile: =>
-        for attach in @$('#uploader')[0].files
-            @filesList.addFile attach
-        @$('#uploader').val("")
-
-    onCancelFile: ->
-        @$("#uploader").val("")
-
-    onDragAndDrop: (e) =>
-        e.preventDefault()
-        e.stopPropagation()
-
-        # send file
-        atLeastOne = false
-        for attach in e.dataTransfer.files
-            if attach.type is ""
-                new ModalView t("modal error"), "#{attach.name} #{t('modal error file invalid')}", t("modal ok")
-            else
-                @filesList.addFile attach
-                atLeastOne = true
-
-        if atLeastOne
-            # show a status bar
-            $("#dialog-upload-file").modal("show")
-
-    hideUploadForm: ->
-        $('#dialog-upload-file').modal('hide')
-        $('#dialog-new-folder').modal('hide')
 
 
     ###

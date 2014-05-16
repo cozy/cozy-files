@@ -45,7 +45,11 @@ module.exports =
 
     # folder template
     "upload caption"            : "Upload a new file"
-    "upload msg"                : "Choose the file to upload:"
+    "upload msg"                : "Drag files or click here to choose files."
+    "upload msg selected"       : """
+        You have selected %{smart_count} file, click Add to upload it. ||||
+        You have selected %{smart_count} files, click Add to upload them.
+    """
     "upload close"              : "Close"
     "upload send"               : "Add"
 
@@ -54,7 +58,7 @@ module.exports =
     "new folder caption"        : "Add a new folder"
     "new folder msg"            : "Create a folder named:"
     "new folder close"          : "Close"
-    "new folder send"           : "OK"
+    "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
     "upload folder msg"         : "Upload a folder"

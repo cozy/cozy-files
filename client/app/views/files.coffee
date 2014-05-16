@@ -111,7 +111,7 @@ module.exports = class FilesView extends BaseView
 
             @upload file, dirUpload
         else
-            new ModalView t("modal error"), "#{t('modal error file exists')}: #{attach.name}", t("modal ok")
+            ModalView.error "#{t('modal error file exists')}: #{attach.name}"
 
     upload: (file, noDisplay) =>
         path = file.get 'path'
@@ -129,9 +129,9 @@ module.exports = class FilesView extends BaseView
                 if not noDisplay
                     @collection.add file, merge: true
             error: =>
-                new ModalView t("modal error"), t("modal error file upload"), t("modal ok")
+                ModalView.error t("modal error file upload")
 
-    addFolder: (folder, noDisplay) ->
+    addFolder: (folder, noDisplay, callback) ->
         found = @collection.findWhere(name: folder.get("name"), path: folder.get("path"))
 
         if not found
@@ -139,11 +139,13 @@ module.exports = class FilesView extends BaseView
                 success: (data) =>
                     if not noDisplay
                         @collection.add folder
+                    callback() if callback?
                 error: (error) =>
-                    new ModalView t("modal error"), t("modal error folder create"), t("modal ok")
+                    error.txt = "modal error folder create"
+                    callback error
         else
-            new ModalView t("modal error"), t("modal error folder exists"), t("modal ok")
-
+            error.txt = "modal error folder exists"
+            callback error
 
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->

@@ -12,6 +12,15 @@ body
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
   font-family: styled, helvetica
 
+label
+    font-weight: normal
+
+.modal-content
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2)
+
+.modal-footer
+    margin-top: 0
+
 
 /*      FIXING BOOTSTRAP */
 body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
@@ -38,6 +47,8 @@ a:focus,
     border-color: basecolor
     font-family: main
     color: white
+    // position: relative for spinner
+    position: relative
 
     &:hover
       background-color: actioncolor
@@ -504,6 +515,71 @@ tr.folder-row
   .caption-edit
     i.fa
       margin-right: 9px
+
+.spinner
+    display: inline-block
+
+
+.progress-name
+  margin-bottom 8px
+  height 20px
+  line-height 20px
+
+  span
+    display inline-block
+    overflow hidden
+
+  .name
+    font-weight bold
+    white-space nowrap
+    text-overflow ellipsis
+    width: 150px
+  .error
+    color red
+  .success
+    color green
+  .progressview
+    display inline-block
+    width: 380px
+    .progress
+      margin-bottom 0px
+
+#uploader
+    position: relative
+    overflow: hidden
+    cursor: pointer
+    color white
+    padding 6px 12px
+    line-height 1.5
+    min-height 34px
+    width 100%
+    background-color basecolor
+
+    &:hover
+      background-color basecolor + 10%
+    &.active
+      background-color orange
+
+    .text
+        position: absolute
+        top: 0
+        left: 0
+        width: 100%
+        height: 100%
+        text-align: center
+        line-height: 37px
+
+    input
+        cursor: pointer
+        position: absolute
+        width: 4000px
+        display: block
+        height: 3000px
+        font-size: 300px
+        top: 0px
+        right: 0px
+        line-height: 300px
+        opacity: 0.01
 
 .footer
   text-align: center

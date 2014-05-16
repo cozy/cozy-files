@@ -2,38 +2,50 @@ BaseView = require '../lib/base_view'
 
 module.exports = class ModalView extends BaseView
 
+    id: "dialog-modal"
+    className: "modal fade"
+    attributes:
+        'tab-index': -1
     template: require './templates/modal'
     value: 0
 
-    events:
+    events: ->
         "click #modal-dialog-no"  : "onNo"
         "click #modal-dialog-yes" : "onYes"
 
-    constructor: (@title, @msg, @yes, @no, @cb) ->
+    constructor: (@title, @msg, @yes, @no, @cb, @hideOnYes) ->
         super()
+        @hideOnYes = true unless @hideOnYes?
 
     initialize: ->
         @render()
-        @$('#modal-dialog').modal('show')
+        @show()
 
     onYes: ->
-        @$('#modal-dialog').modal('hide')
         @cb true if @cb
+        @hide()
         setTimeout () =>
             @destroy()
         , 1000
 
     onNo: ->
         @cb false if @cb
-        @$('#modal-dialog').modal('hide')
+        @hide() if @hideOnYes
         setTimeout () =>
             @destroy()
         , 1000
 
+    show: ->
+        @$el.modal 'show'
+
+    hide: ->
+        @$el.modal 'hide'
+
     render: ->
         @$el.append @template(title: @title, msg: @msg, yes: @yes, no: @no)
-        $("body").append @el
+        $("body").append @$el
+        @afterRender()
         @
 
 module.exports.error = (code, cb) ->
-    new ModalView t("modal error"), t(code), t("modal ok"), false, cb
+    new ModalView t("modal error"), code, t("modal ok"), false, cb
