@@ -7,13 +7,13 @@ Folder = require '../models/folder'
 module.exports.updateIndex = (callback) ->
     File.all (err, files) ->
         if err
-            next err
+            console.log err
         else
             for file in files
                 file.index ['name'], () =>
     Folder.all (err, folders) ->
         if err
-            next err
+            console.log err
         else
             for folder in folders
                 folder.index ['name'], () =>

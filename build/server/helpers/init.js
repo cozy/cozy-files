@@ -9,7 +9,7 @@ module.exports.updateIndex = function(callback) {
   File.all(function(err, files) {
     var file, _i, _len, _results;
     if (err) {
-      return next(err);
+      return console.log(err);
     } else {
       _results = [];
       for (_i = 0, _len = files.length; _i < _len; _i++) {
@@ -24,7 +24,7 @@ module.exports.updateIndex = function(callback) {
   return Folder.all(function(err, folders) {
     var folder, _i, _len, _results;
     if (err) {
-      return next(err);
+      return console.log(err);
     } else {
       _results = [];
       for (_i = 0, _len = folders.length; _i < _len; _i++) {
