@@ -465,6 +465,48 @@ module.exports.search = function(req, res, next) {
   }
 };
 
+module.exports.searchContent = function(req, res, next) {
+  var parts, query, requests, tag;
+  query = req.body.id;
+  query = query.trim();
+  if (query.indexOf('tag:') !== -1) {
+    parts = query.split();
+    parts = parts.filter(function(part) {
+      return part.indexOf('tag:' !== -1);
+    });
+    tag = parts[0].split('tag:')[1];
+    requests = [
+      function(cb) {
+        return Folder.request('byTag', {
+          key: tag
+        }, cb);
+      }, function(cb) {
+        return File.request('byTag', {
+          key: tag
+        }, cb);
+      }
+    ];
+  } else {
+    requests = [
+      function(cb) {
+        return Folder.search("*" + query + "*", cb);
+      }, function(cb) {
+        return File.search("*" + query + "*", cb);
+      }
+    ];
+  }
+  return async.parallel(requests, function(err, results) {
+    var content, files, folders;
+    if (err != null) {
+      return next(err);
+    } else {
+      folders = results[0], files = results[1];
+      content = folders.concat(files);
+      return res.send(200, content);
+    }
+  });
+};
+
 module.exports.zip = function(req, res, next) {
   var addToArchive, archive, folder, key, makeZip;
   folder = req.folder;
@@ -539,7 +581,7 @@ module.exports.publicList = function(req, res, next) {
     var authorized, key;
     authorized = path.length !== 0;
     if (!authorized) {
-      return res.send(404);
+      return errortemplate();
     }
     key = "" + folder.path + "/" + folder.name;
     return async.parallel([

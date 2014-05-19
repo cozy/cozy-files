@@ -319,7 +319,31 @@ module.exports.search = (req, res, next) ->
     else
         Folder.search "*#{query}*", sendResults
 
+module.exports.searchContent = (req, res, next) ->
 
+    query = req.body.id
+    query = query.trim()
+
+    if query.indexOf('tag:') isnt -1
+        parts = query.split()
+        parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
+        tag = parts[0].split('tag:')[1]
+        requests = [
+            (cb) -> Folder.request 'byTag', key: tag, cb
+            (cb) -> File.request 'byTag', key: tag, cb
+        ]
+    else
+        requests = [
+            (cb) -> Folder.search "*#{query}*", cb
+            (cb) -> File.search "*#{query}*", cb
+        ]
+
+    async.parallel requests, (err, results) ->
+        if err? then next err
+        else
+            [folders, files] = results
+            content = folders.concat files
+            res.send 200, content
 
 # List files contained in the folder and return them as a zip archive.
 # TODO: add subfolders
@@ -375,7 +399,7 @@ module.exports.publicList = (req, res, next) ->
 
     sharing.limitedTree folder, req, (path, rule) ->
         authorized = path.length isnt 0
-        return res.send 404 unless authorized
+        return errortemplate() unless authorized
         key = "#{folder.path}/#{folder.name}"
         async.parallel [
             (cb) -> CozyInstance.getLocale cb

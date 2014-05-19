@@ -63,6 +63,8 @@ module.exports =
     "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
+    "drop message"              : "Drop your files here to automatically add them"
+
     "upload folder msg"         : "Upload a folder"
     "upload folder separator"   : "or"
 
@@ -84,6 +86,7 @@ module.exports =
     "KB"                        : "KB"
     "B"                         : "B"
     "files"                     : "files"
+    "element"                   : "%{smart_count} element |||| %{smart_count} elements"
     "no file in folder"         : "This folder is empty."
 
     "enable notifications": "Enable notifications"

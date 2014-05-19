@@ -64,6 +64,9 @@ module.exports = {
   'search/files': {
     post: files.search
   },
+  'search/content': {
+    post: folders.searchContent
+  },
   'shareid': {
     param: sharing.fetch
   },

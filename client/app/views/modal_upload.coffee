@@ -25,9 +25,9 @@ module.exports = class ModalUploadView extends Modal
         @callback = callback
         @validator = options.validator
 
-        if @files = options.files
-            @onYes()
+        @files = options.files
 
+        @onYes() if @files?.length > 0
 
     afterRender: =>
         @input = @$ '#uploader input'

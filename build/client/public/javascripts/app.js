@@ -126,7 +126,6 @@ module.exports = {
     }
   }
 };
-
 });
 
 ;require.register("collections/breadcrumbs", function(exports, require, module) {
@@ -223,7 +222,6 @@ module.exports = BreadcrumbsManager = (function(_super) {
   return BreadcrumbsManager;
 
 })(Backbone.Collection);
-
 });
 
 ;require.register("collections/files", function(exports, require, module) {
@@ -281,7 +279,6 @@ module.exports = FileCollection = (function(_super) {
   return FileCollection;
 
 })(Backbone.Collection);
-
 });
 
 ;require.register("helpers/client", function(exports, require, module) {
@@ -311,7 +308,6 @@ exports.put = function(url, data, callbacks) {
 exports.del = function(url, callbacks) {
   return exports.request("DELETE", url, null, callbacks);
 };
-
 });
 
 ;require.register("helpers/socket", function(exports, require, module) {
@@ -424,7 +420,6 @@ module.exports = SocketListener = (function(_super) {
   return SocketListener;
 
 })(CozySocketListener);
-
 });
 
 ;require.register("initialize", function(exports, require, module) {
@@ -449,7 +444,6 @@ $(function() {
   window.t = polyglot.t.bind(polyglot);
   return app.initialize();
 });
-
 });
 
 ;require.register("lib/app_helpers", function(exports, require, module) {
@@ -467,7 +461,6 @@ $(function() {
     return _results;
   })();
 })();
-
 });
 
 ;require.register("lib/base_view", function(exports, require, module) {
@@ -514,7 +507,6 @@ module.exports = BaseView = (function(_super) {
   return BaseView;
 
 })(Backbone.View);
-
 });
 
 ;require.register("lib/folder_helpers", function(exports, require, module) {
@@ -565,7 +557,6 @@ module.exports = {
     })();
   }
 };
-
 });
 
 ;require.register("lib/view_collection", function(exports, require, module) {
@@ -675,7 +666,6 @@ module.exports = ViewCollection = (function(_super) {
   return ViewCollection;
 
 })(BaseView);
-
 });
 
 ;require.register("locales/en", function(exports, require, module) {
@@ -723,6 +713,7 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "drop message": "Drop your files here to automatically add them",
   "upload folder msg": "Upload a folder",
   "upload folder separator": "or",
   "folder": "Folder",
@@ -741,6 +732,7 @@ module.exports = {
   "KB": "KB",
   "B": "B",
   "files": "files",
+  "element": "%{smart_count} element |||| %{smart_count} elements",
   "no file in folder": "This folder is empty.",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
@@ -781,7 +773,6 @@ module.exports = {
   "perm rw folder": "browse and upload files",
   "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
 };
-
 });
 
 ;require.register("locales/fr", function(exports, require, module) {
@@ -828,6 +819,7 @@ module.exports = {
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
+  "drop message": "Lâchez ici vos fichiers pour les ajouter",
   "upload folder msg": "Mettre en ligne un dossier",
   "upload folder separator": "ou",
   "folder": "Dossier",
@@ -846,6 +838,7 @@ module.exports = {
   "KB": "Ko",
   "B": "o",
   "files": "fichiers",
+  "element": "%{smart_count} élément |||| %{smart_count} éléments",
   "no file in folder": "Ce dossier est vide.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
@@ -886,7 +879,6 @@ module.exports = {
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
 };
-
 });
 
 ;require.register("locales/ro", function(exports, require, module) {
@@ -978,7 +970,6 @@ module.exports = {
   "perm rw folder": "parcurge acest dosar și încărca fișiere",
   "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar."
 };
-
 });
 
 ;require.register("models/file", function(exports, require, module) {
@@ -1138,7 +1129,6 @@ module.exports = File = (function(_super) {
   return File;
 
 })(Backbone.Model);
-
 });
 
 ;require.register("router", function(exports, require, module) {
@@ -1198,7 +1188,6 @@ module.exports = Router = (function(_super) {
   return Router;
 
 })(Backbone.Router);
-
 });
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
@@ -1242,7 +1231,6 @@ module.exports = BreadcrumbsView = (function(_super) {
   return BreadcrumbsView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/file", function(exports, require, module) {
@@ -1385,7 +1373,6 @@ module.exports = FileView = (function(_super) {
   return FileView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/files", function(exports, require, module) {
@@ -1489,26 +1476,17 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.updateNbFiles = function() {
-    var model, nbFiles, _i, _len, _ref;
-    nbFiles = 0;
-    _ref = this.collection.models;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      model = _ref[_i];
-      if (model.get('type') === 'file') {
-        nbFiles += 1;
-      }
-    }
-    if (nbFiles > 0) {
+    var nbElements;
+    nbElements = this.collection.length;
+    if (nbElements > 0) {
+      this.$("#file-amount-indicator").html(t('element', {
+        smart_count: nbElements
+      }));
       this.$("#file-amount-indicator").show();
       this.$("#no-files-indicator").hide();
-      this.$("#file-amount").html(nbFiles);
     } else {
       this.$("#file-amount-indicator").hide();
-      if (this.collection.models.length === 0) {
-        this.$("#no-files-indicator").show();
-      } else {
-        this.$("#no-files-indicator").hide();
-      }
+      this.$("#no-files-indicator").show();
     }
     return this.firstRender = false;
   };
@@ -1648,11 +1626,10 @@ module.exports = FilesView = (function(_super) {
   return FilesView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalFolderView, ModalShareView, ModalUploadView, ProgressbarView, showError,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalFolderView, ModalShareView, ModalUploadView, ModalView, ProgressbarView, showError,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1670,6 +1647,8 @@ ModalUploadView = require('./modal_upload');
 ModalFolderView = require('./modal_folder');
 
 ModalShareView = require('./modal_share');
+
+ModalView = require('./modal_share');
 
 showError = require('./modal').error;
 
@@ -1696,6 +1675,10 @@ module.exports = FolderView = (function(_super) {
       'click #cancel-new-folder': 'onCancelFolder',
       'click #cancel-new-file': 'onCancelFile',
       'click #share-state': 'onShareClicked',
+      'dragenter #files': 'onDragEnter',
+      'dragover #files': 'onDragEnter',
+      'dragleave #files': 'onDragLeave',
+      'drop #files': 'onDrop',
       'keyup input#search-box': 'onSearchKeyPress'
     };
   };
@@ -1704,21 +1687,6 @@ module.exports = FolderView = (function(_super) {
     this.model = options.model;
     this.breadcrumbs = options.breadcrumbs;
     return this.breadcrumbs.setRoot(this.model);
-  };
-
-  FolderView.prototype.setDragNDrop = function() {
-    var prevent;
-    prevent = function(e) {
-      e.preventDefault();
-      return e.stopPropagation();
-    };
-    this.$el.on("dragover", prevent);
-    this.$el.on("dragenter", prevent);
-    return this.$el.on("drop", (function(_this) {
-      return function(e) {
-        return _this.onDragAndDrop(e);
-      };
-    })(this));
   };
 
   FolderView.prototype.getRenderData = function() {
@@ -1730,6 +1698,7 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.afterRender = function() {
     this.breadcrumbsView = new BreadcrumbsView(this.breadcrumbs);
     this.$("#crumbs").append(this.breadcrumbsView.render().$el);
+    this.uploadButton = this.$('#button-upload-new-file');
     this.filesList = new FilesView({
       el: this.$("#files"),
       model: this.model
@@ -1841,6 +1810,41 @@ module.exports = FolderView = (function(_super) {
 
 
   /*
+      Drag and Drop to upload
+   */
+
+  FolderView.prototype.onDragEnter = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.uploadButton.addClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').show();
+  };
+
+  FolderView.prototype.onDragLeave = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.uploadButton.removeClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').hide();
+  };
+
+  FolderView.prototype.onDrop = function(e) {
+    var filesToUpload;
+    e.preventDefault();
+    e.stopPropagation();
+    filesToUpload = e.dataTransfer.files;
+    if (filesToUpload.length > 0) {
+      this.modal = new ModalUploadView({
+        model: this.model,
+        validator: this.validateNewModel,
+        files: filesToUpload
+      });
+    }
+    this.uploadButton.removeClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').hide();
+  };
+
+
+  /*
       Search
    */
 
@@ -1876,7 +1880,6 @@ module.exports = FolderView = (function(_super) {
   return FolderView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/modal", function(exports, require, module) {
@@ -1982,7 +1985,6 @@ module.exports = ModalView = (function(_super) {
 module.exports.error = function(code, cb) {
   return new ModalView(t("modal error"), code, t("modal ok"), false, cb);
 };
-
 });
 
 ;require.register("views/modal_folder", function(exports, require, module) {
@@ -2198,7 +2200,6 @@ module.exports = ModalFolderView = (function(_super) {
   return ModalFolderView;
 
 })(Modal);
-
 });
 
 ;require.register("views/modal_share", function(exports, require, module) {
@@ -2358,7 +2359,6 @@ module.exports = ModalShareView = (function(_super) {
   return ModalShareView;
 
 })(CozyClearanceModal);
-
 });
 
 ;require.register("views/modal_upload", function(exports, require, module) {
@@ -2404,10 +2404,12 @@ module.exports = ModalUploadView = (function(_super) {
     this.updateMessage = __bind(this.updateMessage, this);
     this.handleUploaderActive = __bind(this.handleUploaderActive, this);
     this.afterRender = __bind(this.afterRender, this);
+    var _ref;
     Modal.__super__.constructor.apply(this, arguments);
     this.callback = callback;
     this.validator = options.validator;
-    if (this.files = options.files) {
+    this.files = options.files;
+    if (((_ref = this.files) != null ? _ref.length : void 0) > 0) {
       this.onYes();
     }
   }
@@ -2579,7 +2581,6 @@ module.exports = ModalUploadView = (function(_super) {
   return ModalUploadView;
 
 })(Modal);
-
 });
 
 ;require.register("views/progressbar", function(exports, require, module) {
@@ -2625,7 +2626,6 @@ module.exports = ProgressbarView = (function(_super) {
   return ProgressbarView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/public_folder", function(exports, require, module) {
@@ -2702,7 +2702,6 @@ module.exports = PublicFolderView = (function(_super) {
   return PublicFolderView;
 
 })(FolderView);
-
 });
 
 ;require.register("views/tags", function(exports, require, module) {
@@ -2782,423 +2781,429 @@ module.exports = TagsView = (function(_super) {
   return TagsView;
 
 })(BaseView);
-
 });
 
 ;require.register("views/templates/breadcrumbs_element", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),model = locals_.model;
 if ( model.id == "root")
 {
-buf.push('<li><a href="#"><span class="glyphicon glyphicon-home"> </span></a></li>');
+buf.push("<li><a href=\"#\"><span class=\"glyphicon glyphicon-home\"> </span></a></li>");
 }
 else
 {
 if ( model.attributes.type == "search")
 {
-buf.push('<li><a');
-buf.push(attrs({ 'href':("#search/" + (model.id) + "") }, {"href":true}));
-buf.push('>' + escape((interp = model.attributes.name) == null ? '' : interp) + '</a></li>');
+buf.push("<li><a" + (jade.attr("href", "#search/" + (model.id) + "", true, false)) + ">" + (jade.escape((jade_interp = model.attributes.name) == null ? '' : jade_interp)) + "</a></li>");
 }
 else
 {
-buf.push('<li><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + "") }, {"href":true}));
-buf.push('>' + escape((interp = model.attributes.name) == null ? '' : interp) + '</a></li>');
+buf.push("<li><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + ">" + (jade.escape((jade_interp = model.attributes.name) == null ? '' : jade_interp)) + "</a></li>");
 }
-}
-}
-return buf.join("");
+};return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/file", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
-buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+buf.push("<td><div class=\"caption-wrapper\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"caption btn btn-link\"><i class=\"fa fa-folder\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a></div><ul class=\"tags\">");
 if ( model.tags)
 {
 // iterate model.tags
 ;(function(){
-  if ('number' == typeof model.tags.length) {
+  var $$obj = model.tags;
+  if ('number' == typeof $$obj.length) {
 
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   } else {
     var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   }
 }).call(this);
 
 }
-buf.push('</ul><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('>');
+buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
-buf.push('<span class="fa fa-globe"></span>');
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push('<span class="fa fa-lock"></span>');
+buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push('</a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
-buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
 if ( model.lastModification)
 {
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push('</td>');
+buf.push("</td>");
 }
 else
 {
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
-buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+buf.push("<td><div class=\"caption-wrapper\"><a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a></div><ul class=\"tags\">");
 if ( model.tags)
 {
 // iterate model.tags
 ;(function(){
-  if ('number' == typeof model.tags.length) {
+  var $$obj = model.tags;
+  if ('number' == typeof $$obj.length) {
 
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   } else {
     var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   }
 }).call(this);
 
 }
-buf.push('</ul><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('>');
+buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
-buf.push('<span class="fa fa-globe"></span>');
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push('<span class="fa fa-lock"></span>');
+buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push('</a><a class="file-edit"><span');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
-buf.push('></span></a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div></td><td class="file-size size-column-cell">');
- options = {base: 2}
-buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></td><td class=\"file-size size-column-cell\">");
+options = {base: 2}
+buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-type type-column-cell\"><span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-date date-column-cell\">");
 if ( model.lastModification)
 {
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push('</td>');
-}
-}
-return buf.join("");
+buf.push("</td>");
+};return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/file_edit", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<td><span class="caption caption-edit">');
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+buf.push("<td><span class=\"caption caption-edit\">");
 if ( model.type && model.type == "folder")
 {
-buf.push('<i class="fa fa-folder"></i>');
+buf.push("<i class=\"fa fa-folder\"></i>");
 }
 else
 {
-buf.push('<i class="fa fa-file-o"></i>');
+buf.push("<i class=\"fa fa-file-o\"></i>");
 }
-buf.push('<input');
-buf.push(attrs({ 'value':(model.name), "class": ('caption') + ' ' + ('file-edit-name') }, {"value":true}));
-buf.push('/></span><a class="btn btn-sm btn-cozy file-edit-save">' + escape((interp = t("file edit save")) == null ? '' : interp) + '</a><a class="btn btn-sm btn-link file-edit-cancel">' + escape((interp = t("file edit cancel")) == null ? '' : interp) + '</a></td><td class="file-size">');
- options = {base: 2}
-buf.push('<span class="pull-left">' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span class="pull-left">' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a></td><td class=\"file-size\">");
+options = {base: 2}
+buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-type type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-date date-column-cell\">");
 if ( model.lastModification)
 {
-buf.push('<span class="pull-left">' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push('</td>');
-}
-return buf.join("");
+buf.push("</td>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/file_search", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
 if ( model.type && model.type == "folder")
 {
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("#folders/" + (model.id) + ""), 'title':("" + (t('open folder')) + ""), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true}));
-buf.push('><i class="fa fa-folder"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+buf.push("<td><div class=\"caption-wrapper\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"caption btn btn-link\"><i class=\"fa fa-folder\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a></div><ul class=\"tags\">");
 if ( model.tags)
 {
 // iterate model.tags
 ;(function(){
-  if ('number' == typeof model.tags.length) {
+  var $$obj = model.tags;
+  if ('number' == typeof $$obj.length) {
 
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   } else {
     var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   }
 }).call(this);
 
 }
-buf.push('</ul><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('>');
+buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
-buf.push('<span class="fa fa-globe"></span>');
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push('<span class="fa fa-lock"></span>');
+buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push('</a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('file-edit') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-edit"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a><a');
-buf.push(attrs({ 'href':("folders/" + (model.id) + "/zip/" + (model.name) + ""), 'target':("_blank"), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"target":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="size-column-cell"></td><td class="type-column-cell"><span class="pull-left">' + escape((interp = t('folder')) == null ? '' : interp) + '</span></td><td class="date-column-cell">');
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
 if ( model.lastModification)
 {
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push('</td>');
+buf.push("</td>");
 }
 else
 {
-buf.push('<td><div class="caption-wrapper"><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/attach/" + (model.name) + ""), 'title':("" + (t('download file')) + ""), 'target':("_blank"), "class": ('caption') + ' ' + ('btn') + ' ' + ('btn-link') }, {"href":true,"title":true,"target":true}));
-buf.push('><i class="fa fa-file-o"></i>' + escape((interp = model.name) == null ? '' : interp) + '</a></div><ul class="tags">');
+buf.push("<td><div class=\"caption-wrapper\"><a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a></div><ul class=\"tags\">");
 if ( model.tags)
 {
 // iterate model.tags
 ;(function(){
-  if ('number' == typeof model.tags.length) {
+  var $$obj = model.tags;
+  if ('number' == typeof $$obj.length) {
 
-    for (var $index = 0, $$l = model.tags.length; $index < $$l; $index++) {
-      var tag = model.tags[$index];
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   } else {
     var $$l = 0;
-    for (var $index in model.tags) {
-      $$l++;      var tag = model.tags[$index];
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
 
-buf.push('<li>' + escape((interp = tag) == null ? '' : interp) + '</li>');
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
     }
 
   }
 }).call(this);
 
 }
-buf.push('</ul><div class="operations"><a');
-buf.push(attrs({ 'title':("" + (t('tooltip share')) + ""), "class": ('file-share') }, {"title":true}));
-buf.push('>');
+buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
-buf.push('<span class="fa fa-globe"></span>');
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( model.clearance && model.clearance.length > 0)
 {
-buf.push('<span class="fa fa-users">' + escape((interp = model.clearance.length) == null ? '' : interp) + '</span>');
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push('<span class="fa fa-lock"></span>');
+buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push('</a><a class="file-edit"><span');
-buf.push(attrs({ 'title':("" + (t('tooltip edit')) + ""), "class": ('glyphicon') + ' ' + ('glyphicon-edit') }, {"title":true}));
-buf.push('></span></a><a');
-buf.push(attrs({ 'href':("files/" + (model.id) + "/download/" + (model.name) + ""), 'download':("" + (model.name) + ""), 'title':("" + (t('tooltip download')) + ""), "class": ('file-download') }, {"href":true,"download":true,"title":true}));
-buf.push('><span class="glyphicon glyphicon-cloud-download"></span></a><a');
-buf.push(attrs({ 'title':("" + (t('tooltip delete')) + ""), "class": ('file-delete') }, {"title":true}));
-buf.push('><span class="glyphicon glyphicon-remove-circle"></span></a></div><p class="file-path">' + escape((interp = model.path) == null ? '' : interp) + '/' + escape((interp = model.name) == null ? '' : interp) + '</p></td><td class="file-size size-column-cell">');
- options = {base: 2}
-buf.push('<span>' + escape((interp = filesize(model.size || 0, options)) == null ? '' : interp) + '</span></td><td class="file-type type-column-cell"><span>' + escape((interp = t(model.class)) == null ? '' : interp) + '</span></td><td class="file-date date-column-cell">');
+buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"file-size size-column-cell\">");
+options = {base: 2}
+buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-type type-column-cell\"><span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-date date-column-cell\">");
 if ( model.lastModification)
 {
-buf.push('<span>' + escape((interp = moment(model.lastModification).calendar()) == null ? '' : interp) + '</span>');
+buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push('</td>');
-}
-}
-return buf.join("");
+buf.push("</td>");
+};return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/files", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div id="loading-indicator">&nbsp;</div><table id="table-items" class="table table-hover"><thead><tr class="table-headers"><td><span>');
-var __val__ = t('name')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-name" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-name" class="btn glyphicon glyphicon-chevron-up"></a></td><td class="size-column-cell"><span>');
-var __val__ = t('size')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-size" class="glyphicon glyphicon-chevron-down btn"></a><a id="up-size" class="unactive btn glyphicon glyphicon-chevron-up"></a></td><td class="type-column-cell"><span>');
-var __val__ = t('type')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-class" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-class" class="glyphicon glyphicon-chevron-up btn unactive"></a></td><td class="date-column-cell"><span>');
-var __val__ = t('date')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</span><a id="down-lastModification" class="btn glyphicon glyphicon-chevron-down"></a><a id="up-lastModification" class="btn glyphicon glyphicon-chevron-up unactive"></a></td></tr></thead><tbody id="table-items-body"></tbody></table><p id="file-amount-indicator" class="footer"><span id="file-amount"></span><span>&nbsp;</span><span>' + escape((interp = t('files')) == null ? '' : interp) + '</span></p><p id="no-files-indicator" class="footer">' + escape((interp = t('no file in folder')) == null ? '' : interp) + '</p>');
-}
-return buf.join("");
+var jade_mixins = {};
+var jade_interp;
+
+buf.push("<div id=\"loading-indicator\">&nbsp;</div><table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn glyphicon glyphicon-chevron-down\"></a><a id=\"up-name\" class=\"btn glyphicon glyphicon-chevron-up\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"glyphicon glyphicon-chevron-down btn\"></a><a id=\"up-size\" class=\"unactive btn glyphicon glyphicon-chevron-up\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn glyphicon glyphicon-chevron-down\"></a><a id=\"up-class\" class=\"glyphicon glyphicon-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn glyphicon glyphicon-chevron-down\"></a><a id=\"up-lastModification\" class=\"btn glyphicon glyphicon-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">" + (jade.escape((jade_interp = t('no file in folder')) == null ? '' : jade_interp)) + "</p>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/folder", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div id="affixbar" data-spy="affix" data-offset-top="1"><div class="container"><div class="row"><div class="col-lg-12"><div id="crumbs" class="pull-left"></div><p class="pull-right"><input id="search-box" type="search"/><div id="upload-buttons" class="pull-right"><a id="share-state" class="btn btn-cozy btn-cozy-contrast"></a>&nbsp;<a');
-buf.push(attrs({ 'id':('button-upload-new-file'), 'title':(t('upload button')), "class": ('btn') + ' ' + ('btn-cozy') + ' ' + ('btn-cozy') }, {"title":true}));
-buf.push('><img src="images/add-file.png"/></a>&nbsp;<a');
-buf.push(attrs({ 'id':('button-new-folder'), 'title':(t('new folder button')), "class": ('btn') + ' ' + ('btn-cozy') }, {"title":true}));
-buf.push('><img src="images/add-folder.png"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t("download"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class="container"><div class="row"><div id="content" class="col-lg-12"><div id="files"></div></div></div></div>');
-}
-return buf.join("");
+var jade_mixins = {};
+var jade_interp;
+
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\"><input id=\"search-box\" type=\"search\"/><div id=\"upload-buttons\" class=\"pull-right\"><a id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"></a>&nbsp;<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t(\"download\"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/modal", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = title) == null ? '' : interp) + '</h4></div><div class="modal-body"><p>' + escape((interp = msg) == null ? '' : interp) + '</p></div><div class="modal-footer">');
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),title = locals_.title,msg = locals_.msg,no = locals_.no,yes = locals_.yes;
+buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = title) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><p>" + (jade.escape((jade_interp = msg) == null ? '' : jade_interp)) + "</p></div><div class=\"modal-footer\">");
 if ( no)
 {
-buf.push('<button id="modal-dialog-no" type="button" class="btn btn-link">' + escape((interp = no) == null ? '' : interp) + '</button>');
+buf.push("<button id=\"modal-dialog-no\" type=\"button\" class=\"btn btn-link\">" + (jade.escape((jade_interp = no) == null ? '' : jade_interp)) + "</button>");
 }
 if ( yes)
 {
-buf.push('<button id="modal-dialog-yes" type="button" class="btn btn-cozy">' + escape((interp = yes) == null ? '' : interp) + '</button>');
+buf.push("<button id=\"modal-dialog-yes\" type=\"button\" class=\"btn btn-cozy\">" + (jade.escape((jade_interp = yes) == null ? '' : jade_interp)) + "</button>");
 }
-buf.push('</div></div></div>');
-}
-return buf.join("");
+buf.push("</div></div></div>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/modal_folder", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("new folder caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><label for="inputName">' + escape((interp = t("new folder msg")) == null ? '' : interp) + '</label><input id="inputName" type="text" class="form-control"/></div><div id="folder-upload-form" class="form-group hide"><br/><p class="text-center">');
-var __val__ = t('upload folder separator')
-buf.push(escape(null == __val__ ? "" : __val__));
-buf.push('</p><label for="inputName">' + escape((interp = t("upload folder msg")) == null ? '' : interp) + '</label><input id="folder-uploader" type="file" directory="directory" mozdirectory="mozdirectory" webkitdirectory="webkitdirectory" class="form-control"/></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("new folder close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" disabled="disabled" class="btn btn-cozy-contrast">' + escape((interp = t("new folder send")) == null ? '' : interp) + '</button></div></div></div>');
-}
-return buf.join("");
+var jade_mixins = {};
+var jade_interp;
+
+buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = t("new folder caption")) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><fieldset><div class=\"form-group\"><label for=\"inputName\">" + (jade.escape((jade_interp = t("new folder msg")) == null ? '' : jade_interp)) + "</label><input id=\"inputName\" type=\"text\" class=\"form-control\"/></div><div id=\"folder-upload-form\" class=\"form-group hide\"><br/><p class=\"text-center\">" + (jade.escape(null == (jade_interp = t('upload folder separator')) ? "" : jade_interp)) + "</p><label for=\"inputName\">" + (jade.escape((jade_interp = t("upload folder msg")) == null ? '' : jade_interp)) + "</label><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\" class=\"form-control\"/></div></fieldset></div><div class=\"modal-footer\"><button id=\"modal-dialog-no\" type=\"button\" data-dismiss=\"modal\" class=\"btn btn-link\">" + (jade.escape((jade_interp = t("new folder close")) == null ? '' : jade_interp)) + "</button><button id=\"modal-dialog-yes\" type=\"button\" disabled=\"disabled\" class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("new folder send")) == null ? '' : jade_interp)) + "</button></div></div></div>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/modal_upload", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" data-dismiss="modal" aria-hidden="true" class="close">×</button><h4 class="modal-title">' + escape((interp = t("upload caption")) == null ? '' : interp) + '</h4></div><div class="modal-body"><fieldset><div class="form-group"><div id="uploader"><div class="text">' + escape((interp = t("upload msg")) == null ? '' : interp) + '</div><input type="file" multiple="multiple"/></div></div></fieldset></div><div class="modal-footer"><button id="modal-dialog-no" type="button" data-dismiss="modal" class="btn btn-link">' + escape((interp = t("upload close")) == null ? '' : interp) + '</button><button id="modal-dialog-yes" type="button" disabled="disabled" class="btn btn-cozy-contrast">' + escape((interp = t("upload send")) == null ? '' : interp) + '</button></div></div></div>');
-}
-return buf.join("");
+var jade_mixins = {};
+var jade_interp;
+
+buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = t("upload caption")) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><fieldset><div class=\"form-group\"><div id=\"uploader\"><div class=\"text\">" + (jade.escape((jade_interp = t("upload msg")) == null ? '' : jade_interp)) + "</div><input type=\"file\" multiple=\"multiple\"/></div></div></fieldset></div><div class=\"modal-footer\"><button id=\"modal-dialog-no\" type=\"button\" data-dismiss=\"modal\" class=\"btn btn-link\">" + (jade.escape((jade_interp = t("upload close")) == null ? '' : jade_interp)) + "</button><button id=\"modal-dialog-yes\" type=\"button\" disabled=\"disabled\" class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("upload send")) == null ? '' : jade_interp)) + "</button></div></div></div>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;require.register("views/templates/progressbar", function(exports, require, module) {
-module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
-attrs = attrs || jade.attrs; escape = escape || jade.escape; rethrow = rethrow || jade.rethrow; merge = merge || jade.merge;
+var __templateData = function template(locals) {
 var buf = [];
-with (locals || {}) {
-var interp;
-buf.push('<div class="progress active"><div');
-buf.push(attrs({ 'role':("progressbar"), 'aria-valuenow':("" + (value) + ""), 'aria-valuemin':("0"), 'aria-valuemax':("100"), 'style':("width: " + (value) + "%"), "class": ('progress-bar') + ' ' + ('progress-bar-info') }, {"role":true,"aria-valuenow":true,"aria-valuemin":true,"aria-valuemax":true,"style":true}));
-buf.push('>' + escape((interp = name) == null ? '' : interp) + ' ' + escape((interp = value) == null ? '' : interp) + '%</div></div>');
-}
-return buf.join("");
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),value = locals_.value,name = locals_.name;
+buf.push("<div class=\"progress active\"><div role=\"progressbar\"" + (jade.attr("aria-valuenow", "" + (value) + "", true, false)) + " aria-valuemin=\"0\" aria-valuemax=\"100\"" + (jade.attr("style", "width: " + (value) + "%", true, false)) + " class=\"progress-bar progress-bar-info\">" + (jade.escape((jade_interp = name) == null ? '' : jade_interp)) + " " + (jade.escape((jade_interp = value) == null ? '' : jade_interp)) + "%</div></div>");;return buf.join("");
 };
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
 });
 
 ;
