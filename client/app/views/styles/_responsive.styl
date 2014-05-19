@@ -4,10 +4,8 @@
     body
         text-rendering optimizeSpeed
 
-    .type-column-cell
-    .date-column-cell
-    .size-column-cell
-        display: none
+    #content
+        padding-top: 0px
 
     .table-headers
         display: none
@@ -28,11 +26,28 @@
         white-space: normal
         text-align: left
 
+    #affixbar
+        .pull-right
+            display: none
+
+        #upload-buttons
+            a
+                display: none
+
     #crumbs
         li
             a
                 padding: 5px
 
+    .modal-dialog
+        max-width: 100%
+        width: 100%
+
+        #share-list li select.change-perm
+            display block
+
+        #share-list img
+            display: none
 
 @media (max-width: 768px)
     // Landscape phone to portrait tablet
@@ -44,8 +59,10 @@
         display: none
 
     .type-column-cell
+    .date-column-cell
+    .size-column-cell
         display: none
-   
+
 @media (max-width: 992px)
     // Portrait tablet to landscape and desktop
 

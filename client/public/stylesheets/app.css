@@ -2919,10 +2919,12 @@ tr.folder-row .caption-edit i.fa {
   background-color: #34a6ff;
 }
 #uploader:hover {
-  background-color: #48afff;
+  background-color: #fe8800;
 }
 #uploader.active {
   background-color: #fe8800;
+  -webkit-box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
+  box-shadow: 1px 3px 2px rgba(0,0,0,0.2) inset, 0 1px 2px rgba(0,0,0,0);
 }
 #uploader .text {
   position: absolute;
@@ -3027,10 +3029,8 @@ body.error-404 .error-frame .headline {
   body {
     text-rendering: optimizeSpeed;
   }
-  .type-column-cell,
-  .date-column-cell,
-  .size-column-cell {
-    display: none;
+  #content {
+    padding-top: 0px;
   }
   .table-headers {
     display: none;
@@ -3051,8 +3051,24 @@ body.error-404 .error-frame .headline {
     white-space: normal;
     text-align: left;
   }
+  #affixbar .pull-right {
+    display: none;
+  }
+  #affixbar #upload-buttons a {
+    display: none;
+  }
   #crumbs li a {
     padding: 5px;
+  }
+  .modal-dialog {
+    max-width: 100%;
+    width: 100%;
+  }
+  .modal-dialog #share-list li select.change-perm {
+    display: block;
+  }
+  .modal-dialog #share-list img {
+    display: none;
   }
 }
 @media (max-width: 768px) {
@@ -3062,7 +3078,9 @@ body.error-404 .error-frame .headline {
   .button-title-reponsive {
     display: none;
   }
-  .type-column-cell {
+  .type-column-cell,
+  .date-column-cell,
+  .size-column-cell {
     display: none;
   }
 }
