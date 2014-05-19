@@ -25,10 +25,10 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
 
-        'dragenter #button-upload-new-file' : 'onDragEnter'
-        'dragover #button-upload-new-file'  : 'onDragEnter'
-        'dragleave #button-upload-new-file' : 'onDragLeave'
-        'drop #button-upload-new-file'      : 'onDrop'
+        'dragenter #files' : 'onDragEnter'
+        'dragover #files'  : 'onDragEnter'
+        'dragleave #files' : 'onDragLeave'
+        'drop #files'      : 'onDrop'
 
         'keyup input#search-box'       : 'onSearchKeyPress'
 
@@ -136,11 +136,13 @@ module.exports = class FolderView extends BaseView
         e.preventDefault()
         e.stopPropagation()
         @uploadButton.addClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').show()
 
     onDragLeave: (e) ->
         e.preventDefault()
         e.stopPropagation()
         @uploadButton.removeClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').hide()
 
     onDrop: (e) ->
         e.preventDefault()
@@ -153,6 +155,7 @@ module.exports = class FolderView extends BaseView
                 validator: @validateNewModel
                 files: filesToUpload
         @uploadButton.removeClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').hide()
 
     ###
         Search
