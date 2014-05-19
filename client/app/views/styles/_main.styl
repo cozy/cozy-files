@@ -451,7 +451,25 @@ tr.folder-row
     margin-top 5px
     padding-left 5px
 
+    // will allow inline-block children to be vertically aligned
+    li
+      font-size 0
+      letter-spacing 0
+      word-spacing 0
+
+      span
+        display inline-block
+        vertical-align middle
+
+        &.clearance-name
+          max-width 190px
+          overflow hidden
+          text-overflow ellipsis
+          white-space nowrap
+
     select
+        vertical-align middle
+        font-size 14px
         margin-left 5px
         background: white
         border-bottom: 1px solid lightcolor
