@@ -47,6 +47,8 @@ module.exports =
         post: folders.search
     'search/files':
         post: files.search
+    'search/content':
+        post: folders.searchContent
 
     # clearance
     'shareid':
