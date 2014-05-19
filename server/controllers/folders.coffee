@@ -218,7 +218,7 @@ module.exports.destroy = (req, res, next) ->
     directory = "#{currentFolder.path}/#{currentFolder.name}"
 
     destroyIfIsSubdirectory = (file, cb) ->
-        if (file.path.indexOf(directory) is 0)
+        if file.path? and (file.path.indexOf(directory) is 0)
             if file.binary
                 file.removeBinary "file", (err) ->
                     if err
