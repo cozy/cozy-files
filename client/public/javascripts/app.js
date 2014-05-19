@@ -713,6 +713,7 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "drop message": "Drop your files here to automatically add them",
   "upload folder msg": "Upload a folder",
   "upload folder separator": "or",
   "folder": "Folder",
@@ -818,6 +819,7 @@ module.exports = {
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
+  "drop message": "Lâchez ici vos fichiers pour les ajouter",
   "upload folder msg": "Mettre en ligne un dossier",
   "upload folder separator": "ou",
   "folder": "Dossier",
@@ -1673,10 +1675,10 @@ module.exports = FolderView = (function(_super) {
       'click #cancel-new-folder': 'onCancelFolder',
       'click #cancel-new-file': 'onCancelFile',
       'click #share-state': 'onShareClicked',
-      'dragenter #button-upload-new-file': 'onDragEnter',
-      'dragover #button-upload-new-file': 'onDragEnter',
-      'dragleave #button-upload-new-file': 'onDragLeave',
-      'drop #button-upload-new-file': 'onDrop',
+      'dragenter #files': 'onDragEnter',
+      'dragover #files': 'onDragEnter',
+      'dragleave #files': 'onDragLeave',
+      'drop #files': 'onDrop',
       'keyup input#search-box': 'onSearchKeyPress'
     };
   };
@@ -1814,13 +1816,15 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.onDragEnter = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    return this.uploadButton.addClass('btn-cozy-contrast');
+    this.uploadButton.addClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').show();
   };
 
   FolderView.prototype.onDragLeave = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    return this.uploadButton.removeClass('btn-cozy-contrast');
+    this.uploadButton.removeClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').hide();
   };
 
   FolderView.prototype.onDrop = function(e) {
@@ -1835,7 +1839,8 @@ module.exports = FolderView = (function(_super) {
         files: filesToUpload
       });
     }
-    return this.uploadButton.removeClass('btn-cozy-contrast');
+    this.uploadButton.removeClass('btn-cozy-contrast');
+    return this.$('#files-drop-zone').hide();
   };
 
 
@@ -3103,7 +3108,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\"><input id=\"search-box\" type=\"search\"/><div id=\"upload-buttons\" class=\"pull-right\"><a id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"></a>&nbsp;<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t(\"download\"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"files\"></div></div></div></div>");;return buf.join("");
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\"><input id=\"search-box\" type=\"search\"/><div id=\"upload-buttons\" class=\"pull-right\"><a id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"></a>&nbsp;<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;<!--a#download-link.btn.btn-cozy(title=t(\"download\"))--><!--  i.icon-arrow-down.icon-white--><span>&nbsp;</span></div></p></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
