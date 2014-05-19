@@ -5,6 +5,7 @@ ProgressbarView = require "./progressbar"
 ModalUploadView = require './modal_upload'
 ModalFolderView = require './modal_folder'
 ModalShareView = require './modal_share'
+ModalView = require './modal_share'
 showError = require('./modal').error
 
 File = require '../models/file'
@@ -24,6 +25,11 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
 
+        'dragenter #button-upload-new-file' : 'onDragEnter'
+        'dragover #button-upload-new-file'  : 'onDragEnter'
+        'dragleave #button-upload-new-file' : 'onDragLeave'
+        'drop #button-upload-new-file'      : 'onDrop'
+
         'keyup input#search-box'       : 'onSearchKeyPress'
 
     initialize: (options) ->
@@ -31,25 +37,13 @@ module.exports = class FolderView extends BaseView
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
 
-        #@setDragNDrop()
-
-
-    # Set Drag and drop properly.
-    setDragNDrop: ->
-        prevent = (e) ->
-            e.preventDefault()
-            e.stopPropagation()
-        @$el.on "dragover", prevent
-        @$el.on "dragenter", prevent
-        @$el.on "drop", (e) =>
-            @onDragAndDrop(e)
-
     getRenderData: ->
         model: @model
 
     afterRender: ->
         @breadcrumbsView = new BreadcrumbsView @breadcrumbs
         @$("#crumbs").append @breadcrumbsView.render().$el
+        @uploadButton = @$ '#button-upload-new-file'
 
         @filesList = new FilesView el: @$("#files"), model: @model
         @filesList.render()
@@ -135,8 +129,30 @@ module.exports = class FolderView extends BaseView
         else
             return null
 
+    ###
+        Drag and Drop to upload
+    ###
+    onDragEnter: (e) ->
+        e.preventDefault()
+        e.stopPropagation()
+        @uploadButton.addClass 'btn-cozy-contrast'
 
+    onDragLeave: (e) ->
+        e.preventDefault()
+        e.stopPropagation()
+        @uploadButton.removeClass 'btn-cozy-contrast'
 
+    onDrop: (e) ->
+        e.preventDefault()
+        e.stopPropagation()
+
+        filesToUpload = e.dataTransfer.files
+        if filesToUpload.length > 0
+            @modal = new ModalUploadView
+                model: @model
+                validator: @validateNewModel
+                files: filesToUpload
+        @uploadButton.removeClass 'btn-cozy-contrast'
 
     ###
         Search

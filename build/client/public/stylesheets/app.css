@@ -2351,7 +2351,7 @@ a:focus,
 .btn[disabled=disabled],
 .btn:disabled {
   opacity: 0.2;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
   filter: alpha(opacity=20);
 }
 .btn {
@@ -2476,7 +2476,7 @@ table#table-items {
 table .unactive,
 table#table-items .unactive {
   opacity: 0.5;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
   filter: alpha(opacity=50);
 }
 table td,
@@ -2741,6 +2741,9 @@ tr.folder-row:hover .operations a:active {
 #crumbs ul li:last-child a:after {
   display: none;
 }
+#button-upload-new-file > * {
+  pointer-events: none;
+}
 .table .tbody .td span {
   display: none;
 }
@@ -2769,7 +2772,25 @@ tr.folder-row:hover .operations a:active {
   margin-top: 5px;
   padding-left: 5px;
 }
+#share-list li {
+  font-size: 0;
+  letter-spacing: 0;
+  word-spacing: 0;
+}
+#share-list li span {
+  display: inline-block;
+  vertical-align: middle;
+}
+#share-list li span.clearance-name {
+  max-width: 190px;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 #share-list select {
+  vertical-align: middle;
+  font-size: 14px;
   margin-left: 5px;
   background: #fff;
   border-bottom: 1px solid #eee;
@@ -2923,7 +2944,7 @@ tr.folder-row .caption-edit i.fa {
   right: 0px;
   line-height: 300px;
   opacity: 0.01;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=1);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=1)";
   filter: alpha(opacity=1);
 }
 .footer {
@@ -3018,8 +3039,6 @@ body.error-404 .error-frame .headline {
     width: 100%;
     max-width: 100%;
   }
-}
-@media (min-width: 992px) {
 }
 
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }

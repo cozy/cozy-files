@@ -60,6 +60,7 @@ module.exports = {
   "KB": "Ko",
   "B": "o",
   "files": "fichiers",
+  "element": "%{smart_count} élément |||| %{smart_count} éléments",
   "no file in folder": "Ce dossier est vide.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
