@@ -399,7 +399,7 @@ module.exports.publicList = (req, res, next) ->
 
     sharing.limitedTree folder, req, (path, rule) ->
         authorized = path.length isnt 0
-        return res.send 404 unless authorized
+        return errortemplate() unless authorized
         key = "#{folder.path}/#{folder.name}"
         async.parallel [
             (cb) -> CozyInstance.getLocale cb
