@@ -416,6 +416,10 @@ tr.folder-row
           &:after
             display none
 
+// avoid dragleave events from being fired on children hover
+#button-upload-new-file > *
+  pointer-events none
+
 .table
   .tbody
     .td
