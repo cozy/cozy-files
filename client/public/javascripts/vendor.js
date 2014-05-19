@@ -3245,229 +3245,6 @@ return(!i||i!==r&&!b.contains(r,i))&&(e.type=o.origType,n=o.handler.apply(this,a
 
 }));
 
-;(function() {
-  var WebSocket = window.WebSocket || window.MozWebSocket;
-  var br = window.brunch || {};
-  var ar = br['auto-reload'] || {};
-  if (!WebSocket || !ar.enabled) return;
-
-  var cacheBuster = function(url){
-    var date = Math.round(Date.now() / 1000).toString();
-    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
-    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
-  };
-
-  var reloaders = {
-    page: function(){
-      window.location.reload(true);
-    },
-
-    stylesheet: function(){
-      [].slice
-        .call(document.querySelectorAll('link[rel="stylesheet"]'))
-        .filter(function(link){
-          return (link != null && link.href != null);
-        })
-        .forEach(function(link) {
-          link.href = cacheBuster(link.href);
-        });
-    }
-  };
-  var port = ar.port || 9485;
-  var host = (!br['server']) ? window.location.hostname : br['server'];
-  var connection = new WebSocket('ws://' + host + ':' + port);
-  connection.onmessage = function(event) {
-    var message = event.data;
-    var b = window.brunch;
-    if (!b || !b['auto-reload'] || !b['auto-reload'].enabled) return;
-    if (reloaders[message] != null) {
-      reloaders[message]();
-    } else {
-      reloaders.page();
-    }
-  };
-})();
-
-;
-jade = (function(exports){
-/*!
- * Jade - runtime
- * Copyright(c) 2010 TJ Holowaychuk <tj@vision-media.ca>
- * MIT Licensed
- */
-
-/**
- * Lame Array.isArray() polyfill for now.
- */
-
-if (!Array.isArray) {
-  Array.isArray = function(arr){
-    return '[object Array]' == Object.prototype.toString.call(arr);
-  };
-}
-
-/**
- * Lame Object.keys() polyfill for now.
- */
-
-if (!Object.keys) {
-  Object.keys = function(obj){
-    var arr = [];
-    for (var key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        arr.push(key);
-      }
-    }
-    return arr;
-  }
-}
-
-/**
- * Merge two attribute objects giving precedence
- * to values in object `b`. Classes are special-cased
- * allowing for arrays and merging/joining appropriately
- * resulting in a string.
- *
- * @param {Object} a
- * @param {Object} b
- * @return {Object} a
- * @api private
- */
-
-exports.merge = function merge(a, b) {
-  var ac = a['class'];
-  var bc = b['class'];
-
-  if (ac || bc) {
-    ac = ac || [];
-    bc = bc || [];
-    if (!Array.isArray(ac)) ac = [ac];
-    if (!Array.isArray(bc)) bc = [bc];
-    ac = ac.filter(nulls);
-    bc = bc.filter(nulls);
-    a['class'] = ac.concat(bc).join(' ');
-  }
-
-  for (var key in b) {
-    if (key != 'class') {
-      a[key] = b[key];
-    }
-  }
-
-  return a;
-};
-
-/**
- * Filter null `val`s.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function nulls(val) {
-  return val != null;
-}
-
-/**
- * Render the given attributes object.
- *
- * @param {Object} obj
- * @param {Object} escaped
- * @return {String}
- * @api private
- */
-
-exports.attrs = function attrs(obj, escaped){
-  var buf = []
-    , terse = obj.terse;
-
-  delete obj.terse;
-  var keys = Object.keys(obj)
-    , len = keys.length;
-
-  if (len) {
-    buf.push('');
-    for (var i = 0; i < len; ++i) {
-      var key = keys[i]
-        , val = obj[key];
-
-      if ('boolean' == typeof val || null == val) {
-        if (val) {
-          terse
-            ? buf.push(key)
-            : buf.push(key + '="' + key + '"');
-        }
-      } else if (0 == key.indexOf('data') && 'string' != typeof val) {
-        buf.push(key + "='" + JSON.stringify(val) + "'");
-      } else if ('class' == key && Array.isArray(val)) {
-        buf.push(key + '="' + exports.escape(val.join(' ')) + '"');
-      } else if (escaped && escaped[key]) {
-        buf.push(key + '="' + exports.escape(val) + '"');
-      } else {
-        buf.push(key + '="' + val + '"');
-      }
-    }
-  }
-
-  return buf.join(' ');
-};
-
-/**
- * Escape the given string of `html`.
- *
- * @param {String} html
- * @return {String}
- * @api private
- */
-
-exports.escape = function escape(html){
-  return String(html)
-    .replace(/&(?!(\w+|\#\d+);)/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-};
-
-/**
- * Re-throw the given `err` in context to the
- * the jade in `filename` at the given `lineno`.
- *
- * @param {Error} err
- * @param {String} filename
- * @param {String} lineno
- * @api private
- */
-
-exports.rethrow = function rethrow(err, filename, lineno){
-  if (!filename) throw err;
-
-  var context = 3
-    , str = require('fs').readFileSync(filename, 'utf8')
-    , lines = str.split('\n')
-    , start = Math.max(lineno - context, 0)
-    , end = Math.min(lines.length, lineno + context);
-
-  // Error context
-  var context = lines.slice(start, end).map(function(line, i){
-    var curr = i + start + 1;
-    return (curr == lineno ? '  > ' : '    ')
-      + curr
-      + '| '
-      + line;
-  }).join('\n');
-
-  // Alter exception message
-  err.path = filename;
-  err.message = (filename || 'Jade') + ':' + lineno
-    + '\n' + context + '\n\n' + err.message;
-  throw err;
-};
-
-  return exports;
-
-})({});
-
 ;/*global setImmediate: false, setTimeout: false, console: false */
 (function () {
 
@@ -6876,7 +6653,6 @@ module.exports = collection;
 
 require.register("cozy-clearance/modal", function(exports, require, module){
   var Modal,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -6884,18 +6660,12 @@ Modal = (function(_super) {
   __extends(Modal, _super);
 
   function Modal() {
-    this.closeOnEscape = __bind(this.closeOnEscape, this);
     return Modal.__super__.constructor.apply(this, arguments);
   }
 
   Modal.prototype.id = 'modal-dialog';
 
   Modal.prototype.className = 'modal fade';
-
-  Modal.prototype.attributes = {
-    'data-backdrop': "static",
-    'data-keyboard': "false"
-  };
 
   Modal.prototype.initialize = function(options) {
     if (this.title == null) {
@@ -6916,59 +6686,30 @@ Modal = (function(_super) {
     this.render();
     this.saving = false;
     this.$el.modal('show');
-    this.backdrop = $('modal-backdrop fade in').last();
-    this.backdrop.on('click', (function(_this) {
+    return this.$el.one('hide.bs.modal', (function(_this) {
       return function() {
-        return _this.onNo();
+        setTimeout((function() {
+          return _this.remove();
+        }), 1000);
+        return _this.cb(_this.saving);
       };
     })(this));
-    return $(document).on('keyup', this.closeOnEscape);
   };
 
   Modal.prototype.events = function() {
     return {
-      "click #modal-dialog-no": 'onNo',
-      "click #modal-dialog-yes": 'onYes'
+      "click #modal-dialog-no": (function(_this) {
+        return function() {
+          return _this.$el.modal('hide');
+        };
+      })(this),
+      "click #modal-dialog-yes": (function(_this) {
+        return function() {
+          _this.saving = true;
+          return _this.$el.modal('hide');
+        };
+      })(this)
     };
-  };
-
-  Modal.prototype.onNo = function() {
-    if (this.closing) {
-      return;
-    }
-    this.closing = true;
-    this.$el.modal('hide');
-    setTimeout(((function(_this) {
-      return function() {
-        return _this.remove();
-      };
-    })(this)), 500);
-    return this.cb(false);
-  };
-
-  Modal.prototype.onYes = function() {
-    if (this.closing) {
-      return;
-    }
-    this.closing = true;
-    this.$el.modal('hide');
-    setTimeout(((function(_this) {
-      return function() {
-        return _this.remove();
-      };
-    })(this)), 500);
-    return this.cb(true);
-  };
-
-  Modal.prototype.closeOnEscape = function(e) {
-    if (e.which === 27) {
-      return this.onNo();
-    }
-  };
-
-  Modal.prototype.remove = function() {
-    $(document).off('keyup', this.closeOnEscape);
-    return Modal.__super__.remove.apply(this, arguments);
   };
 
   Modal.prototype.render = function() {
@@ -7028,15 +6769,16 @@ require.register("cozy-clearance/modal_share_template", function(exports, requir
   function template(locals) {
 var buf = [];
 var jade_mixins = {};
-var locals_ = (locals || {}),t = locals_.t,type = locals_.type,model = locals_.model,clearance = locals_.clearance,makeURL = locals_.makeURL,possible_permissions = locals_.possible_permissions;
-buf.push("<p>" + (jade.escape(null == (jade.interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade.interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade.interp = t('public')) ? "" : jade.interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade.interp = t('private')) ? "" : jade.interp)) + "</button></p>");
+var jade_interp;
+;var locals_for_with = (locals || {});(function (t, type, model, clearance, makeURL, Object, possible_permissions) {
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('public')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p>");
 if ( clearance == 'public')
 {
-buf.push("<p>" + (jade.escape(null == (jade.interp = t('modal shared ' + type + ' link msg')) ? "" : jade.interp)) + "</p><input" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared ' + type + ' link msg')) ? "" : jade_interp)) + "</p><input" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade.interp = t('only you can see')) ? "" : jade.interp)) + "</p><div class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + "/><a id=\"share-add-current\" class=\"btn btn-cozy\">Add</a></div><ul id=\"share-list\">");
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><ul id=\"share-list\">");
 // iterate clearance
 ;(function(){
   var $$obj = clearance;
@@ -7057,11 +6799,11 @@ else
 {
 buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/>&nbsp;");
 }
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.contact.get('name')) ? "" : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -7075,7 +6817,7 @@ buf.push("<select" + (jade.attr("data-key", key, true, false)) + " class=\"chang
     for (var perm = 0, $$l = $$obj.length; perm < $$l; perm++) {
       var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
     }
 
   } else {
@@ -7083,7 +6825,7 @@ buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selec
     for (var perm in $$obj) {
       $$l++;      var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
     }
 
   }
@@ -7093,7 +6835,7 @@ buf.push("</select>");
 }
 else
 {
-buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
+buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
     }
@@ -7115,11 +6857,11 @@ else
 {
 buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/>&nbsp;");
 }
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.contact.get('name')) ? "" : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -7133,7 +6875,7 @@ buf.push("<select" + (jade.attr("data-key", key, true, false)) + " class=\"chang
     for (var perm = 0, $$l = $$obj.length; perm < $$l; perm++) {
       var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
     }
 
   } else {
@@ -7141,7 +6883,7 @@ buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selec
     for (var perm in $$obj) {
       $$l++;      var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
     }
 
   }
@@ -7151,7 +6893,7 @@ buf.push("</select>");
 }
 else
 {
-buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
+buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
     }
@@ -7160,7 +6902,7 @@ buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", 
 }).call(this);
 
 buf.push("</ul>");
-};return buf.join("");
+}}("t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined));;return buf.join("");
 }
 module.exports = template;
   
@@ -7222,11 +6964,8 @@ module.exports = CozyClearanceModal = (function(_super) {
   function CozyClearanceModal() {
     this.showLink = __bind(this.showLink, this);
     this.onClose = __bind(this.onClose, this);
-    this.onYes = __bind(this.onYes, this);
-    this.onNo = __bind(this.onNo, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
-    this.addCurrentEmail = __bind(this.addCurrentEmail, this);
     this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
     this.getRenderData = __bind(this.getRenderData, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
@@ -7243,7 +6982,6 @@ module.exports = CozyClearanceModal = (function(_super) {
       "click #share-public": "makePublic",
       "click #share-private": "makePrivate",
       'click #modal-dialog-share-save': 'onSave',
-      'click #share-add-current': 'addCurrentEmail',
       'click .revoke': 'revoke',
       'click .show-link': 'showLink',
       'change select.changeperm': 'changePerm'
@@ -7301,8 +7039,11 @@ module.exports = CozyClearanceModal = (function(_super) {
     var clearance;
     clearance = this.model.get('clearance') || [];
     if (clearance === 'public') {
-      return this.$('#share-public').addClass('toggled');
+      this.$('#share-public').addClass('toggled');
+      this.$('input').focus();
+      return this.$('input').select();
     } else {
+      this.$('input#share-input').focus();
       this.$('#share-private').addClass('toggled');
       return contactTypeahead(this.$('#share-input'), this.onGuestAdded, this.typeaheadFilter);
     }
@@ -7354,10 +7095,6 @@ module.exports = CozyClearanceModal = (function(_super) {
     return this.afterRender();
   };
 
-  CozyClearanceModal.prototype.addCurrentEmail = function() {
-    return this.onGuestAdded(this.$('#share-input').val());
-  };
-
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
     var contactid, email, key, perm, _ref;
     _ref = result.split(';'), email = _ref[0], contactid = _ref[1];
@@ -7393,42 +7130,6 @@ module.exports = CozyClearanceModal = (function(_super) {
       return rule.key === select.dataset.key;
     })[0].perm = select.options[select.selectedIndex].value;
     return this.refresh();
-  };
-
-  CozyClearanceModal.prototype.onNo = function() {
-    var clearance, diffLength, diffNews, hasChanged;
-    clearance = this.model.get('clearance');
-    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
-    diffLength = clearance.length !== this.initState.length;
-    hasChanged = diffNews || diffLength;
-    if (hasChanged) {
-      return Modal.confirm(t("confirm"), t('share confirm save'), t("yes"), t("no"), (function(_this) {
-        return function(confirmed) {
-          if (confirmed) {
-            return CozyClearanceModal.__super__.onNo.apply(_this, arguments);
-          }
-        };
-      })(this));
-    } else {
-      return CozyClearanceModal.__super__.onNo.apply(this, arguments);
-    }
-  };
-
-  CozyClearanceModal.prototype.onYes = function() {
-    var clearance, diffNews;
-    clearance = this.model.get('clearance');
-    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
-    if (this.$('#share-input').val() && !diffNews) {
-      return Modal.confirm(t("confirm"), t('share forgot add'), t("no forgot"), t("yes forgot"), (function(_this) {
-        return function(confirmed) {
-          if (confirmed) {
-            return CozyClearanceModal.__super__.onYes.apply(_this, arguments);
-          }
-        };
-      })(this));
-    } else {
-      return CozyClearanceModal.__super__.onYes.apply(this, arguments);
-    }
   };
 
   CozyClearanceModal.prototype.onClose = function(saving) {
@@ -20148,5 +19849,215 @@ $.fn.spin.presets = {
 })(jQuery);
 
 
+;!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.jade=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
+/**
+ * Merge two attribute objects giving precedence
+ * to values in object `b`. Classes are special-cased
+ * allowing for arrays and merging/joining appropriately
+ * resulting in a string.
+ *
+ * @param {Object} a
+ * @param {Object} b
+ * @return {Object} a
+ * @api private
+ */
+
+exports.merge = function merge(a, b) {
+  if (arguments.length === 1) {
+    var attrs = a[0];
+    for (var i = 1; i < a.length; i++) {
+      attrs = merge(attrs, a[i]);
+    }
+    return attrs;
+  }
+  var ac = a['class'];
+  var bc = b['class'];
+
+  if (ac || bc) {
+    ac = ac || [];
+    bc = bc || [];
+    if (!Array.isArray(ac)) ac = [ac];
+    if (!Array.isArray(bc)) bc = [bc];
+    a['class'] = ac.concat(bc).filter(nulls);
+  }
+
+  for (var key in b) {
+    if (key != 'class') {
+      a[key] = b[key];
+    }
+  }
+
+  return a;
+};
+
+/**
+ * Filter null `val`s.
+ *
+ * @param {*} val
+ * @return {Boolean}
+ * @api private
+ */
+
+function nulls(val) {
+  return val != null && val !== '';
+}
+
+/**
+ * join array as classes.
+ *
+ * @param {*} val
+ * @return {String}
+ */
+exports.joinClasses = joinClasses;
+function joinClasses(val) {
+  return Array.isArray(val) ? val.map(joinClasses).filter(nulls).join(' ') : val;
+}
+
+/**
+ * Render the given classes.
+ *
+ * @param {Array} classes
+ * @param {Array.<Boolean>} escaped
+ * @return {String}
+ */
+exports.cls = function cls(classes, escaped) {
+  var buf = [];
+  for (var i = 0; i < classes.length; i++) {
+    if (escaped && escaped[i]) {
+      buf.push(exports.escape(joinClasses([classes[i]])));
+    } else {
+      buf.push(joinClasses(classes[i]));
+    }
+  }
+  var text = joinClasses(buf);
+  if (text.length) {
+    return ' class="' + text + '"';
+  } else {
+    return '';
+  }
+};
+
+/**
+ * Render the given attribute.
+ *
+ * @param {String} key
+ * @param {String} val
+ * @param {Boolean} escaped
+ * @param {Boolean} terse
+ * @return {String}
+ */
+exports.attr = function attr(key, val, escaped, terse) {
+  if ('boolean' == typeof val || null == val) {
+    if (val) {
+      return ' ' + (terse ? key : key + '="' + key + '"');
+    } else {
+      return '';
+    }
+  } else if (0 == key.indexOf('data') && 'string' != typeof val) {
+    return ' ' + key + "='" + JSON.stringify(val).replace(/'/g, '&apos;') + "'";
+  } else if (escaped) {
+    return ' ' + key + '="' + exports.escape(val) + '"';
+  } else {
+    return ' ' + key + '="' + val + '"';
+  }
+};
+
+/**
+ * Render the given attributes object.
+ *
+ * @param {Object} obj
+ * @param {Object} escaped
+ * @return {String}
+ */
+exports.attrs = function attrs(obj, terse){
+  var buf = [];
+
+  var keys = Object.keys(obj);
+
+  if (keys.length) {
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i]
+        , val = obj[key];
+
+      if ('class' == key) {
+        if (val = joinClasses(val)) {
+          buf.push(' ' + key + '="' + val + '"');
+        }
+      } else {
+        buf.push(exports.attr(key, val, false, terse));
+      }
+    }
+  }
+
+  return buf.join('');
+};
+
+/**
+ * Escape the given string of `html`.
+ *
+ * @param {String} html
+ * @return {String}
+ * @api private
+ */
+
+exports.escape = function escape(html){
+  var result = String(html)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  if (result === '' + html) return html;
+  else return result;
+};
+
+/**
+ * Re-throw the given `err` in context to the
+ * the jade in `filename` at the given `lineno`.
+ *
+ * @param {Error} err
+ * @param {String} filename
+ * @param {String} lineno
+ * @api private
+ */
+
+exports.rethrow = function rethrow(err, filename, lineno, str){
+  if (!(err instanceof Error)) throw err;
+  if ((typeof window != 'undefined' || !filename) && !str) {
+    err.message += ' on line ' + lineno;
+    throw err;
+  }
+  try {
+    str =  str || require('fs').readFileSync(filename, 'utf8')
+  } catch (ex) {
+    rethrow(err, null, lineno)
+  }
+  var context = 3
+    , lines = str.split('\n')
+    , start = Math.max(lineno - context, 0)
+    , end = Math.min(lines.length, lineno + context);
+
+  // Error context
+  var context = lines.slice(start, end).map(function(line, i){
+    var curr = i + start + 1;
+    return (curr == lineno ? '  > ' : '    ')
+      + curr
+      + '| '
+      + line;
+  }).join('\n');
+
+  // Alter exception message
+  err.path = filename;
+  err.message = (filename || 'Jade') + ':' + lineno
+    + '\n' + context + '\n\n' + err.message;
+  throw err;
+};
+
+},{"fs":2}],2:[function(require,module,exports){
+
+},{}]},{},[1])
+(1)
+});
 ;
 //# sourceMappingURL=vendor.js.map
