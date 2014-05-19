@@ -63,22 +63,16 @@ module.exports = class FilesView extends BaseView
         @displayChevron 'up', 'name' if @firstRender
 
     updateNbFiles: ->
-        nbFiles = 0
-        for model in @collection.models
-            if model.get('type') is 'file'
-                nbFiles += 1
+        nbElements = @collection.length
 
-        if nbFiles > 0
+        if nbElements > 0
+            @$("#file-amount-indicator").html t 'element',
+                                                smart_count: nbElements
             @$("#file-amount-indicator").show()
             @$("#no-files-indicator").hide()
-            @$("#file-amount").html nbFiles
         else
             @$("#file-amount-indicator").hide()
-
-            if @collection.models.length is 0
-                @$("#no-files-indicator").show()
-            else
-                @$("#no-files-indicator").hide()
+            @$("#no-files-indicator").show()
 
         @firstRender = false
 

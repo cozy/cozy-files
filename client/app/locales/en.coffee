@@ -84,6 +84,7 @@ module.exports =
     "KB"                        : "KB"
     "B"                         : "B"
     "files"                     : "files"
+    "element"                   : "%{smart_count} element |||| %{smart_count} elements"
     "no file in folder"         : "This folder is empty."
 
     "enable notifications": "Enable notifications"
