@@ -2804,6 +2804,7 @@ tr.folder-row:hover .operations a:active {
   font-weight: bold;
 }
 .linkshow {
+  font-size: 14px;
   margin-bottom: 5px;
   margin-left: -5px;
   padding-left: 10px;
