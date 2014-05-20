@@ -48,6 +48,23 @@ module.exports = class FileView extends BaseView
         @$(".file-edit-name").width(width)
         @$(".file-edit-name").focus()
 
+
+        # we only want to select the part before the file extension
+        lastIndexOfDot = model.name.lastIndexOf '.'
+        lastIndexOfDot = model.name.length if lastIndexOfDot is -1
+        input = @$(".file-edit-name")[0]
+        if typeof input.selectionStart isnt "undefined"
+            input.selectionStart = 0
+            input.selectionEnd = lastIndexOfDot
+        else if document.selection && document.selection.createRange
+            # IE Branch...
+            input.select()
+            range = document.selection.createRange()
+            range.collapse true
+            range.moveEnd "character", lastIndexOfDot
+            range.moveStart "character", 0
+            range.select()
+
     onShare: -> new ModalShareView model: @model
 
     onSaveClicked: ->
