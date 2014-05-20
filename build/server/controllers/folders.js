@@ -297,7 +297,7 @@ module.exports.destroy = function(req, res, next) {
   currentFolder = req.folder;
   directory = "" + currentFolder.path + "/" + currentFolder.name;
   destroyIfIsSubdirectory = function(file, cb) {
-    if (file.path.indexOf(directory) === 0) {
+    if ((file.path != null) && (file.path.indexOf(directory) === 0)) {
       if (file.binary) {
         return file.removeBinary("file", function(err) {
           if (err) {

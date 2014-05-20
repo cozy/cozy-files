@@ -1319,7 +1319,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onEditClicked = function() {
-    var model, width;
+    var input, lastIndexOfDot, model, range, width;
     width = this.$(".caption").width() + 10;
     model = this.model.toJSON();
     if (model["class"] == null) {
@@ -1334,7 +1334,23 @@ module.exports = FileView = (function(_super) {
     });
     this.tags.render();
     this.$(".file-edit-name").width(width);
-    return this.$(".file-edit-name").focus();
+    this.$(".file-edit-name").focus();
+    lastIndexOfDot = model.name.lastIndexOf('.');
+    if (lastIndexOfDot === -1) {
+      lastIndexOfDot = model.name.length;
+    }
+    input = this.$(".file-edit-name")[0];
+    if (typeof input.selectionStart !== "undefined") {
+      input.selectionStart = 0;
+      return input.selectionEnd = lastIndexOfDot;
+    } else if (document.selection && document.selection.createRange) {
+      input.select();
+      range = document.selection.createRange();
+      range.collapse(true);
+      range.moveEnd("character", lastIndexOfDot);
+      range.moveStart("character", 0);
+      return range.select();
+    }
   };
 
   FileView.prototype.onShare = function() {
@@ -1375,6 +1391,8 @@ module.exports = FileView = (function(_super) {
   FileView.prototype.onKeyPress = function(e) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
+    } else if (e.keyCode === 27) {
+      return this.render();
     }
   };
 
