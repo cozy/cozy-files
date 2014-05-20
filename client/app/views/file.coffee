@@ -71,6 +71,8 @@ module.exports = class FileView extends BaseView
     onKeyPress: (e) =>
         if e.keyCode is 13
             @onSaveClicked()
+        else if e.keyCode is 27
+            @render()
 
     afterRender: ->
         @tags = new TagsView
