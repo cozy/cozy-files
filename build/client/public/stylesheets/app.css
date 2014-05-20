@@ -2960,9 +2960,6 @@ tr.folder-row .caption-edit i.fa {
   margin-top: 30px;
   position: relative;
 }
-#files * {
-  pointer-events: none;
-}
 #files-drop-zone {
   pointer-events: none;
   display: none;
