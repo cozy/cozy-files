@@ -22,7 +22,7 @@ processAttachement = (req, res, next, download) ->
     if download
         contentHeader = "attachment; filename=#{file.name}"
     else
-        contentHeader = "inline"
+        contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
     stream = file.getBinary "file", (err, resp, body) =>
@@ -233,7 +233,7 @@ module.exports.publicDownloadAttachment = (req, res, next) ->
                 name: '404'
                 params: localization: require '../lib/localization_manager'
             next err
-        else processAttachement req, res, true
+        else processAttachement req, res, next, true
 
 
 # Creation by a guest. The creation is performed only if the guest has the good

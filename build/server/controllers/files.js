@@ -26,7 +26,7 @@ processAttachement = function(req, res, next, download) {
   if (download) {
     contentHeader = "attachment; filename=" + file.name;
   } else {
-    contentHeader = "inline";
+    contentHeader = "inline; filename=" + file.name;
   }
   res.setHeader('Content-Disposition', contentHeader);
   stream = file.getBinary("file", (function(_this) {
@@ -322,7 +322,7 @@ module.exports.publicDownloadAttachment = function(req, res, next) {
       };
       return next(err);
     } else {
-      return processAttachement(req, res, true);
+      return processAttachement(req, res, next, true);
     }
   });
 };
