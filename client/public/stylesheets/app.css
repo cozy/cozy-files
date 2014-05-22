@@ -2351,7 +2351,7 @@ a:focus,
 .btn[disabled=disabled],
 .btn:disabled {
   opacity: 0.2;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
   filter: alpha(opacity=20);
 }
 .btn {
@@ -2476,7 +2476,7 @@ table#table-items {
 table .unactive,
 table#table-items .unactive {
   opacity: 0.5;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
   filter: alpha(opacity=50);
 }
 table td,
@@ -2947,7 +2947,7 @@ tr.folder-row .caption-edit i.fa {
   right: 0px;
   line-height: 300px;
   opacity: 0.01;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=1);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=1)";
   filter: alpha(opacity=1);
 }
 .footer {
@@ -2975,7 +2975,7 @@ tr.folder-row .caption-edit i.fa {
 }
 #files-drop-zone .overlay {
   opacity: 0.4;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=40);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
   filter: alpha(opacity=40);
   background: #808080;
   width: 100%;
@@ -3091,8 +3091,6 @@ body.error-404 .error-frame .headline {
     width: 100%;
     max-width: 100%;
   }
-}
-@media (min-width: 992px) {
 }
 
 .chromeframe { margin: 0.2em 0; background: #ccc; color: #000; padding: 0.2em 0; }
