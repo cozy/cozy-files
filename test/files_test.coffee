@@ -19,13 +19,13 @@ describe "Files management", ->
                 file =
                     name: "test"
                     path: ""
+                    lastModification: moment().toString()
+
                 client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
                     @res = res
                     @body = body
+                    @err = err
                     done()
-
-            it "Then error should not exist", ->
-                should.not.exist @err
 
             it "And 200 should be returned as response code", ->
                 @res.statusCode.should.be.equal 200
@@ -46,6 +46,7 @@ describe "Files management", ->
                 file =
                     name: "test"
                     path: ""
+                    lastModification: moment().toString()
                 path = './test/test.txt'
                 client.sendFile 'files/', path, file, (err, res, body) =>
                     @err = err
@@ -63,6 +64,7 @@ describe "Files management", ->
             file =
                 name: "test2"
                 path: ""
+                lastModification: moment().toString()
             client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @body = body
@@ -93,6 +95,7 @@ describe "Files management", ->
             file =
                 name: "test3"
                 path: ""
+                lastModification: moment().toString()
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
@@ -137,6 +140,7 @@ describe "Files management", ->
             file =
                 name: "test4"
                 path: ""
+                lastModification: moment().toString()
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
@@ -166,6 +170,7 @@ describe "Files management", ->
             file =
                 name: "testtags"
                 path: ""
+                lastModification: moment().toString()
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
