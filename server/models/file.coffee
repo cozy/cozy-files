@@ -35,7 +35,8 @@ File.byFullPath = (params, callback) ->
 # * Remove temporary created file.
 File.createNewFile = (data, file, callback) =>
     attachBinary = (newFile) ->
-        newFile.attachBinary file.path, {"name": "file"}, (err) ->
+        file.path = file.filename
+        newFile.attachBinary file, {"name": "file"}, (err) ->
             if err
                 callback new Error "Error attaching binary: #{err}"
             else
@@ -44,14 +45,7 @@ File.createNewFile = (data, file, callback) =>
     index = (newFile) ->
         newFile.index ["name"], (err) ->
             console.log err if err
-            unlink newFile
-
-    unlink = (newFile) ->
-       fs.unlink file.path, (err) ->
-            if err
-                callback new Error "Error removing uploaded file: #{err}"
-            else
-                callback null, newFile
+            callback null, newFile
 
     File.create data, (err, newFile) =>
         if err

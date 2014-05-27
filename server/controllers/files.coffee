@@ -1,6 +1,7 @@
 fs = require 'fs'
 async = require 'async'
 moment = require 'moment'
+multiparty = require 'multiparty'
 
 File = require '../models/file'
 Folder = require '../models/folder'
@@ -42,8 +43,8 @@ updateParentModifDate = (file, callback) ->
             callback()
 
 
-getFileClass = (file) ->
-    switch file.type.split('/')[0]
+getFileClass = (fileType) ->
+    switch fileType.split('/')[0]
         when 'image' then fileClass = "image"
         when 'application' then fileClass = "document"
         when 'text' then fileClass = "document"
@@ -90,51 +91,80 @@ module.exports.all = (req, res, next) ->
 # database operation and index the file name. Finally, it tags the file if the
 # parent folder is tagged.
 module.exports.create = (req, res, next) ->
-    if not req.body.name or req.body.name is ""
-        next new Error "Invalid arguments"
-    else
 
-        fullPath = "#{req.body.path}/#{req.body.name}"
-        File.byFullPath key: fullPath, (err, sameFiles) =>
-            if sameFiles.length > 0
-                res.send error:true, msg: "This file already exists", 400
-            else
-                file = req.files["file"]
-                now = moment().toISOString()
-                fileClass = getFileClass file
+    # we first check the file size
+    contentLength = req.header 'content-length'
+    maxFileSize = require('../config').maxFileSize
+    if contentLength > maxFileSize
+        error = new Error "The file is too big (>#{maxFileSize})"
+        error.status = 400
+        return next error
 
-                # calculate metadata
-                data =
-                    name: req.body.name
-                    path: req.body.path
-                    creationDate: now
-                    lastModification: now
-                    mime: file.type
-                    size: file.size
-                    tags: []
-                    class: fileClass
+    form = new multiparty.Form()
+    # fields sent with the file
+    expectedFields = ['name', 'path', 'lastModification']
+    async.parallel [
+        (cb) ->
+            fields = {}
+            form.on 'field', (name, value) ->
+                fields[name] = value if name in expectedFields
+                if Object.keys(fields).length is expectedFields.length
+                    cb null, fields
 
-                createFile = ->
-                    File.createNewFile data, file, (err, newfile) =>
-                        who = req.guestEmail or 'owner'
-                        sharing.notifyChanges who, newfile, (err) ->
-                            console.log err if err
-                            res.send newfile, 200
+        (cb) ->
+            # if the stream has a filename attribute, it's the file
+            # otherwise it's just a field
+            form.on 'part', (part) -> cb null, part if part.filename
 
-                # find parent folder
-                Folder.byFullPath key: data.path, (err, parents) =>
-                    if parents.length > 0
-                        # inherit parent folder tags and update its last
-                        # modification date
-                        parent = parents[0]
-                        data.tags = parent.tags
-                        parent.lastModification = now
-                        parent.save (err) ->
-                            if err then next err
-                            else createFile()
-                    else
-                        createFile()
+    ], (err, results) ->
+        [fields, fileStream] = results
+        if not fields.name or fields.name is ""
+            next new Error "Invalid arguments"
+        else
+            fullPath = "#{fields.path}/#{fields.name}"
+            File.byFullPath key: fullPath, (err, sameFiles) =>
+                if sameFiles.length > 0
+                    res.send error: true, msg: "This file already exists", 400
+                else
+                    file = fileStream
+                    fileType = file.headers['content-type']
+                    now = moment().toISOString()
+                    fileClass = fileClass = getFileClass fileType
+                    # calculate metadata
+                    data =
+                        name: fields.name
+                        path: fields.path
+                        creationDate: now
+                        lastModification: now
+                        mime: fileType
+                        size: file.byteCount
+                        tags: []
+                        class: fileClass
 
+                    createFile = ->
+                        File.createNewFile data, file, (err, newfile) =>
+                            if err?
+                                next err
+                            else
+                                who = req.guestEmail or 'owner'
+                                sharing.notifyChanges who, newfile, (err) ->
+                                    console.log err if err
+                                    res.send newfile, 200
+
+                    # find parent folder
+                    Folder.byFullPath key: data.path, (err, parents) =>
+                        if parents.length > 0
+                            # inherit parent folder tags and update its last
+                            # modification date
+                            parent = parents[0]
+                            data.tags = parent.tags
+                            parent.lastModification = now
+                            parent.save (err) ->
+                                if err then next err
+                                else createFile()
+                        else
+                            createFile()
+    form.parse req
 
 # There is two ways to modify a file:
 # * change its tags: simple modification
