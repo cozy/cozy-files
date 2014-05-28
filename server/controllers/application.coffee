@@ -2,19 +2,23 @@ Contact = require '../models/contact'
 Config  = require '../models/config'
 i18n    = require 'cozy-i18n-helper'
 async   = require 'async'
-
+Client  = require('request-json').JsonClient
 
 getImports = (callback) ->
     async.parallel [
         (cb) -> Contact.request 'all', cb
         (cb) -> Config.getInstance cb
         (cb) -> i18n.getLocale null, cb
+        (cb) ->
+            dataSystem = new Client "http://localhost:9101/"
+            dataSystem.get 'tags', (err, response, body) -> cb err, body
     ], (err, results) ->
-        [contacts, config, locale] = results
+        [contacts, config, locale, tags] = results
         callback null, """
             window.config = #{JSON.stringify(config)};
             window.locale = "#{locale}";
             window.initcontacts = #{JSON.stringify(contacts)};
+            window.tags = #{JSON.stringify(tags)};
         """
 
 

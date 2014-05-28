@@ -22,6 +22,6 @@ module.exports = class ContactCollection extends Backbone.Collection
         @on 'change:n' , => @sort()
 
     getTags: ->
-        out = []
+        out = window.tags or []
         @each (contact) -> out = out.concat contact.get 'tags'
         return _.unique out

@@ -119,7 +119,7 @@ window.require.register("application", function(exports, require, module) {
       return Backbone.history.start();
     }
   };
-  
+
 });
 window.require.register("collections/contact", function(exports, require, module) {
   var ContactCollection, _ref,
@@ -158,7 +158,7 @@ window.require.register("collections/contact", function(exports, require, module
 
     ContactCollection.prototype.getTags = function() {
       var out;
-      out = [];
+      out = window.tags || [];
       this.each(function(contact) {
         return out = out.concat(contact.get('tags'));
       });
@@ -168,7 +168,7 @@ window.require.register("collections/contact", function(exports, require, module
     return ContactCollection;
 
   })(Backbone.Collection);
-  
+
 });
 window.require.register("collections/contactlog", function(exports, require, module) {
   var ContactLogCollection, _ref,
@@ -188,7 +188,7 @@ window.require.register("collections/contactlog", function(exports, require, mod
     return ContactLogCollection;
 
   })(Backbone.Collection);
-  
+
 });
 window.require.register("collections/datapoint", function(exports, require, module) {
   var DataPointCollection, _ref,
@@ -251,7 +251,7 @@ window.require.register("collections/datapoint", function(exports, require, modu
     return DataPointCollection;
 
   })(Backbone.Collection);
-  
+
 });
 window.require.register("initialize", function(exports, require, module) {
   var app;
@@ -262,7 +262,7 @@ window.require.register("initialize", function(exports, require, module) {
     jQuery.event.props.push('dataTransfer');
     return app.initialize();
   });
-  
+
 });
 window.require.register("initializewidget", function(exports, require, module) {
   var app;
@@ -273,7 +273,7 @@ window.require.register("initializewidget", function(exports, require, module) {
     jQuery.event.props.push('dataTransfer');
     return app.initialize();
   });
-  
+
 });
 window.require.register("lib/base_view", function(exports, require, module) {
   var BaseView, _ref,
@@ -311,7 +311,7 @@ window.require.register("lib/base_view", function(exports, require, module) {
     return BaseView;
 
   })(Backbone.View);
-  
+
 });
 window.require.register("lib/call_log_reader", function(exports, require, module) {
   var directionAlias, isAndroidCallLogExport, isAndroidSMSExport, isIOSCallLogExport, normalizeNumber, parseCSV, parseDuration;
@@ -480,7 +480,7 @@ window.require.register("lib/call_log_reader", function(exports, require, module
       throw new Error("Format not parsable");
     }
   };
-  
+
 });
 window.require.register("lib/phone_number", function(exports, require, module) {
   var CODES, db, normalizeNumber;
@@ -1168,7 +1168,7 @@ window.require.register("lib/phone_number", function(exports, require, module) {
   db['Uzbekistan (Republic of)'] = '998';
 
   db['Reserved for future global service'] = '999';
-  
+
 });
 window.require.register("lib/request", function(exports, require, module) {
   exports.request = function(type, url, data, callback) {
@@ -1208,7 +1208,7 @@ window.require.register("lib/request", function(exports, require, module) {
   exports.del = function(url, callback) {
     return exports.request("DELETE", url, null, callback);
   };
-  
+
 });
 window.require.register("lib/view_collection", function(exports, require, module) {
   var BaseView, ViewCollection, _ref,
@@ -1307,7 +1307,7 @@ window.require.register("lib/view_collection", function(exports, require, module
     return ViewCollection;
 
   })(BaseView);
-  
+
 });
 window.require.register("locales/en", function(exports, require, module) {
   module.exports = {
@@ -1415,7 +1415,7 @@ window.require.register("locales/en", function(exports, require, module) {
     "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
     "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created."
   };
-  
+
 });
 window.require.register("locales/fr", function(exports, require, module) {
   module.exports = {
@@ -1523,7 +1523,7 @@ window.require.register("locales/fr", function(exports, require, module) {
     "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
     "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé."
   };
-  
+
 });
 window.require.register("models/config", function(exports, require, module) {
   var Config, _ref,
@@ -1551,7 +1551,7 @@ window.require.register("models/config", function(exports, require, module) {
     return Config;
 
   })(Backbone.Model);
-  
+
 });
 window.require.register("models/contact", function(exports, require, module) {
   var ANDROID_RELATION_TYPES, AndroidToDP, Contact, ContactLogCollection, DataPoint, DataPointCollection, request,
@@ -1988,7 +1988,7 @@ window.require.register("models/contact", function(exports, require, module) {
     }
     return imported;
   };
-  
+
 });
 window.require.register("models/contactlog", function(exports, require, module) {
   var ContactLog, _ref,
@@ -2006,7 +2006,7 @@ window.require.register("models/contactlog", function(exports, require, module) 
     return ContactLog;
 
   })(Backbone.Model);
-  
+
 });
 window.require.register("models/datapoint", function(exports, require, module) {
   var DataPoint, _ref,
@@ -2030,7 +2030,7 @@ window.require.register("models/datapoint", function(exports, require, module) {
     return DataPoint;
 
   })(Backbone.Model);
-  
+
 });
 window.require.register("router", function(exports, require, module) {
   var CallImporterView, Contact, ContactView, DocView, ImporterView, Router, app, _ref,
@@ -2200,7 +2200,7 @@ window.require.register("router", function(exports, require, module) {
     return Router;
 
   })(Backbone.Router);
-  
+
 });
 window.require.register("templates/callimporter", function(exports, require, module) {
   module.exports = function anonymous(locals, attrs, escape, rethrow, merge) {
@@ -2818,7 +2818,7 @@ window.require.register("views/callimporter", function(exports, require, module)
     return CallImporterView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/contact", function(exports, require, module) {
   var ContactView, Datapoint, HistoryView, NameModal, TagsView, ViewCollection,
@@ -3260,7 +3260,7 @@ window.require.register("views/contact", function(exports, require, module) {
     return ContactView;
 
   })(ViewCollection);
-  
+
 });
 window.require.register("views/contact_name_modal", function(exports, require, module) {
   var BaseView, CallImporterView, CallLogReader, ContactLogCollection, app, _ref,
@@ -3340,7 +3340,7 @@ window.require.register("views/contact_name_modal", function(exports, require, m
     return CallImporterView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/contact_tags", function(exports, require, module) {
   var BaseView, TagsView, _ref,
@@ -3417,7 +3417,7 @@ window.require.register("views/contact_tags", function(exports, require, module)
     return TagsView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/contactslist", function(exports, require, module) {
   var App, ContactsList, ViewCollection, _ref,
@@ -3592,7 +3592,7 @@ window.require.register("views/contactslist", function(exports, require, module)
     return ContactsList;
 
   })(ViewCollection);
-  
+
 });
 window.require.register("views/contactslist_item", function(exports, require, module) {
   var BaseView, ContactsListItemView, _ref,
@@ -3637,7 +3637,7 @@ window.require.register("views/contactslist_item", function(exports, require, mo
     return ContactsListItemView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/datapoint", function(exports, require, module) {
   var BaseView, DataPointView, _ref,
@@ -3875,7 +3875,7 @@ window.require.register("views/datapoint", function(exports, require, module) {
     return DataPointView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/doc", function(exports, require, module) {
   var BaseView, DocView, _ref,
@@ -3929,7 +3929,7 @@ window.require.register("views/doc", function(exports, require, module) {
     return DocView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/history", function(exports, require, module) {
   var ContactLog, HistoryView, ViewCollection, _ref,
@@ -4010,7 +4010,7 @@ window.require.register("views/history", function(exports, require, module) {
     return HistoryView;
 
   })(ViewCollection);
-  
+
 });
 window.require.register("views/history_item", function(exports, require, module) {
   var BaseView, HistoryItemView, _ref,
@@ -4125,7 +4125,7 @@ window.require.register("views/history_item", function(exports, require, module)
     return HistoryItemView;
 
   })(BaseView);
-  
+
 });
 window.require.register("views/importer", function(exports, require, module) {
   var BaseView, Contact, ImporterView, app, _ref,
@@ -4221,7 +4221,7 @@ window.require.register("views/importer", function(exports, require, module) {
     return ImporterView;
 
   })(BaseView);
-  
+
 });
 window.require.register("widget", function(exports, require, module) {
   var __hasProp = {}.hasOwnProperty,
@@ -4292,5 +4292,5 @@ window.require.register("widget", function(exports, require, module) {
       return Backbone.history.start();
     }
   };
-  
+
 });
