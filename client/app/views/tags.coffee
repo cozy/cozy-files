@@ -7,25 +7,19 @@ module.exports = class TagsView extends BaseView
 
     afterRender: ->
 
-        process = (availableTags = []) =>
-            @$el.tagit
-                availableTags: availableTags  # TODO: get list of current tags from db
-                placeholderText: t 'tag'
-                afterTagAdded: @tagAdded
-                afterTagRemoved: @tagRemoved
-                onTagClicked: @tagClicked
+        @$el.tagit
+            availableTags: window.tags or []
+            placeholderText: t 'tag'
+            afterTagAdded: @tagAdded
+            afterTagRemoved: @tagRemoved
+            onTagClicked: @tagClicked
 
-            # hack to prevent tagit events
-            @duringRefresh = false
+        # hack to prevent tagit events
+        @duringRefresh = false
 
-            $('.ui-widget-content .ui-autocomplete-input').keypress (event) ->
-                keyCode = event.keyCode || event.which
-                $('.zone .type').first().select() if keyCode is 9
-
-        $.ajax 'tags',
-            method: 'GET'
-            success: (tags) -> process tags
-            error: -> process()
+        $('.ui-widget-content .ui-autocomplete-input').keypress (event) ->
+            keyCode = event.keyCode || event.which
+            $('.zone .type').first().select() if keyCode is 9
 
         return this
 

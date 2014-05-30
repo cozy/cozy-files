@@ -11,30 +11,25 @@ module.exports.main = function(req, res, next) {
   return async.parallel([
     function(cb) {
       return CozyInstance.getLocale(cb);
+    }, function(cb) {
+      var dataSystem;
+      dataSystem = new Client("http://localhost:9101/");
+      return dataSystem.get('tags', function(err, response, body) {
+        err = err || body.error;
+        return cb(err, body);
+      });
     }
   ], (function(_this) {
     return function(err, results) {
-      var locale;
+      var locale, tags;
       if (err) {
         return next(err);
       } else {
-        locale = results[0];
+        locale = results[0], tags = results[1];
         return res.render('index.jade', {
-          imports: "window.locale = \"" + locale + "\";"
+          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + tags + "\";"
         });
       }
     };
   })(this));
-};
-
-module.exports.tags = function(req, res, next) {
-  var dataSystem;
-  dataSystem = new Client("http://localhost:9101/");
-  return dataSystem.get('tags', function(err, response, body) {
-    if (err != null) {
-      return next(err);
-    } else {
-      return res.send(200, body);
-    }
-  });
 };

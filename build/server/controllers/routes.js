@@ -97,8 +97,5 @@ module.exports = {
   },
   'public/folders/:folderid': {
     get: folders.publicList
-  },
-  'tags': {
-    get: index.tags
   }
 };
