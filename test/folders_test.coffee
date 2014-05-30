@@ -185,7 +185,6 @@ describe "Folders management", ->
             folder =
                 name: "folder1"
                 path: ""
-                lastModification: moment().toString()
             client.post "folders/", folder, (err, res, body) =>
                 @folderId = body.id
                 done()
@@ -194,7 +193,6 @@ describe "Folders management", ->
             file =
                 name: "file1"
                 path: "/folder1"
-                lastModification: moment().toString()
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
@@ -266,7 +264,6 @@ describe "Folders management", ->
             file =
                 name: "file"
                 path: "/root2"
-                lastModification: moment().toString()
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @fileId = body.id
@@ -333,11 +330,10 @@ describe "Folders management", ->
                 done()
 
         it "And I send a request to create a file in that folder", (done) ->
-            @now = moment()
             file =
                 name: "test"
                 path: "/rootfile"
-                lastModification: moment().toString()
+            @now = moment()
             client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
                 @id = (JSON.parse body).id
                 done()
