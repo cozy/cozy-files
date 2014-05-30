@@ -47,7 +47,9 @@ File.createNewFile = (function(_this) {
         "name": "file"
       }, function(err) {
         if (err) {
-          return callback(new Error("Error attaching binary: " + err));
+          return newFile.destroy(function(err) {
+            return callback(new Error("Error attaching binary: " + err));
+          });
         } else {
           return index(newFile);
         }

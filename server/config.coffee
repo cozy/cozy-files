@@ -1,6 +1,7 @@
+path = require 'path'
 americano = require 'americano'
 
-staticMiddleware = americano.static __dirname + '/../client/public',
+staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
             maxAge: 86400000
 
 publicStatic = (req, res, next) ->
@@ -16,7 +17,7 @@ config =
     common:
         set:
             'view engine': 'jade'
-            'views': './server/views'
+            'views': path.resolve __dirname, 'views'
         use: [
             americano.bodyParser
                 limit: 2 * GB

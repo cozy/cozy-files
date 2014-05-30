@@ -74,3 +74,6 @@ module.exports =
         get: folders.publicZip
     'public/folders/:folderid':
         get: folders.publicList
+
+    # tags
+    'tags': get: index.tags

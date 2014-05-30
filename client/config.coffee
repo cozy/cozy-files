@@ -1,3 +1,4 @@
+path = require 'path'
 exports.config =
 
     files:
@@ -28,3 +29,19 @@ exports.config =
     plugins:
         jade:
             globals: ['t', 'moment', 'filesize']
+
+        cleancss:
+            keepSpecialComments: 0
+            removeEmpty: true
+
+        digest:
+            referenceFiles: /\.jade$/
+
+    overrides:
+        production:
+            # re-enable when uglifyjs will handle properly in source maps
+            # with sourcesContent attribute
+            #optimize: true
+            sourceMaps: true
+            paths:
+                public: path.resolve __dirname, '../build/client/public'

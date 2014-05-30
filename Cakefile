@@ -67,7 +67,13 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "coffee -cb --output build/ server.coffee && " + \
               "cp -r server/views build/server && " + \
               "rm -rf build/client && mkdir build/client && " + \
-              "cp -r client/public build/client/ && " + \
+              # prepare the client build
+              "cp ./server/views/index_build.jade client/app/assets/index.jade && " + \
+              "cp ./server/views/404_build.jade client/app/assets/404.jade && " + \
+              "cp ./server/views/publicfolder_build.jade client/app/assets/publicfolder.jade && " + \
+              "cd client/ && brunch build --production && cd .. && " + \
+              "rm client/app/assets/*.jade && " + \
+              "mv build/client/public/*.jade build/server/views/ && " + \
               "coffee -cb --output build/client/app/locales client/app/locales"
 
     exec command, (err, stdout, stderr) ->

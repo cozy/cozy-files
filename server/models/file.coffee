@@ -37,7 +37,8 @@ File.createNewFile = (data, file, callback) =>
     attachBinary = (newFile) ->
         newFile.attachBinary file.path, {"name": "file"}, (err) ->
             if err
-                callback new Error "Error attaching binary: #{err}"
+                newFile.destroy (err) ->
+                    callback new Error "Error attaching binary: #{err}"
             else
                 index newFile
 

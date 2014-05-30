@@ -441,6 +441,7 @@ tr.folder-row
       height 34px
       line-height 1.428
       padding-left 5px
+      -webkit-appearance button
     a.btn
       width 10%
       border-bottom-left-radius 0
@@ -704,4 +705,15 @@ body.error-404 .error-frame
 .public
     #content
         padding-top: 70px
+
+// overrides tagit styles
+.tagit-autocomplete.ui-widget-content
+  padding 0
+  border 1px solid orange
+
+  .ui-state-focus
+    border-radius 0
+    background blue
+    color #fff
+    border none
 
