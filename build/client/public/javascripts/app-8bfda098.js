@@ -2752,19 +2752,36 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.afterRender = function() {
-    this.$el.tagit({
-      availableTags: [],
-      placeholderText: t('tag'),
-      afterTagAdded: this.tagAdded,
-      afterTagRemoved: this.tagRemoved,
-      onTagClicked: this.tagClicked
-    });
-    this.duringRefresh = false;
-    $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
-      var keyCode;
-      keyCode = event.keyCode || event.which;
-      if (keyCode === 9) {
-        return $('.zone .type').first().select();
+    var process;
+    process = (function(_this) {
+      return function(availableTags) {
+        if (availableTags == null) {
+          availableTags = [];
+        }
+        _this.$el.tagit({
+          availableTags: availableTags,
+          placeholderText: t('tag'),
+          afterTagAdded: _this.tagAdded,
+          afterTagRemoved: _this.tagRemoved,
+          onTagClicked: _this.tagClicked
+        });
+        _this.duringRefresh = false;
+        return $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
+          var keyCode;
+          keyCode = event.keyCode || event.which;
+          if (keyCode === 9) {
+            return $('.zone .type').first().select();
+          }
+        });
+      };
+    })(this);
+    $.ajax('tags', {
+      method: 'GET',
+      success: function(tags) {
+        return process(tags);
+      },
+      error: function() {
+        return process();
       }
     });
     return this;

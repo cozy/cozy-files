@@ -6778,7 +6778,7 @@ buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared ' + type + 
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><ul id=\"share-list\">");
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
 // iterate clearance
 ;(function(){
   var $$obj = clearance;
@@ -6984,6 +6984,7 @@ module.exports = CozyClearanceModal = (function(_super) {
       'click #modal-dialog-share-save': 'onSave',
       'click .revoke': 'revoke',
       'click .show-link': 'showLink',
+      'click #add-contact': 'onAddClicked',
       'change select.changeperm': 'changePerm'
     });
   };
@@ -7040,10 +7041,9 @@ module.exports = CozyClearanceModal = (function(_super) {
     clearance = this.model.get('clearance') || [];
     if (clearance === 'public') {
       this.$('#share-public').addClass('toggled');
-      this.$('input').focus();
-      return this.$('input').select();
+      return this.$('input.form-control').focus().select();
     } else {
-      this.$('input#share-input').focus();
+      this.$('input#share-input').select();
       this.$('#share-private').addClass('toggled');
       return contactTypeahead(this.$('#share-input'), this.onGuestAdded, this.typeaheadFilter);
     }
@@ -7093,6 +7093,10 @@ module.exports = CozyClearanceModal = (function(_super) {
   CozyClearanceModal.prototype.refresh = function() {
     this.$('.modal-body').html(this.template_content(this.getRenderData()));
     return this.afterRender();
+  };
+
+  CozyClearanceModal.prototype.onAddClicked = function() {
+    return this.onGuestAdded(this.$('#share-input').val());
   };
 
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
