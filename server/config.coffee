@@ -1,6 +1,5 @@
 path = require 'path'
 americano = require 'americano'
-bodyParser = require 'body-parser'
 
 staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
             maxAge: 86400000
@@ -13,14 +12,16 @@ publicStatic = (req, res, next) ->
         next err
 
 GB = 1024 * 1024 * 1024
+
 config =
-    maxFileSize: 2 * GB
     common:
         set:
             'view engine': 'jade'
             'views': path.resolve __dirname, 'views'
         use: [
-            bodyParser()
+            americano.bodyParser
+                limit: 2 * GB
+                maxFieldsSize: 2 * GB
             require('cozy-i18n-helper').middleware
             americano.errorHandler
                 dumpExceptions: true

@@ -9,8 +9,8 @@ module.exports = class File extends Backbone.Model
             formdata = new FormData()
             formdata.append 'name', model.get 'name'
             formdata.append 'path', model.get 'path'
-            formdata.append 'lastModification', model.get 'lastModification'
             formdata.append 'file', model.file
+            formdata.append 'lastModification', model.get 'lastModification'
 
             # trigger upload progress on the model
             progress = (e) -> model.trigger('progress', e)
