@@ -1,3 +1,4 @@
+path = require 'path'
 exports.config =
 
     files:
