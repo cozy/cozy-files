@@ -780,3 +780,15 @@ a {
 #contacts-list.contact-widget #toolbar input#filterfield {
   width: 100%;
 }
+.tagit-autocomplete.ui-widget-content {
+  padding: 0;
+  border: 1px solid #fe8800;
+}
+
+.tagit-autocomplete.ui-widget-content .ui-state-focus {
+    border-radius: 0;
+    background: #34a6ff;
+    color: #fff;
+    border: none;
+    margin: 0 !important;
+}
