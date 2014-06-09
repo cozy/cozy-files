@@ -37,6 +37,11 @@ module.exports = class FolderView extends BaseView
         @model = options.model
         @breadcrumbs = options.breadcrumbs
         @breadcrumbs.setRoot @model
+        @uploadingFiles = new Backbone.Collection()
+        @uploadingFiles.loaded = 0
+        @listenTo @uploadingFiles, 'sync', =>
+            @uploadingFiles.loaded++
+            @uploadingFiles.trigger 'progress-total'
 
     getRenderData: ->
         model: @model
@@ -116,11 +121,13 @@ module.exports = class FolderView extends BaseView
         @modal = new ModalUploadView
             model: @model
             validator: @validateNewModel
+            uploadingFiles: @uploadingFiles
 
     onNewFolderClicked: ->
         @modal = new ModalFolderView
             model: @model
             validator: @validateNewModel
+            uploadingFiles: @uploadingFiles
 
     validateNewModel: (model) =>
         myChildren = model.get('path') is @model.repository()
@@ -159,6 +166,7 @@ module.exports = class FolderView extends BaseView
                 model: @model
                 validator: @validateNewModel
                 files: filesToUpload
+                uploadingFiles: @uploadingFiles
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
 
@@ -188,3 +196,7 @@ module.exports = class FolderView extends BaseView
 
     onShareClicked: ->
         new ModalShareView model: @model
+
+    destroy: ->
+        @uploadingFiles = null
+        super()

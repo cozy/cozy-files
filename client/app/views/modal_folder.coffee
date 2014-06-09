@@ -16,6 +16,10 @@ module.exports = class ModalFolderView extends Modal
     template: require './templates/modal_folder'
 
     constructor: (options, callback) ->
+
+        # must be done first, otherwise it's undefined
+        @uploadingFiles = options.uploadingFiles
+
         # do not use modal short constructor
         Modal.__super__.constructor.apply this, arguments
         @callback = callback
@@ -161,6 +165,7 @@ module.exports = class ModalFolderView extends Modal
             new ModalUploadView
                 files: files
                 validator: -> null
+                uploadingFiles: @uploadingFiles
 
 
     onYes: =>

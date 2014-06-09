@@ -27,6 +27,7 @@ module.exports = class File extends Backbone.Model
                         xhr.upload.addEventListener 'progress', progress, false
                     xhr
 
+        @isUploaded = true
         Backbone.sync.apply @, arguments
 
     urlRoot: ->
