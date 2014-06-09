@@ -22,22 +22,18 @@ module.exports = class SocketListener extends CozySocketListener
 
     onRemoteCreate: (model) ->
         if @isInCurrentFolder model
-            console.log "remote create"
-            console.log model
-
+            console.log "remote create", model
             if not (@collection.get model.get("id"))
                 @collection.add model, merge:true
 
     onRemoteDelete: (model) ->
         if @isInCurrentFolder model
-            console.log "remote delete"
-            console.log model
+            console.log "remote delete", model
             @collection.remove model
 
     onRemoteUpdate: (model, collection) ->
         if @isInCurrentFolder model
-            console.log "remote update"
-            console.log model
+            console.log "remote update", model
             collection.add model, merge:true
 
     process: (event) ->
