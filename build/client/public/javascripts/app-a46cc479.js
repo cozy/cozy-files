@@ -340,8 +340,7 @@ module.exports = SocketListener = (function(_super) {
 
   SocketListener.prototype.onRemoteCreate = function(model) {
     if (this.isInCurrentFolder(model)) {
-      console.log("remote create");
-      console.log(model);
+      console.info("remote create", model);
       if (!(this.collection.get(model.get("id")))) {
         return this.collection.add(model, {
           merge: true
@@ -352,16 +351,14 @@ module.exports = SocketListener = (function(_super) {
 
   SocketListener.prototype.onRemoteDelete = function(model) {
     if (this.isInCurrentFolder(model)) {
-      console.log("remote delete");
-      console.log(model);
+      console.info("remote delete", model);
       return this.collection.remove(model);
     }
   };
 
   SocketListener.prototype.onRemoteUpdate = function(model, collection) {
     if (this.isInCurrentFolder(model)) {
-      console.log("remote update");
-      console.log(model);
+      console.info("remote update", model);
       return collection.add(model, {
         merge: true
       });
@@ -1013,6 +1010,7 @@ module.exports = File = (function(_super) {
         }
       });
     }
+    this.isUploaded = true;
     return Backbone.sync.apply(this, arguments);
   };
 
@@ -1705,7 +1703,15 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.initialize = function(options) {
     this.model = options.model;
     this.breadcrumbs = options.breadcrumbs;
-    return this.breadcrumbs.setRoot(this.model);
+    this.breadcrumbs.setRoot(this.model);
+    this.uploadingFiles = new Backbone.Collection();
+    this.uploadingFiles.loaded = 0;
+    return this.listenTo(this.uploadingFiles, 'sync', (function(_this) {
+      return function() {
+        _this.uploadingFiles.loaded++;
+        return _this.uploadingFiles.trigger('progress-total');
+      };
+    })(this));
   };
 
   FolderView.prototype.getRenderData = function() {
@@ -1803,14 +1809,16 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.onUploadNewFileClicked = function() {
     return this.modal = new ModalUploadView({
       model: this.model,
-      validator: this.validateNewModel
+      validator: this.validateNewModel,
+      uploadingFiles: this.uploadingFiles
     });
   };
 
   FolderView.prototype.onNewFolderClicked = function() {
     return this.modal = new ModalFolderView({
       model: this.model,
-      validator: this.validateNewModel
+      validator: this.validateNewModel,
+      uploadingFiles: this.uploadingFiles
     });
   };
 
@@ -1860,7 +1868,8 @@ module.exports = FolderView = (function(_super) {
       this.modal = new ModalUploadView({
         model: this.model,
         validator: this.validateNewModel,
-        files: filesToUpload
+        files: filesToUpload,
+        uploadingFiles: this.uploadingFiles
       });
     }
     this.uploadButton.removeClass('btn-cozy-contrast');
@@ -1899,6 +1908,11 @@ module.exports = FolderView = (function(_super) {
     return new ModalShareView({
       model: this.model
     });
+  };
+
+  FolderView.prototype.destroy = function() {
+    this.uploadingFiles = null;
+    return FolderView.__super__.destroy.call(this);
   };
 
   return FolderView;
@@ -2049,6 +2063,7 @@ module.exports = ModalFolderView = (function(_super) {
     this.onUploaderChange = __bind(this.onUploaderChange, this);
     this.onKeyUp = __bind(this.onKeyUp, this);
     this.hideAndDestroy = __bind(this.hideAndDestroy, this);
+    this.uploadingFiles = options.uploadingFiles;
     Modal.__super__.constructor.apply(this, arguments);
     this.callback = callback;
     this.validator = options.validator;
@@ -2207,7 +2222,8 @@ module.exports = ModalFolderView = (function(_super) {
           files: files,
           validator: function() {
             return null;
-          }
+          },
+          uploadingFiles: _this.uploadingFiles
         });
       };
     })(this));
@@ -2386,7 +2402,7 @@ module.exports = ModalShareView = (function(_super) {
 });
 
 ;require.register("views/modal_upload", function(exports, require, module) {
-var File, Modal, ModalUploadView, ProgressBar,
+var File, Modal, ModalUploadView, ProgressBar, UploadedFileView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2396,6 +2412,8 @@ Modal = require('./modal');
 File = require('../models/file');
 
 ProgressBar = require('./progressbar');
+
+UploadedFileView = require('./uploaded_file_view');
 
 module.exports = ModalUploadView = (function(_super) {
   __extends(ModalUploadView, _super);
@@ -2429,18 +2447,92 @@ module.exports = ModalUploadView = (function(_super) {
     this.handleUploaderActive = __bind(this.handleUploaderActive, this);
     this.afterRender = __bind(this.afterRender, this);
     var _ref;
+    this.uploadingFiles = options.uploadingFiles;
     Modal.__super__.constructor.apply(this, arguments);
     this.callback = callback;
     this.validator = options.validator;
     this.files = options.files;
+    this.views = {};
     if (((_ref = this.files) != null ? _ref.length : void 0) > 0) {
       this.onYes();
     }
   }
 
+  ModalUploadView.prototype.initialize = function() {
+    this.listenTo(this.uploadingFiles, 'add', this.afterRender);
+    this.listenTo(this.uploadingFiles, 'progress-total', (function(_this) {
+      return function() {
+        _this.totalProgress.trigger('progress', {
+          loaded: _this.uploadingFiles.loaded,
+          total: _this.uploadingFiles.length
+        });
+        if (_this.uploadingFiles.loaded === _this.uploadingFiles.length) {
+          return _this.afterRender();
+        }
+      };
+    })(this));
+    return ModalUploadView.__super__.initialize.call(this);
+  };
+
   ModalUploadView.prototype.afterRender = function() {
+    var noButton;
     this.input = this.$('#uploader input');
-    return this.label = this.$('#uploader .text');
+    this.label = this.$('#uploader .text');
+    if (this.uploadingFiles.length > 0) {
+      noButton = $('#modal-dialog-no');
+      noButton.html('&nbsp;');
+      noButton.spin('small');
+      this.$('fieldset, #modal-dialog-yes').hide();
+      this.subRenderTotalProgressBar();
+      this.subRenderFileUploadProgress();
+      if (this.uploadingFiles.loaded === this.uploadingFiles.length) {
+        this.input.val("");
+        noButton = $('#modal-dialog-no');
+        noButton.spin(false);
+        noButton.html(t('upload end button'));
+        this.uploadingFiles.reset();
+        return this.uploadingFiles.loaded = 0;
+      }
+    }
+  };
+
+  ModalUploadView.prototype.subRenderTotalProgressBar = function() {
+    var progressbar;
+    this.$('#progress-total').empty();
+    this.views = [];
+    this.totalProgress = new Backbone.Model({
+      name: t('total progress')
+    });
+    this.totalProgress.loaded = this.uploadingFiles.loaded;
+    this.totalProgress.total = this.uploadingFiles.length;
+    progressbar = new ProgressBar({
+      model: this.totalProgress
+    }).render();
+    return progressbar.$el.prependTo(this.$('#progress-total'));
+  };
+
+  ModalUploadView.prototype.subRenderFileUploadProgress = function() {
+    var filesEl;
+    this.$('#progress-part').empty();
+    filesEl = [];
+    _.map(Object.keys(this.views), (function(_this) {
+      return function(viewID) {
+        return _this.views[viewID].$el.detach();
+      };
+    })(this));
+    return this.uploadingFiles.forEach((function(_this) {
+      return function(uploadingFile) {
+        var uploadEl, uploadView;
+        uploadView = _this.views[uploadingFile.cid];
+        if (uploadView == null) {
+          uploadEl = new UploadedFileView({
+            model: uploadingFile
+          });
+          _this.views[uploadingFile.cid] = uploadEl;
+        }
+        return _this.$('#progress-part').append(uploadEl.render().$el);
+      };
+    })(this));
   };
 
   ModalUploadView.prototype.onNo = function() {
@@ -2514,14 +2606,8 @@ module.exports = ModalUploadView = (function(_super) {
   };
 
   ModalUploadView.prototype.doUploadFiles = function(callback) {
-    var filesEl, progressbar;
-    this.isUploading = true;
-    this.totalProgress = new Backbone.Model({
-      name: t('total progress')
-    });
-    progressbar = new ProgressBar(this.totalProgress).render();
-    progressbar.$el.prependTo(this.$('.modal-body'));
-    filesEl = _.map(this.files, (function(_this) {
+    var filesModels;
+    filesModels = _.map(this.files, (function(_this) {
       return function(blob) {
         var fileModel;
         fileModel = new File({
@@ -2534,72 +2620,29 @@ module.exports = ModalUploadView = (function(_super) {
         fileModel.loaded = 0;
         fileModel.total = blob.size;
         fileModel.error = _this.validator(fileModel);
-        fileModel.on('progress', function(e) {
-          console.log("PROGRESS EVENT", e.loaded / e.total);
-          fileModel.loaded = e.loaded;
-          fileModel.total = e.total;
-          return _this.updateTotalProgress(filesEl);
-        });
-        return _this.createProgressBlock(fileModel);
+        _this.uploadingFiles.add(fileModel);
+        return fileModel;
       };
     })(this));
-    return async.eachLimit(filesEl, 5, (function(_this) {
-      return function(fileEl, cb) {
-        if (fileEl.model.error) {
+    return async.eachLimit(filesModels, 5, function(fileModel, cb) {
+      if (fileModel.error) {
+        return cb(null);
+      }
+      return fileModel.save(null, {
+        success: function() {
+          return cb(null);
+        },
+        error: function(err) {
+          fileModel.error = t(err.msg || "modal error file upload");
           return cb(null);
         }
-        return fileEl.model.save(null, {
-          success: function() {
-            _this.displayMessage('success', fileEl, t('upload success'));
-            return cb(null);
-          },
-          error: function(err) {
-            var msg;
-            msg = t(err.msg || "modal error file upload");
-            _this.displayMessage('error', fileEl, msg);
-            return cb(null);
-          }
-        });
-      };
-    })(this), callback);
+      });
+    }, callback);
   };
 
-  ModalUploadView.prototype.displayMessage = function(type, $el, msg) {
-    var _ref;
-    if ((_ref = $el.bar) != null) {
-      _ref.remove();
-    }
-    return $el.append("<span class=\"" + type + "\">" + msg + "</span>");
-  };
-
-  ModalUploadView.prototype.updateTotalProgress = function(files) {
-    var fileEl, loaded, total, _i, _len;
-    loaded = total = 0;
-    for (_i = 0, _len = files.length; _i < _len; _i++) {
-      fileEl = files[_i];
-      if (!(fileEl.model.error === null)) {
-        continue;
-      }
-      loaded += fileEl.model.loaded;
-      total += fileEl.model.total;
-    }
-    return this.totalProgress.trigger('progress', {
-      loaded: loaded,
-      total: total
-    });
-  };
-
-  ModalUploadView.prototype.createProgressBlock = function(model) {
-    var $file;
-    $file = $("<div class=\"progress-name\">\n    <span class=\"name\">" + (model.get('name')) + "</span>\n</div>");
-    $file.model = model;
-    if (model.error) {
-      $file.append('<span class="error"> : ' + model.error + '</span>');
-    } else {
-      $file.append($file.bar = new ProgressBar(model).render().$el);
-    }
-    $file.appendTo(this.$('.modal-body'));
-    return $file;
+  ModalUploadView.prototype.destroy = function() {
+    this.stopListening(this.uploadingFiles);
+    return ModalUploadView.__super__.destroy.call(this);
   };
 
   return ModalUploadView;
@@ -2617,26 +2660,24 @@ BaseView = require('../lib/base_view');
 module.exports = ProgressbarView = (function(_super) {
   __extends(ProgressbarView, _super);
 
+  function ProgressbarView() {
+    return ProgressbarView.__super__.constructor.apply(this, arguments);
+  }
+
   ProgressbarView.prototype.className = 'progressview';
 
   ProgressbarView.prototype.template = require('./templates/progressbar');
 
   ProgressbarView.prototype.value = 0;
 
-  function ProgressbarView(model) {
-    this.model = model;
-    ProgressbarView.__super__.constructor.call(this);
-  }
-
   ProgressbarView.prototype.initialize = function() {
     this.listenTo(this.model, 'progress', this.update);
-    return this.listenTo(this.model, 'sync', this.destroy);
+    this.listenTo(this.model, 'sync', this.destroy);
+    return this.value = parseInt(this.model.loaded / this.model.total * 100);
   };
 
   ProgressbarView.prototype.update = function(e) {
-    var pc;
-    pc = parseInt(e.loaded / e.total * 100);
-    this.value = pc;
+    this.value = parseInt(e.loaded / e.total * 100);
     return this.render();
   };
 
@@ -3198,7 +3239,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = t("upload caption")) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><fieldset><div class=\"form-group\"><div id=\"uploader\"><div class=\"text\">" + (jade.escape((jade_interp = t("upload msg")) == null ? '' : jade_interp)) + "</div><input type=\"file\" multiple=\"multiple\"/></div></div></fieldset></div><div class=\"modal-footer\"><button id=\"modal-dialog-no\" type=\"button\" data-dismiss=\"modal\" class=\"btn btn-link\">" + (jade.escape((jade_interp = t("upload close")) == null ? '' : jade_interp)) + "</button><button id=\"modal-dialog-yes\" type=\"button\" disabled=\"disabled\" class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("upload send")) == null ? '' : jade_interp)) + "</button></div></div></div>");;return buf.join("");
+buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = t("upload caption")) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><div id=\"progress-total\"></div><fieldset><div class=\"form-group\"><div id=\"uploader\"><div class=\"text\">" + (jade.escape((jade_interp = t("upload msg")) == null ? '' : jade_interp)) + "</div><input type=\"file\" multiple=\"multiple\"/></div></div></fieldset><div id=\"progress-part\"></div></div><div class=\"modal-footer\"><button id=\"modal-dialog-no\" type=\"button\" data-dismiss=\"modal\" class=\"btn btn-link\">" + (jade.escape((jade_interp = t("upload close")) == null ? '' : jade_interp)) + "</button><button id=\"modal-dialog-yes\" type=\"button\" disabled=\"disabled\" class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("upload send")) == null ? '' : jade_interp)) + "</button></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -3228,6 +3269,55 @@ if (typeof define === 'function' && define.amd) {
 } else {
   __templateData;
 }
+});
+
+;require.register("views/uploaded_file_view", function(exports, require, module) {
+var BaseView, ProgressBar, UploadedFileView,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ProgressBar = require('./progressbar');
+
+BaseView = require('../lib/base_view');
+
+module.exports = UploadedFileView = (function(_super) {
+  __extends(UploadedFileView, _super);
+
+  function UploadedFileView() {
+    return UploadedFileView.__super__.constructor.apply(this, arguments);
+  }
+
+  UploadedFileView.prototype.className = 'upload-progress-item';
+
+  UploadedFileView.prototype.initialize = function(options) {
+    UploadedFileView.__super__.initialize.call(this, options);
+    this.isDone = false;
+    return this.listenTo(this.model, 'sync', (function(_this) {
+      return function() {
+        _this.isDone = true;
+        return _this.render();
+      };
+    })(this));
+  };
+
+  UploadedFileView.prototype.template = function() {
+    var content;
+    content = $("<div class=\"progress-name\">\n    <span class=\"name\">" + (this.model.get('name')) + "</span>\n</div>");
+    if (this.model.error) {
+      content.append("<span class=\"error\"> : " + this.model.error + "</span>");
+    } else if (this.isDone || this.model.isUploaded) {
+      content.append("<span class=\"success\">" + (t('upload success')) + "</span>");
+    } else {
+      content.append(new ProgressBar({
+        model: this.model
+      }).render().$el);
+    }
+    return content;
+  };
+
+  return UploadedFileView;
+
+})(BaseView);
 });
 
 ;
