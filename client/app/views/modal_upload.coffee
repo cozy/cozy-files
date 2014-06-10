@@ -167,6 +167,7 @@ module.exports = class ModalUploadView extends Modal
                 success: -> cb null
                 error: (err) ->
                     fileModel.error = t err.msg or "modal error file upload"
+                    fileModel.trigger 'sync'
                     cb null # do not stop all list if one fail
         , callback
 
