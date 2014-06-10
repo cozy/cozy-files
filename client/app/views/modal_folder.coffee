@@ -53,6 +53,8 @@ module.exports = class ModalFolderView extends Modal
         @inputName = @$('#inputName')
 
         @submitButton = @$ "#modal-dialog-yes"
+        @$el.on 'show', @onShow
+
         # @submitButton.spin()
         # @showModal()
 
@@ -60,6 +62,11 @@ module.exports = class ModalFolderView extends Modal
         @hide()
         setTimeout =>
             @destroy()
+        , 500
+
+    onShow: =>
+        setTimeout =>
+            @inputName.focus()
         , 500
 
     onKeyUp: (event) =>
