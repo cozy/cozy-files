@@ -114,6 +114,7 @@ module.exports = collection;
 
 require.register("cozy-clearance/modal", function(exports, require, module){
   var Modal,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -121,12 +122,18 @@ Modal = (function(_super) {
   __extends(Modal, _super);
 
   function Modal() {
+    this.closeOnEscape = __bind(this.closeOnEscape, this);
     return Modal.__super__.constructor.apply(this, arguments);
   }
 
   Modal.prototype.id = 'modal-dialog';
 
   Modal.prototype.className = 'modal fade';
+
+  Modal.prototype.attributes = {
+    'data-backdrop': "static",
+    'data-keyboard': "false"
+  };
 
   Modal.prototype.initialize = function(options) {
     if (this.title == null) {
@@ -147,30 +154,59 @@ Modal = (function(_super) {
     this.render();
     this.saving = false;
     this.$el.modal('show');
-    return this.$el.one('hide.bs.modal', (function(_this) {
+    this.backdrop = $('modal-backdrop fade in').last();
+    this.backdrop.on('click', (function(_this) {
       return function() {
-        setTimeout((function() {
-          return _this.remove();
-        }), 1000);
-        return _this.cb(_this.saving);
+        return _this.onNo();
       };
     })(this));
+    return $(document).on('keyup', this.closeOnEscape);
   };
 
   Modal.prototype.events = function() {
     return {
-      "click #modal-dialog-no": (function(_this) {
-        return function() {
-          return _this.$el.modal('hide');
-        };
-      })(this),
-      "click #modal-dialog-yes": (function(_this) {
-        return function() {
-          _this.saving = true;
-          return _this.$el.modal('hide');
-        };
-      })(this)
+      "click #modal-dialog-no": 'onNo',
+      "click #modal-dialog-yes": 'onYes'
     };
+  };
+
+  Modal.prototype.onNo = function() {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    this.$el.modal('hide');
+    setTimeout(((function(_this) {
+      return function() {
+        return _this.remove();
+      };
+    })(this)), 500);
+    return this.cb(false);
+  };
+
+  Modal.prototype.onYes = function() {
+    if (this.closing) {
+      return;
+    }
+    this.closing = true;
+    this.$el.modal('hide');
+    setTimeout(((function(_this) {
+      return function() {
+        return _this.remove();
+      };
+    })(this)), 500);
+    return this.cb(true);
+  };
+
+  Modal.prototype.closeOnEscape = function(e) {
+    if (e.which === 27) {
+      return this.onNo();
+    }
+  };
+
+  Modal.prototype.remove = function() {
+    $(document).off('keyup', this.closeOnEscape);
+    return Modal.__super__.remove.apply(this, arguments);
   };
 
   Modal.prototype.render = function() {
@@ -230,16 +266,15 @@ require.register("cozy-clearance/modal_share_template", function(exports, requir
   function template(locals) {
 var buf = [];
 var jade_mixins = {};
-var jade_interp;
-;var locals_for_with = (locals || {});(function (t, type, model, clearance, makeURL, Object, possible_permissions) {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('public')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p>");
+var locals_ = (locals || {}),t = locals_.t,type = locals_.type,model = locals_.model,clearance = locals_.clearance,makeURL = locals_.makeURL,possible_permissions = locals_.possible_permissions;
+buf.push("<p>" + (jade.escape(null == (jade.interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade.interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade.interp = t('public')) ? "" : jade.interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade.interp = t('private')) ? "" : jade.interp)) + "</button></p>");
 if ( clearance == 'public')
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared ' + type + ' link msg')) ? "" : jade_interp)) + "</p><input" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
+buf.push("<p>" + (jade.escape(null == (jade.interp = t('modal shared ' + type + ' link msg')) ? "" : jade.interp)) + "</p><input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
+buf.push("<p>" + (jade.escape(null == (jade.interp = t('only you can see')) ? "" : jade.interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
 // iterate clearance
 ;(function(){
   var $$obj = clearance;
@@ -260,11 +295,11 @@ else
 {
 buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/>&nbsp;");
 }
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.contact.get('name')) ? "" : jade_interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -278,7 +313,7 @@ buf.push("<select" + (jade.attr("data-key", key, true, false)) + " class=\"chang
     for (var perm = 0, $$l = $$obj.length; perm < $$l; perm++) {
       var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
     }
 
   } else {
@@ -286,7 +321,7 @@ buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selec
     for (var perm in $$obj) {
       $$l++;      var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
     }
 
   }
@@ -296,7 +331,7 @@ buf.push("</select>");
 }
 else
 {
-buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
+buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
     }
@@ -318,11 +353,11 @@ else
 {
 buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/>&nbsp;");
 }
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.contact.get('name')) ? "" : jade_interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.contact.get('name')) ? "" : jade.interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
+buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade.interp = rule.email) ? "" : jade.interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -336,7 +371,7 @@ buf.push("<select" + (jade.attr("data-key", key, true, false)) + " class=\"chang
     for (var perm = 0, $$l = $$obj.length; perm < $$l; perm++) {
       var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
     }
 
   } else {
@@ -344,7 +379,7 @@ buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selec
     for (var perm in $$obj) {
       $$l++;      var display = $$obj[perm];
 
-buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade_interp = ' ' + t('perm') + t(display)) ? "" : jade_interp)) + "</option>");
+buf.push("<option" + (jade.attr("value", perm, true, false)) + (jade.attr("selected", rule.perm==perm, true, false)) + ">" + (jade.escape(null == (jade.interp = ' ' + t('perm') + t(display)) ? "" : jade.interp)) + "</option>");
     }
 
   }
@@ -354,7 +389,7 @@ buf.push("</select>");
 }
 else
 {
-buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
+buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
     }
@@ -363,7 +398,7 @@ buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", 
 }).call(this);
 
 buf.push("</ul>");
-}}("t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined));;return buf.join("");
+};return buf.join("");
 }
 module.exports = template;
   
@@ -425,6 +460,8 @@ module.exports = CozyClearanceModal = (function(_super) {
   function CozyClearanceModal() {
     this.showLink = __bind(this.showLink, this);
     this.onClose = __bind(this.onClose, this);
+    this.onYes = __bind(this.onYes, this);
+    this.onNo = __bind(this.onNo, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
     this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
@@ -502,12 +539,19 @@ module.exports = CozyClearanceModal = (function(_super) {
     clearance = this.model.get('clearance') || [];
     if (clearance === 'public') {
       this.$('#share-public').addClass('toggled');
-      return this.$('input.form-control').focus().select();
     } else {
-      this.$('input#share-input').select();
       this.$('#share-private').addClass('toggled');
-      return contactTypeahead(this.$('#share-input'), this.onGuestAdded, this.typeaheadFilter);
+      contactTypeahead(this.$('#share-input'), this.onGuestAdded, this.typeaheadFilter);
     }
+    return setTimeout((function(_this) {
+      return function() {
+        if (clearance === 'public') {
+          return _this.$('#public-url').focus().select();
+        } else {
+          return _this.$('input#share-input').select();
+        }
+      };
+    })(this), 100);
   };
 
   CozyClearanceModal.prototype.renderContent = function() {
@@ -595,6 +639,42 @@ module.exports = CozyClearanceModal = (function(_super) {
       return rule.key === select.dataset.key;
     })[0].perm = select.options[select.selectedIndex].value;
     return this.refresh();
+  };
+
+  CozyClearanceModal.prototype.onNo = function() {
+    var clearance, diffLength, diffNews, hasChanged;
+    clearance = this.model.get('clearance');
+    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
+    diffLength = clearance.length !== this.initState.length;
+    hasChanged = diffNews || diffLength;
+    if (hasChanged) {
+      return Modal.confirm(t("confirm"), t('share confirm save'), t("yes"), t("no"), (function(_this) {
+        return function(confirmed) {
+          if (confirmed) {
+            return CozyClearanceModal.__super__.onNo.apply(_this, arguments);
+          }
+        };
+      })(this));
+    } else {
+      return CozyClearanceModal.__super__.onNo.apply(this, arguments);
+    }
+  };
+
+  CozyClearanceModal.prototype.onYes = function() {
+    var clearance, diffNews;
+    clearance = this.model.get('clearance');
+    diffNews = clearanceDiff(clearance, this.initState).length !== 0;
+    if (this.$('#share-input').val() && !diffNews) {
+      return Modal.confirm(t("confirm"), t('share forgot add'), t("no forgot"), t("yes forgot"), (function(_this) {
+        return function(confirmed) {
+          if (confirmed) {
+            return CozyClearanceModal.__super__.onYes.apply(_this, arguments);
+          }
+        };
+      })(this));
+    } else {
+      return CozyClearanceModal.__super__.onYes.apply(this, arguments);
+    }
   };
 
   CozyClearanceModal.prototype.onClose = function(saving) {
