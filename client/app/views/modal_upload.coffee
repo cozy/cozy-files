@@ -57,14 +57,12 @@ module.exports = class ModalUploadView extends Modal
             noButton = $ '#modal-dialog-no'
             noButton.html '&nbsp;'
             noButton.spin 'small'
-            @$('fieldset, #modal-dialog-yes').hide()
 
             @subRenderTotalProgressBar()
             @subRenderFileUploadProgress()
 
             # when upload is over, we reset the modal
             if @uploadingFiles.loaded is @uploadingFiles.length
-                @input.val ""
                 noButton = $ '#modal-dialog-no'
                 noButton.spin false
                 noButton.html t 'upload end button'
@@ -101,16 +99,7 @@ module.exports = class ModalUploadView extends Modal
         @hide()
         setTimeout (() => @destroy()), 500
 
-    onYes: ->
-        noButton = $ '#modal-dialog-no'
-        noButton.html '&nbsp;'
-        noButton.spin 'small'
-        @$('fieldset, #modal-dialog-yes').hide()
-        @doUploadFiles =>
-            @input.val ""
-            noButton.spin false
-            noButton.html t 'upload end button'
-            @callback?()
+    onYes: -> @doUploadFiles => @callback?()
 
     handleUploaderActive: =>
         @$('#uploader').addClass 'active'
@@ -118,12 +107,13 @@ module.exports = class ModalUploadView extends Modal
             @$('#uploader').removeClass 'active'
 
     updateMessage: =>
-        msg = if @files.length
-            t 'upload msg selected', smart_count: @files.length
+        if @files.length
+            msg = t 'upload msg selected', smart_count: @files.length
+            $('#modal-dialog-yes').prop "disabled", false
         else
-            t 'upload msg'
+            msg = t 'upload msg'
+            $('#modal-dialog-yes').prop "disabled", true
 
-        $('#modal-dialog-yes').prop("disabled", "false").button 'refresh'
         @label.text msg
 
     onUploaderChange: (e) =>
@@ -165,6 +155,11 @@ module.exports = class ModalUploadView extends Modal
 
             return fileModel
 
+        # we clear the input to allow simultaneous uploads
+        @files = []
+        @input.val ""
+        @updateMessage()
+
         # second loop, do upload 5 by 5
         async.eachLimit filesModels, 5, (fileModel, cb) ->
             return cb null if fileModel.error
@@ -172,6 +167,7 @@ module.exports = class ModalUploadView extends Modal
                 success: -> cb null
                 error: (err) ->
                     fileModel.error = t err.msg or "modal error file upload"
+                    fileModel.trigger 'sync'
                     cb null # do not stop all list if one fail
         , callback
 

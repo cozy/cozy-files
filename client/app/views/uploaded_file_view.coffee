@@ -32,5 +32,6 @@ module.exports = class UploadedFileView extends BaseView
 
         return content
 
-
-
+        destroy: ->
+            @stopListening @model
+            super()
