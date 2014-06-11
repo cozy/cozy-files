@@ -27,6 +27,12 @@ processAttachement = (req, res, next, download) ->
 
     stream = file.getBinary "file", (err, resp, body) =>
         next err if err
+
+    stream.pipefilter = (source, dest) ->
+        XSSmimeTypes = ['text/html', 'image/svg+xml']
+        if source.headers['content-type'] in XSSmimeTypes
+            dest.setHeader 'content-type', 'text/plain'
+
     stream.pipe res
 
 
