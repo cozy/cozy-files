@@ -19,6 +19,8 @@ if model.type && model.type == "folder"
           span.fa.fa-lock
       a.file-edit(title="#{t('tooltip edit')}")
         span.glyphicon.glyphicon-edit
+      a.file-move(title="#{t('tooltip move')}")
+        span.glyphicon.glyphicon-arrow-right
       a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle
       a.file-download(
@@ -55,6 +57,8 @@ else
         span.glyphicon.glyphicon-edit(title="#{t('tooltip edit')}")
       a.file-download(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")(title="#{t('tooltip download')}")
         span.glyphicon.glyphicon-cloud-download
+      a.file-move(title="#{t('tooltip move')}")
+        span.glyphicon.glyphicon-arrow-right
       a.file-delete(title="#{t('tooltip delete')}")
         span.glyphicon.glyphicon-remove-circle
   td.file-size.size-column-cell
