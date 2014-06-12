@@ -1,13 +1,20 @@
 # Make ajax request more easy to do.
-# Expected callbacks: success and error
-exports.request = (type, url, data, callbacks) ->
+exports.request = (type, url, data, callback) ->
     $.ajax
         type: type
         url: url
-        data: JSON.stringify(data)
-        contentType: 'application/json; charset=utf-8'
-        success: callbacks.success
-        error: callbacks.error
+        data: if data? then JSON.stringify data else null
+        contentType: "application/json"
+        dataType: "json"
+        success: (data) ->
+            callback null, data if callback?
+        error: (data) ->
+            if data.status in [200, 201, 204, 304]
+                callback null, data if callback?
+            else if data? and data.msg? and callback?
+                callback new Error data.msg
+            else if callback?
+                callback new Error "Server error occured"
 
 # Sends a get request with data as body
 # Expected callbacks: success and error

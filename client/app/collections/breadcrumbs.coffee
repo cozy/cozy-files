@@ -10,7 +10,7 @@ module.exports = class BreadcrumbsManager extends Backbone.Collection
         super folder, sort: false
 
     # when adding a folder
-    push: (folder)->
+    push: (folder) ->
 
         # expanding the first node in case of direct access:
         #   - only root on the stack
@@ -22,22 +22,18 @@ module.exports = class BreadcrumbsManager extends Backbone.Collection
             path = folder.get("path").split("/")
             path = path.slice(1, path.length)
 
-            console.log "direct access", path
-            console.log "direct access", folder.get("path")
-
-            client.get "folder/tree/"+folder.id,
-                success: (data) =>
-                    console.log "OK", data
+            client.get "folder/tree/" + folder.id, (err) ->
+                if err
+                    console.log "err", err
+                else
                     @add data, sort: false
                     @add folder, sort: false
-                error: (err) =>
-                    console.log "err", err
 
 
         else
 
             if @get folder
-                
+
                 found = false
                 treatment = (model, callback) ->
                     if not found
