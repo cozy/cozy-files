@@ -165,20 +165,24 @@ module.exports.modify = (req, res, next) ->
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 
+    # Case where path of name changed.
     else
         previousName = file.name
-        newName = body.name
+        newName = if body.name? then body.name else previousName
+        previousPath = file.path
+        newPath = if body.path? then body.path else previousPath
         isPublic = body.public
-        newPath = "#{file.path}/#{newName}"
-
+        newFullPath = "#{newPath}/#{newName}"
+        previousFullPath = "#{previousPath}/#{previousName}"
         fullPath = "#{req.body.path}/#{req.body.name}"
+
         File.byFullPath key: fullPath, (err, sameFiles) =>
             return next err if err
 
             modificationSuccess =  (err) ->
                 log.raw err if err
-                log.info "File name changed from #{previousName} " + \
-                         "to #{newName}"
+                log.info "Filechanged from #{previousFullPath} " + \
+                         "to #{newFullPath}"
                 res.send success: 'File successfully modified'
 
             if sameFiles.length > 0
@@ -189,10 +193,13 @@ module.exports.modify = (req, res, next) ->
             else
                 data =
                     name: newName
+                    path: newPath
                     public: isPublic
                     lastModification: moment().toISOString()
 
                 data.clearance = body.clearance if body.clearance
+                log.debug data
+
                 file.updateAttributes data, (err) =>
                     if err
                         next new Error 'Cannot modify file'
