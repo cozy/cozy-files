@@ -86,26 +86,42 @@ module.exports = class FileView extends BaseView
         else
             ModalView.error t("modal error empty name")
 
+
+    # Display Move widget and handle move operation if user confirms.
     onMoveClicked: =>
         client.get 'folders/list', (err, paths) =>
             if err
                 alert err
             else
-                console.log paths
                 moveForm = $ """
-                <div class="move-form">
-                <span> move file to: </span>
+                <div class="move-widget">
+                <span> #{t 'move element to'}: </span>
                 <select class="move-select"></select>
-                <button class="button btn">move</button>
+                <button class="button btn move-btn">move</button>
+                <button class="btn btn-link cancel-move-btn">cancel</button>
                 </div>
-            """
+                """
                 for path in paths
-                    console.log path
-                    console.log moveForm.find('select')
-                    moveForm.find('select').append """
-                    <option value="#{path}">#{path}</option>
-                    """
-                console.log moveForm
+                    if path isnt @model.get 'path'
+                        moveForm.find('select').append """
+                        <option value="#{path}">#{path}</option>
+                        """
+
+                moveForm.find(".cancel-move-btn").click -> moveForm.remove()
+                moveButton = moveForm.find(".move-btn")
+                moveButton.click =>
+                    path = $(".move-select").val()
+                    moveButton.spin 'tiny'
+                    @model.set 'path', path.substring 1
+                    @model.save
+                        success: =>
+                            alert "Element #{@model.get 'name'} was successfully moved to #{path}"
+                            @$el.fadeOut =>
+                                @model.remove()
+                            moveButton.spin()
+                        error: (err) =>
+                            console.log err
+                            moveButton.spin()
                 @$el.find('td:first-child').append moveForm
 
 
