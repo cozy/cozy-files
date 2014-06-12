@@ -57,6 +57,13 @@ Folder::getPublicURL = (cb) ->
         url = "#{domain}public/files/folders/#{@id}"
         cb null, url
 
+Folder.allPath = (callback) ->
+    Folder.request "byFullPath", (err, folders) ->
+        return callback err if err
+        paths = []
+        paths.push folder.getFullPath() for folder in folders
+        callback null, paths
+
 if process.env.NODE_ENV is 'test'
     Folder::index = (fields, callback) -> callback null
     Folder::search = (query, callback) -> callback null, []

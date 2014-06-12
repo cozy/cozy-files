@@ -19,10 +19,8 @@ processAttachement = (req, res, next, download) ->
     id = req.params.id
     file = req.file
 
-    if download
-        contentHeader = "attachment; filename=#{file.name}"
-    else
-        contentHeader = "inline; filename=#{file.name}"
+    if download then contentHeader = "attachment; filename=#{file.name}"
+    else contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
     stream = file.getBinary "file", (err, resp, body) =>
@@ -233,6 +231,7 @@ module.exports.downloadAttachment = (req, res, next) ->
 module.exports.publicDownloadAttachment = (req, res, next) ->
     sharing.checkClearance req.file, req, (authorized) ->
         if not authorized
+            log.debug 'not authorized', req.file.id
             err = new Error 'File not found'
             err.status = 404
             err.template =
