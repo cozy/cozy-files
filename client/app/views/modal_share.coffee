@@ -17,14 +17,13 @@ module.exports = class ModalShareView extends CozyClearanceModal
         @type = @model.get('type')
         super
         @summaryemails = []
-        client.get "clearance/#{@model.id}",
-            error: => Modal.error 'server error occured', => @$el.modal 'hide'
-            success: (data) =>
+        client.get "clearance/#{@model.id}", (err) =>
+            if err
+                Modal.error 'server error occured', => @$el.modal 'hide'
+            else
                 @inherited = data.inherited
-
                 last = _.last @inherited
-                if last?.clearance is 'public'
-                    @forcedPublic = last.name
+                @forcedPublic = last.name if last?.clearance is 'public'
 
                 # actually render content
                 @refresh()

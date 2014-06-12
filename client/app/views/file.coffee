@@ -18,6 +18,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'render'
+        'click a.file-move'        : 'onMoveClicked'
         'keydown input'            : 'onKeyPress'
 
     template: (args) ->
@@ -84,6 +85,30 @@ module.exports = class FileView extends BaseView
                         ModalView.error t("modal error rename")
         else
             ModalView.error t("modal error empty name")
+
+    onMoveClicked: =>
+        client.get 'folders/list', (err, paths) =>
+            if err
+                alert err
+            else
+                console.log paths
+                moveForm = $ """
+                <div class="move-form">
+                <span> move file to: </span>
+                <select class="move-select"></select>
+                <button class="button btn">move</button>
+                </div>
+            """
+                for path in paths
+                    console.log path
+                    console.log moveForm.find('select')
+                    moveForm.find('select').append """
+                    <option value="#{path}">#{path}</option>
+                    """
+                console.log moveForm
+                @$el.find('td:first-child').append moveForm
+
+
 
     onKeyPress: (e) =>
         if e.keyCode is 13
