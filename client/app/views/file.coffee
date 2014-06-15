@@ -2,6 +2,7 @@ BaseView = require '../lib/base_view'
 ModalView = require "./modal"
 ModalShareView = require "./modal_share"
 TagsView = require "./tags"
+
 client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
@@ -93,16 +94,22 @@ module.exports = class FileView extends BaseView
             if err
                 alert err
             else
+                paths.push '/'
+
                 moveForm = $ """
                 <div class="move-widget">
                 <span> #{t 'move element to'}: </span>
                 <select class="move-select"></select>
-                <button class="button btn move-btn">move</button>
-                <button class="btn btn-link cancel-move-btn">cancel</button>
+                <button class="button btn move-btn">
+                    #{t 'move'}
+                </button>
+                <button class="btn btn-link cancel-move-btn">
+                    #{t 'cancel'}
+                </button>
                 </div>
                 """
                 for path in paths
-                    if path isnt @model.get 'path'
+                    if path isnt @model.get('path').substring 1
                         moveForm.find('select').append """
                         <option value="#{path}">#{path}</option>
                         """
@@ -110,18 +117,27 @@ module.exports = class FileView extends BaseView
                 moveForm.find(".cancel-move-btn").click -> moveForm.remove()
                 moveButton = moveForm.find(".move-btn")
                 moveButton.click =>
-                    path = $(".move-select").val()
-                    moveButton.spin 'tiny'
-                    @model.set 'path', path.substring 1
-                    @model.save
-                        success: =>
-                            alert "Element #{@model.get 'name'} was successfully moved to #{path}"
+                    path = $(".move-select").val().substring 1
+                    moveButton.css 'color', 'transparent'
+                    moveButton.spin 'tiny', color: 'white'
+                    id = @model.get 'id'
+                    @stopListening @model
+                    @model.collection.socketListener.pause @model, null,
+                        ignoreMySocketNotification: true
+
+                    client.put "files/#{id}", path: path, (err) =>
+                        if err
+                            alert "An error occured while moving element #{@model.get 'name'}."
+                            console.log err
+                            moveButton.spin false
+                        else
+                            alert "Element #{@model.get 'name'} was successfully moved to #{path}."
                             @$el.fadeOut =>
                                 @model.remove()
-                            moveButton.spin()
-                        error: (err) =>
-                            console.log err
-                            moveButton.spin()
+
+                        @model.collection.socketListener.resume @model, null,
+                            ignoreMySocketNotification: true
+                        @listenTo @model, 'change', @render
                 @$el.find('td:first-child').append moveForm
 
 
