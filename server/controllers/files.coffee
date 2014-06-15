@@ -11,6 +11,11 @@ log = require('printit')
     prefix: 'files'
 
 
+normalizePath = (path) ->
+    path = "/#{path}" if path[0] isnt '/'
+    path = "" if path is "/"
+    path
+
 ## Helpers ##
 
 
@@ -32,18 +37,6 @@ processAttachement = (req, res, next, download) ->
             dest.setHeader 'content-type', 'text/plain'
 
     stream.pipe res
-
-
-updateParentModifDate = (file, callback) ->
-    Folder.byFullPath key: file.path, (err, parents) =>
-        if err
-            callback err
-        else if parents.length > 0
-            parent = parents[0]
-            parent.lastModification = moment().toISOString()
-            parent.save callback
-        else
-            callback()
 
 
 getFileClass = (file) ->
@@ -97,6 +90,7 @@ module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
         next new Error "Invalid arguments"
     else
+        req.body.path = normalizePath req.body.path
 
         fullPath = "#{req.body.path}/#{req.body.name}"
         File.byFullPath key: fullPath, (err, sameFiles) =>
@@ -166,14 +160,14 @@ module.exports.modify = (req, res, next) ->
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 
-    # Case where path of name changed.
+    # Case where path or name changed.
     else
         previousName = file.name
         newName = if body.name? then body.name else previousName
         previousPath = file.path
+        body.path = normalizePath body.path if req.body.path?
         newPath = if body.path? then body.path else previousPath
-        if newPath.substring 0 isnt '/' and newPath is ''
-            newPath = "/#{newPath}"
+
         isPublic = body.public
         newFullPath = "#{newPath}/#{newName}"
         previousFullPath = "#{previousPath}/#{previousName}"
@@ -201,13 +195,12 @@ module.exports.modify = (req, res, next) ->
                     lastModification: moment().toISOString()
 
                 data.clearance = body.clearance if body.clearance
-                log.debug data
 
                 file.updateAttributes data, (err) =>
                     if err
                         next new Error 'Cannot modify file'
                     else
-                        updateParentModifDate file, (err) ->
+                        file.updateParentModifDate (err) ->
                             log.raw err if err
                             file.index ["name"], modificationSuccess
 
@@ -224,7 +217,7 @@ module.exports.destroy = (req, res, next) ->
                     log.error "Cannot destroy document #{file.id}"
                     next err
                 else
-                    updateParentModifDate file, (err) ->
+                    file.updateParentModifDate (err) ->
                         log.raw err if err
                         res.send success: 'File successfully deleted'
 

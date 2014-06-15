@@ -1,5 +1,6 @@
 fs = require 'fs'
 americano = require 'americano-cozy'
+moment = require 'moment'
 
 Folder = require './folder'
 CozyInstance = require './cozy_instance'
@@ -84,6 +85,20 @@ File::getParents = (callback) ->
 
         callback null, parents
 
+File::updateParentModifDate = (callback) ->
+    Folder.byFullPath key: @path, (err, parents) =>
+        if err
+            callback err
+        else if parents.length > 0
+            parent = parents[0]
+            parent.lastModification = moment().toISOString()
+            parent.save callback
+        else
+            callback()
+
+
+
 if process.env.NODE_ENV is 'test'
     File::index = (fields, callback) -> callback null
     File::search =  (query, callback) -> callback null, []
+
