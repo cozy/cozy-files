@@ -161,7 +161,8 @@ module.exports.modify = (req, res, next) ->
                 log.info "Tags changed for #{file.name}: #{tags}"
                 res.send success: 'Tags successfully changed', 200
 
-    else if (not body.name or body.name is "") and not body.path
+    else if (not body.name or body.name is "") and not body.path?
+        log.debug body
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 
