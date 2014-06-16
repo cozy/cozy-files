@@ -79,10 +79,12 @@ module.exports = class File extends Backbone.Model
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}content", id: @id, callbacks
 
+    # Dead Code?
     findFiles: (callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}files", id: @id, callbacks
 
+    # Dead Code?
     findFolders: (callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}folders", id: @id, callbacks
@@ -90,11 +92,13 @@ module.exports = class File extends Backbone.Model
     getPublicURL: (key) ->
         "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
 
+    # Dead Code?
     getZip: (file, callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}#{@id}/zip/#{@name}", callbacks
 
     # FILE
+    # Dead Code?
     getAttachment: (file, callbacks) ->
         @prepareCallbacks callbacks
         client.post "#{@urlRoot()}#{@id}/getAttachment/#{@name}", callbacks

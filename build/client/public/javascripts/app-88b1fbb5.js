@@ -157,25 +157,17 @@ module.exports = BreadcrumbsManager = (function(_super) {
     if ((this.length === 1) && (this.at(0) === this.root) && (folder !== this.root) && (folder.get("path") !== "") && (folder.get("type") === "folder")) {
       path = folder.get("path").split("/");
       path = path.slice(1, path.length);
-      console.log("direct access", path);
-      console.log("direct access", folder.get("path"));
-      return client.get("folder/tree/" + folder.id, {
-        success: (function(_this) {
-          return function(data) {
-            console.log("OK", data);
-            _this.add(data, {
-              sort: false
-            });
-            return _this.add(folder, {
-              sort: false
-            });
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            return console.log("err", err);
-          };
-        })(this)
+      return client.get("folder/tree/" + folder.id, function(err) {
+        if (err) {
+          return console.log("err", err);
+        } else {
+          this.add(data, {
+            sort: false
+          });
+          return this.add(folder, {
+            sort: false
+          });
+        }
       });
     } else {
       if (this.get(folder)) {
@@ -282,14 +274,30 @@ module.exports = FileCollection = (function(_super) {
 });
 
 ;require.register("helpers/client", function(exports, require, module) {
-exports.request = function(type, url, data, callbacks) {
+exports.request = function(type, url, data, callback) {
   return $.ajax({
     type: type,
     url: url,
-    data: JSON.stringify(data),
-    contentType: 'application/json; charset=utf-8',
-    success: callbacks.success,
-    error: callbacks.error
+    data: data != null ? JSON.stringify(data) : null,
+    contentType: "application/json",
+    dataType: "json",
+    success: function(data) {
+      if (callback != null) {
+        return callback(null, data);
+      }
+    },
+    error: function(data) {
+      var _ref;
+      if ((_ref = data.status) === 200 || _ref === 201 || _ref === 204 || _ref === 304) {
+        if (callback != null) {
+          return callback(null, data);
+        }
+      } else if ((data != null) && (data.msg != null) && (callback != null)) {
+        return callback(new Error(data.msg));
+      } else if (callback != null) {
+        return callback(new Error("Server error occured"));
+      }
+    }
   });
 };
 
@@ -1252,6 +1260,7 @@ module.exports = FileView = (function(_super) {
 
   function FileView() {
     this.onKeyPress = __bind(this.onKeyPress, this);
+    this.onMoveClicked = __bind(this.onMoveClicked, this);
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
@@ -1271,6 +1280,7 @@ module.exports = FileView = (function(_super) {
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
     'click a.file-edit-cancel': 'render',
+    'click a.file-move': 'onMoveClicked',
     'keydown input': 'onKeyPress'
   };
 
@@ -1368,6 +1378,88 @@ module.exports = FileView = (function(_super) {
     } else {
       return ModalView.error(t("modal error empty name"));
     }
+  };
+
+  FileView.prototype.onMoveClicked = function() {
+    var errorTemplate, firstCell, formTemplate, movedTemplate, optionTemplate;
+    formTemplate = "<div class=\"move-widget\">\n<span> " + (t('move element to')) + ": </span>\n<select class=\"move-select\"></select>\n<button class=\"button btn move-btn\">\n    " + (t('move')) + "\n</button>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
+    errorTemplate = "<div>\n<span class=\"error\">An error occured while moving element " + (this.model.get('name')) + ".</span>\n</div>";
+    movedTemplate = function(path) {
+      return "<div id=\"moved-infos\">\n<span>file successfully moved to /" + path + ".</span>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
+    };
+    optionTemplate = function(path) {
+      return "<option value=\"" + path + "\">" + path + "</option>";
+    };
+    firstCell = this.$el.find('td:first-child');
+    return client.get('folders/list', (function(_this) {
+      return function(err, paths) {
+        var cancelButton, moveButton, moveForm, path, _i, _len;
+        if (err) {
+          return alert(err);
+        } else {
+          paths.push('/');
+          moveForm = $(formTemplate);
+          for (_i = 0, _len = paths.length; _i < _len; _i++) {
+            path = paths[_i];
+            if (path !== _this.model.get('path').substring(1)) {
+              moveForm.find('select').append(optionTemplate(path));
+            }
+          }
+          cancelButton = moveForm.find(".cancel-move-btn");
+          cancelButton.click(function() {
+            return moveForm.remove();
+          });
+          moveButton = moveForm.find(".move-btn");
+          moveButton.click(function() {
+            var id, previousPath, showMoveResult, type;
+            moveButton.html(t("moving..."));
+            path = $(".move-select").val().substring(1);
+            id = _this.model.get('id');
+            previousPath = _this.model.get('path');
+            type = _this.model.get('type');
+            _this.stopListening(_this.model);
+            _this.model.collection.socketListener.pause(_this.model, null, {
+              ignoreMySocketNotification: true
+            });
+            showMoveResult = function() {
+              var movedInfos;
+              moveForm.fadeOut();
+              moveForm.remove();
+              movedInfos = $(movedTemplate(path));
+              firstCell.append(movedInfos);
+              cancelButton = movedInfos.find(".cancel-move-btn");
+              return movedInfos.click(function() {
+                var data;
+                data = {
+                  path: previousPath
+                };
+                return client.put("" + type + "s/" + id, data, function(err) {
+                  if (err) {
+                    return alert('An error occured while canceling.');
+                  } else {
+                    return movedInfos.fadeOut();
+                  }
+                });
+              });
+            };
+            return client.put("" + type + "s/" + id, {
+              path: path
+            }, function(err) {
+              if (err) {
+                firstCell.append(errorTemplate);
+              } else {
+                showMoveResult();
+              }
+              _this.model.collection.socketListener.resume(_this.model, null, {
+                ignoreMySocketNotification: true
+              });
+              return _this.listenTo(_this.model, 'change', _this.render);
+            });
+          });
+          return _this.$el.find('td:first-child').append(moveForm);
+        }
+      };
+    })(this));
   };
 
   FileView.prototype.onKeyPress = function(e) {
@@ -1774,10 +1866,16 @@ module.exports = FolderView = (function(_super) {
     zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
     this.$('#download-link').attr('href', zipLink);
     this.$("#loading-indicator").spin('small');
-    return this.model.findContent({
-      success: (function(_this) {
-        return function(content) {
-          var item, _i, _len;
+    return this.model.findContent((function(_this) {
+      return function(err, content) {
+        var folderName, item, _i, _len;
+        if (err) {
+          folderName = _this.model.get('name');
+          ModalView.error(t("modal error get content", {
+            folderName: folderName
+          }));
+          return _this.$("#loading-indicator").spin(false);
+        } else {
           for (_i = 0, _len = content.length; _i < _len; _i++) {
             item = content[_i];
             if (item.docType.toLowerCase() === "file") {
@@ -1791,19 +1889,9 @@ module.exports = FolderView = (function(_super) {
           _this.filesList.model = _this.model;
           _this.listenTo(_this.filesList.collection, "sync", _this.hideUploadForm);
           return _this.$("#loading-indicator").spin(false);
-        };
-      })(this),
-      error: (function(_this) {
-        return function(error) {
-          var folderName;
-          folderName = _this.model.get('name');
-          ModalView.error(t("modal error get content", {
-            folderName: folderName
-          }));
-          return _this.$("#loading-indicator").spin(false);
-        };
-      })(this)
-    });
+        }
+      };
+    })(this));
   };
 
   FolderView.prototype.onUploadNewFileClicked = function() {
@@ -1988,6 +2076,8 @@ module.exports = ModalView = (function(_super) {
     }
   };
 
+  ModalView.prototype.onShow = function() {};
+
   ModalView.prototype.close = function() {
     return setTimeout(((function(_this) {
       return function() {
@@ -1997,11 +2087,13 @@ module.exports = ModalView = (function(_super) {
   };
 
   ModalView.prototype.show = function() {
-    return this.$el.modal('show');
+    this.$el.modal('show');
+    return this.$el.trigger('show');
   };
 
   ModalView.prototype.hide = function() {
-    return this.$el.modal('hide');
+    this.$el.modal('hide');
+    return this.$el.trigger('hide');
   };
 
   ModalView.prototype.render = function() {
@@ -2062,6 +2154,7 @@ module.exports = ModalFolderView = (function(_super) {
     this.doCreateFolder = __bind(this.doCreateFolder, this);
     this.onUploaderChange = __bind(this.onUploaderChange, this);
     this.onKeyUp = __bind(this.onKeyUp, this);
+    this.onShow = __bind(this.onShow, this);
     this.hideAndDestroy = __bind(this.hideAndDestroy, this);
     this.uploadingFiles = options.uploadingFiles;
     Modal.__super__.constructor.apply(this, arguments);
@@ -2090,7 +2183,8 @@ module.exports = ModalFolderView = (function(_super) {
     }
     this.uploader = this.$('#folder-uploader');
     this.inputName = this.$('#inputName');
-    return this.submitButton = this.$("#modal-dialog-yes");
+    this.submitButton = this.$("#modal-dialog-yes");
+    return this.$el.on('show', this.onShow);
   };
 
   ModalFolderView.prototype.hideAndDestroy = function() {
@@ -2098,6 +2192,14 @@ module.exports = ModalFolderView = (function(_super) {
     return setTimeout((function(_this) {
       return function() {
         return _this.destroy();
+      };
+    })(this), 500);
+  };
+
+  ModalFolderView.prototype.onShow = function() {
+    return setTimeout((function(_this) {
+      return function() {
+        return _this.inputName.focus();
       };
     })(this), 500);
   };
@@ -2280,26 +2382,23 @@ module.exports = ModalShareView = (function(_super) {
     this.type = this.model.get('type');
     ModalShareView.__super__.initialize.apply(this, arguments);
     this.summaryemails = [];
-    return client.get("clearance/" + this.model.id, {
-      error: (function(_this) {
-        return function() {
+    return client.get("clearance/" + this.model.id, (function(_this) {
+      return function(err) {
+        var last;
+        if (err) {
           return Modal.error('server error occured', function() {
             return _this.$el.modal('hide');
           });
-        };
-      })(this),
-      success: (function(_this) {
-        return function(data) {
-          var last;
+        } else {
           _this.inherited = data.inherited;
           last = _.last(_this.inherited);
           if ((last != null ? last.clearance : void 0) === 'public') {
             _this.forcedPublic = last.name;
           }
           return _this.refresh();
-        };
-      })(this)
-    });
+        }
+      };
+    })(this));
   };
 
   ModalShareView.prototype.permissions = function() {
@@ -2482,11 +2581,9 @@ module.exports = ModalUploadView = (function(_super) {
       noButton = $('#modal-dialog-no');
       noButton.html('&nbsp;');
       noButton.spin('small');
-      this.$('fieldset, #modal-dialog-yes').hide();
       this.subRenderTotalProgressBar();
       this.subRenderFileUploadProgress();
       if (this.uploadingFiles.loaded === this.uploadingFiles.length) {
-        this.input.val("");
         noButton = $('#modal-dialog-no');
         noButton.spin(false);
         noButton.html(t('upload end button'));
@@ -2546,16 +2643,8 @@ module.exports = ModalUploadView = (function(_super) {
   };
 
   ModalUploadView.prototype.onYes = function() {
-    var noButton;
-    noButton = $('#modal-dialog-no');
-    noButton.html('&nbsp;');
-    noButton.spin('small');
-    this.$('fieldset, #modal-dialog-yes').hide();
     return this.doUploadFiles((function(_this) {
       return function() {
-        _this.input.val("");
-        noButton.spin(false);
-        noButton.html(t('upload end button'));
         return typeof _this.callback === "function" ? _this.callback() : void 0;
       };
     })(this));
@@ -2572,10 +2661,15 @@ module.exports = ModalUploadView = (function(_super) {
 
   ModalUploadView.prototype.updateMessage = function() {
     var msg;
-    msg = this.files.length ? t('upload msg selected', {
-      smart_count: this.files.length
-    }) : t('upload msg');
-    $('#modal-dialog-yes').prop("disabled", "false").button('refresh');
+    if (this.files.length) {
+      msg = t('upload msg selected', {
+        smart_count: this.files.length
+      });
+      $('#modal-dialog-yes').prop("disabled", false);
+    } else {
+      msg = t('upload msg');
+      $('#modal-dialog-yes').prop("disabled", true);
+    }
     return this.label.text(msg);
   };
 
@@ -2624,6 +2718,9 @@ module.exports = ModalUploadView = (function(_super) {
         return fileModel;
       };
     })(this));
+    this.files = [];
+    this.input.val("");
+    this.updateMessage();
     return async.eachLimit(filesModels, 5, function(fileModel, cb) {
       if (fileModel.error) {
         return cb(null);
@@ -2634,6 +2731,7 @@ module.exports = ModalUploadView = (function(_super) {
         },
         error: function(err) {
           fileModel.error = t(err.msg || "modal error file upload");
+          fileModel.trigger('sync');
           return cb(null);
         }
       });
@@ -2928,7 +3026,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
 if ( model.lastModification)
 {
 buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
@@ -2976,7 +3074,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></td><td class=\"file-size size-column-cell\">");
+buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></td><td class=\"file-size size-column-cell\">");
 options = {base: 2}
 buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-type type-column-cell\"><span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-date date-column-cell\">");
 if ( model.lastModification)
@@ -3079,7 +3177,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\"></td><td class=\"type-column-cell\"><span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span></td><td class=\"date-column-cell\">");
 if ( model.lastModification)
 {
 buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
@@ -3127,7 +3225,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"file-size size-column-cell\">");
+buf.push("</a><a class=\"file-edit\"><span" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "files/" + (model.id) + "/download/" + (model.name) + "", true, false)) + (jade.attr("download", "" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"file-size size-column-cell\">");
 options = {base: 2}
 buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-type type-column-cell\"><span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span></td><td class=\"file-date date-column-cell\">");
 if ( model.lastModification)
@@ -3313,6 +3411,12 @@ module.exports = UploadedFileView = (function(_super) {
       }).render().$el);
     }
     return content;
+    return {
+      destroy: function() {
+        this.stopListening(this.model);
+        return UploadedFileView.__super__.template.call(this);
+      }
+    };
   };
 
   return UploadedFileView;

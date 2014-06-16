@@ -11,6 +11,11 @@ log = require('printit')
     prefix: 'files'
 
 
+normalizePath = (path) ->
+    path = "/#{path}" if path[0] isnt '/'
+    path = "" if path is "/"
+    path
+
 ## Helpers ##
 
 
@@ -19,10 +24,8 @@ processAttachement = (req, res, next, download) ->
     id = req.params.id
     file = req.file
 
-    if download
-        contentHeader = "attachment; filename=#{file.name}"
-    else
-        contentHeader = "inline; filename=#{file.name}"
+    if download then contentHeader = "attachment; filename=#{file.name}"
+    else contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
     stream = file.getBinary "file", (err, resp, body) =>
@@ -34,18 +37,6 @@ processAttachement = (req, res, next, download) ->
             dest.setHeader 'content-type', 'text/plain'
 
     stream.pipe res
-
-
-updateParentModifDate = (file, callback) ->
-    Folder.byFullPath key: file.path, (err, parents) =>
-        if err
-            callback err
-        else if parents.length > 0
-            parent = parents[0]
-            parent.lastModification = moment().toISOString()
-            parent.save callback
-        else
-            callback()
 
 
 getFileClass = (file) ->
@@ -99,6 +90,7 @@ module.exports.create = (req, res, next) ->
     if not req.body.name or req.body.name is ""
         next new Error "Invalid arguments"
     else
+        req.body.path = normalizePath req.body.path
 
         fullPath = "#{req.body.path}/#{req.body.name}"
         File.byFullPath key: fullPath, (err, sameFiles) =>
@@ -163,24 +155,31 @@ module.exports.modify = (req, res, next) ->
                 log.info "Tags changed for #{file.name}: #{tags}"
                 res.send success: 'Tags successfully changed', 200
 
-    else if not body.name or body.name is ""
+    else if (not body.name or body.name is "") and not body.path?
+        log.debug body
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 
+    # Case where path or name changed.
     else
         previousName = file.name
-        newName = body.name
-        isPublic = body.public
-        newPath = "#{file.path}/#{newName}"
+        newName = if body.name? then body.name else previousName
+        previousPath = file.path
+        body.path = normalizePath body.path if req.body.path?
+        newPath = if body.path? then body.path else previousPath
 
+        isPublic = body.public
+        newFullPath = "#{newPath}/#{newName}"
+        previousFullPath = "#{previousPath}/#{previousName}"
         fullPath = "#{req.body.path}/#{req.body.name}"
+
         File.byFullPath key: fullPath, (err, sameFiles) =>
             return next err if err
 
             modificationSuccess =  (err) ->
                 log.raw err if err
-                log.info "File name changed from #{previousName} " + \
-                         "to #{newName}"
+                log.info "Filechanged from #{previousFullPath} " + \
+                         "to #{newFullPath}"
                 res.send success: 'File successfully modified'
 
             if sameFiles.length > 0
@@ -191,15 +190,17 @@ module.exports.modify = (req, res, next) ->
             else
                 data =
                     name: newName
+                    path: newPath
                     public: isPublic
                     lastModification: moment().toISOString()
 
                 data.clearance = body.clearance if body.clearance
+
                 file.updateAttributes data, (err) =>
                     if err
                         next new Error 'Cannot modify file'
                     else
-                        updateParentModifDate file, (err) ->
+                        file.updateParentModifDate (err) ->
                             log.raw err if err
                             file.index ["name"], modificationSuccess
 
@@ -216,7 +217,7 @@ module.exports.destroy = (req, res, next) ->
                     log.error "Cannot destroy document #{file.id}"
                     next err
                 else
-                    updateParentModifDate file, (err) ->
+                    file.updateParentModifDate (err) ->
                         log.raw err if err
                         res.send success: 'File successfully deleted'
 
@@ -233,6 +234,7 @@ module.exports.downloadAttachment = (req, res, next) ->
 module.exports.publicDownloadAttachment = (req, res, next) ->
     sharing.checkClearance req.file, req, (authorized) ->
         if not authorized
+            log.debug 'not authorized', req.file.id
             err = new Error 'File not found'
             err.status = 404
             err.template =

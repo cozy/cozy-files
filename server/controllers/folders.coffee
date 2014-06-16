@@ -36,18 +36,6 @@ module.exports.fetch = (req, res, next, id) ->
             next()
 
 
-updateParentModifDate = (folder, callback) ->
-    Folder.byFullPath key: folder.path, (err, parents) =>
-        if err
-            callback err
-        else if parents.length > 0
-            parent = parents[0]
-            parent.lastModification = moment().toISOString()
-            parent.save callback
-        else
-            callback()
-
-
 findFolder = (id, callback) ->
     Folder.find id, (err, folder) =>
         if err or not folder
@@ -66,6 +54,12 @@ getFolderPath = (id, cb) ->
             else
                 cb null, folder.path + '/' + folder.name
 
+
+normalizePath = (path) ->
+    path = "/#{path}" if path[0] isnt '/'
+    path = "" if path is "/"
+    path
+
 ## Actions ##
 
 # New folder creation operations:
@@ -76,6 +70,8 @@ getFolderPath = (id, cb) ->
 # * Send notification if required
 module.exports.create = (req, res, next) ->
     folder = req.body
+    folder.path = normalizePath folder.path
+
     if (not folder.name) or (folder.name is "")
         next new Error "Invalid arguments"
     else
@@ -121,41 +117,51 @@ module.exports.find = (req, res, next) ->
 
 module.exports.tree = (req, res, next) ->
     folderChild = req.folder
-    Folder.getParents (err, folders) =>
+    folder.getParents (err, folders) =>
         if err then next err
         else
             res.send parents, 200
 
+# Get path for all folders
+module.exports.list = (req, res, next) ->
+    Folder.allPath (err, paths) ->
+        if err then next err
+        else
+            res.send paths
 
 module.exports.modify = (req, res, next) ->
-    folderToModify = req.folder
+    body = req.body
+    body.path = normalizePath body.path if body.path?
+    folder = req.folder
 
-    if (not req.body.name?) and (not req.body.public?) and (not req.body.tags?)
+    if (not req.body.name?) \
+       and (not req.body.public?) \
+       and (not req.body.tags?) \
+       and (not req.body.path?)
         return res.send error: true, msg: "Data required", 400
 
-    newName = req.body.name
-    isPublic = req.body.public
-    oldPath = "#{folderToModify.path}/#{folderToModify.name}/"
-    newPath = "#{folderToModify.path}/#{newName}/"
+    previousName = folder.name
+    newName = if body.name? then body.name else previousName
+    previousPath = folder.path
+    newPath = if body.path? then body.path else previousPath
+
+    oldRealPath = "#{previousPath}/#{previousName}"
+    newRealPath = "#{newPath}/#{newName}"
+
     newTags = req.body.tags or []
     newTags = newTags.filter (tag) -> typeof tag is 'string'
-
-    oldRealPath = "#{folderToModify.path}/#{folderToModify.name}"
-    newRealPath = "#{folderToModify.path}/#{newName}"
+    isPublic = req.body.public
 
     updateIfIsSubFolder = (file, cb) ->
 
-        if "#{file.path}/".indexOf(oldPath) is 0
+        if file.path.indexOf(oldRealPath) is 0
             modifiedPath = file.path.replace oldRealPath, newRealPath
 
             # add new tags from parent, keeping the old ones
             oldTags = file.tags
-            tags = [].concat(oldTags)
+            tags = [].concat oldTags
             for tag in newTags
-                if tags.indexOf tag is -1
-                    tags.push tag
-
-            log.debug tags
+                tags.push tag if tags.indexOf tag is -1
 
             data =
                 path: modifiedPath
@@ -169,21 +175,25 @@ module.exports.modify = (req, res, next) ->
         # update the folder itself
         data =
             name: newName
+            path: newPath
             public: isPublic
             tags: newTags
             lastModification: moment().toISOString()
 
         data.clearance = req.body.clearance if req.body.clearance
 
-        folderToModify.updateAttributes data, (err) =>
-            return next err if err
+        folder.updateParentModifDate (err) ->
+            log.raw err if err
 
-            updateParentModifDate folderToModify, (err) ->
-                log.raw err if err
+            folder.updateAttributes data, (err) =>
+                return next err if err
 
-                folderToModify.index ["name"], (err) ->
+                folder.updateParentModifDate (err) ->
                     log.raw err if err
-                    res.send success: 'File succesfuly modified', 200
+
+                    folder.index ["name"], (err) ->
+                        log.raw err if err
+                        res.send success: 'File succesfuly modified', 200
 
     updateFoldersAndFiles = (folders)->
         # update all folders
@@ -256,7 +266,7 @@ module.exports.destroy = (req, res, next) ->
             currentFolder.destroy (err) ->
                 if err then next err
                 else
-                    updateParentModifDate currentFolder, (err) ->
+                    currentFolder.updateParentModifDate (err) ->
                         log.raw err if err
                         res.send
                             success: "Folder succesfuly deleted: #{directory}"
