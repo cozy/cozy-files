@@ -1406,18 +1406,20 @@ module.exports = FileView = (function(_super) {
     firstCell = this.$el.find('td:first-child');
     return client.get('folders/list', (function(_this) {
       return function(err, paths) {
-        var cancelButton, currentPath, moveButton, moveForm, path, _i, _len;
+        var cancelButton, fullPath, moveButton, moveForm, parentPath, path, type, _i, _len;
         if (err) {
           return alert(err);
         } else {
-          currentPath = _this.model.get('path');
-          if (currentPath !== "") {
+          parentPath = _this.model.get('path');
+          fullPath = _this.model.get('path') + "/" + _this.model.get('name');
+          type = _this.model.get('type');
+          if (parentPath !== "") {
             paths.push('/');
           }
           moveForm = $(formTemplate);
           for (_i = 0, _len = paths.length; _i < _len; _i++) {
             path = paths[_i];
-            if (path.indexOf(currentPath) !== 0) {
+            if (path !== parentPath && !(type === 'folder' && path.indexOf(fullPath) === 0)) {
               moveForm.find('select').append(optionTemplate(path));
             }
           }
@@ -1427,12 +1429,11 @@ module.exports = FileView = (function(_super) {
           });
           moveButton = moveForm.find(".move-btn");
           moveButton.click(function() {
-            var id, previousPath, showMoveResult, type;
+            var id, previousPath, showMoveResult;
             moveButton.html(t("moving..."));
             path = $(".move-select").val().substring(1);
             id = _this.model.get('id');
             previousPath = _this.model.get('path');
-            type = _this.model.get('type');
             _this.stopListening(_this.model);
             _this.model.collection.socketListener.pause(_this.model, null, {
               ignoreMySocketNotification: true
