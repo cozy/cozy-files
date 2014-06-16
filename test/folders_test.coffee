@@ -92,7 +92,7 @@ describe "Folders management", ->
         it "And root folder lastModification should be updated", (done) ->
             client.get "folders/folders", (err, res, folders) =>
                 folder = folders.pop()
-                while folders.length > 0 and  folder.name isnt 'root'
+                while folders.length > 0 and folder.name isnt 'root'
                     folder = folders.pop()
                 lastModification = moment folder.lastModification
                 (lastModification > @now).should.be.ok
@@ -177,6 +177,74 @@ describe "Folders management", ->
 
         it "And two folders should be returned", ->
         	@body.length.should.be.equal 3
+
+
+    describe "Change folder path", =>
+
+        it "When I send a request to create folders", (done) ->
+            @now = moment()
+            folder2 =
+                name: "test_folder_2"
+                path: "/root"
+            folder3 =
+                name: "test_folder_3"
+                path: "/test_folder_3"
+            folder4 =
+                name: "test_folder_4"
+                path: "/root/test_folder_2"
+            client.post "folders/", folder2, (err, res, body) =>
+                @id = body.id
+                client.post "folders/", folder3, (err, res, body) =>
+                    client.post "folders/", folder4, (err, res, body) =>
+                        @idSubfolder = body.id
+                        done()
+
+        it "And I send a request to change the folder path", (done) ->
+            folder =
+                path: "/test_folder_3"
+            client.put "folders/#{@id}", folder, (err, res, body) =>
+                @err = err
+                @res = res
+                @body = body
+                done()
+
+        it "Then error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And I send a request to get a folder", (done) ->
+            client.get "folders/#{@id}", (err, res, body) =>
+                @err = err
+                @res = res
+                @body = body
+                done()
+
+        it "And error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And folder should be returned", ->
+            @body.name.should.be.equal "test_folder_2"
+            @body.path.should.be.equal "/test_folder_3"
+
+        it "And subfolder path should be updated", (done) ->
+            client.get "folders/#{@idSubfolder}", (err, res, body) =>
+                body.path.should.be.equal "/test_folder_3/test_folder_2"
+                done()
+
+        it "And root folder lastModification should be updated", (done) ->
+            client.get "folders/folders", (err, res, folders) =>
+                folder = folders.pop()
+                while folders.length > 0 and  folder.name isnt 'root'
+                    folder = folders.pop()
+
+                lastModification = moment folder.lastModification
+                (lastModification > @now).should.be.ok
+                done()
 
 
     describe "Find file in a specific folder", =>
