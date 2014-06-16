@@ -2,6 +2,7 @@ BaseView = require '../lib/base_view'
 ModalView = require "./modal"
 ModalShareView = require "./modal_share"
 TagsView = require "./tags"
+
 client = require "../helpers/client"
 
 module.exports = class FileView extends BaseView
@@ -18,6 +19,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'render'
+        'click a.file-move'        : 'onMoveClicked'
         'keydown input'            : 'onKeyPress'
 
     template: (args) ->
@@ -77,13 +79,121 @@ module.exports = class FileView extends BaseView
                 success: (data) =>
                     @render()
                 error: (model, err) =>
-                    console.log err
                     if err.status is 400
                         ModalView.error t("modal error in use")
                     else
                         ModalView.error t("modal error rename")
         else
             ModalView.error t("modal error empty name")
+
+
+    # Display Move widget and handle move operation if user confirms.
+    onMoveClicked: =>
+        formTemplate = """
+            <div class="move-widget">
+            <span> #{t 'move element to'}: </span>
+            <select class="move-select"></select>
+            <button class="button btn move-btn">
+                #{t 'move'}
+            </button>
+            <button class="btn btn-link cancel-move-btn">
+                #{t 'cancel'}
+            </button>
+            </div>
+        """
+
+        errorTemplate = """
+            <div>
+                <span class="error">
+                #{'error occured while moving element'}: #{@model.get 'name'}.
+                #</span>
+            </div>
+        """
+
+        movedTemplate = (path) ->
+            """
+            <div id="moved-infos">
+            <span>#{ t 'file successfully moved to'}: /#{path}.</span>
+            <button class="btn btn-link cancel-move-btn">
+                #{t 'cancel'}
+            </button>
+            </div>
+        """
+
+        optionTemplate =  (path) -> """
+            <option value="#{path}">#{path}</option>
+        """
+
+        firstCell = @$el.find('td:first-child')
+
+        client.get 'folders/list', (err, paths) =>
+            if err
+                alert err
+            else
+                currentPath = @model.get('path')
+
+                # Add root folder to list.
+                paths.push '/' if currentPath isnt ""
+
+                # Fill folder combobox with folder list.
+                moveForm = $ formTemplate
+                for path in paths
+                    if path.indexOf(currentPath) isnt 0
+                        moveForm.find('select').append optionTemplate path
+
+                # Cancel move action on cancel clicked.
+                cancelButton =  moveForm.find(".cancel-move-btn")
+                cancelButton.click ->
+                    moveForm.remove()
+
+                # Perform move operation on move clicked.
+                moveButton = moveForm.find(".move-btn")
+                moveButton.click =>
+
+                    # Show loading
+                    moveButton.html t "moving..."
+
+                    # Get path and url information.
+                    path = $(".move-select").val().substring 1
+                    id = @model.get 'id'
+                    previousPath = @model.get 'path'
+                    type = @model.get 'type'
+
+                    # Stop render sync.
+                    @stopListening @model
+                    @model.collection.socketListener.pause @model, null,
+                        ignoreMySocketNotification: true
+
+                    showMoveResult = =>
+                        moveForm.fadeOut()
+                        moveForm.remove()
+                        movedInfos = $ movedTemplate path
+                        firstCell.append movedInfos
+                        cancelButton =  movedInfos.find(".cancel-move-btn")
+                        movedInfos.click =>
+                            data = path: previousPath
+                            client.put "#{type}s/#{id}", data, (err) =>
+                                if err
+                                    ModalView.error t 'error occured canceling move'
+                                else
+                                    movedInfos.fadeOut()
+
+                    # Can't use Backbone model due to a weird sync
+                    # I can't figure out what is causing view to re-render.
+                    client.put "#{type}s/#{id}", path: path, (err) =>
+                        if err
+                            firstCell.append errorTemplate
+                        else
+                            showMoveResult()
+
+                        # Put back synchronization.
+                        @model.collection.socketListener.resume @model, null,
+                            ignoreMySocketNotification: true
+                        @listenTo @model, 'change', @render
+
+                @$el.find('td:first-child').append moveForm
+
+
 
     onKeyPress: (e) =>
         if e.keyCode is 13

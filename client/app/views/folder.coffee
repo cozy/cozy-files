@@ -98,8 +98,12 @@ module.exports = class FolderView extends BaseView
         @$('#download-link').attr 'href', zipLink
 
         @$("#loading-indicator").spin 'small'
-        @model.findContent
-            success: (content) =>
+        @model.findContent (err, content) =>
+            if err
+                folderName = @model.get 'name'
+                ModalView.error t("modal error get content", {folderName})
+                @$("#loading-indicator").spin false
+            else
                 for item in content
                     if item.docType.toLowerCase() is "file"
                         item.type = "file"
@@ -110,11 +114,6 @@ module.exports = class FolderView extends BaseView
                 @filesList.collection.reset content
                 @filesList.model = @model
                 @listenTo @filesList.collection, "sync", @hideUploadForm
-                @$("#loading-indicator").spin false
-
-            error: (error) =>
-                folderName = @model.get 'name'
-                ModalView.error t("modal error get content", {folderName})
                 @$("#loading-indicator").spin false
 
     onUploadNewFileClicked: ->

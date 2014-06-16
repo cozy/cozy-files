@@ -1,4 +1,5 @@
 americano = require 'americano-cozy'
+moment = require 'moment'
 CozyInstance = require './cozy_instance'
 
 module.exports = Folder = americano.getModel 'Folder',
@@ -33,6 +34,13 @@ Folder.createNewFolder = (folder, callback) ->
                 console.log err if err
                 callback null, newFolder
 
+Folder.allPath = (callback) ->
+    Folder.request "byFullPath", (err, folders) ->
+        return callback err if err
+        paths = []
+        paths.push folder.getFullPath() for folder in folders
+        callback null, paths
+
 Folder::getFullPath = ->
     @path + '/' + @name
 
@@ -57,6 +65,19 @@ Folder::getPublicURL = (cb) ->
         url = "#{domain}public/files/folders/#{@id}"
         cb null, url
 
+Folder::updateParentModifDate = (callback) ->
+    Folder.byFullPath key: @path, (err, parents) =>
+        if err
+            callback err
+        else if parents.length > 0
+            parent = parents[0]
+            parent.lastModification = moment().toISOString()
+            parent.save callback
+        else
+            callback()
+
+
 if process.env.NODE_ENV is 'test'
     Folder::index = (fields, callback) -> callback null
     Folder::search = (query, callback) -> callback null, []
+

@@ -131,11 +131,56 @@ describe "Files management", ->
             @body.name.should.be.equal "new_test3"
             @body.path.should.be.equal ""
 
-    describe "Delete file", =>
+
+    describe "Change path of a file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
                 name: "test4"
+                path: ""
+            client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
+                body = JSON.parse(body)
+                @id = body.id
+                done()
+
+        it "And I send a request to change the path of the file", (done) ->
+            @timeout 3000
+            file =
+                path: "perso"
+            client.put "files/#{@id}", file, (err, res, body) =>
+                @err = err
+                @res = res
+                done()
+
+        it "Then error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And I send a request to get a file", (done) ->
+            client.get "files/#{@id}", (err, res, body) =>
+                @err = err
+                @res = res
+                @body = body
+                done()
+
+        it "And error should not exist", ->
+            should.not.exist @err
+
+        it "And 200 should be returned as response code", ->
+            @res.statusCode.should.be.equal 200
+
+        it "And file should be returned with the right path and the same name", ->
+            @body.name.should.be.equal "test4"
+            @body.path.should.be.equal "/perso"
+
+
+    describe "Delete file", =>
+
+        it "When I send a request to create a file", (done) ->
+            file =
+                name: "test5"
                 path: ""
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)

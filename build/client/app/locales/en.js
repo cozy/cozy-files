@@ -101,5 +101,12 @@ module.exports = {
   "perm r file": "download this file",
   "perm r folder": "browse this folder",
   "perm rw folder": "browse and upload files",
-  "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
+  'move': 'Move',
+  'tooltip move': 'Move element to another folder.',
+  "moving...": 'Moving...',
+  'move element to': 'Move element to',
+  'error occured canceling move': 'An error occured while canceling move.',
+  'error occured while moving element': 'An error occured while moving element',
+  'file successfully moved to': 'File successfully move to'
 };

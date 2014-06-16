@@ -31,6 +31,8 @@ module.exports =
     'folder/tree/:folderid':
         get: folders.tree
     'folders/content': post: folders.findContent
+    'folders/list':
+        get: folders.list
     'folders/files':
         post: folders.findFiles
     'folders/folders':
