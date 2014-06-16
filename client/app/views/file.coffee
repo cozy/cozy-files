@@ -130,15 +130,19 @@ module.exports = class FileView extends BaseView
             if err
                 alert err
             else
-                currentPath = @model.get('path')
+                parentPath = @model.get('path')
+                fullPath =  @model.get('path') + "/" + @model.get('name')
+                type = @model.get 'type'
 
                 # Add root folder to list.
-                paths.push '/' if currentPath isnt ""
+                paths.push '/' if parentPath isnt  ""
+
 
                 # Fill folder combobox with folder list.
                 moveForm = $ formTemplate
                 for path in paths
-                    if path.indexOf(currentPath) isnt 0
+                    if path isnt parentPath \
+                       and not(type is 'folder' and path.indexOf(fullPath) is 0)
                         moveForm.find('select').append optionTemplate path
 
                 # Cancel move action on cancel clicked.
@@ -157,7 +161,6 @@ module.exports = class FileView extends BaseView
                     path = $(".move-select").val().substring 1
                     id = @model.get 'id'
                     previousPath = @model.get 'path'
-                    type = @model.get 'type'
 
                     # Stop render sync.
                     @stopListening @model
