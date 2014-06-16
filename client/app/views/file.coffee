@@ -129,13 +129,15 @@ module.exports = class FileView extends BaseView
             if err
                 alert err
             else
+                currentPath = @model.get('path')
+
                 # Add root folder to list.
-                paths.push '/'
+                paths.push '/' if currentPath isnt ""
 
                 # Fill folder combobox with folder list.
                 moveForm = $ formTemplate
                 for path in paths
-                    if path isnt @model.get('path').substring 1
+                    if path isnt currentPath
                         moveForm.find('select').append optionTemplate path
 
                 # Cancel move action on cancel clicked.
