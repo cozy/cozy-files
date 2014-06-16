@@ -776,7 +776,14 @@ module.exports = {
   "perm r file": "download this file",
   "perm r folder": "browse this folder",
   "perm rw folder": "browse and upload files",
-  "change notif": "Check this box to be notified when a contact\nadd a file to this folder."
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
+  'move': 'Move',
+  'tooltip move': 'Move element to another folder.',
+  "moving...": 'Moving...',
+  'move element to': 'Move element to',
+  'error occured canceling move': 'An error occured while canceling move.',
+  'error occured while moving element': 'An error occured while moving element',
+  'file successfully moved to': 'File successfully move to'
 };
 });
 
@@ -882,7 +889,14 @@ module.exports = {
   "perm r file": "consulter ce fichier",
   "perm r folder": "parcourir ce dossier",
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
-  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier."
+  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
+  "move": "Déplacer",
+  'tooltip move': "Déplacer l'élément dans un autre dossier.",
+  "moving...": "Déplacement en cours...",
+  "move element to": "Déplacer l'élément vers ",
+  "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
+  "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
+  "file successfully moved to": 'Fichier déplacé avec succès vers '
 };
 });
 
@@ -1366,7 +1380,6 @@ module.exports = FileView = (function(_super) {
         })(this),
         error: (function(_this) {
           return function(model, err) {
-            console.log(err);
             if (err.status === 400) {
               return ModalView.error(t("modal error in use"));
             } else {
@@ -1383,9 +1396,9 @@ module.exports = FileView = (function(_super) {
   FileView.prototype.onMoveClicked = function() {
     var errorTemplate, firstCell, formTemplate, movedTemplate, optionTemplate;
     formTemplate = "<div class=\"move-widget\">\n<span> " + (t('move element to')) + ": </span>\n<select class=\"move-select\"></select>\n<button class=\"button btn move-btn\">\n    " + (t('move')) + "\n</button>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
-    errorTemplate = "<div>\n<span class=\"error\">An error occured while moving element " + (this.model.get('name')) + ".</span>\n</div>";
+    errorTemplate = "<div>\n    <span class=\"error\">\n    " + 'error occured while moving element' + ": " + (this.model.get('name')) + ".\n    #</span>\n</div>";
     movedTemplate = function(path) {
-      return "<div id=\"moved-infos\">\n<span>file successfully moved to /" + path + ".</span>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
+      return "<div id=\"moved-infos\">\n<span>" + (t('file successfully moved to')) + ": /" + path + ".</span>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
     };
     optionTemplate = function(path) {
       return "<option value=\"" + path + "\">" + path + "</option>";
@@ -1393,15 +1406,18 @@ module.exports = FileView = (function(_super) {
     firstCell = this.$el.find('td:first-child');
     return client.get('folders/list', (function(_this) {
       return function(err, paths) {
-        var cancelButton, moveButton, moveForm, path, _i, _len;
+        var cancelButton, currentPath, moveButton, moveForm, path, _i, _len;
         if (err) {
           return alert(err);
         } else {
-          paths.push('/');
+          currentPath = _this.model.get('path');
+          if (currentPath !== "") {
+            paths.push('/');
+          }
           moveForm = $(formTemplate);
           for (_i = 0, _len = paths.length; _i < _len; _i++) {
             path = paths[_i];
-            if (path !== _this.model.get('path').substring(1)) {
+            if (path.indexOf(currentPath) !== 0) {
               moveForm.find('select').append(optionTemplate(path));
             }
           }
@@ -1435,7 +1451,7 @@ module.exports = FileView = (function(_super) {
                 };
                 return client.put("" + type + "s/" + id, data, function(err) {
                   if (err) {
-                    return alert('An error occured while canceling.');
+                    return ModalView.error(t('error occured canceling move'));
                   } else {
                     return movedInfos.fadeOut();
                   }
