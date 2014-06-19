@@ -136,3 +136,12 @@ module.exports =
     "change notif"                    : """
         Cocher cette case pour recevoir une notification cozy quand un contact
         ajoute un fichier à ce dossier."""
+
+    "move": "Déplacer"
+    'tooltip move': "Déplacer l'élément dans un autre dossier."
+    "moving...": "Déplacement en cours..."
+    "move element to": "Déplacer l'élément vers "
+    "error occured canceling move": "Une erreur est survenue en annulant le déplacement."
+    "error occured while moving element": "Une erreur est survenue en déplaçant l'élément."
+    "file successfully moved to": 'Fichier déplacé avec succès vers '
+

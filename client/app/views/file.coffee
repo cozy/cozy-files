@@ -79,7 +79,6 @@ module.exports = class FileView extends BaseView
                 success: (data) =>
                     @render()
                 error: (model, err) =>
-                    console.log err
                     if err.status is 400
                         ModalView.error t("modal error in use")
                     else
@@ -105,14 +104,16 @@ module.exports = class FileView extends BaseView
 
         errorTemplate = """
             <div>
-            <span class="error">An error occured while moving element #{@model.get 'name'}.</span>
+                <span class="error">
+                #{'error occured while moving element'}: #{@model.get 'name'}.
+                #</span>
             </div>
         """
 
         movedTemplate = (path) ->
             """
             <div id="moved-infos">
-            <span>file successfully moved to /#{path}.</span>
+            <span>#{ t 'file successfully moved to'}: /#{path}.</span>
             <button class="btn btn-link cancel-move-btn">
                 #{t 'cancel'}
             </button>
@@ -129,13 +130,19 @@ module.exports = class FileView extends BaseView
             if err
                 alert err
             else
+                parentPath = @model.get('path')
+                fullPath =  @model.get('path') + "/" + @model.get('name')
+                type = @model.get 'type'
+
                 # Add root folder to list.
-                paths.push '/'
+                paths.push '/' if parentPath isnt  ""
+
 
                 # Fill folder combobox with folder list.
                 moveForm = $ formTemplate
                 for path in paths
-                    if path isnt @model.get('path').substring 1
+                    if path isnt parentPath \
+                       and not(type is 'folder' and path.indexOf(fullPath) is 0)
                         moveForm.find('select').append optionTemplate path
 
                 # Cancel move action on cancel clicked.
@@ -154,7 +161,6 @@ module.exports = class FileView extends BaseView
                     path = $(".move-select").val().substring 1
                     id = @model.get 'id'
                     previousPath = @model.get 'path'
-                    type = @model.get 'type'
 
                     # Stop render sync.
                     @stopListening @model
@@ -171,7 +177,7 @@ module.exports = class FileView extends BaseView
                             data = path: previousPath
                             client.put "#{type}s/#{id}", data, (err) =>
                                 if err
-                                    alert 'An error occured while canceling.'
+                                    ModalView.error t 'error occured canceling move'
                                 else
                                     movedInfos.fadeOut()
 

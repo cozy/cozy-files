@@ -20,8 +20,8 @@ config =
             'views': path.resolve __dirname, 'views'
         use: [
             americano.bodyParser
-                limit: 2 * GB
-                maxFieldsSize: 2 * GB
+                limit: 10 * GB
+                maxFieldsSize: 10 * GB
             require('cozy-i18n-helper').middleware
             americano.errorHandler
                 dumpExceptions: true
