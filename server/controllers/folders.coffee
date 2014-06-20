@@ -117,10 +117,10 @@ module.exports.find = (req, res, next) ->
 
 module.exports.tree = (req, res, next) ->
     folderChild = req.folder
-    folder.getParents (err, folders) =>
+    folderChild.getParents (err, folders) =>
         if err then next err
         else
-            res.send parents, 200
+            res.send folders, 200
 
 # Get path for all folders
 module.exports.list = (req, res, next) ->
