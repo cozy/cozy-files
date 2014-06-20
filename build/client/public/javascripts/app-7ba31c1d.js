@@ -2400,7 +2400,7 @@ module.exports = ModalShareView = (function(_super) {
     ModalShareView.__super__.initialize.apply(this, arguments);
     this.summaryemails = [];
     return client.get("clearance/" + this.model.id, (function(_this) {
-      return function(err) {
+      return function(err, data) {
         var last;
         if (err) {
           return Modal.error('server error occured', function() {
