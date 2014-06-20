@@ -17,7 +17,7 @@ module.exports = class ModalShareView extends CozyClearanceModal
         @type = @model.get('type')
         super
         @summaryemails = []
-        client.get "clearance/#{@model.id}", (err) =>
+        client.get "clearance/#{@model.id}", (err, data) =>
             if err
                 Modal.error 'server error occured', => @$el.modal 'hide'
             else
