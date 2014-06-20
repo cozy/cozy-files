@@ -1,17 +1,27 @@
 FileCollection = require './collections/files'
-BreadcrumbsManager = require "./collections/breadcrumbs"
+UploadQueue = require './collections/upload_queue'
 File = require './models/file'
-
+SocketListener = require '../lib/socket'
 FolderView = require './views/folder'
 
+###
+Initialize the model and start the actual code
+###
 module.exports =
 
     initialize: ->
 
-        # Routing management
+        # the base collection holds all the files and folders of the application
+        @baseCollection = new FileCollection()
+
+        # queue to allow new uploads while uploading
+        @uploadQueue = new UploadQueue()
+
+        @socket = new SocketListener()
+        @socket.watch @baseCollection
+
         Router = require 'router'
         @router = new Router()
-        @breadcrumbs = new BreadcrumbsManager()
 
         # Generate the root folder
         @root = new File
@@ -19,18 +29,12 @@ module.exports =
             path: ""
             name: t 'root folder name'
             type: "folder"
+        @baseCollection.add @root
 
-        # and its view
-        @folderView = new FolderView
-            model: @root
-            breadcrumbs: @breadcrumbs
-        el = @folderView.render().$el
-        $('body').append el
+        # for easy debugging in browser (and dirty tricks)
+        window.app = @
 
         Backbone.history.start()
-
-        # for easy debugging in browser
-        window.app = @
 
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'

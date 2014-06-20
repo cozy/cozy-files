@@ -156,7 +156,10 @@ div#affixbar
   margin-top: 45px
 
 #loading-indicator
-  position relative
+  position absolute
+  width 25px
+  height 25px
+  left 50%
 
 
 /*      ITEMS           */
@@ -202,6 +205,11 @@ table#table-items
     a:hover
       color: orange
 
+    #down-name
+    #down-size
+    #down-class
+    #down-lastModification
+      display none
 
 tr.folder-row
 
@@ -228,8 +236,8 @@ tr.folder-row
     i
       vertical-align: middle
 
-  span.caption
-    padding-left: 6px
+    span.caption
+      padding-left 3px // 3 for file and 6 for folder
 
   // the filename
   .caption
@@ -662,7 +670,7 @@ tr.folder-row
   padding-bottom: 10px
 
 #files
-  margin-top 30px
+  margin-top 60px
   position relative
 
 #files-drop-zone
@@ -695,6 +703,7 @@ tr.folder-row
       color 000
       margin auto
 
+  #file-amount-indicator
   #no-files-indicator
     display none
 

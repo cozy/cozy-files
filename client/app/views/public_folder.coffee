@@ -18,14 +18,19 @@ module.exports = class PublicFolderView extends FolderView
     templates: -> ''
     initialize: (options) ->
         @model = new File _.extend options.folder, type: 'folder'
-
+        @uploadQueue = options.uploadQueue
         # patch to use proper url
         old = File::urlRoot
         File::urlRoot = -> '../' + old.apply(this, arguments) + window.location.search
 
         # patch to allow uploads
-        @filesCollection = new FileCollection []
-        @filesList = new PublicFilesView @filesCollection, @model
+        @collection = new FileCollection []
+        @filesList = new PublicFilesView @collection, @model
+
+    afterRender: ->
+        super()
+        zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
+        @$('#download-link').attr 'href', zipLink
 
     onCancelFolder: ->
         # this feels hacky, but not sure how to handle it better

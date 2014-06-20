@@ -1,19 +1,20 @@
 BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
-ProgressbarView = require "./progressbar"
 ModalUploadView = require './modal_upload'
 ModalFolderView = require './modal_folder'
 ModalShareView = require './modal_share'
-ModalView = require './modal_share'
-showError = require('./modal').error
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
 
-
-
+###
+Handles the display logic for a folder.
+Main entry point of the interface: handles breadcrumb, buttons and files list
+###
 module.exports = class FolderView extends BaseView
+
+    el: 'body'
 
     template: require './templates/folder'
 
@@ -34,102 +35,78 @@ module.exports = class FolderView extends BaseView
         'keyup input#search-box'       : 'onSearchKeyPress'
 
     initialize: (options) ->
-        @model = options.model
-        @breadcrumbs = options.breadcrumbs
-        @breadcrumbs.setRoot @model
-        @uploadingFiles = new Backbone.Collection()
-        @uploadingFiles.loaded = 0
-        @listenTo @uploadingFiles, 'sync', =>
-            @uploadingFiles.loaded++
-            @uploadingFiles.trigger 'progress-total'
+        super options
+        @baseCollection = options.baseCollection
+        @uploadQueue = options.uploadQueue
+
+        # not empty only if a search has started
+        @query = options.query
+
+    destroy: ->
+        @breadcrumbsView.destroy()
+        @breadcrumbsView = null
+        @filesList.destroy()
+        @filesList = null
+
+        super()
 
     getRenderData: ->
-        model: @model
+        model: @model.toJSON()
+        query: @query
 
     afterRender: ->
-        @breadcrumbsView = new BreadcrumbsView @breadcrumbs
-        @$("#crumbs").append @breadcrumbsView.render().$el
         @uploadButton = @$ '#button-upload-new-file'
 
-        @filesList = new FilesView el: @$("#files"), model: @model
+        # breadcrumb management
+        @renderBreadcrumb()
+
+        # files list management
+        @renderFileList()
+
+        # We make a reload after the view is displayed to update
+        # the client without degrading UX
+        @refreshData()
+
+    renderBreadcrumb: ->
+        @$('#crumbs').empty()
+        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb
+        @$("#crumbs").append @breadcrumbsView.render().$el
+
+    renderFileList: ->
+        @filesList = new FilesView
+                model: @model
+                collection: @collection
+                isSearchMode: @model.get('type') is "search"
+
         @filesList.render()
 
-    # Display and re-render the contents of the folder
-    changeActiveFolder: (folder) ->
-        # register the model
-        @stopListening @model
-        @model = folder
-        @listenTo @model, 'change', -> @changeActiveFolder @model
+    spin: (state = 'small') -> @$("#loading-indicator").spin state
 
-        # update breadcrumbs
-        @breadcrumbs.push folder
-        if folder.id is "root"
-            @$("#crumbs").css opacity: 0.5
-        else
-            @$("#crumbs").css opacity: 1
+    # Refresh folder's content and manage spinner
+    refreshData: ->
+        @spin()
+        @baseCollection.getFolderContent @model, => @spin false
 
-        # see, if we should display add/upload buttons
-        if folder.get("type") is "folder"
-            @$("#upload-buttons").show()
-        else
-            @$("#upload-buttons").hide()
-
-        # manage share state button
-        shareState = $ '#share-state'
-        if @model.id isnt "root"
-            shareState.show()
-            clearance = @model.get 'clearance'
-            if clearance is 'public'
-                shareState.html "#{t('public')}&nbsp;"
-                shareState.append $ '<span class="fa fa-globe"></span>'
-            else if clearance and clearance.length > 0
-                shareState.html "#{t('shared')}&nbsp;"
-                shareState.append $ "<span class='fa fa-users'>" \
-                                    + "</span>"
-                shareState.append $ "<span>&nbsp;#{clearance.length}</span>"
-            else
-                shareState.html "#{t('private')}&nbsp;"
-                shareState.append $ '<span class="fa fa-lock"></span>'
-        else
-            shareState.hide()
-
-        # folder 'download zip' link
-        zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
-        @$('#download-link').attr 'href', zipLink
-
-        @$("#loading-indicator").spin 'small'
-        @model.findContent (err, content) =>
-            if err
-                folderName = @model.get 'name'
-                ModalView.error t("modal error get content", {folderName})
-                @$("#loading-indicator").spin false
-            else
-                for item in content
-                    if item.docType.toLowerCase() is "file"
-                        item.type = "file"
-                    else
-                        item.type = "folder"
-
-                @stopListening @filesList.collection
-                @filesList.collection.reset content
-                @filesList.model = @model
-                @listenTo @filesList.collection, "sync", @hideUploadForm
-                @$("#loading-indicator").spin false
-
+    ###
+        Button handlers
+    ###
     onUploadNewFileClicked: ->
         @modal = new ModalUploadView
             model: @model
             validator: @validateNewModel
-            uploadingFiles: @uploadingFiles
+            uploadQueue: @uploadQueue
 
     onNewFolderClicked: ->
         @modal = new ModalFolderView
             model: @model
             validator: @validateNewModel
-            uploadingFiles: @uploadingFiles
+            uploadQueue: @uploadQueue
 
+    onShareClicked: -> new ModalShareView model: @model
+
+    # REFACTORING: should be improved and moved somewhere else
     validateNewModel: (model) =>
-        myChildren = model.get('path') is @model.repository()
+        myChildren = model.get('path') is @model.getRepository()
         found = @filesList.collection.findWhere name: model.get 'name'
         if myChildren and found
             return t 'modal error file exists'
@@ -165,37 +142,38 @@ module.exports = class FolderView extends BaseView
                 model: @model
                 validator: @validateNewModel
                 files: filesToUpload
-                uploadingFiles: @uploadingFiles
+                uploadQueue: @uploadQueue
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
 
     ###
         Search
     ###
-    onSearchKeyPress: (e) =>
+    onSearchKeyPress: (e) ->
         query = @$('input#search-box').val()
 
-        #if e.keyCode is 13
-        if query isnt ""
-            @displaySearchResults query
-            app.router.navigate "search/#{query}"
+        if query isnt ''
+            route = "#search/#{query}"
         else
-            @changeActiveFolder @breadcrumbs.root
+            route = ''
 
-    displaySearchResults: (query) ->
-        @breadcrumbs.popAll()
+        window.app.router.navigate route, true
 
-        data =
-            id: query
-            name: "#{t('breadcrumbs search title')} '#{query}'"
-            type: "search"
+    # Refreshes the view by changing the files list
+    # we basically re-do @initialize but only render file list
+    # to prevent the focus loss in the search field
+    updateSearch: (model, collection) ->
+        @stopListening @model
+        @stopListening @collection
+        @model = model
+        @collection = collection
 
-        search = new File data
-        @changeActiveFolder search
+        $('#upload-buttons').hide()
 
-    onShareClicked: ->
-        new ModalShareView model: @model
-
-    destroy: ->
-        @uploadingFiles = null
-        super()
+        # the first time the view is displayed, it doesn't exist yet
+        if @filesList?
+            @filesList.destroy()
+            # because destroying the view also removes the element
+            @$('#loading-indicator').after $ '<div id="files"></div>'
+        @renderBreadcrumb()
+        @renderFileList()

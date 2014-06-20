@@ -107,4 +107,6 @@ html
         polyglot.extend(require("locales/#{lang}"));
         window.t = polyglot.t.bind(polyglot);
         var PublicFolderView = require('views/public_folder');
-        new PublicFolderView({folder: window.folder});
+        var UploadQueue = require('collections/upload_queue');
+        var uploadQueue = new UploadQueue();
+        new PublicFolderView({folder: window.folder, uploadQueue: window.uploadQueue});

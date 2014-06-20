@@ -1,6 +1,6 @@
 BaseView = require '../lib/base_view'
 Modal = require "./modal"
-client = require "../helpers/client"
+client = require "../lib/client"
 CozyClearanceModal = require "cozy-clearance/modal_share_view"
 
 # extends the cozy-clearance modal to files specifics

@@ -5,16 +5,13 @@ module.exports = class BreadcrumbsView extends BaseView
     itemview: require './templates/breadcrumbs_element'
     tagName: "ul"
 
-    constructor: (@collection) ->
-        super()
-
-    initialize: ->
-        @listenTo @collection, "reset",   @render
-        @listenTo @collection, "add",     @render
-        @listenTo @collection, "remove",  @render
-
+    # collection is a simple array, not a backbone collection
     render: ->
-        @$el.html ""
-        for folder in @collection.models
-            @$el.append @itemview(model: folder)
+        opacity = if @collection.length is 1 then '0.5' else '1'
+        @$el.css 'opacity', opacity
+
+        @$el.empty()
+        for folder in @collection
+            @$el.append @itemview model: folder
         @
+

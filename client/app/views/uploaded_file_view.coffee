@@ -1,4 +1,4 @@
-ProgressBar = require './progressbar'
+ProgressBar = require '../widgets/progressbar'
 
 BaseView = require '../lib/base_view'
 module.exports = class UploadedFileView extends BaseView

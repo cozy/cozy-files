@@ -3,7 +3,7 @@ ModalView = require "./modal"
 ModalShareView = require "./modal_share"
 TagsView = require "./tags"
 
-client = require "../helpers/client"
+client = require "../lib/client"
 
 module.exports = class FileView extends BaseView
 
@@ -23,12 +23,13 @@ module.exports = class FileView extends BaseView
         'keydown input'            : 'onKeyPress'
 
     template: (args) ->
-        if app.folderView.model.get("type") is "search"
+        if @isSearchMode
             @templateSearch args
         else
             @templateNormal args
 
-    initialize: ->
+    initialize: (options) ->
+        @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @render
 
     onDeleteClicked: ->
@@ -42,14 +43,13 @@ module.exports = class FileView extends BaseView
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
-        @$el.html @templateEdit(model: model)
+        @$el.html @templateEdit model: model
         @tags = new TagsView
-            el: @$('.tags')
+            el: @$ '.tags'
             model: @model
         @tags.render()
-        @$(".file-edit-name").width(width)
+        @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
-
 
         # we only want to select the part before the file extension
         lastIndexOfDot = model.name.lastIndexOf '.'
@@ -73,7 +73,6 @@ module.exports = class FileView extends BaseView
         name = @$('.file-edit-name').val()
 
         if name and name isnt ""
-
             @model.save name: name,
                 wait: true
                 success: (data) =>
@@ -164,7 +163,7 @@ module.exports = class FileView extends BaseView
 
                     # Stop render sync.
                     @stopListening @model
-                    @model.collection.socketListener.pause @model, null,
+                    window.app.socket.pause @model, null,
                         ignoreMySocketNotification: true
 
                     showMoveResult = =>
@@ -190,7 +189,7 @@ module.exports = class FileView extends BaseView
                             showMoveResult()
 
                         # Put back synchronization.
-                        @model.collection.socketListener.resume @model, null,
+                        window.app.socket.resume @model, null,
                             ignoreMySocketNotification: true
                         @listenTo @model, 'change', @render
 

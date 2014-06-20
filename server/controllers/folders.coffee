@@ -52,7 +52,7 @@ getFolderPath = (id, cb) ->
             if err
                 cb err
             else
-                cb null, folder.path + '/' + folder.name
+                cb null, folder.path + '/' + folder.name, folder
 
 
 normalizePath = (path) ->
@@ -288,19 +288,24 @@ module.exports.allFolders = (req, res, next) ->
         else res.send folders
 
 module.exports.findContent = (req, res, next) ->
-    getFolderPath req.body.id, (err, key) ->
+    getFolderPath req.body.id, (err, key, folder) ->
         if err? then next err
         else
             async.parallel [
                 (cb) -> Folder.byFolder key: key, cb
                 (cb) -> File.byFolder key: key, cb
+                (cb) ->
+                    if req.body.id is "root"
+                        cb null, []
+                    else
+                        folder.getParents cb
             ], (err, results) ->
 
                 if err? then next err
                 else
-                    [folders, files] = results
+                    [folders, files, parents] = results
                     content = folders.concat files
-                    res.send 200, content
+                    res.send 200, {content, parents}
 
 module.exports.findFolders = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
