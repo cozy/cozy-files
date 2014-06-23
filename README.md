@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/cozy/cozy-files.png?label=ready&title=Ready)](https://waffle.io/cozy/cozy-files)
 # [Cozy](http://cozy.io) Files
 
 Cozy Files makes your file management easy. Main features are: 
