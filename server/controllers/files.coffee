@@ -59,7 +59,9 @@ module.exports.fetch = (req, res, next, id) ->
                 err.status = 404
                 err.template =
                     name: '404'
-                    params: localization: require '../lib/localization_manager'
+                    params:
+                        localization: require '../lib/localization_manager'
+                        isPublic: req.url.indexOf('public') isnt -1
             next err
         else
             req.file = file[0]
@@ -239,7 +241,9 @@ module.exports.publicDownloadAttachment = (req, res, next) ->
             err.status = 404
             err.template =
                 name: '404'
-                params: localization: require '../lib/localization_manager'
+                params:
+                    localization: require '../lib/localization_manager'
+                    isPublic: req.url.indexOf('public') isnt -1
             next err
         else processAttachement req, res, next, true
 
