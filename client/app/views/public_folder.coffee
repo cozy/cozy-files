@@ -3,6 +3,7 @@ FolderView = require './folder'
 File = require '../models/file'
 FilesView = require './files'
 FileCollection = require '../collections/files'
+Modal = require './modal'
 
 class PublicFilesView extends FilesView
     initialize: (@collection, @model) ->
@@ -26,11 +27,10 @@ module.exports = class PublicFolderView extends FolderView
         # patch to allow uploads
         @collection = new FileCollection []
         @filesList = new PublicFilesView @collection, @model
-
-    afterRender: ->
-        super()
-        zipLink = "folders/#{@model.get('id')}/zip/#{@model.get('name')}"
-        @$('#download-link').attr 'href', zipLink
+        @$('#download-link').click (event) ->
+            if window.numElements is 0
+                event.preventDefault()
+                Modal.error t 'modal error zip empty folder'
 
     onCancelFolder: ->
         # this feels hacky, but not sure how to handle it better
