@@ -51,6 +51,7 @@ module.exports =
         You have selected %{smart_count} files, click Add to upload them.
     """
     "upload close"              : "Close"
+
     "upload send"               : "Add"
     "upload button"             : "Upload a file"
     "upload success"            : "Upload successfuly completed!"
@@ -88,6 +89,7 @@ module.exports =
     "files"                     : "files"
     "element"                   : "%{smart_count} element |||| %{smart_count} elements"
     "no file in folder"         : "This folder is empty."
+    "no file in search"         : "Your search did not match any documents."
 
     "enable notifications": "Enable notifications"
     "disable notifications": "Disable notifications"
@@ -143,5 +145,5 @@ module.exports =
     'move element to': 'Move element to'
     'error occured canceling move': 'An error occured while canceling move.'
     'error occured while moving element': 'An error occured while moving element'
-    'file successfully moved to': 'File successfully move to'
 
+    'file successfully moved to': 'File successfully move to'

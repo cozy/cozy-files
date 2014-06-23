@@ -1,6 +1,6 @@
 Modal = require './modal'
 File = require '../models/file'
-ProgressBar = require './progressbar'
+ProgressBar = require '../widgets/progressbar'
 
 UploadedFileView = require './uploaded_file_view'
 
@@ -23,7 +23,7 @@ module.exports = class ModalUploadView extends Modal
 
     constructor: (options, callback) ->
         # must be done first, otherwise it's undefined
-        @uploadingFiles = options.uploadingFiles
+        @uploadQueue = options.uploadQueue
 
         # do not use modal short constructor
         Modal.__super__.constructor.apply this, arguments
@@ -36,14 +36,12 @@ module.exports = class ModalUploadView extends Modal
         @onYes() if @files?.length > 0
 
     initialize: ->
-        @listenTo @uploadingFiles, 'add', @afterRender
-        @listenTo @uploadingFiles, 'progress-total', =>
-            @totalProgress.trigger 'progress',
-                loaded: @uploadingFiles.loaded
-                total: @uploadingFiles.length
+        @listenTo @uploadQueue, 'add', @afterRender
+        @listenTo @uploadQueue, 'upload-progress', (progress) =>
+            @totalProgress.trigger 'progress', progress
 
             # Force the refresh if all uploads are done
-            @afterRender() if @uploadingFiles.loaded is @uploadingFiles.length
+            @afterRender() if @uploadQueue.isAllLoaded()
 
         super()
 
@@ -52,8 +50,8 @@ module.exports = class ModalUploadView extends Modal
         @label = @$ '#uploader .text'
 
         # files are being uploaded
-        if @uploadingFiles.length > 0
-            # hide what must be hidden
+        if @uploadQueue.length > 0
+            # hide what must be hide
             noButton = $ '#modal-dialog-no'
             noButton.html '&nbsp;'
             noButton.spin 'small'
@@ -62,21 +60,22 @@ module.exports = class ModalUploadView extends Modal
             @subRenderFileUploadProgress()
 
             # when upload is over, we reset the modal
-            if @uploadingFiles.loaded is @uploadingFiles.length
+            if @uploadQueue.isAllLoaded()
                 noButton = $ '#modal-dialog-no'
                 noButton.spin false
                 noButton.html t 'upload end button'
-                @uploadingFiles.reset()
-                @uploadingFiles.loaded = 0
+                @uploadQueue.reset()
 
     subRenderTotalProgressBar: ->
         @$('#progress-total').empty()
         @views = []
-        @totalProgress = new Backbone.Model name: t 'total progress'
-        @totalProgress.loaded = @uploadingFiles.loaded
-        @totalProgress.total = @uploadingFiles.length
+        @totalProgress = new Backbone.Model()
+        @totalProgress.loaded = @uploadQueue.loaded
+        @totalProgress.total = @uploadQueue.length
+
         progressbar = new ProgressBar(model: @totalProgress).render()
-        progressbar.$el.prependTo @$ '#progress-total'
+        $("<span>#{t('total progress')}</span>").appendTo @$ '#progress-total'
+        progressbar.$el.appendTo @$ '#progress-total'
 
     subRenderFileUploadProgress: ->
         @$('#progress-part').empty()
@@ -85,7 +84,7 @@ module.exports = class ModalUploadView extends Modal
         _.map Object.keys(@views), (viewID) => @views[viewID].$el.detach()
 
         # next we create or reattach existing views
-        @uploadingFiles.forEach (uploadingFile) =>
+        @uploadQueue.forEach (uploadingFile) =>
             uploadView = @views[uploadingFile.cid]
 
             unless uploadView?
@@ -137,40 +136,27 @@ module.exports = class ModalUploadView extends Modal
         @files = _.filter e.dataTransfer.files, (attach) -> attach.type isnt ''
         @updateMessage()
 
-
     doUploadFiles: (callback) =>
-        # first loop, create models & progress bars
-        filesModels = _.map @files, (blob) =>
+        # file models are created based on form content
+        models = _.map @files, (blob) =>
             fileModel = new File
                 type: 'file'
                 name: blob.name
-                path: blob.path or @model.repository()
+                path: blob.path or @model.getRepository()
                 lastModification: blob.lastModifiedDate
             fileModel.file = blob
             fileModel.loaded = 0
             fileModel.total = blob.size
             fileModel.error = @validator fileModel
-
-            @uploadingFiles.add fileModel
-
             return fileModel
+        @uploadQueue.add models
+        @uploadQueue.processUpload callback
 
-        # we clear the input to allow simultaneous uploads
+        # input is cleared to allow simultaneous uploads
         @files = []
         @input.val ""
         @updateMessage()
 
-        # second loop, do upload 5 by 5
-        async.eachLimit filesModels, 5, (fileModel, cb) ->
-            return cb null if fileModel.error
-            fileModel.save null,
-                success: -> cb null
-                error: (err) ->
-                    fileModel.error = t err.msg or "modal error file upload"
-                    fileModel.trigger 'sync'
-                    cb null # do not stop all list if one fail
-        , callback
-
     destroy: ->
-        @stopListening @uploadingFiles
+        @stopListening @uploadQueue
         super()

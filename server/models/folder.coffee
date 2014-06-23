@@ -45,19 +45,16 @@ Folder::getFullPath = ->
     @path + '/' + @name
 
 Folder::getParents = (callback) ->
-    Folder.all (err, folders) =>
-        return callback err if err
+    fullPath = "#{@path}/#{@name}"
+    foldersOfPath = fullPath.split '/'
+    parentFoldersPath = []
+    # extract all parent's full path
+    while foldersOfPath.length > 0
+        parent = foldersOfPath.join '/'
+        parentFoldersPath.push parent if parent isnt ""
+        foldersOfPath.pop()
 
-        # only look at parents
-        fullPath = @getFullPath()
-        parents = folders.filter (tested) ->
-            fullPath.indexOf(tested.getFullPath()) is 0
-
-        # sort them in path order
-        parents.sort (a,b) ->
-            a.getFullPath().length - b.getFullPath().length
-
-        callback null, parents
+    Folder.byFullPath keys: parentFoldersPath.reverse(), callback
 
 Folder::getPublicURL = (cb) ->
     CozyInstance.getURL (err, domain) =>

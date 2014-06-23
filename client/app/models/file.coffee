@@ -1,7 +1,22 @@
-client = require "../helpers/client"
+client = require '../lib/client'
 
 module.exports = class File extends Backbone.Model
 
+    # The breadcrumb is an array of vanilla JS objects
+    # representing a parent folder.
+    breadcrumb: null
+
+    constructor: (options) ->
+        doctype = options.docType?.toLowerCase()
+        if doctype?
+            options.type = if doctype is 'file' then 'file' else 'folder'
+        super options
+
+    isFolder: -> return @get('type') is 'folder'
+    isRoot: -> return @get('id') is 'root'
+
+    # Overrides sync method to allow file upload (multipart request)
+    # and progress events
     sync: (method, model, options)->
 
         # this is a new model, let's upload it as a multipart
@@ -13,7 +28,7 @@ module.exports = class File extends Backbone.Model
             formdata.append 'lastModification', model.get 'lastModification'
 
             # trigger upload progress on the model
-            progress = (e) -> model.trigger('progress', e)
+            progress = (e) -> model.trigger 'progress', e
 
             _.extend options,
                 contentType: false
@@ -62,43 +77,43 @@ module.exports = class File extends Backbone.Model
             @trigger 'error', @, jqXHR, {}
             error jqXHR if error
 
-    repository: ->
+    # DEPRECATED -- alias due to deprecation
+    repository: -> @getRepository()
+    getRepository: ->
         if @get('id') is "root"
             return ""
         else
             return "#{@get("path")}/#{@get("name")}"
 
-    endpoint: ->
-        if @get("type") is "folder"
-            "foldershare"
-        else
-            "fileshare"
-
-    # FOLDER
-    findContent: (callbacks) ->
-        @prepareCallbacks callbacks
-        client.post "#{@urlRoot()}content", id: @id, callbacks
-
-    # Dead Code?
-    findFiles: (callbacks) ->
-        @prepareCallbacks callbacks
-        client.post "#{@urlRoot()}files", id: @id, callbacks
-
-    # Dead Code?
-    findFolders: (callbacks) ->
-        @prepareCallbacks callbacks
-        client.post "#{@urlRoot()}folders", id: @id, callbacks
-
     getPublicURL: (key) ->
         "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
 
-    # Dead Code?
-    getZip: (file, callbacks) ->
+    ###
+        ONLY RELEVANT IF IT'S A FOLDER
+        Fetches content (folders and files) for the current folder
+        the request also responds with the breadcrumb
+    ###
+    fetchContent: (callbacks) ->
         @prepareCallbacks callbacks
-        client.post "#{@urlRoot()}#{@id}/zip/#{@name}", callbacks
+        client.post "#{@urlRoot()}content", id: @id, (err, body) =>
+            if err?
+                @setBreadcrumb []
+                callbacks err
+            else
+                if body.parents?
+                    {content, parents} = body
+                else
+                    # during search or for root, there is not parents
+                    content = body
+                    parents = []
+                @setBreadcrumb parents
+                callbacks null, content, parents
 
-    # FILE
-    # Dead Code?
-    getAttachment: (file, callbacks) ->
-        @prepareCallbacks callbacks
-        client.post "#{@urlRoot()}#{@id}/getAttachment/#{@name}", callbacks
+    # Set the breadcrumb attribute and append the root model to it
+    # If the folder is a search query, the breadcrumb is the query
+    setBreadcrumb: (parents) ->
+        if @get('type') is 'search'
+            @breadcrumb = [window.app.root.toJSON(), @toJSON()]
+        else
+            parents.unshift window.app.root.toJSON()
+            @breadcrumb = parents

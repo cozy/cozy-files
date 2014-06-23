@@ -46,7 +46,7 @@ module.exports = class ViewCollection extends BaseView
 
     # after render, we reattach the views
     afterRender: ->
-        @$collectionEl = $ @collectionEl unless @$collectionEl?
+        @$collectionEl = $ @collectionEl
         @appendView view.$el for id, view of @views
         @onReset @collection
         @onChange @views

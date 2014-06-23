@@ -15,26 +15,25 @@ module.exports = class SocketListener extends CozySocketListener
         'folder.delete'
     ]
 
-    isInCurrentFolder: (model) ->
-        cwd = app.folderView.model.repository()
-        mwd = model.get "path"
-        mwd is cwd
+    isInCachedFolder: (model) ->
+        path = model.get 'path'
+        return @collection.isPathCached path
 
     onRemoteCreate: (model) ->
-        if @isInCurrentFolder model
+        if @isInCachedFolder model
             console.info "remote create", model
             if not (@collection.get model.get("id"))
-                @collection.add model, merge:true
+                @collection.add model, merge: true
 
     onRemoteDelete: (model) ->
-        if @isInCurrentFolder model
+        if @isInCachedFolder model
             console.info "remote delete", model
             @collection.remove model
 
     onRemoteUpdate: (model, collection) ->
-        if @isInCurrentFolder model
+        if @isInCachedFolder model
             console.info "remote update", model
-            collection.add model, merge:true
+            collection.add model, merge: true
 
     process: (event) ->
         {doctype, operation, id} = event

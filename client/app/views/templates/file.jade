@@ -1,71 +1,51 @@
-if model.type && model.type == "folder"
-  td
-    div.caption-wrapper
-      a.caption.btn.btn-link(
-          href="#folders/#{model.id}", title="#{t('open folder')}")
-        i.fa.fa-folder
-        | #{model.name}
-    ul.tags
-      if model.tags
-        for tag in model.tags
-          li #{tag}
-    .operations
-      a.file-share(title="#{t('tooltip share')}")
-        if model.clearance == 'public'
-          span.fa.fa-globe
-        else if model.clearance && model.clearance.length > 0
-          span.fa.fa-users #{model.clearance.length}
-        else
-          span.fa.fa-lock
-      a.file-edit(title="#{t('tooltip edit')}")
-        span.glyphicon.glyphicon-edit
-      a.file-move(title="#{t('tooltip move')}")
-        span.glyphicon.glyphicon-arrow-right
-      a.file-delete(title="#{t('tooltip delete')}")
-        span.glyphicon.glyphicon-remove-circle
-      a.file-download(
-          href="folders/#{model.id}/zip/#{model.name}", 
-          target="_blank", title="#{t('tooltip download')}")
-        span.glyphicon.glyphicon-cloud-download
-  td.size-column-cell
-  td.type-column-cell
-    span.pull-left #{t('folder')}
-  td.date-column-cell
-    if model.lastModification
-      span #{moment(model.lastModification).calendar()}
-else
-  td
-    div.caption-wrapper
-      a.caption.btn.btn-link(
-          href="files/#{model.id}/attach/#{model.name}", 
-          title="#{t('download file')}", target="_blank")
-        i.fa.fa-file-o
-        | #{model.name}
-    ul.tags
-      if model.tags
-        for tag in model.tags
-          li #{tag}
-    .operations
-      a.file-share(title="#{t('tooltip share')}")
-        if model.clearance == 'public'
-          span.fa.fa-globe
-        else if model.clearance && model.clearance.length > 0
-          span.fa.fa-users #{model.clearance.length}
-        else
-          span.fa.fa-lock
-      a.file-edit
-        span.glyphicon.glyphicon-edit(title="#{t('tooltip edit')}")
-      a.file-download(href="files/#{model.id}/download/#{model.name}", download="#{model.name}")(title="#{t('tooltip download')}")
-        span.glyphicon.glyphicon-cloud-download
-      a.file-move(title="#{t('tooltip move')}")
-        span.glyphicon.glyphicon-arrow-right
-      a.file-delete(title="#{t('tooltip delete')}")
-        span.glyphicon.glyphicon-remove-circle
-  td.file-size.size-column-cell
+td
+  div.caption-wrapper
+    block title
+      if model.type == 'folder'
+        a.caption.btn.btn-link(
+            href="#folders/#{model.id}", title="#{t('open folder')}")
+          i.fa.fa-folder
+          | #{model.name}
+      else if model.type == 'file'
+        a.caption.btn.btn-link(
+            href="files/#{model.id}/attach/#{model.name}",
+            title="#{t('download file')}", target="_blank")
+          i.fa.fa-file-o
+          | #{model.name}
+    block actions
+      ul.tags
+        if model.tags
+          for tag in model.tags
+            li #{tag}
+      .operations
+        a.file-share(title="#{t('tooltip share')}")
+          if model.clearance == 'public'
+            span.fa.fa-globe
+          else if model.clearance && model.clearance.length > 0
+            span.fa.fa-users #{model.clearance.length}
+          else
+            span.fa.fa-lock
+        a.file-edit(title="#{t('tooltip edit')}")
+          span.glyphicon.glyphicon-edit
+        a.file-move(title="#{t('tooltip move')}")
+          span.glyphicon.glyphicon-arrow-right
+        a.file-delete(title="#{t('tooltip delete')}")
+          span.glyphicon.glyphicon-remove-circle
+        a.file-download(
+            href="folders/#{model.id}/zip/#{model.name}",
+            target="_blank", title="#{t('tooltip download')}")
+          span.glyphicon.glyphicon-cloud-download
+  block file-path
+    // empty by default
+td.size-column-cell
+  if model.type == 'file'
     - options = {base: 2}
     span #{filesize(model.size || 0, options)}
-  td.file-type.type-column-cell
-    span #{t(model.class)}
-  td.file-date.date-column-cell
-    if model.lastModification
-      span #{moment(model.lastModification).calendar()}
+td.type-column-cell
+  if model.type == 'folder'
+    span.pull-left #{t('folder')}
+  else
+    span.pull-left #{t(model.class)}
+td.date-column-cell
+  if model.lastModification
+    span #{moment(model.lastModification).calendar()}

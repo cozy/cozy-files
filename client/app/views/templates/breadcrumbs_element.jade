@@ -1,13 +1,13 @@
 if model.id == "root"
-    li
-        a(href="#")
-            span.glyphicon.glyphicon-home  
+  li
+    a(href="#")
+      span.glyphicon.glyphicon-home
 else
-    if model.attributes.type == "search"
-        li
-            a(href="#search/#{model.id}")
-                | #{model.attributes.name}
-    else
-        li
-            a(href="#folders/#{model.id}")
-                | #{model.attributes.name}
+  if model.type == "search"
+    li
+      a(href="#search/#{model.id}")
+        | #{model.name}
+  else
+    li
+      a(href="#folders/#{model.id}")
+        | #{model.name}

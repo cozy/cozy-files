@@ -4,24 +4,34 @@
       .col-lg-12
         #crumbs.pull-left
         p.pull-right
-          input#search-box(type="search")
-          #upload-buttons.pull-right
-            a.btn.btn-cozy#share-state.btn-cozy-contrast
-            | &nbsp;
-            a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
-              img(src="images/add-file.png")
-            | &nbsp;
-            a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
-              img(src="images/add-folder.png")
-            | &nbsp;
-            //a#download-link.btn.btn-cozy(title=t("download"))
-            //  i.icon-arrow-down.icon-white
-            span &nbsp;
-
+          input#search-box(type="search", value="#{query}")
+          if model.type != 'search'
+            #upload-buttons.pull-right
+              if model.id != 'root'
+                a.btn.btn-cozy#share-state.btn-cozy-contrast
+                  if model.clearance == 'public'
+                    | #{t('public')}
+                    span.fa.fa-globe
+                  else if model.clearance && model.clearance.length > 0
+                    | #{t('shared')}
+                    span.fa.fa-users
+                    span= model.clearance.length
+                  else
+                    | #{t('private')}
+                    span.fa.fa-lock
+                | &nbsp;
+              a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
+                img(src="images/add-file.png")
+              | &nbsp;
+              a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
+                img(src="images/add-folder.png")
+              | &nbsp;
+              span &nbsp;
 
 .container
   .row
     .col-lg-12#content
+      #loading-indicator &nbsp;
       #files
       #files-drop-zone
         .overlay

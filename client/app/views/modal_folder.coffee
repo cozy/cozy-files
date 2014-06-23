@@ -4,7 +4,7 @@ Helpers = require '../lib/folder_helpers'
 File = require '../models/file'
 ModalUploadView = require './modal_upload'
 
-Client = require "../helpers/client"
+Client = require "../lib/client"
 
 # extends the cozy-clearance modal to files specifics
 module.exports = class ModalFolderView extends Modal
@@ -18,7 +18,7 @@ module.exports = class ModalFolderView extends Modal
     constructor: (options, callback) ->
 
         # must be done first, otherwise it's undefined
-        @uploadingFiles = options.uploadingFiles
+        @uploadQueue = options.uploadQueue
 
         # do not use modal short constructor
         Modal.__super__.constructor.apply this, arguments
@@ -170,9 +170,10 @@ module.exports = class ModalFolderView extends Modal
                 file.path = "#{@prefix}/#{Helpers.dirName relPath }"
 
             new ModalUploadView
+                model: @model
                 files: files
                 validator: -> null
-                uploadingFiles: @uploadingFiles
+                uploadQueue: @uploadQueue
 
 
     onYes: =>

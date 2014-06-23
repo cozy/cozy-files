@@ -3,18 +3,21 @@ BaseView = require '../lib/base_view'
 module.exports = class ProgressbarView extends BaseView
 
     className: 'progressview'
-    template: require './templates/progressbar'
+    template: require '../views/templates/progressbar'
     value: 0
 
     initialize: ->
         @listenTo @model, 'progress', @update
         @listenTo @model, 'sync', @destroy
 
-        @value = parseInt(@model.loaded / @model.total * 100)
+        @value = @getProgression @model.loaded, @model.total
 
     update: (e) ->
-        @value = parseInt(e.loaded / e.total * 100)
+        @value = @getProgression e.loaded, e.total
         @render()
+
+    getProgression: (loaded, total) ->
+        return parseInt(loaded / total * 100)
 
     getRenderData: ->
         value: @value
