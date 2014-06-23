@@ -64,6 +64,7 @@ module.exports = {
   "files": "files",
   "element": "%{smart_count} element |||| %{smart_count} elements",
   "no file in folder": "This folder is empty.",
+  "no file in search": "Your search did not match any documents.",
   "enable notifications": "Enable notifications",
   "disable notifications": "Disable notifications",
   "notifications enabled": "Notifications enabled",

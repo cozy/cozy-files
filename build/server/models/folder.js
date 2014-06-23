@@ -71,22 +71,20 @@ Folder.prototype.getFullPath = function() {
 };
 
 Folder.prototype.getParents = function(callback) {
-  return Folder.all((function(_this) {
-    return function(err, folders) {
-      var fullPath, parents;
-      if (err) {
-        return callback(err);
-      }
-      fullPath = _this.getFullPath();
-      parents = folders.filter(function(tested) {
-        return fullPath.indexOf(tested.getFullPath()) === 0;
-      });
-      parents.sort(function(a, b) {
-        return a.getFullPath().length - b.getFullPath().length;
-      });
-      return callback(null, parents);
-    };
-  })(this));
+  var foldersOfPath, fullPath, parent, parentFoldersPath;
+  fullPath = "" + this.path + "/" + this.name;
+  foldersOfPath = fullPath.split('/');
+  parentFoldersPath = [];
+  while (foldersOfPath.length > 0) {
+    parent = foldersOfPath.join('/');
+    if (parent !== "") {
+      parentFoldersPath.push(parent);
+    }
+    foldersOfPath.pop();
+  }
+  return Folder.byFullPath({
+    keys: parentFoldersPath.reverse()
+  }, callback);
 };
 
 Folder.prototype.getPublicURL = function(cb) {

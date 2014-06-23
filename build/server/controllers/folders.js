@@ -72,7 +72,7 @@ getFolderPath = function(id, cb) {
       if (err) {
         return cb(err);
       } else {
-        return cb(null, folder.path + '/' + folder.name);
+        return cb(null, folder.path + '/' + folder.name, folder);
       }
     });
   }
@@ -155,12 +155,12 @@ module.exports.find = function(req, res, next) {
 module.exports.tree = function(req, res, next) {
   var folderChild;
   folderChild = req.folder;
-  return folder.getParents((function(_this) {
+  return folderChild.getParents((function(_this) {
     return function(err, folders) {
       if (err) {
         return next(err);
       } else {
-        return res.send(parents, 200);
+        return res.send(folders, 200);
       }
     };
   })(this));
@@ -406,7 +406,7 @@ module.exports.allFolders = function(req, res, next) {
 };
 
 module.exports.findContent = function(req, res, next) {
-  return getFolderPath(req.body.id, function(err, key) {
+  return getFolderPath(req.body.id, function(err, key, folder) {
     if (err != null) {
       return next(err);
     } else {
@@ -419,15 +419,24 @@ module.exports.findContent = function(req, res, next) {
           return File.byFolder({
             key: key
           }, cb);
+        }, function(cb) {
+          if (req.body.id === "root") {
+            return cb(null, []);
+          } else {
+            return folder.getParents(cb);
+          }
         }
       ], function(err, results) {
-        var content, files, folders;
+        var content, files, folders, parents;
         if (err != null) {
           return next(err);
         } else {
-          folders = results[0], files = results[1];
+          folders = results[0], files = results[1], parents = results[2];
           content = folders.concat(files);
-          return res.send(200, content);
+          return res.send(200, {
+            content: content,
+            parents: parents
+          });
         }
       });
     }
