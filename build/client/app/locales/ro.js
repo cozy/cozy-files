@@ -13,6 +13,7 @@ module.exports = {
   "modal error file upload": "Fișierul nu a putut fi trimis server-ului",
   "modal error folder create": "Directorul nu a putut fi creat",
   "modal error folder exists": "Ne pare rău, există deja un director cu acest nume",
+  "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
   "modal are you sure": "Sunteți sigur(ă)?",
   "modal delete msg": "Ștergerea nu poate fi anulată",
   "modal delete ok": "Ștergere",

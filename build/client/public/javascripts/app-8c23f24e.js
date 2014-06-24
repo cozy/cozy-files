@@ -768,6 +768,7 @@ module.exports = {
   "modal error file upload": "File could not be sent to server",
   "modal error folder create": "Folder could not be created",
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
+  "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
   "modal are you sure": "Are you sure ?",
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
@@ -883,6 +884,7 @@ module.exports = {
   "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
   "modal error folder create": "Le dossier n'a pas pu être créé",
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+  "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
   "modal are you sure": "Etes-vous sûr ?",
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",
@@ -996,6 +998,7 @@ module.exports = {
   "modal error file upload": "Fișierul nu a putut fi trimis server-ului",
   "modal error folder create": "Directorul nu a putut fi creat",
   "modal error folder exists": "Ne pare rău, există deja un director cu acest nume",
+  "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
   "modal are you sure": "Sunteți sigur(ă)?",
   "modal delete msg": "Ștergerea nu poate fi anulată",
   "modal delete ok": "Ștergere",
@@ -2704,7 +2707,7 @@ module.exports = ModalUploadView = (function(_super) {
 });
 
 ;require.register("views/public_folder", function(exports, require, module) {
-var File, FileCollection, FilesView, FolderView, PublicFilesView, PublicFolderView,
+var File, FileCollection, FilesView, FolderView, Modal, PublicFilesView, PublicFolderView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2719,6 +2722,8 @@ File = require('../models/file');
 FilesView = require('./files');
 
 FileCollection = require('../collections/files');
+
+Modal = require('./modal');
 
 PublicFilesView = (function(_super) {
   __extends(PublicFilesView, _super);
@@ -2765,14 +2770,13 @@ module.exports = PublicFolderView = (function(_super) {
       return '../' + old.apply(this, arguments) + window.location.search;
     };
     this.collection = new FileCollection([]);
-    return this.filesList = new PublicFilesView(this.collection, this.model);
-  };
-
-  PublicFolderView.prototype.afterRender = function() {
-    var zipLink;
-    PublicFolderView.__super__.afterRender.call(this);
-    zipLink = "folders/" + (this.model.get('id')) + "/zip/" + (this.model.get('name'));
-    return this.$('#download-link').attr('href', zipLink);
+    this.filesList = new PublicFilesView(this.collection, this.model);
+    return this.$('#download-link').click(function(event) {
+      if (window.numElements === 0) {
+        event.preventDefault();
+        return Modal.error(t('modal error zip empty folder'));
+      }
+    });
   };
 
   PublicFolderView.prototype.onCancelFolder = function() {

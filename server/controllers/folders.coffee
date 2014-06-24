@@ -29,7 +29,9 @@ module.exports.fetch = (req, res, next, id) ->
                 err.status = 404
                 err.template =
                     name: '404'
-                    params: localization: require '../lib/localization_manager'
+                    params:
+                        localization: require '../lib/localization_manager'
+                        isPublic: req.url.indexOf('public') isnt -1
             next err
         else
             req.folder = folder[0]
@@ -409,7 +411,9 @@ module.exports.publicList = (req, res, next) ->
         err.status = 404
         err.template =
             name: '404'
-            params: localization: require '../lib/localization_manager'
+            params:
+                localization: require '../lib/localization_manager'
+                isPublic: req.url.indexOf('public') isnt -1
         next err
 
     sharing.limitedTree folder, req, (path, rule) ->
@@ -480,7 +484,9 @@ module.exports.publicZip = (req, res, next) ->
         err.status = 404
         err.template =
             name: '404'
-            params: localization: require '../lib/localization_manager'
+            params:
+                localization: require '../lib/localization_manager'
+                isPublic: req.url.indexOf('public') isnt -1
         next err
 
     sharing.checkClearance req.folder, req, (authorized) ->

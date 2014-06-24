@@ -92,7 +92,8 @@ module.exports.fetch = function(req, res, next, id) {
         err.template = {
           name: '404',
           params: {
-            localization: require('../lib/localization_manager')
+            localization: require('../lib/localization_manager'),
+            isPublic: req.url.indexOf('public') !== -1
           }
         };
       }
@@ -326,7 +327,8 @@ module.exports.publicDownloadAttachment = function(req, res, next) {
       err.template = {
         name: '404',
         params: {
-          localization: require('../lib/localization_manager')
+          localization: require('../lib/localization_manager'),
+          isPublic: req.url.indexOf('public') !== -1
         }
       };
       return next(err);

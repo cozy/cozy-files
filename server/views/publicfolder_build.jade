@@ -5,7 +5,7 @@ html
     meta(charset="utf-8")
     meta(http-equiv="X-UA-Compatible",content="IE=edge,chrome=1")
     meta(name="viewport", content="width=device-width,initial-scale=1.0")
-    link(rel="stylesheet", href="../assets/DIGEST(stylesheets/app.css)")
+    link(rel="stylesheet", href="../assets/stylesheets/app.css")
 
     style.
       #download-link, #button-upload-new-file, #button-new-folder{
@@ -99,12 +99,15 @@ html
                   td.type-column-cell: span= t(file.class)
                   td.date-column-cell: span= file.lastModification
 
-    script(src="../assets/DIGEST(javascripts/vendor.js)")
-    script(src="../assets/DIGEST(javascripts/app.js)")
+    script(src="../assets/javascripts/vendor.js")
+    script(src="../assets/javascripts/app.js")
     script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
+    script!= "window.numElements = " + JSON.stringify(folders.length) + ";"
     script.
         var polyglot = new Polyglot();
         polyglot.extend(require("locales/#{lang}"));
         window.t = polyglot.t.bind(polyglot);
         var PublicFolderView = require('views/public_folder');
-        new PublicFolderView({folder: window.folder});
+        var UploadQueue = require('collections/upload_queue');
+        var uploadQueue = new UploadQueue();
+        new PublicFolderView({folder: window.folder, uploadQueue: window.uploadQueue});
