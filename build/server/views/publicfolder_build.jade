@@ -102,7 +102,7 @@ html
     script(src="../assets/DIGEST(javascripts/vendor.js)")
     script(src="../assets/DIGEST(javascripts/app.js)")
     script!= "window.folder = " + JSON.stringify(path[path.length-1]) + ";"
-    script!= "window.numElements = " + JSON.stringify(folders.length) + ";"
+    script!= "window.numElements = " + JSON.stringify(folders.length + files.length) + ";"
     script.
         var polyglot = new Polyglot();
         polyglot.extend(require("locales/#{lang}"));
