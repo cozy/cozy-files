@@ -47,30 +47,19 @@ module.exports.fetch = (req, res, next, id) ->
 
 # retrieve inherited sharing info
 module.exports.details = (req, res, next) ->
-    Folder.all (err, folders) =>
-        return callback err if err
-
-        # only look at parents
-        fullPath = req.doc.getFullPath()
-        parents = folders.filter (tested) ->
-            fullPath.indexOf(tested.getFullPath()) is 0 and
-            fullPath isnt tested.getFullPath()
-
-        # sort them in path order
-        parents.sort (a,b) ->
-            a.getFullPath().length - b.getFullPath().length
-
-        results = parents.map (parent) ->
-            name: parent.path + '/' + parent.name
-            clearance: parent.clearance or []
+    folder = req.doc
+    folder.getParents (err, parents) ->
+        return next err if err?
 
         # keep only element of path that alter the clearance
         isPublic = false
-        inherited = results?.filter (x) ->
+        inherited = parents?.filter (parent) ->
+            parent.clearance = [] unless parent.clearance?
+
             if isPublic then return false
 
-            isPublic = true if x.clearance is 'public'
-            return x.clearance.length isnt 0
+            isPublic = true if parent.clearance is 'public'
+            return parent.clearance.length isnt 0
 
         res.send inherited: inherited
 

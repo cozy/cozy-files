@@ -104,6 +104,7 @@ module.exports = {
   "perm r folder": "browse this folder",
   "perm rw folder": "browse and upload files",
   "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
+  "send email hint": "Notification emails will be sent one time on save",
   'move': 'Move',
   'tooltip move': 'Move element to another folder.',
   "moving...": 'Moving...',

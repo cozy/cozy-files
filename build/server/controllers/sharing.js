@@ -69,40 +69,30 @@ module.exports.fetch = function(req, res, next, id) {
 };
 
 module.exports.details = function(req, res, next) {
-  return Folder.all((function(_this) {
-    return function(err, folders) {
-      var fullPath, inherited, isPublic, parents, results;
-      if (err) {
-        return callback(err);
+  var folder;
+  folder = req.doc;
+  return folder.getParents(function(err, parents) {
+    var inherited, isPublic;
+    if (err != null) {
+      return next(err);
+    }
+    isPublic = false;
+    inherited = parents != null ? parents.filter(function(parent) {
+      if (parent.clearance == null) {
+        parent.clearance = [];
       }
-      fullPath = req.doc.getFullPath();
-      parents = folders.filter(function(tested) {
-        return fullPath.indexOf(tested.getFullPath()) === 0 && fullPath !== tested.getFullPath();
-      });
-      parents.sort(function(a, b) {
-        return a.getFullPath().length - b.getFullPath().length;
-      });
-      results = parents.map(function(parent) {
-        return {
-          name: parent.path + '/' + parent.name,
-          clearance: parent.clearance || []
-        };
-      });
-      isPublic = false;
-      inherited = results != null ? results.filter(function(x) {
-        if (isPublic) {
-          return false;
-        }
-        if (x.clearance === 'public') {
-          isPublic = true;
-        }
-        return x.clearance.length !== 0;
-      }) : void 0;
-      return res.send({
-        inherited: inherited
-      });
-    };
-  })(this));
+      if (isPublic) {
+        return false;
+      }
+      if (parent.clearance === 'public') {
+        isPublic = true;
+      }
+      return parent.clearance.length !== 0;
+    }) : void 0;
+    return res.send({
+      inherited: inherited
+    });
+  });
 };
 
 module.exports.change = function(req, res, next) {

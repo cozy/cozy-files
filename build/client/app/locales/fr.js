@@ -102,6 +102,7 @@ module.exports = {
   "perm r folder": "parcourir ce dossier",
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
+  "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
   "move": "Déplacer",
   'tooltip move': "Déplacer l'élément dans un autre dossier.",
   "moving...": "Déplacement en cours...",
