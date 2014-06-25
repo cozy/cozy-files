@@ -114,3 +114,4 @@ module.exports =
     "change notif"                    : """Bifați această casetă pentru a fi notificat atunci când o persoană de contact
          adăuga un fișier în acest dosar.
     """
+    "send email hint": "Notification emails will be sent one time on save"

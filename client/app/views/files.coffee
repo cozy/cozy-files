@@ -49,7 +49,7 @@ module.exports = class FilesView extends ViewCollection
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
 
-        if order is "down"
+        if order is "asc"
             @$("#up-#{type}").show()
             @$("#down-#{type}").hide()
             @$("#up-#{type}").removeClass 'unactive'
@@ -65,9 +65,9 @@ module.exports = class FilesView extends ViewCollection
         order = infos[0]
         type = infos[1]
 
-        @chevron = order: order, type: type
+        order = if order is 'up' then 'desc' else 'asc'
 
-        order = if order is 'down' then 'decr' else 'incr'
+        @chevron = order: order, type: type
         @collection.order = order
         @collection.type = type
         @collection.sort()

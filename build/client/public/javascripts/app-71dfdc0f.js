@@ -256,39 +256,39 @@ module.exports = FileCollection = (function(_super) {
     })(this));
   };
 
-  FileCollection.prototype.comparator = function(o1, o2) {
+  FileCollection.prototype.comparator = function(f1, f2) {
     var n1, n2, sort, t1, t2;
     if (this.type == null) {
       this.type = 'name';
     }
     if (this.order == null) {
-      this.order = 'incr';
+      this.order = 'asc';
     }
+    t1 = f1.get('type');
+    t2 = f2.get('type');
     if (this.type === 'name') {
-      n1 = o1.get('name').toLocaleLowerCase();
-      n2 = o2.get('name').toLocaleLowerCase();
+      n1 = f1.get('name').toLocaleLowerCase();
+      n2 = f2.get('name').toLocaleLowerCase();
     } else if (this.type === "lastModification") {
-      n1 = new Date(o1.get('lastModification'));
-      n2 = new Date(o2.get('lastModification'));
+      n1 = new Date(f1.get('lastModification')).getTime();
+      n2 = new Date(f2.get('lastModification')).getTime();
     } else {
-      n1 = o1.get(this.type);
-      n2 = o2.get(this.type);
+      n1 = f1.get(this.type);
+      n2 = f2.get(this.type);
     }
-    t1 = o1.get('type');
-    t2 = o2.get('type');
-    sort = this.order === 'incr' ? -1 : 1;
+    sort = this.order === 'asc' ? -1 : 1;
     if (t1 === t2) {
       if (n1 > n2) {
         return -sort;
-      }
-      if (n1 < n2) {
+      } else if (n1 < n2) {
         return sort;
+      } else {
+        return 0;
       }
-      return 0;
-    } else if (t1 === "file") {
-      return -sort;
+    } else if (t1 === 'file' && t2 === 'folder') {
+      return 1;
     } else {
-      return sort;
+      return -1;
     }
   };
 
@@ -859,6 +859,7 @@ module.exports = {
   "perm r folder": "browse this folder",
   "perm rw folder": "browse and upload files",
   "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
+  "send email hint": "Notification emails will be sent one time on save",
   'move': 'Move',
   'tooltip move': 'Move element to another folder.',
   "moving...": 'Moving...',
@@ -973,6 +974,7 @@ module.exports = {
   "perm r folder": "parcourir ce dossier",
   "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
+  "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
   "move": "Déplacer",
   'tooltip move': "Déplacer l'élément dans un autre dossier.",
   "moving...": "Déplacement en cours...",
@@ -1071,7 +1073,8 @@ module.exports = {
   "perm r file": "descărca acest fișier",
   "perm r folder": "parcurge acest dosar ",
   "perm rw folder": "parcurge acest dosar și încărca fișiere",
-  "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar."
+  "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar.",
+  "send email hint": "Notification emails will be sent one time on save"
 };
 });
 
@@ -1718,7 +1721,7 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.displayChevron = function(order, type) {
-    if (order === "down") {
+    if (order === "asc") {
       this.$("#up-" + type).show();
       this.$("#down-" + type).hide();
       return this.$("#up-" + type).removeClass('unactive');
@@ -1734,11 +1737,11 @@ module.exports = FilesView = (function(_super) {
     infos = event.target.id.split('-');
     order = infos[0];
     type = infos[1];
+    order = order === 'up' ? 'desc' : 'asc';
     this.chevron = {
       order: order,
       type: type
     };
-    order = order === 'down' ? 'decr' : 'incr';
     this.collection.order = order;
     this.collection.type = type;
     return this.collection.sort();
