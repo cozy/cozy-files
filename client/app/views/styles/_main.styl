@@ -173,6 +173,7 @@ table#table-items
   td
       padding: 0px 5px 0 0
       height: 40px
+      vertical-align middle
 
   td.type-column-cell
   td.size-column-cell
@@ -217,7 +218,8 @@ tr.folder-row
     color: mediumcolor-contrast
 
     .operations
-      display: inline
+      display inline-block
+      margin-top -5px
 
     .glyphicon.no-hover
       color: mediumcolor
@@ -277,10 +279,8 @@ tr.folder-row
 
   ul.tags
     margin-bottom: 0
-    padding-top: 5px
     padding-left: 10px
     padding-bottom: 0
-    margin-top: 3px
 
     .tagit-new
       margin-top: 0
@@ -736,8 +736,7 @@ body.error-404 .error-frame
     color blue
 
 .public
-    #content
-        padding-top: 70px
+  // public styles
 
 // overrides tagit styles
 .tagit-autocomplete.ui-widget-content
