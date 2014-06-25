@@ -1,6 +1,7 @@
 fs = require 'fs'
 americano = require 'americano-cozy'
 moment = require 'moment'
+feed = require '../lib/feed'
 
 Folder = require './folder'
 CozyInstance = require './cozy_instance'
@@ -35,8 +36,10 @@ File.byFullPath = (params, callback) ->
 # * Index file name for better search
 # * Remove temporary created file.
 File.createNewFile = (data, file, callback) =>
+    upload = true
     attachBinary = (newFile) ->
         newFile.attachBinary file.path, {"name": "file"}, (err) ->
+            upload = false
             if err
                 newFile.destroy (err) ->
                     callback new Error "Error attaching binary: #{err}"
@@ -55,11 +58,20 @@ File.createNewFile = (data, file, callback) =>
             else
                 callback null, newFile
 
+    keepAlive = () =>
+        if upload
+            feed.publish 'usage.application', 'files'
+            setTimeout () =>
+                keepAlive()
+            , 60*1000
+
+
     File.create data, (err, newFile) =>
         if err
             callback new Error "Server error while creating file; #{err}"
         else
             attachBinary newFile
+            keepAlive()
 
 File::getFullPath = ->
     @path + '/' + @name
