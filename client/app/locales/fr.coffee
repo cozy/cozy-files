@@ -137,6 +137,7 @@ module.exports =
     "change notif"                    : """
         Cocher cette case pour recevoir une notification cozy quand un contact
         ajoute un fichier à ce dossier."""
+    "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde."
 
     "move": "Déplacer"
     'tooltip move': "Déplacer l'élément dans un autre dossier."

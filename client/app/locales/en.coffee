@@ -139,6 +139,7 @@ module.exports =
     "change notif"                    : """
         Check this box to be notified when a contact
         add a file to this folder."""
+    "send email hint": "Notification emails will be sent one time on save"
 
     'move': 'Move'
     'tooltip move': 'Move element to another folder.'
