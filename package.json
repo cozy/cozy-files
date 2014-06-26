@@ -21,6 +21,7 @@
     "americano": "0.3.5",
     "americano-cozy": "0.2.4",
     "async": "0.9.0",
+    "axon": "0.6.1",
     "moment": "2.6.0",
     "cozy-realtime-adapter": "0.11.2",
     "cozy-i18n-helper": "0.0.4",
