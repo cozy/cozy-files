@@ -47,9 +47,16 @@ module.exports = class FileCollection extends Backbone.Collection
             if err?
                 callback err
             else
-                #folder.setBreadcrumb parents
+                # adds the new models (update if already in collection)
                 @add content, merge: true
 
+                # get the diff between current folder and request result so we can remove removed models
+                path = folder.getRepository()
+                IDsInFolder = _.pluck content, 'id'
+                toRemove = @getSubCollection(path).filter (element) -> element.id not in IDsInFolder
+                @remove toRemove
+
+                # we mark as cached the folder if it's the first time we load its content
                 @cachedPaths.push path unless @isPathCached path
                 callback()
 
@@ -62,12 +69,7 @@ module.exports = class FileCollection extends Backbone.Collection
             if err? then callback err
             else
                 path = folder.getRepository()
-                filter = (file) ->
-                    file.get('path') is path and not file.isRoot()
-
-                collection = new BackboneProjections.Filtered @,
-                                    filter: filter
-                                    comparator: @comparator
+                collection = @getSubCollection path
 
                 if @isPathCached path
                     #console.log "[cache] fetch folder content"
@@ -77,6 +79,13 @@ module.exports = class FileCollection extends Backbone.Collection
                     # and the folder's breadcrumb
                     @getFolderContent folder, ->
                         callback null, folder, collection
+
+    # Creates a sub collection (projection) based on the current collection
+    getSubCollection: (path) ->
+        filter = (file) -> file.get('path') is path and not file.isRoot()
+        return new BackboneProjections.Filtered @,
+                            filter: filter
+                            comparator: @comparator
 
     comparator: (f1, f2) ->
 
