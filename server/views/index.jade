@@ -7,8 +7,13 @@ html
     meta(name="viewport", content="width=device-width,initial-scale=1.0")
 
     script(src="javascripts/modernizr-2.6.1.js")
-    script(src="cozy-realtime-adapter.js")
-    script(src="socket.io/socket.io.js")
+
+    // in public area, we need to change the relative url
+    if imports.indexOf('window.rootFolder') == -1
+        script(src="socket.io/socket.io.js")
+    else
+        script(src="../../socket.io/socket.io.js")
+
     link(rel="stylesheet", href="stylesheets/app.css")
 
   body.application

@@ -47,16 +47,12 @@ module.exports = class FileCollection extends Backbone.Collection
             if err?
                 callback err
             else
-                # adds the new models (update if already in collection)
-                @add content, merge: true
+                # adds the new models (updates them if already in collection,
+                # removes them if they've been deleted)
+                @set content
 
-                # get the diff between current folder and request result so we can remove removed models
-                path = folder.getRepository()
-                IDsInFolder = _.pluck content, 'id'
-                toRemove = @getSubCollection(path).filter (element) -> element.id not in IDsInFolder
-                @remove toRemove
-
-                # we mark as cached the folder if it's the first time we load its content
+                # we mark as cached the folder if it's the first time we load
+                # its content
                 @cachedPaths.push path unless @isPathCached path
                 callback()
 
