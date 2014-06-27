@@ -51,6 +51,9 @@ module.exports.details = (req, res, next) ->
     folder.getParents (err, parents) ->
         return next err if err?
 
+        # we must excluse the folder itself from the parent's tree
+        parents.shift()
+
         # keep only element of path that alter the clearance
         isPublic = false
         inherited = parents?.filter (parent) ->
