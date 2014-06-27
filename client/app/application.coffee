@@ -11,6 +11,10 @@ module.exports =
 
     initialize: ->
 
+        # if the application is browsed by a guest or not
+        # we use that in various places of the application (as few as possible)
+        @isPublic = window.location.pathname.indexOf('/public/') is 0
+
         # the base collection holds all the files and folders of the application
         @baseCollection = new FileCollection()
 
@@ -24,11 +28,19 @@ module.exports =
         @router = new Router()
 
         # Generate the root folder
-        @root = new File
-            id: "root"
-            path: ""
-            name: t 'root folder name'
-            type: "folder"
+        # In shared area there are more properties because the root is an actual folder
+        if window.rootFolder?
+            @root = new File window.rootFolder
+            @root.canUpload = window.canUpload or false
+            @root.publicNotificationsEnabled = window.publicNofications or false
+            @root.publicKey = window.publicKey or ""
+        else
+            # Fake folder to describe the root
+            @root = new File
+                id: "root"
+                path: ""
+                name: t 'root folder name'
+                type: "folder"
         @baseCollection.add @root
 
         # for easy debugging in browser (and dirty tricks)

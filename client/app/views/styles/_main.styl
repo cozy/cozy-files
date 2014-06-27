@@ -581,6 +581,12 @@ tr.folder-row
       margin-left: 5px
       font-size 17px
 
+  // by default (private area) we don't display download and notif buttons
+  #notifications
+  #download-link
+    display none
+
+
 .caption-edit
 .file-edit-save
 .file-edit-cancel
@@ -735,9 +741,37 @@ body.error-404 .error-frame
     font-size 30px
     color blue
 
+/*
+  PUBLIC STYLES
+
+  We hide some part of the UI that are not relevant in the public part
+*/
 .public
-    #content
-        padding-top: 70px
+  #affixbar
+    #share-state
+    #button-upload-new-file
+    #button-new-folder
+      display none
+
+    #notifications
+    #download-link
+      display inline-block
+
+  &.can-upload #affixbar
+    #button-upload-new-file
+    #button-new-folder
+      display inline-block
+
+  #files
+    .tagit-new
+    .tagit-close
+    .operations
+      // !important to prevent any manipulation from JS on mouseover
+      display none !important
+
+    // since we hide the close 'x' we must reduce parent's size
+    .tagit-choice
+      padding-right 0.5em !important
 
 // overrides tagit styles
 .tagit-autocomplete.ui-widget-content

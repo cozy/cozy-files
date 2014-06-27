@@ -1,6 +1,6 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
-ModalShareView = require "./modal_share"
+ModalShareView = null
 TagsView = require "./tags"
 
 client = require "../lib/client"
@@ -28,9 +28,17 @@ module.exports = class FileView extends BaseView
         else
             @templateNormal args
 
+    getRenderData: ->
+        _.extend super(),
+            attachmentUrl: @model.getAttachmentUrl()
+            downloadUrl: @model.getDownloadUrl()
+
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @render
+
+        # prevent contacts loading in shared area
+        ModalShareView = require "./modal_share" if not ModalShareView? and not app.isPublic
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>

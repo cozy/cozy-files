@@ -8,15 +8,16 @@ td
           | #{model.name}
       else if model.type == 'file'
         a.caption.btn.btn-link(
-            href="files/#{model.id}/attach/#{model.name}",
+            href="#{attachmentUrl}",
             title="#{t('download file')}", target="_blank")
           i.fa.fa-file-o
           | #{model.name}
-    block actions
+    block tags
       ul.tags
         if model.tags
           for tag in model.tags
             li #{tag}
+    block actions
       .operations
         a.file-share(title="#{t('tooltip share')}")
           if model.clearance == 'public'
@@ -32,7 +33,7 @@ td
         a.file-delete(title="#{t('tooltip delete')}")
           span.glyphicon.glyphicon-remove-circle
         a.file-download(
-            href="folders/#{model.id}/zip/#{model.name}",
+            href="#{downloadUrl}",
             target="_blank", title="#{t('tooltip download')}")
           span.glyphicon.glyphicon-cloud-download
   block file-path
