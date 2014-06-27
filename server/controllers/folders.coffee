@@ -473,10 +473,9 @@ module.exports.publicList = (req, res, next) ->
                     window.publicNofications = #{rule.notifications or false}
                     window.publicKey = "#{publicKey}"
                 """
-                node_env = process.env.NODE_ENV
 
                 try
-                    html = jade.renderFile template, {imports, node_env}
+                    html = jade.renderFile template, {imports}
                     res.send html
                 catch err
                     errortemplate err
