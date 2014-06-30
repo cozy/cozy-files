@@ -1,10 +1,9 @@
 BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
-Modal = require './modal'
 ModalUploadView = require './modal_upload'
 ModalFolderView = require './modal_folder'
-ModalShareView = null
+ModalShareView = require './modal_share'
 
 File = require '../models/file'
 FileCollection = require '../collections/files'
@@ -17,17 +16,15 @@ module.exports = class FolderView extends BaseView
 
     el: 'body'
 
-    templateNormal: require './templates/folder'
-    templatePublic: require './templates/folder'
+    template: require './templates/folder'
 
-    events:
+    events: ->
         'click #button-new-folder'     : 'onNewFolderClicked'
         'click #button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
-        'click #download-link'         : 'onDownloadAsZipClicked'
 
         'dragstart #files' : 'onDragStart'
         'dragenter #files' : 'onDragEnter'
@@ -37,12 +34,6 @@ module.exports = class FolderView extends BaseView
 
         'keyup input#search-box'       : 'onSearchKeyPress'
 
-    template: (args) ->
-        if app.isPublic
-            @templatePublic args
-        else
-            @templateNormal args
-
     initialize: (options) ->
         super options
         @baseCollection = options.baseCollection
@@ -50,9 +41,6 @@ module.exports = class FolderView extends BaseView
 
         # not empty only if a search has started
         @query = options.query
-
-        # prevent contacts loading in shared area
-        ModalShareView = require "./modal_share" if not ModalShareView? and not app.isPublic
 
     destroy: ->
         @breadcrumbsView.destroy()
@@ -65,7 +53,6 @@ module.exports = class FolderView extends BaseView
     getRenderData: ->
         model: @model.toJSON()
         query: @query
-        zipUrl: @model.getZipURL()
 
     afterRender: ->
         @uploadButton = @$ '#button-upload-new-file'
@@ -82,7 +69,7 @@ module.exports = class FolderView extends BaseView
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
-        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb, model: @model
+        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
@@ -136,30 +123,28 @@ module.exports = class FolderView extends BaseView
     onDragEnter: (e) ->
         e.preventDefault()
         e.stopPropagation()
-        if not @isPublic or @canUpload
-            @uploadButton.addClass 'btn-cozy-contrast'
-            @$('#files-drop-zone').show()
+        @uploadButton.addClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').show()
 
     onDragLeave: (e) ->
         e.preventDefault()
         e.stopPropagation()
-        if not @isPublic or @canUpload
-            @uploadButton.removeClass 'btn-cozy-contrast'
-            @$('#files-drop-zone').hide()
+        @uploadButton.removeClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').hide()
 
     onDrop: (e) ->
         e.preventDefault()
         e.stopPropagation()
-        if not @isPublic or @canUpload
-            filesToUpload = e.dataTransfer.files
-            if filesToUpload.length > 0
-                @modal = new ModalUploadView
-                    model: @model
-                    validator: @validateNewModel
-                    files: filesToUpload
-                    uploadQueue: @uploadQueue
-            @uploadButton.removeClass 'btn-cozy-contrast'
-            @$('#files-drop-zone').hide()
+
+        filesToUpload = e.dataTransfer.files
+        if filesToUpload.length > 0
+            @modal = new ModalUploadView
+                model: @model
+                validator: @validateNewModel
+                files: filesToUpload
+                uploadQueue: @uploadQueue
+        @uploadButton.removeClass 'btn-cozy-contrast'
+        @$('#files-drop-zone').hide()
 
     ###
         Search
@@ -192,12 +177,3 @@ module.exports = class FolderView extends BaseView
             @$('#loading-indicator').after $ '<div id="files"></div>'
         @renderBreadcrumb()
         @renderFileList()
-
-    # We don't want the user to download the ZIP if the folder is empty
-    onDownloadAsZipClicked: (event) ->
-        if @collection.length is 0
-            event.preventDefault()
-            Modal.error t 'modal error zip empty folder'
-
-
-

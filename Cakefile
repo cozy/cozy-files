@@ -70,6 +70,7 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               # prepare the client build
               "cp ./server/views/index_build.jade client/app/assets/index.jade && " + \
               "cp ./server/views/404_build.jade client/app/assets/404.jade && " + \
+              "cp ./server/views/publicfolder_build.jade client/app/assets/publicfolder.jade && " + \
               "cd client/ && brunch build --production && cd .. && " + \
               "rm client/app/assets/*.jade && " + \
               "mv build/client/public/*.jade build/server/views/ && " + \

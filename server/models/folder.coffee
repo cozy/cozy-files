@@ -42,10 +42,11 @@ Folder.allPath = (callback) ->
         callback null, paths
 
 Folder::getFullPath = ->
-    "#{@path}/#{@name}"
+    @path + '/' + @name
 
 Folder::getParents = (callback) ->
-    foldersOfPath = @getFullPath().split '/'
+    fullPath = "#{@path}/#{@name}"
+    foldersOfPath = fullPath.split '/'
     parentFoldersPath = []
     # extract all parent's full path
     while foldersOfPath.length > 0

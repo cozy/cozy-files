@@ -31,7 +31,8 @@ normalizePath = function(path) {
 };
 
 processAttachement = function(req, res, next, download) {
-  var contentHeader, file, stream;
+  var contentHeader, file, id, stream;
+  id = req.params.id;
   file = req.file;
   if (download) {
     contentHeader = "attachment; filename=" + file.name;
@@ -314,6 +315,41 @@ module.exports.getAttachment = function(req, res, next) {
 
 module.exports.downloadAttachment = function(req, res, next) {
   return processAttachement(req, res, next, true);
+};
+
+module.exports.publicDownloadAttachment = function(req, res, next) {
+  return sharing.checkClearance(req.file, req, function(authorized) {
+    var err;
+    if (!authorized) {
+      log.debug('not authorized', req.file.id);
+      err = new Error('File not found');
+      err.status = 404;
+      err.template = {
+        name: '404',
+        params: {
+          localization: require('../lib/localization_manager'),
+          isPublic: req.url.indexOf('public') !== -1
+        }
+      };
+      return next(err);
+    } else {
+      return processAttachement(req, res, next, true);
+    }
+  });
+};
+
+module.exports.publicCreate = function(req, res, next) {
+  var file;
+  file = new File(req.body);
+  return sharing.checkClearance(file, req, 'w', function(authorized, rule) {
+    if (!rule) {
+      return res.send(401);
+    } else {
+      req.guestEmail = rule.email;
+      req.guestId = rule.contactid;
+      return module.exports.create(req, res, next);
+    }
+  });
 };
 
 module.exports.search = function(req, res, next) {

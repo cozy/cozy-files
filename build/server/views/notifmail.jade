@@ -1,0 +1,12 @@
+h1 The content of #{name} has changed
+
+p
+    | Follow this link to see what is new :
+    a(href=url)= url
+
+p
+    | To unsubscribe from these notification, use this link :
+    a(href=url + '&notifications=false')= url + '&notifications=false'
+
+p
+    | Sent from Cozy Cloud.
