@@ -47,9 +47,19 @@ module.exports = class FileCollection extends Backbone.Collection
             if err?
                 callback err
             else
-                #folder.setBreadcrumb parents
-                @add content, merge: true
+                # adds the new models (updates them if already in collection)
+                @set content, remove: false
 
+                # we handle deletion manually because
+                # they must be based on  projection, not baseCollection
+                contentIDs = _.pluck content, 'id'
+                path = folder.getRepository()
+                itemsToRemove = @getSubCollection(path).filter (item) ->
+                    return item.get('id') not in contentIDs
+                @remove itemsToRemove
+
+                # we mark as cached the folder if it's the first time we load
+                # its content
                 @cachedPaths.push path unless @isPathCached path
                 callback()
 
@@ -77,6 +87,14 @@ module.exports = class FileCollection extends Backbone.Collection
                     # and the folder's breadcrumb
                     @getFolderContent folder, ->
                         callback null, folder, collection
+
+    # Creates a sub collection (projection) based on the current collection
+    getSubCollection: (path) ->
+        filter = (file) ->
+            return file.get('path') is path and not file.isRoot()
+        return new BackboneProjections.Filtered @,
+                            filter: filter
+                            comparator: @comparator
 
     comparator: (f1, f2) ->
 

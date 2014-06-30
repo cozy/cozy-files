@@ -47,9 +47,13 @@ module.exports.fetch = (req, res, next, id) ->
 
 # retrieve inherited sharing info
 module.exports.details = (req, res, next) ->
-    folder = req.doc
-    folder.getParents (err, parents) ->
+    element = req.doc
+    element.getParents (err, parents) ->
         return next err if err?
+
+        # if we check a folder, we must excluse the folder itself from the parent's tree
+        # otherwise we can't change its clearance afterwards
+        parents.shift() if parents.length > 0 and parents[0].id is element.id
 
         # keep only element of path that alter the clearance
         isPublic = false

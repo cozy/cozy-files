@@ -31,8 +31,7 @@ normalizePath = function(path) {
 };
 
 processAttachement = function(req, res, next, download) {
-  var contentHeader, file, id, stream;
-  id = req.params.id;
+  var contentHeader, file, stream;
   file = req.file;
   if (download) {
     contentHeader = "attachment; filename=" + file.name;
@@ -283,26 +282,19 @@ module.exports.modify = function(req, res, next) {
 module.exports.destroy = function(req, res, next) {
   var file;
   file = req.file;
-  return file.removeBinary("file", (function(_this) {
-    return function(err, resp, body) {
-      if (err && err.toString('utf8').indexOf('not found') === -1) {
-        log.error("Cannot Remove binary for " + file.id);
+  return file.destroy((function(_this) {
+    return function(err) {
+      if (err) {
+        log.error("Cannot destroy document " + file.id);
         return next(err);
       } else {
-        return file.destroy(function(err) {
+        return file.updateParentModifDate(function(err) {
           if (err) {
-            log.error("Cannot destroy document " + file.id);
-            return next(err);
-          } else {
-            return file.updateParentModifDate(function(err) {
-              if (err) {
-                log.raw(err);
-              }
-              return res.send({
-                success: 'File successfully deleted'
-              });
-            });
+            log.raw(err);
           }
+          return res.send({
+            success: 'File successfully deleted'
+          });
         });
       }
     };
@@ -315,41 +307,6 @@ module.exports.getAttachment = function(req, res, next) {
 
 module.exports.downloadAttachment = function(req, res, next) {
   return processAttachement(req, res, next, true);
-};
-
-module.exports.publicDownloadAttachment = function(req, res, next) {
-  return sharing.checkClearance(req.file, req, function(authorized) {
-    var err;
-    if (!authorized) {
-      log.debug('not authorized', req.file.id);
-      err = new Error('File not found');
-      err.status = 404;
-      err.template = {
-        name: '404',
-        params: {
-          localization: require('../lib/localization_manager'),
-          isPublic: req.url.indexOf('public') !== -1
-        }
-      };
-      return next(err);
-    } else {
-      return processAttachement(req, res, next, true);
-    }
-  });
-};
-
-module.exports.publicCreate = function(req, res, next) {
-  var file;
-  file = new File(req.body);
-  return sharing.checkClearance(file, req, 'w', function(authorized, rule) {
-    if (!rule) {
-      return res.send(401);
-    } else {
-      req.guestEmail = rule.email;
-      req.guestId = rule.contactid;
-      return module.exports.create(req, res, next);
-    }
-  });
 };
 
 module.exports.search = function(req, res, next) {

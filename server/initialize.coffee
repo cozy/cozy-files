@@ -9,22 +9,22 @@ module.exports.beforeStart = (callback) ->
     localization.initialize callback
 
 module.exports.afterStart = (app, server, callback) ->
-    
+
     feed.initialize server
 
     # retrieve locale and set polyglot object
     # notification events should be proxied to client
-    realtime = RealtimeAdapter server: server, ['file.*', 'folder.*', 'contact.*']
-    init.updateIndex()    
+    realtime = RealtimeAdapter server: server, ['file.*', 'folder.*', 'contact.*'], resource: '/public/socket.io'
+    init.updateIndex()
 
     updateIndex = (type, id)->
         type.find id, (err, file) =>
-            if err 
+            if err
                 return console.log err.stack if err
             file.index ['name'], (err) ->
-                if err 
+                if err
                     return console.log err.stack if err
-                else 
+                else
                     return
 
     realtime.on 'file.create', (event, id) ->
