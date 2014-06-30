@@ -34,7 +34,7 @@ module.exports = class ModalFolderView extends Modal
 
     initialize: ->
         super
-        @prefix = @model.repository()
+        @prefix = @model.getRepository()
 
     # - display upload folder form only if it is supported
     # - Register submit button

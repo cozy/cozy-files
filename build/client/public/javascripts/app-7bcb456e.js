@@ -111,18 +111,26 @@ Initialize the model and start the actual code
 module.exports = {
   initialize: function() {
     var Router;
+    this.isPublic = window.location.pathname.indexOf('/public/') === 0;
     this.baseCollection = new FileCollection();
     this.uploadQueue = new UploadQueue();
     this.socket = new SocketListener();
     this.socket.watch(this.baseCollection);
     Router = require('router');
     this.router = new Router();
-    this.root = new File({
-      id: "root",
-      path: "",
-      name: t('root folder name'),
-      type: "folder"
-    });
+    if (window.rootFolder != null) {
+      this.root = new File(window.rootFolder);
+      this.root.canUpload = window.canUpload || false;
+      this.root.publicNotificationsEnabled = window.publicNofications || false;
+      this.root.publicKey = window.publicKey || "";
+    } else {
+      this.root = new File({
+        id: "root",
+        path: "",
+        name: t('root folder name'),
+        type: "folder"
+      });
+    }
     this.baseCollection.add(this.root);
     window.app = this;
     Backbone.history.start();
@@ -211,9 +219,7 @@ module.exports = FileCollection = (function(_super) {
         if (err != null) {
           return callback(err);
         } else {
-          _this.add(content, {
-            merge: true
-          });
+          _this.set(content);
           if (!_this.isPathCached(path)) {
             _this.cachedPaths.push(path);
           }
@@ -232,18 +238,12 @@ module.exports = FileCollection = (function(_super) {
   FileCollection.prototype.getByFolder = function(folderID, callback) {
     return this.getFolderInfo(folderID, (function(_this) {
       return function(err, folder) {
-        var collection, filter, path;
+        var collection, path;
         if (err != null) {
           return callback(err);
         } else {
           path = folder.getRepository();
-          filter = function(file) {
-            return file.get('path') === path && !file.isRoot();
-          };
-          collection = new BackboneProjections.Filtered(_this, {
-            filter: filter,
-            comparator: _this.comparator
-          });
+          collection = _this.getSubCollection(path);
           if (_this.isPathCached(path)) {
             return callback(null, folder, collection);
           } else {
@@ -254,6 +254,17 @@ module.exports = FileCollection = (function(_super) {
         }
       };
     })(this));
+  };
+
+  FileCollection.prototype.getSubCollection = function(path) {
+    var filter;
+    filter = function(file) {
+      return file.get('path') === path && !file.isRoot();
+    };
+    return new BackboneProjections.Filtered(this, {
+      filter: filter,
+      comparator: this.comparator
+    });
   };
 
   FileCollection.prototype.comparator = function(f1, f2) {
@@ -1103,8 +1114,24 @@ module.exports = File = (function(_super) {
     return this.get('type') === 'folder';
   };
 
+  File.prototype.isFile = function() {
+    return this.get('type') === 'file';
+  };
+
+  File.prototype.isSearch = function() {
+    return this.get('type') === 'search';
+  };
+
   File.prototype.isRoot = function() {
     return this.get('id') === 'root';
+  };
+
+  File.prototype.getRepository = function() {
+    if (this.isRoot()) {
+      return "";
+    } else {
+      return "" + (this.get("path")) + "/" + (this.get("name"));
+    }
   };
 
   File.prototype.sync = function(method, model, options) {
@@ -1139,12 +1166,44 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.urlRoot = function() {
-    if (this.get("type") === "folder") {
-      return 'folders/';
-    } else if (this.get("type") === "search") {
-      return 'search/';
+    var prefix;
+    prefix = app.isPublic ? '../' : '';
+    if (this.isFolder()) {
+      return prefix + 'folders/';
+    } else if (this.isSearch()) {
+      return prefix + 'search/';
     } else {
-      return 'files/';
+      return prefix + 'files/';
+    }
+  };
+
+  File.prototype.url = function(toAppend) {
+    var key, url;
+    if (toAppend == null) {
+      toAppend = '';
+    }
+    url = File.__super__.url.call(this);
+    key = app.isPublic ? window.location.search : '';
+    return url + toAppend + key;
+  };
+
+  File.prototype.getPublicURL = function(key) {
+    return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
+  };
+
+  File.prototype.getZipURL = function() {
+    var toAppend;
+    if (this.isFolder()) {
+      toAppend = ".zip";
+      return this.url(toAppend);
+    }
+  };
+
+  File.prototype.getAttachmentUrl = function() {
+    var toAppend;
+    if (this.isFile()) {
+      toAppend = "/attach/" + (this.get('name'));
+      return this.url(toAppend);
     }
   };
 
@@ -1197,22 +1256,6 @@ module.exports = File = (function(_super) {
     })(this);
   };
 
-  File.prototype.repository = function() {
-    return this.getRepository();
-  };
-
-  File.prototype.getRepository = function() {
-    if (this.get('id') === "root") {
-      return "";
-    } else {
-      return "" + (this.get("path")) + "/" + (this.get("name"));
-    }
-  };
-
-  File.prototype.getPublicURL = function(key) {
-    return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
-  };
-
 
   /*
       ONLY RELEVANT IF IT'S A FOLDER
@@ -1221,8 +1264,16 @@ module.exports = File = (function(_super) {
    */
 
   File.prototype.fetchContent = function(callbacks) {
+    var key, url;
     this.prepareCallbacks(callbacks);
-    return client.post("" + (this.urlRoot()) + "content", {
+    url = "" + (this.urlRoot()) + "content";
+    key = window.location.search;
+    if (app.isPublic && !this.isSearch()) {
+      url = "" + (this.urlRoot()) + this.id + "/content" + key;
+    } else if (this.isSearch()) {
+      url += key;
+    }
+    return client.post(url, {
       id: this.id
     }, (function(_this) {
       return function(err, body) {
@@ -1259,7 +1310,7 @@ module.exports = File = (function(_super) {
 });
 
 ;require.register("router", function(exports, require, module) {
-var File, FileCollection, FolderView, Router, app,
+var File, FileCollection, FolderView, PublicFolderView, Router, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1270,6 +1321,8 @@ File = require('./models/file');
 FileCollection = require('./collections/files');
 
 FolderView = require('./views/folder');
+
+PublicFolderView = require('./views/public_folder');
 
 
 /*
@@ -1345,7 +1398,7 @@ module.exports = Router = (function(_super) {
       this.folderView.destroy();
       $('html').append($('<body></body>'));
     }
-    this.folderView = new FolderView({
+    this.folderView = this._getFolderView({
       model: folder,
       collection: collection,
       baseCollection: app.baseCollection,
@@ -1354,6 +1407,16 @@ module.exports = Router = (function(_super) {
       query: query
     });
     return this.folderView.render();
+  };
+
+  Router.prototype._getFolderView = function(params) {
+    if (app.isPublic) {
+      return new PublicFolderView(_.extend(params, {
+        rootFolder: app.root
+      }));
+    } else {
+      return new FolderView(params);
+    }
   };
 
   return Router;
@@ -1381,6 +1444,9 @@ module.exports = BreadcrumbsView = (function(_super) {
 
   BreadcrumbsView.prototype.render = function() {
     var folder, opacity, _i, _len, _ref;
+    if (this.collection[0].id !== 'root') {
+      this.collection.shift();
+    }
     opacity = this.collection.length === 1 ? '0.5' : '1';
     this.$el.css('opacity', opacity);
     this.$el.empty();
@@ -1409,7 +1475,7 @@ BaseView = require('../lib/base_view');
 
 ModalView = require("./modal");
 
-ModalShareView = require("./modal_share");
+ModalShareView = null;
 
 TagsView = require("./tags");
 
@@ -1452,9 +1518,18 @@ module.exports = FileView = (function(_super) {
     }
   };
 
+  FileView.prototype.getRenderData = function() {
+    return _.extend(FileView.__super__.getRenderData.call(this), {
+      attachmentUrl: this.model.getAttachmentUrl()
+    });
+  };
+
   FileView.prototype.initialize = function(options) {
     this.isSearchMode = options.isSearchMode;
-    return this.listenTo(this.model, 'change', this.render);
+    this.listenTo(this.model, 'change', this.render);
+    if ((ModalShareView == null) && !app.isPublic) {
+      return ModalShareView = require("./modal_share");
+    }
   };
 
   FileView.prototype.onDeleteClicked = function() {
@@ -1753,7 +1828,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalFolderView, ModalShareView, ModalUploadView,
+var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, Modal, ModalFolderView, ModalShareView, ModalUploadView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1764,11 +1839,13 @@ FilesView = require('./files');
 
 BreadcrumbsView = require("./breadcrumbs");
 
+Modal = require('./modal');
+
 ModalUploadView = require('./modal_upload');
 
 ModalFolderView = require('./modal_folder');
 
-ModalShareView = require('./modal_share');
+ModalShareView = null;
 
 File = require('../models/file');
 
@@ -1790,30 +1867,42 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.el = 'body';
 
-  FolderView.prototype.template = require('./templates/folder');
+  FolderView.prototype.templateNormal = require('./templates/folder');
 
-  FolderView.prototype.events = function() {
-    return {
-      'click #button-new-folder': 'onNewFolderClicked',
-      'click #button-upload-new-file': 'onUploadNewFileClicked',
-      'click #new-folder-send': 'onAddFolder',
-      'click #cancel-new-folder': 'onCancelFolder',
-      'click #cancel-new-file': 'onCancelFile',
-      'click #share-state': 'onShareClicked',
-      'dragstart #files': 'onDragStart',
-      'dragenter #files': 'onDragEnter',
-      'dragover #files': 'onDragEnter',
-      'dragleave #files': 'onDragLeave',
-      'drop #files': 'onDrop',
-      'keyup input#search-box': 'onSearchKeyPress'
-    };
+  FolderView.prototype.templatePublic = require('./templates/folder');
+
+  FolderView.prototype.events = {
+    'click #button-new-folder': 'onNewFolderClicked',
+    'click #button-upload-new-file': 'onUploadNewFileClicked',
+    'click #new-folder-send': 'onAddFolder',
+    'click #cancel-new-folder': 'onCancelFolder',
+    'click #cancel-new-file': 'onCancelFile',
+    'click #share-state': 'onShareClicked',
+    'click #download-link': 'onDownloadAsZipClicked',
+    'dragstart #files': 'onDragStart',
+    'dragenter #files': 'onDragEnter',
+    'dragover #files': 'onDragEnter',
+    'dragleave #files': 'onDragLeave',
+    'drop #files': 'onDrop',
+    'keyup input#search-box': 'onSearchKeyPress'
+  };
+
+  FolderView.prototype.template = function(args) {
+    if (app.isPublic) {
+      return this.templatePublic(args);
+    } else {
+      return this.templateNormal(args);
+    }
   };
 
   FolderView.prototype.initialize = function(options) {
     FolderView.__super__.initialize.call(this, options);
     this.baseCollection = options.baseCollection;
     this.uploadQueue = options.uploadQueue;
-    return this.query = options.query;
+    this.query = options.query;
+    if ((ModalShareView == null) && !app.isPublic) {
+      return ModalShareView = require("./modal_share");
+    }
   };
 
   FolderView.prototype.destroy = function() {
@@ -1827,7 +1916,8 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.getRenderData = function() {
     return {
       model: this.model.toJSON(),
-      query: this.query
+      query: this.query,
+      zipUrl: this.model.getZipURL()
     };
   };
 
@@ -1841,7 +1931,8 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.renderBreadcrumb = function() {
     this.$('#crumbs').empty();
     this.breadcrumbsView = new BreadcrumbsView({
-      collection: this.model.breadcrumb
+      collection: this.model.breadcrumb,
+      model: this.model
     });
     return this.$("#crumbs").append(this.breadcrumbsView.render().$el);
   };
@@ -1924,32 +2015,38 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.onDragEnter = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.uploadButton.addClass('btn-cozy-contrast');
-    return this.$('#files-drop-zone').show();
+    if (!this.isPublic || this.canUpload) {
+      this.uploadButton.addClass('btn-cozy-contrast');
+      return this.$('#files-drop-zone').show();
+    }
   };
 
   FolderView.prototype.onDragLeave = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.uploadButton.removeClass('btn-cozy-contrast');
-    return this.$('#files-drop-zone').hide();
+    if (!this.isPublic || this.canUpload) {
+      this.uploadButton.removeClass('btn-cozy-contrast');
+      return this.$('#files-drop-zone').hide();
+    }
   };
 
   FolderView.prototype.onDrop = function(e) {
     var filesToUpload;
     e.preventDefault();
     e.stopPropagation();
-    filesToUpload = e.dataTransfer.files;
-    if (filesToUpload.length > 0) {
-      this.modal = new ModalUploadView({
-        model: this.model,
-        validator: this.validateNewModel,
-        files: filesToUpload,
-        uploadQueue: this.uploadQueue
-      });
+    if (!this.isPublic || this.canUpload) {
+      filesToUpload = e.dataTransfer.files;
+      if (filesToUpload.length > 0) {
+        this.modal = new ModalUploadView({
+          model: this.model,
+          validator: this.validateNewModel,
+          files: filesToUpload,
+          uploadQueue: this.uploadQueue
+        });
+      }
+      this.uploadButton.removeClass('btn-cozy-contrast');
+      return this.$('#files-drop-zone').hide();
     }
-    this.uploadButton.removeClass('btn-cozy-contrast');
-    return this.$('#files-drop-zone').hide();
   };
 
 
@@ -1980,6 +2077,13 @@ module.exports = FolderView = (function(_super) {
     }
     this.renderBreadcrumb();
     return this.renderFileList();
+  };
+
+  FolderView.prototype.onDownloadAsZipClicked = function(event) {
+    if (this.collection.length === 0) {
+      event.preventDefault();
+      return Modal.error(t('modal error zip empty folder'));
+    }
   };
 
   return FolderView;
@@ -2150,7 +2254,7 @@ module.exports = ModalFolderView = (function(_super) {
 
   ModalFolderView.prototype.initialize = function() {
     ModalFolderView.__super__.initialize.apply(this, arguments);
-    return this.prefix = this.model.repository();
+    return this.prefix = this.model.getRepository();
   };
 
   ModalFolderView.prototype.afterRender = function() {
@@ -2710,44 +2814,13 @@ module.exports = ModalUploadView = (function(_super) {
 });
 
 ;require.register("views/public_folder", function(exports, require, module) {
-var File, FileCollection, FilesView, FolderView, Modal, PublicFilesView, PublicFolderView,
+var FolderView, PublicFolderView, client,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-window.CozySocketListener = {
-  fake: ''
-};
-
 FolderView = require('./folder');
 
-File = require('../models/file');
-
-FilesView = require('./files');
-
-FileCollection = require('../collections/files');
-
-Modal = require('./modal');
-
-PublicFilesView = (function(_super) {
-  __extends(PublicFilesView, _super);
-
-  function PublicFilesView() {
-    return PublicFilesView.__super__.constructor.apply(this, arguments);
-  }
-
-  PublicFilesView.prototype.initialize = function(collection, model) {
-    this.collection = collection;
-    this.model = model;
-    return FilesView.__super__.initialize.apply(this, arguments);
-  };
-
-  PublicFilesView.prototype.addItem = function() {
-    return window.location.reload();
-  };
-
-  return PublicFilesView;
-
-})(FilesView);
+client = require('../lib/client');
 
 module.exports = PublicFolderView = (function(_super) {
   __extends(PublicFolderView, _super);
@@ -2756,36 +2829,67 @@ module.exports = PublicFolderView = (function(_super) {
     return PublicFolderView.__super__.constructor.apply(this, arguments);
   }
 
-  PublicFolderView.prototype.el = document.getElementsByTagName('body')[0];
-
-  PublicFolderView.prototype.templates = function() {
-    return '';
-  };
+  PublicFolderView.prototype.events = _.extend(FolderView.prototype.events, {
+    'click #notifications': 'onToggleNotificationClicked'
+  });
 
   PublicFolderView.prototype.initialize = function(options) {
-    var old;
-    this.model = new File(_.extend(options.folder, {
-      type: 'folder'
-    }));
-    this.uploadQueue = options.uploadQueue;
-    old = File.prototype.urlRoot;
-    File.prototype.urlRoot = function() {
-      return '../' + old.apply(this, arguments) + window.location.search;
-    };
-    this.collection = new FileCollection([]);
-    this.filesList = new PublicFilesView(this.collection, this.model);
-    return this.$('#download-link').click(function(event) {
-      if (window.numElements === 0) {
-        event.preventDefault();
-        return Modal.error(t('modal error zip empty folder'));
-      }
+    PublicFolderView.__super__.initialize.call(this, options);
+    return this.rootFolder = options.rootFolder;
+  };
+
+  PublicFolderView.prototype.afterRender = function() {
+    var classes;
+    PublicFolderView.__super__.afterRender.call(this);
+    classes = ' public';
+    if (this.rootFolder.canUpload) {
+      classes += ' can-upload';
+    }
+    return this.$el.addClass(classes);
+  };
+
+  PublicFolderView.prototype.getRenderData = function() {
+    return _.extend(PublicFolderView.__super__.getRenderData.call(this), {
+      isPublic: true,
+      areNotificationsEnabled: this.rootFolder.publicNotificationsEnabled,
+      hasPublicKey: this.rootFolder.publicKey.length > 0
     });
   };
 
-  PublicFolderView.prototype.onCancelFolder = function() {
-    PublicFolderView.__super__.onCancelFolder.apply(this, arguments);
-    if (this.$('.progress-name').length) {
-      return window.location.reload();
+  PublicFolderView.prototype.onToggleNotificationClicked = function() {
+    var key, url;
+    key = window.location.search;
+    url = "" + (this.model.urlRoot()) + this.rootFolder.id + "/notifications" + key;
+    if (this.rootFolder.publicNotificationsEnabled) {
+      this.rootFolder.publicNotificationsEnabled = false;
+      this.$('#notifications').html('&nbsp;');
+      this.$('#notifications').spin('tiny');
+      return client.put(url, {
+        notificationsState: false
+      }, (function(_this) {
+        return function(err) {
+          _this.$('#notifications').spin(false);
+          if (err == null) {
+            _this.$('#notifications').html(t('notifications disabled'));
+            return _this.$('#notifications').removeClass('toggled');
+          }
+        };
+      })(this));
+    } else {
+      this.rootFolder.publicNotificationsEnabled = true;
+      this.$('#notifications').html('&nbsp;');
+      this.$('#notifications').spin('tiny');
+      return client.put(url, {
+        notificationsState: true
+      }, (function(_this) {
+        return function(err) {
+          _this.$('#notifications').spin(false);
+          if (err == null) {
+            _this.$('#notifications').html(t('notifications enabled'));
+            return _this.$('#notifications').addClass('toggled');
+          }
+        };
+      })(this));
     }
   };
 
@@ -2911,7 +3015,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,options = locals_.options;
 buf.push("<td><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -2919,7 +3023,7 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
 if ( model.tags)
@@ -3008,7 +3112,33 @@ else
 {
 buf.push("<i class=\"fa fa-file-o\"></i>");
 }
-buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><!-- empty!--></div><!-- empty by default--></td><td class=\"size-column-cell\">");
+buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\">");
+if ( model.tags)
+{
+// iterate model.tags
+;(function(){
+  var $$obj = model.tags;
+  if ('number' == typeof $$obj.length) {
+
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
+
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
+
+buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+    }
+
+  }
+}).call(this);
+
+}
+buf.push("</ul><!-- empty!--></div><!-- empty by default--></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3046,7 +3176,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,options = locals_.options;
 buf.push("<td><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -3054,7 +3184,7 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
 if ( model.tags)
@@ -3161,8 +3291,12 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),query = locals_.query,model = locals_.model;
-buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\"><input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + "/>");
+var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\">");
+if ( !isPublic || hasPublicKey)
+{
+buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + "/>");
+}
 if ( model.type != 'search')
 {
 buf.push("<div id=\"upload-buttons\" class=\"pull-right\">");
@@ -3183,7 +3317,20 @@ buf.push("" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_inte
 }
 buf.push("</a>&nbsp;");
 }
-buf.push("<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;<span>&nbsp;</span></div>");
+buf.push("<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;");
+if ( isPublic && hasPublicKey)
+{
+if ( areNotificationsEnabled)
+{
+buf.push("<a id=\"notifications\" class=\"btn btn-cozy toggled\">" + (jade.escape(null == (jade_interp = t('notifications enabled')) ? "" : jade_interp)) + "</a>");
+}
+else
+{
+buf.push("<a id=\"notifications\" class=\"btn btn-cozy\">" + (jade.escape(null == (jade_interp = t('notifications disabled')) ? "" : jade_interp)) + "</a>");
+}
+buf.push("&nbsp;");
+}
+buf.push("<a id=\"download-link\"" + (jade.attr("href", "" + (zipUrl) + "", true, false)) + (jade.attr("title", t("download"), true, false)) + " class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("download")) == null ? '' : jade_interp)) + "&nbsp;<i class=\"icon-arrow-down icon-white\"></i></a></div>");
 }
 buf.push("</p></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\">&nbsp;</div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };

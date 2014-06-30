@@ -67,13 +67,12 @@ Folder.allPath = function(callback) {
 };
 
 Folder.prototype.getFullPath = function() {
-  return this.path + '/' + this.name;
+  return "" + this.path + "/" + this.name;
 };
 
 Folder.prototype.getParents = function(callback) {
-  var foldersOfPath, fullPath, parent, parentFoldersPath;
-  fullPath = "" + this.path + "/" + this.name;
-  foldersOfPath = fullPath.split('/');
+  var foldersOfPath, parent, parentFoldersPath;
+  foldersOfPath = this.getFullPath().split('/');
   parentFoldersPath = [];
   while (foldersOfPath.length > 0) {
     parent = foldersOfPath.join('/');

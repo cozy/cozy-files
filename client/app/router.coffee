@@ -2,6 +2,7 @@ app = require 'application'
 File = require './models/file'
 FileCollection = require './collections/files'
 FolderView = require './views/folder'
+PublicFolderView = require './views/public_folder'
 
 ###
 Binds routes to code actions.
@@ -56,7 +57,7 @@ module.exports = class Router extends Backbone.Router
             # because destroying the view also removes the element
             $('html').append $ '<body></body>'
 
-        @folderView = new FolderView
+        @folderView = @_getFolderView
             model: folder
             collection: collection
             baseCollection: app.baseCollection
@@ -64,3 +65,11 @@ module.exports = class Router extends Backbone.Router
             uploadQueue: app.uploadQueue
             query: query
         @folderView.render()
+
+    # factory to get the proper folder object based on mode (shared or not)
+    _getFolderView: (params) ->
+        if app.isPublic
+            return new PublicFolderView _.extend params, rootFolder: app.root
+        else
+            return new FolderView params
+
