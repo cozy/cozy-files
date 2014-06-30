@@ -69,15 +69,12 @@ module.exports.fetch = function(req, res, next, id) {
 };
 
 module.exports.details = function(req, res, next) {
-  var element;
-  element = req.doc;
-  return element.getParents(function(err, parents) {
+  var folder;
+  folder = req.doc;
+  return folder.getParents(function(err, parents) {
     var inherited, isPublic;
     if (err != null) {
       return next(err);
-    }
-    if (parents[0].id === element.id) {
-      parents.shift();
     }
     isPublic = false;
     inherited = parents != null ? parents.filter(function(parent) {

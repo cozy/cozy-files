@@ -1,52 +1,40 @@
+window.CozySocketListener = {fake: ''}
 FolderView = require './folder'
-client = require '../lib/client'
+File = require '../models/file'
+FilesView = require './files'
+FileCollection = require '../collections/files'
+Modal = require './modal'
+
+class PublicFilesView extends FilesView
+    initialize: (@collection, @model) ->
+        # patch to not use socket listener
+        FilesView.__super__.initialize.apply this, arguments
+
+    # reload to re-render
+    addItem: -> window.location.reload()
 
 module.exports = class PublicFolderView extends FolderView
 
-    events: _.extend FolderView::events, 'click #notifications': 'onToggleNotificationClicked'
-
-
+    el: document.getElementsByTagName('body')[0]
+    templates: -> ''
     initialize: (options) ->
-        super options
-        @rootFolder = options.rootFolder
+        @model = new File _.extend options.folder, type: 'folder'
+        @uploadQueue = options.uploadQueue
+        # patch to use proper url
+        old = File::urlRoot
+        File::urlRoot = -> '../' + old.apply(this, arguments) + window.location.search
 
-    afterRender: ->
-        super()
+        # patch to allow uploads
+        @collection = new FileCollection []
+        @filesList = new PublicFilesView @collection, @model
+        @$('#download-link').click (event) ->
+            if window.numElements is 0
+                event.preventDefault()
+                Modal.error t 'modal error zip empty folder'
 
-        # we use those class to show/hide stuff via CSS (buttons, controls, etc.)
-        classes = ' public'
-        classes += ' can-upload' if @rootFolder.canUpload
-        @$el.addClass classes
-
-    getRenderData: ->
-        _.extend super(),
-            isPublic: true
-            areNotificationsEnabled: @rootFolder.publicNotificationsEnabled
-            hasPublicKey: @rootFolder.publicKey.length > 0
-
-    # Enable or disable guest notifications
-    onToggleNotificationClicked: ->
-
-        # Notifications are only handled for the root folder
-        key = window.location.search
-        url = "#{@model.urlRoot()}#{@rootFolder.id}/notifications#{key}"
-
-        # toggle notifications button and persist state in database
-        if @rootFolder.publicNotificationsEnabled
-            @rootFolder.publicNotificationsEnabled = false
-            @$('#notifications').html '&nbsp;'
-            @$('#notifications').spin 'tiny'
-            client.put url, notificationsState: false, (err) =>
-                @$('#notifications').spin false
-                unless err?
-                    @$('#notifications').html t 'notifications disabled'
-                    @$('#notifications').removeClass 'toggled'
-        else
-            @rootFolder.publicNotificationsEnabled = true
-            @$('#notifications').html '&nbsp;'
-            @$('#notifications').spin 'tiny'
-            client.put url, notificationsState: true, (err) =>
-                @$('#notifications').spin false
-                unless err?
-                    @$('#notifications').html t 'notifications enabled'
-                    @$('#notifications').addClass 'toggled'
+    onCancelFolder: ->
+        # this feels hacky, but not sure how to handle it better
+        # there has been some uploading done, let's reload
+        super
+        if @$('.progress-name').length
+            window.location.reload()

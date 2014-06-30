@@ -12,15 +12,8 @@ module.exports = class File extends Backbone.Model
             options.type = if doctype is 'file' then 'file' else 'folder'
         super options
 
-
-    # helpers
     isFolder: -> return @get('type') is 'folder'
-    isFile: -> return @get('type') is 'file'
-    isSearch: -> return @get('type') is 'search'
     isRoot: -> return @get('id') is 'root'
-
-    # the repository is the model's full path (name included in the path)
-    getRepository: -> return if @isRoot() then "" else "#{@get("path")}/#{@get("name")}"
 
     # Overrides sync method to allow file upload (multipart request)
     # and progress events
@@ -53,36 +46,12 @@ module.exports = class File extends Backbone.Model
         Backbone.sync.apply @, arguments
 
     urlRoot: ->
-        prefix = if app.isPublic then '../' else ''
-
-        if @isFolder()
-            prefix + 'folders/'
-        else if @isSearch()
-            prefix + 'search/'
+        if @get("type") is "folder"
+            'folders/'
+        else if @get("type") is "search"
+            'search/'
         else
-            prefix + 'files/'
-
-    # Overrides the url method to append the key if it's public mode
-    url: (toAppend = '') ->
-        url = super()
-        key = if app.isPublic then window.location.search else ''
-
-        return url + toAppend + key
-
-    getPublicURL: (key) ->
-        "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
-
-    # Only relevant if model is a folder
-    getZipURL: ->
-        if @isFolder()
-            toAppend = ".zip"
-            @url toAppend
-
-    # Only relevant if model is a file
-    getAttachmentUrl: ->
-        if @isFile()
-            toAppend = "/attach/#{@get 'name'}"
-            @url toAppend
+            'files/'
 
     validate: ->
         errors = []
@@ -108,6 +77,17 @@ module.exports = class File extends Backbone.Model
             @trigger 'error', @, jqXHR, {}
             error jqXHR if error
 
+    # DEPRECATED -- alias due to deprecation
+    repository: -> @getRepository()
+    getRepository: ->
+        if @get('id') is "root"
+            return ""
+        else
+            return "#{@get("path")}/#{@get("name")}"
+
+    getPublicURL: (key) ->
+        "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+
     ###
         ONLY RELEVANT IF IT'S A FOLDER
         Fetches content (folders and files) for the current folder
@@ -115,15 +95,7 @@ module.exports = class File extends Backbone.Model
     ###
     fetchContent: (callbacks) ->
         @prepareCallbacks callbacks
-
-        url = "#{@urlRoot()}content"
-        key = window.location.search # relevant if shared mode
-        if app.isPublic and not @isSearch()
-            url = "#{@urlRoot()}#{@id}/content#{key}"
-        else if @isSearch()
-            url += key
-
-        client.post url, id: @id, (err, body) =>
+        client.post "#{@urlRoot()}content", id: @id, (err, body) =>
             if err?
                 @setBreadcrumb []
                 callbacks err

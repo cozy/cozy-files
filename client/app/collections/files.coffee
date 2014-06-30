@@ -47,12 +47,9 @@ module.exports = class FileCollection extends Backbone.Collection
             if err?
                 callback err
             else
-                # adds the new models (updates them if already in collection,
-                # removes them if they've been deleted)
-                @set content
+                #folder.setBreadcrumb parents
+                @add content, merge: true
 
-                # we mark as cached the folder if it's the first time we load
-                # its content
                 @cachedPaths.push path unless @isPathCached path
                 callback()
 
@@ -65,7 +62,12 @@ module.exports = class FileCollection extends Backbone.Collection
             if err? then callback err
             else
                 path = folder.getRepository()
-                collection = @getSubCollection path
+                filter = (file) ->
+                    file.get('path') is path and not file.isRoot()
+
+                collection = new BackboneProjections.Filtered @,
+                                    filter: filter
+                                    comparator: @comparator
 
                 if @isPathCached path
                     #console.log "[cache] fetch folder content"
@@ -75,13 +77,6 @@ module.exports = class FileCollection extends Backbone.Collection
                     # and the folder's breadcrumb
                     @getFolderContent folder, ->
                         callback null, folder, collection
-
-    # Creates a sub collection (projection) based on the current collection
-    getSubCollection: (path) ->
-        filter = (file) -> file.get('path') is path and not file.isRoot()
-        return new BackboneProjections.Filtered @,
-                            filter: filter
-                            comparator: @comparator
 
     comparator: (f1, f2) ->
 

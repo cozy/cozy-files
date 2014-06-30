@@ -8,16 +8,15 @@ td
           | #{model.name}
       else if model.type == 'file'
         a.caption.btn.btn-link(
-            href="#{attachmentUrl}",
+            href="files/#{model.id}/attach/#{model.name}",
             title="#{t('download file')}", target="_blank")
           i.fa.fa-file-o
           | #{model.name}
-    block tags
+    block actions
       ul.tags
         if model.tags
           for tag in model.tags
             li #{tag}
-    block actions
       .operations
         a.file-share(title="#{t('tooltip share')}")
           if model.clearance == 'public'

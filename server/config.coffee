@@ -7,7 +7,6 @@ staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
 publicStatic = (req, res, next) ->
     url = req.url
     req.url = req.url.replace '/public/assets', ''
-    req.url = req.url.replace '/public/folders', ''
     staticMiddleware req, res, (err) ->
         req.url = url
         next err

@@ -2,7 +2,6 @@ index = require './index'
 files = require './files'
 folders = require './folders'
 sharing = require './sharing'
-public_auth = require '../middlewares/public_auth'
 
 module.exports =
 
@@ -68,26 +67,12 @@ module.exports =
 
     # public access
     'public/folders':
-        post: [public_auth.checkClearance('w', 'folder'), folders.create]
-    'public/folders/:folderid/content':
-        post: [public_auth.checkClearance('r', 'folder'), folders.findContent]
-    'public/folders/:folderid/notifications':
-        put: [public_auth.checkClearance('r', 'folder'), folders.changeNotificationsState]
+        post: folders.publicCreate
+    'public/files':
+        post: files.publicCreate
+    'public/files/:fileid':
+        get: files.publicDownloadAttachment
     'public/folders/:folderid.zip':
-        get: [public_auth.checkClearance('r', 'folder'), folders.zip]
+        get: folders.publicZip
     'public/folders/:folderid':
         get: folders.publicList
-
-    'public/files':
-        post: [public_auth.checkClearance('w', 'file'), files.create]
-    'public/files/:fileid/attach/:name':
-        get: [public_auth.checkClearance('r', 'file'), files.getAttachment]
-    'public/files/:fileid/download/:name':
-        get: [public_auth.checkClearance('r', 'file'), files.downloadAttachment]
-    'public/files/:fileid':
-        get: [public_auth.checkClearance('r', 'file'), files.find]
-
-    'public/search/content':
-        post: folders.searchContent
-
-

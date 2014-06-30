@@ -13,7 +13,6 @@ publicStatic = function(req, res, next) {
   var url;
   url = req.url;
   req.url = req.url.replace('/public/assets', '');
-  req.url = req.url.replace('/public/folders', '');
   return staticMiddleware(req, res, function(err) {
     req.url = url;
     return next(err);
