@@ -345,8 +345,17 @@ module.exports = UploadQueue = (function(_super) {
         success: function() {
           return cb(null);
         },
-        error: function(err) {
-          file.error = t(err.msg || "modal error file upload");
+        error: function(err, res) {
+          var error;
+          try {
+            res = JSON.parse(res.responseText);
+            if (res.error != null) {
+              error = res.msg;
+            }
+          } catch (_error) {
+            error = err.error;
+          }
+          file.error = t(error || "modal error file upload");
           file.trigger('sync');
           return cb(null);
         }
@@ -765,6 +774,7 @@ module.exports = {
   "root folder name": "root",
   "breadcrumbs search title": "Search",
   "modal error file exists": "Sorry, a file or folder having this name already exists",
+  "modal error size": "Sorry, you haven't enough storage space",
   "modal error file upload": "File could not be sent to server",
   "modal error folder create": "Folder could not be created",
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
@@ -882,6 +892,7 @@ module.exports = {
   "root folder name": "racine",
   "breadcrumbs search title": "Recherche",
   "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+  "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
   "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
   "modal error folder create": "Le dossier n'a pas pu être créé",
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",

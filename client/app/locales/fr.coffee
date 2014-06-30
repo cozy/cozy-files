@@ -16,6 +16,7 @@ module.exports =
 
     # files view
     "modal error file exists"   : "Désolé, un fichier ou un dossier a déjà le même nom"
+    "modal error size"          : "Désolé, vous n'avez pas assez d'espace de stockage"
     "modal error file upload"   : "Le fichier n'a pas pu être envoyé au serveur"
     "modal error folder create" : "Le dossier n'a pas pu être créé"
     "modal error folder exists" : "Désolé, un fichier ou un dossier a déjà le même nom"

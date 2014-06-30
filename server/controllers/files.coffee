@@ -6,7 +6,6 @@ File = require '../models/file'
 Folder = require '../models/folder'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
-
 log = require('printit')
     prefix: 'files'
 
@@ -70,7 +69,6 @@ module.exports.fetch = (req, res, next, id) ->
 
 ## Actions ##
 
-
 module.exports.find = (req, res) ->
     res.send req.file
 
@@ -88,7 +86,10 @@ module.exports.all = (req, res, next) ->
 # given information and uploaded file metadata. Once done, it performs all
 # database operation and index the file name. Finally, it tags the file if the
 # parent folder is tagged.
+folderParent = {}
+timeout = null
 module.exports.create = (req, res, next) ->
+    clearTimeout(timeout) if timeout?
     if not req.body.name or req.body.name is ""
         next new Error "Invalid arguments"
     else
@@ -114,12 +115,19 @@ module.exports.create = (req, res, next) ->
                     tags: []
                     class: fileClass
 
-                createFile = ->
+                createFile = =>
                     File.createNewFile data, file, (err, newfile) =>
-                        who = req.guestEmail or 'owner'
-                        sharing.notifyChanges who, newfile, (err) ->
-                            console.log err if err
-                            res.send newfile, 200
+                        resetTimeout()
+                        if err
+                            if err.toString().indexOf('enough storage') isnt -1
+                                res.send error:true, msg: "modal error size", 400
+                            else
+                                res.send error:true, msg: err, 400
+                        else
+                            who = req.guestEmail or 'owner'
+                            sharing.notifyChanges who, newfile, (err) ->
+                                console.log err if err
+                                res.send newfile, 200
 
                 # find parent folder
                 Folder.byFullPath key: data.path, (err, parents) =>
@@ -129,11 +137,28 @@ module.exports.create = (req, res, next) ->
                         parent = parents[0]
                         data.tags = parent.tags
                         parent.lastModification = now
-                        parent.save (err) ->
-                            if err then next err
-                            else createFile()
+                        folderParent[parent.name] = parent
+                        createFile()
                     else
                         createFile()
+
+# After 2 minutes of inactivity, update parents
+resetTimeout = () =>
+    clearTimeout(timeout) if timeout?
+    timeout = setTimeout () =>
+        updateParents()
+    , 2*60*1000
+
+
+# Save in RAM lastModification date for parents
+# Update folder parent once all files are uploaded
+updateParents = () ->
+    errors = {}
+    for name in Object.keys(folderParent)
+        folder = folderParent[name]
+        folder.save (err) ->
+            errors[folder.name] = err if err?
+    folderParent = {}
 
 
 # There is two ways to modify a file:

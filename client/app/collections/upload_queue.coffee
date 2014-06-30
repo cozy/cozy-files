@@ -23,9 +23,17 @@ module.exports = class UploadQueue extends Backbone.Collection
             return cb null  if file.error or file.isUploaded
 
             file.save null,
-                success: -> cb null
-                error: (err) ->
-                    file.error = t err.msg or "modal error file upload"
+                success: ->
+                    cb null
+                error: (err, res) ->
+                    try
+                        res = JSON.parse(res.responseText)
+                        if res.error?
+                            error = res.msg
+                    catch
+                        error = err.error
+
+                    file.error = t error or "modal error file upload"
                     file.trigger 'sync'
                     cb null # do not stop all list if one fail
         , callback

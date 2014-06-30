@@ -50,11 +50,11 @@ File.createNewFile = (function(_this) {
     attachBinary = function(newFile) {
       return newFile.attachBinary(file.path, {
         "name": "file"
-      }, function(err) {
+      }, function(err, res, body) {
         upload = false;
         if (err) {
-          return newFile.destroy(function(err) {
-            return callback(new Error("Error attaching binary: " + err));
+          return newFile.destroy(function(error) {
+            return callback("Error attaching binary: " + err);
           });
         } else {
           return index(newFile);
