@@ -96,6 +96,7 @@ module.exports.create = (req, res, next) ->
 
         fullPath = "#{req.body.path}/#{req.body.name}"
         File.byFullPath key: fullPath, (err, sameFiles) =>
+            return next err if err
             if sameFiles.length > 0
                 res.send error:true, msg: "This file already exists", 400
             else
@@ -116,6 +117,7 @@ module.exports.create = (req, res, next) ->
 
                 createFile = ->
                     File.createNewFile data, file, (err, newfile) =>
+                        return next err if err
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newfile, (err) ->
                             console.log err if err
@@ -123,6 +125,7 @@ module.exports.create = (req, res, next) ->
 
                 # find parent folder
                 Folder.byFullPath key: data.path, (err, parents) =>
+                    return next err if err
                     if parents.length > 0
                         # inherit parent folder tags and update its last
                         # modification date

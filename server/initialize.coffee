@@ -9,23 +9,25 @@ module.exports.beforeStart = (callback) ->
     localization.initialize callback
 
 module.exports.afterStart = (app, server, callback) ->
-    
+
     feed.initialize server
 
     # retrieve locale and set polyglot object
     # notification events should be proxied to client
     realtime = RealtimeAdapter server: server, ['file.*', 'folder.*', 'contact.*']
-    init.updateIndex()    
+    init.updateIndex()
 
     updateIndex = (type, id)->
         type.find id, (err, file) =>
-            if err 
-                return console.log err.stack if err
+            if err
+                return console.log "updateIndex err", err.stack if err
+            unless file
+                return console.log "updateIndex : no file", id
             file.index ['name'], (err) ->
-                if err 
-                    return console.log err.stack if err
-                else 
-                    return
+                # ignore this error
+                # most likely caused by
+                # remove binary -> update doc -> re-index
+                #              \-> remove doc -> but not doc
 
     realtime.on 'file.create', (event, id) ->
         updateIndex(File,id)
