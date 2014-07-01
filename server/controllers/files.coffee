@@ -21,7 +21,6 @@ normalizePath = (path) ->
 
 # Put right headers in response, then stream file to the response.
 processAttachement = (req, res, next, download) ->
-    id = req.params.id
     file = req.file
 
     if download then contentHeader = "attachment; filename=#{file.name}"
@@ -93,7 +92,6 @@ module.exports.create = (req, res, next) ->
         next new Error "Invalid arguments"
     else
         req.body.path = normalizePath req.body.path
-
         fullPath = "#{req.body.path}/#{req.body.name}"
         File.byFullPath key: fullPath, (err, sameFiles) =>
             return next err if err
@@ -212,19 +210,14 @@ module.exports.modify = (req, res, next) ->
 
 module.exports.destroy = (req, res, next) ->
     file = req.file
-    file.removeBinary "file", (err, resp, body) =>
-        if err and err.toString('utf8').indexOf('not found') == -1
-            log.error "Cannot Remove binary for #{file.id}"
+    file.destroy (err) =>
+        if err
+            log.error "Cannot destroy document #{file.id}"
             next err
         else
-            file.destroy (err) =>
-                if err
-                    log.error "Cannot destroy document #{file.id}"
-                    next err
-                else
-                    file.updateParentModifDate (err) ->
-                        log.raw err if err
-                        res.send success: 'File successfully deleted'
+            file.updateParentModifDate (err) ->
+                log.raw err if err
+                res.send success: 'File successfully deleted'
 
 
 module.exports.getAttachment = (req, res, next) ->
@@ -233,34 +226,6 @@ module.exports.getAttachment = (req, res, next) ->
 
 module.exports.downloadAttachment = (req, res, next) ->
     processAttachement req, res, next, true
-
-
-# Download by a guest can only be performed if the guest has the good rights.
-module.exports.publicDownloadAttachment = (req, res, next) ->
-    sharing.checkClearance req.file, req, (authorized) ->
-        if not authorized
-            log.debug 'not authorized', req.file.id
-            err = new Error 'File not found'
-            err.status = 404
-            err.template =
-                name: '404'
-                params:
-                    localization: require '../lib/localization_manager'
-                    isPublic: req.url.indexOf('public') isnt -1
-            next err
-        else processAttachement req, res, next, true
-
-
-# Creation by a guest. The creation is performed only if the guest has the good
-# rights.
-module.exports.publicCreate = (req, res, next) ->
-    file = new File req.body
-    sharing.checkClearance file, req, 'w', (authorized, rule) ->
-        if not rule then res.send 401
-        else
-            req.guestEmail = rule.email
-            req.guestId = rule.contactid
-            module.exports.create req, res, next
 
 
 # Check if the research should be performed on tag or not.

@@ -13,6 +13,7 @@ File = require '../models/file'
 CozyInstance = require '../models/cozy_instance'
 
 publicfoldertemplate = require('path').join __dirname, '../views/publicfolder.jade'
+template = require('path').join __dirname, '../views/index.jade'
 
 KB = 1024
 MB = KB * KB
@@ -230,15 +231,11 @@ module.exports.destroy = (req, res, next) ->
     directory = "#{currentFolder.path}/#{currentFolder.name}"
 
     destroyIfIsSubdirectory = (file, cb) ->
-        if file.path? and (file.path.indexOf(directory) is 0)
-            if file.binary
-                file.removeBinary "file", (err) ->
-                    if err
-                        cb err
-                    else
-                        file.destroy cb
-            else
-                file.destroy cb
+        pathToTest = "#{file.path}/"
+        # the trailing slash ensures that folder with the same prefix
+        # won't be deleted
+        if pathToTest.indexOf("#{directory}/") is 0
+            file.destroy cb
         else
             cb null
 
@@ -300,7 +297,11 @@ module.exports.findContent = (req, res, next) ->
                     if req.body.id is "root"
                         cb null, []
                     else
-                        folder.getParents cb
+                        # if it's a request from a guest, we need to limit the result
+                        if req.url.indexOf('/public/') isnt -1
+                            sharing.limitedTree folder, req, (parents, authorized) -> cb null, parents
+                        else
+                            folder.getParents cb
             ], (err, results) ->
 
                 if err? then next err
@@ -341,26 +342,46 @@ module.exports.searchContent = (req, res, next) ->
     query = req.body.id
     query = query.trim()
 
-    if query.indexOf('tag:') isnt -1
-        parts = query.split()
-        parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
-        tag = parts[0].split('tag:')[1]
-        requests = [
-            (cb) -> Folder.request 'byTag', key: tag, cb
-            (cb) -> File.request 'byTag', key: tag, cb
-        ]
+    isPublic = req.url.indexOf('/public/') is 0
+    key = req.query.key
+    # if the clearance is 'public', we don't allow the search (for privacy reasons)
+    if isPublic and not key?.length > 0
+        err = new Error 'You cannot access public search result'
+        err.status = 401
+        next err
     else
-        requests = [
-            (cb) -> Folder.search "*#{query}*", cb
-            (cb) -> File.search "*#{query}*", cb
-        ]
-
-    async.parallel requests, (err, results) ->
-        if err? then next err
+        if query.indexOf('tag:') isnt -1
+            parts = query.split()
+            parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
+            tag = parts[0].split('tag:')[1]
+            requests = [
+                (cb) -> Folder.request 'byTag', key: tag, cb
+                (cb) -> File.request 'byTag', key: tag, cb
+            ]
         else
-            [folders, files] = results
-            content = folders.concat files
-            res.send 200, content
+            requests = [
+                (cb) -> Folder.search "*#{query}*", cb
+                (cb) -> File.search "*#{query}*", cb
+            ]
+
+        async.parallel requests, (err, results) ->
+            if err? then next err
+            else
+                [folders, files] = results
+                content = folders.concat files
+
+                sendResults = (results) -> res.send 200, results
+
+                # if there is a key we must filter the results so it doesn't display unshared files and folders
+                if key?
+                    isAuthorized = (element, callback) ->
+                        sharing.checkClearance element, req, (authorized) ->
+                            callback authorized and element.clearance isnt 'public'
+
+                    async.filter content, isAuthorized, (results) ->
+                        sendResults results
+                else
+                    sendResults content
 
 # List files contained in the folder and return them as a zip archive.
 # TODO: add subfolders
@@ -403,99 +424,62 @@ module.exports.zip = (req, res, next) ->
             makeZip zipName, selectedFiles
 
 
+module.exports.changeNotificationsState = (req, res, next) ->
+    folder = req.folder
+    sharing.limitedTree folder, req, (path, rule) ->
+        if not req.body.notificationsState?
+            next new Error 'notifications must have a state'
+        else
+            notif = req.body.notificationsState
+            notif = notif and notif isnt 'false'
+            clearance = path[0].clearance or []
+            for r in clearance when r.key is rule.key
+                rule.notifications = r.notifications = notif
+                folder.updateAttributes clearance: clearance, (err) ->
+                    if err? then next err
+                    else res.send 201
+
 module.exports.publicList = (req, res, next) ->
     folder = req.folder
 
-    errortemplate = (err) ->
-        err = new Error 'File not found'
-        err.status = 404
-        err.template =
-            name: '404'
-            params:
-                localization: require '../lib/localization_manager'
-                isPublic: req.url.indexOf('public') isnt -1
-        next err
+    # if the page is requested by the user
+    if req.accepts('html, json') is 'html'
+        errortemplate = (err) ->
+            err = new Error 'File not found'
+            err.status = 404
+            err.template =
+                name: '404'
+                params:
+                    localization: require '../lib/localization_manager'
+                    isPublic: req.url.indexOf('public') isnt -1
+            next err
 
-    sharing.limitedTree folder, req, (path, rule) ->
-        authorized = path.length isnt 0
-        return errortemplate() unless authorized
-        key = "#{folder.path}/#{folder.name}"
-        async.parallel [
-            (cb) -> CozyInstance.getLocale cb
-            (cb) -> Folder.byFolder key:key, cb
-            (cb) -> File.byFolder key:key, cb
-            (cb) ->
-                # change the notifications setting
-                return cb() if req.query.notifications is undefined
+        sharing.limitedTree folder, req, (path, rule) ->
+            authorized = path.length isnt 0
+            return errortemplate() unless authorized
+            key = "#{folder.path}/#{folder.name}"
+            async.parallel [
+                (cb) -> CozyInstance.getLocale cb
+            ], (err, results) ->
+                return errortemplate err if err
+                [lang] = results
 
-                notif = req.query.notifications
-                notif = notif and notif isnt 'false'
-                clearance = path[0].clearance or []
-                for r in clearance when r.key is rule.key
-                    rule.notifications = r.notifications = notif
-                folder.updateAttributes clearance: clearance, cb
+                publicKey = req.query.key or ""
+                imports = """
+                    window.rootFolder = #{JSON.stringify folder};
+                    window.locale = "#{lang}";
+                    window.tags = [];
+                    window.canUpload = #{rule.perm is 'rw'}
+                    window.publicNofications = #{rule.notifications or false}
+                    window.publicKey = "#{publicKey}"
+                """
+                node_env = process.env.NODE_ENV
 
-        ], (err, results) ->
-            return errortemplate err if err
-            [lang, folders, files] = results
-
-            translations = try require '../../client/app/locales/' + lang
-            catch e then {}
-            translate = (text) -> translations[text] or text
-
-            #format date & size
-            files = files.map (file) ->
-
-                file = file.toJSON()
-
-                file.lastModification = new Date(file.lastModification)
-                .toISOString().split('T').join(' ').split('.')[0]
-
-                file.size = if file.size > MB
-                    (parseInt(file.size) / MB).toFixed(1) + translate "MB"
-                else if file.size > KB
-                    (parseInt(file.size) / KB).toFixed(1) + translate "KB"
-                else
-                    file.size + translate "B"
-
-                return file
-
-            locals = {
-                path
-                files
-                folders
-                lang
-                canupload: rule.perm is 'rw'
-                notifications: rule.notifications or false
-                keyquery: if req.query.key? then "?key=#{req.query.key}" else ""
-                t: translate
-            }
-
-            try
-                html = jade.renderFile publicfoldertemplate, locals
-                res.send html
-            catch err
-                errortemplate err
-
-
-module.exports.publicZip = (req, res, next) ->
-    errortemplate = (err) ->
-        err = new Error 'File not found'
-        err.status = 404
-        err.template =
-            name: '404'
-            params:
-                localization: require '../lib/localization_manager'
-                isPublic: req.url.indexOf('public') isnt -1
-        next err
-
-    sharing.checkClearance req.folder, req, (authorized) ->
-        if not authorized then res.send 404
-        else module.exports.zip req, res
-
-
-module.exports.publicCreate = (req, res, next) ->
-    folder = new Folder req.body
-    sharing.checkClearance folder, req, 'w', (authorized) ->
-        if not authorized then res.send 401
-        else module.exports.create req, res, next
+                try
+                    html = jade.renderFile template, {imports, node_env}
+                    res.send html
+                catch err
+                    errortemplate err
+    else
+        # ajax call to retrieve folder information
+        module.exports.find req, res, next

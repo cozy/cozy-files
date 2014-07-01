@@ -3,6 +3,8 @@ FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
 ModalShareView = require './modal_share'
+Modal = require './modal'
+ModalShareView = null
 
 File = require '../models/file'
 
@@ -23,6 +25,7 @@ module.exports = class FolderView extends BaseView
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
+        'click #download-link'         : 'onDownloadAsZipClicked'
         'change #uploader': 'onFilesSelected'
         'change #folder-uploader': 'onDirectorySelected'
 
@@ -42,6 +45,10 @@ module.exports = class FolderView extends BaseView
         # not empty only if a search has started
         @query = options.query
 
+        # prevent contacts loading in shared area
+        unless app.isPublic
+            ModalShareView ?= require "./modal_share"
+
     destroy: ->
         @breadcrumbsView.destroy()
         @breadcrumbsView = null
@@ -51,10 +58,10 @@ module.exports = class FolderView extends BaseView
         super()
 
     getRenderData: ->
-        return data =
-            supportsDirectoryUpload: @testEnableDirectoryUpload()
-            model: @model.toJSON()
-            query: @query
+        supportsDirectoryUpload: @testEnableDirectoryUpload()
+        model: @model.toJSON()
+        query: @query
+        zipUrl: @model.getZipURL()
 
     afterRender: ->
         @uploadButton = @$ '#button-upload-new-file'
@@ -74,7 +81,7 @@ module.exports = class FolderView extends BaseView
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
-        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb
+        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb, model: @model
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
@@ -127,19 +134,21 @@ module.exports = class FolderView extends BaseView
     onDragEnter: (e) ->
         e.preventDefault()
         e.stopPropagation()
-        @uploadButton.addClass 'btn-cozy-contrast'
-        @$('#files-drop-zone').show()
+        if not @isPublic or @canUpload
+            @uploadButton.addClass 'btn-cozy-contrast'
+            @$('#files-drop-zone').show()
 
     onDragLeave: (e) ->
         e.preventDefault()
         e.stopPropagation()
-        @uploadButton.removeClass 'btn-cozy-contrast'
-        @$('#files-drop-zone').hide()
+        if not @isPublic or @canUpload
+            @uploadButton.removeClass 'btn-cozy-contrast'
+            @$('#files-drop-zone').hide()
 
     onDrop: (e) ->
         e.preventDefault()
         e.stopPropagation()
-
+        return false if @isPublic and not @canUpload
         @onFilesSelected e
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
@@ -196,3 +205,9 @@ module.exports = class FolderView extends BaseView
                                   input.webkitdirectory? or
                                   input.msdirectory?
         return supportsDirectoryUpload
+
+    # We don't want the user to download the ZIP if the folder is empty
+    onDownloadAsZipClicked: (event) ->
+        if @collection.length is 0
+            event.preventDefault()
+            Modal.error t 'modal error zip empty folder'

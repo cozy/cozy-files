@@ -1,6 +1,6 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
-ModalShareView = require "./modal_share"
+ModalShareView = null
 TagsView = require "../widgets/tags"
 ProgressBar = require '../widgets/progressbar'
 
@@ -29,6 +29,11 @@ module.exports = class FileView extends BaseView
         else
             @templateNormal args
 
+    getRenderData: ->
+        _.extend super(),
+            attachmentUrl: @model.getAttachmentUrl()
+            downloadUrl: @model.getDownloadUrl()
+
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @render
@@ -36,6 +41,9 @@ module.exports = class FileView extends BaseView
     render: ->
         return if _.isEqual Object.keys(@model.changed), ['tags']
         super
+        # prevent contacts loading in shared area
+        unless app.isPublic
+            ModalShareView ?= require "./modal_share"
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>

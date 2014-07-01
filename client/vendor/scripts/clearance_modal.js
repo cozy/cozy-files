@@ -160,12 +160,6 @@ Modal = (function(_super) {
         return _this.onNo();
       };
     })(this));
-    this.$('button.close').click((function(_this) {
-      return function(event) {
-        event.stopPropagation();
-        return _this.onNo();
-      };
-    })(this));
     return $(document).on('keyup', this.closeOnEscape);
   };
 
@@ -267,7 +261,13 @@ Modal.confirm = function(title, content, yesMsg, noMsg, cb) {
 };
 
 Modal.error = function(text, cb) {
-  return new ModalView(t("modal error"), text, t("modal ok"), false, cb);
+  return new Modal({
+    title: t('modal error'),
+    content: text,
+    yes: t('modal ok'),
+    no: false,
+    cb: cb
+  });
 };
 
 module.exports = Modal;
@@ -728,7 +728,7 @@ module.exports = CozyClearanceModal = (function(_super) {
       },
       success: (function(_this) {
         return function(data) {
-          _this.model.trigger('change');
+          _this.model.trigger('change', _this.model);
           if (!sendmail) {
             return _this.$el.modal('hide');
           } else {
