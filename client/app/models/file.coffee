@@ -4,7 +4,7 @@ module.exports = class File extends Backbone.Model
 
     # The breadcrumb is an array of vanilla JS objects
     # representing a parent folder.
-    breadcrumb: null
+    breadcrumb: []
 
     constructor: (options) ->
         doctype = options.docType?.toLowerCase()
@@ -14,6 +14,10 @@ module.exports = class File extends Backbone.Model
 
     isFolder: -> return @get('type') is 'folder'
     isRoot: -> return @get('id') is 'root'
+
+    parse: (data) ->
+        delete data.success
+        return data
 
     # Overrides sync method to allow file upload (multipart request)
     # and progress events
@@ -28,7 +32,9 @@ module.exports = class File extends Backbone.Model
             formdata.append 'lastModification', model.get 'lastModification'
 
             # trigger upload progress on the model
-            progress = (e) -> model.trigger 'progress', e
+            progress = (e) ->
+                model.loaded = e.loaded
+                model.trigger 'progress', e
 
             _.extend options,
                 contentType: false
@@ -36,13 +42,10 @@ module.exports = class File extends Backbone.Model
                 # patch Model.sync so it could trigger progress event
                 xhr: ->
                     xhr = $.ajaxSettings.xhr()
-                    if xhr instanceof window.XMLHttpRequest
-                        xhr.addEventListener 'progress', progress, false
                     if xhr.upload
                         xhr.upload.addEventListener 'progress', progress, false
                     xhr
 
-        @isUploaded = true
         Backbone.sync.apply @, arguments
 
     urlRoot: ->
@@ -106,7 +109,7 @@ module.exports = class File extends Backbone.Model
                     # during search or for root, there is not parents
                     content = body
                     parents = []
-                @setBreadcrumb parents
+                @setBreadcrumb parents or []
                 callbacks null, content, parents
 
     # Set the breadcrumb attribute and append the root model to it

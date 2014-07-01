@@ -14,9 +14,9 @@ td
           | #{model.name}
     block actions
       ul.tags
-        if model.tags
-          for tag in model.tags
-            li #{tag}
+        for tag in model.tags || []
+          li.tag #{tag}
+            span.deleter &times;
       .operations
         a.file-share(title="#{t('tooltip share')}")
           if model.clearance == 'public'

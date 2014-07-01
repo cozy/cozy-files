@@ -14,7 +14,7 @@ module.exports = class ProgressbarView extends BaseView
 
     update: (e) ->
         @value = @getProgression e.loaded, e.total
-        @render()
+        @$('.progress-bar').text(@value + '%').width @value + '%'
 
     getProgression: (loaded, total) ->
         return parseInt(loaded / total * 100)

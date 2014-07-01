@@ -1,7 +1,8 @@
 BaseView = require '../lib/base_view'
 ModalView = require "./modal"
 ModalShareView = require "./modal_share"
-TagsView = require "./tags"
+TagsView = require "../widgets/tags"
+ProgressBar = require '../widgets/progressbar'
 
 client = require "../lib/client"
 
@@ -18,9 +19,9 @@ module.exports = class FileView extends BaseView
         'click a.file-share'       : 'onShare'
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
-        'click a.file-edit-cancel' : 'render'
+        'click a.file-edit-cancel' : 'onCancelClicked'
         'click a.file-move'        : 'onMoveClicked'
-        'keydown input'            : 'onKeyPress'
+        'keydown input.file-edit-name'  : 'onKeyPress'
 
     template: (args) ->
         if @isSearchMode
@@ -31,6 +32,10 @@ module.exports = class FileView extends BaseView
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @render
+
+    render: ->
+        return if _.isEqual Object.keys(@model.changed), ['tags']
+        super
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
@@ -74,7 +79,6 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @model.save name: name,
-                wait: true
                 success: (data) =>
                     @render()
                 error: (model, err) =>
@@ -84,6 +88,11 @@ module.exports = class FileView extends BaseView
                         ModalView.error t("modal error rename")
         else
             ModalView.error t("modal error empty name")
+
+    onCancelClicked: ->
+        if @model.isNew() then @model.destroy()
+        else @render()
+
 
 
     # Display Move widget and handle move operation if user confirms.
@@ -204,7 +213,16 @@ module.exports = class FileView extends BaseView
             @render()
 
     afterRender: ->
-        @tags = new TagsView
-            el: @$('.tags')
-            model: @model
-        @tags.render()
+        # if it's an upload
+        if @model.file
+            @$('.type-column-cell').remove()
+            @$('.date-column-cell').remove()
+            @progressbar = new ProgressBar(model: @model)
+            cell = $('<td colspan="2"></td>')
+            cell.append @progressbar.render().$el
+            @$('.size-column-cell').after cell
+        else
+            @tags = new TagsView
+                el: @$('.tags')
+                model: @model
+            @tags.render()

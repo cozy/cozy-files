@@ -20,13 +20,25 @@
                     | #{t('private')}
                     span.fa.fa-lock
                 | &nbsp;
-              a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
-                img(src="images/add-file.png")
+              .btn-group
+                a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
+                  input#uploader(type="file", multiple)
+                  img(src="images/add-file.png")
+                if supportsDirectoryUpload
+                  a.btn.btn-cozy.dropdown-toggle(data-toggle="dropdown")
+                    span.caret
+                  ul.dropdown-menu
+                    li: a#button-upload-folder
+                      input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory)
+                      span Upload a folder
+
               | &nbsp;
               a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
                 img(src="images/add-folder.png")
               | &nbsp;
               span &nbsp;
+    .row
+      .col-lg-12#upload-status-container
 
 .container
   .row

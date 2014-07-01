@@ -1,12 +1,10 @@
 BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
-ModalUploadView = require './modal_upload'
-ModalFolderView = require './modal_folder'
+UploadStatusView = require './upload_status'
 ModalShareView = require './modal_share'
 
 File = require '../models/file'
-FileCollection = require '../collections/files'
 
 ###
 Handles the display logic for a folder.
@@ -20,11 +18,13 @@ module.exports = class FolderView extends BaseView
 
     events: ->
         'click #button-new-folder'     : 'onNewFolderClicked'
-        'click #button-upload-new-file': 'onUploadNewFileClicked'
+        # 'click #button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
+        'change #uploader': 'onFilesSelected'
+        'change #folder-uploader': 'onDirectorySelected'
 
         'dragstart #files' : 'onDragStart'
         'dragenter #files' : 'onDragEnter'
@@ -51,8 +51,10 @@ module.exports = class FolderView extends BaseView
         super()
 
     getRenderData: ->
-        model: @model.toJSON()
-        query: @query
+        return data =
+            supportsDirectoryUpload: @testEnableDirectoryUpload()
+            model: @model.toJSON()
+            query: @query
 
     afterRender: ->
         @uploadButton = @$ '#button-upload-new-file'
@@ -62,6 +64,9 @@ module.exports = class FolderView extends BaseView
 
         # files list management
         @renderFileList()
+
+        # upload status management
+        @renderUploadStatus()
 
         # We make a reload after the view is displayed to update
         # the client without degrading UX
@@ -73,12 +78,19 @@ module.exports = class FolderView extends BaseView
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
+
         @filesList = new FilesView
                 model: @model
                 collection: @collection
                 isSearchMode: @model.get('type') is "search"
 
         @filesList.render()
+
+    renderUploadStatus: ->
+        @uploadStatus = new UploadStatusView
+            collection: @uploadQueue
+
+        @uploadStatus.render().$el.appendTo @$('#upload-status-container')
 
     spin: (state = 'small') -> @$("#loading-indicator").spin state
 
@@ -90,31 +102,23 @@ module.exports = class FolderView extends BaseView
     ###
         Button handlers
     ###
-    onUploadNewFileClicked: ->
-        @modal = new ModalUploadView
-            model: @model
-            validator: @validateNewModel
-            uploadQueue: @uploadQueue
 
     onNewFolderClicked: ->
-        @modal = new ModalFolderView
-            model: @model
-            validator: @validateNewModel
-            uploadQueue: @uploadQueue
+        newFolder = new File
+            editnew: true
+            name: ''
+            type: 'folder'
+            path: @model.repository()
+
+        @collection.add newFolder
+        view = @filesList.views[newFolder.cid]
+        view.onEditClicked()
+
 
     onShareClicked: -> new ModalShareView model: @model
 
-    # REFACTORING: should be improved and moved somewhere else
-    validateNewModel: (model) =>
-        myChildren = model.get('path') is @model.getRepository()
-        found = @filesList.collection.findWhere name: model.get 'name'
-        if myChildren and found
-            return t 'modal error file exists'
-        else
-            return null
-
     ###
-        Drag and Drop to upload
+        Drag and Drop and Upload
     ###
     onDragStart: (e) ->
         e.preventDefault()
@@ -136,15 +140,19 @@ module.exports = class FolderView extends BaseView
         e.preventDefault()
         e.stopPropagation()
 
-        filesToUpload = e.dataTransfer.files
-        if filesToUpload.length > 0
-            @modal = new ModalUploadView
-                model: @model
-                validator: @validateNewModel
-                files: filesToUpload
-                uploadQueue: @uploadQueue
+        @onFilesSelected e
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
+
+    onDirectorySelected: (e) ->
+        files = @$('#folder-uploader')[0].files
+        return unless files.length
+        @uploadQueue.addFolderBlobs files, @model
+
+    onFilesSelected: (e) =>
+        files = e.dataTransfer?.files or e.target.files
+        return unless files.length
+        @uploadQueue.addBlobs files, @model
 
     ###
         Search
@@ -177,3 +185,14 @@ module.exports = class FolderView extends BaseView
             @$('#loading-indicator').after $ '<div id="files"></div>'
         @renderBreadcrumb()
         @renderFileList()
+
+
+    ### Misc ###
+
+    testEnableDirectoryUpload: ->
+        input = $('<input type="file">')[0]
+        supportsDirectoryUpload = input.directory? or
+                                  input.mozdirectory? or
+                                  input.webkitdirectory? or
+                                  input.msdirectory?
+        return supportsDirectoryUpload

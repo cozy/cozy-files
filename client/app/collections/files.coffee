@@ -78,6 +78,9 @@ module.exports = class FileCollection extends Backbone.Collection
                     @getFolderContent folder, ->
                         callback null, folder, collection
 
+    existingPaths: ->
+        @map (model) -> model.getRepository()
+
     comparator: (f1, f2) ->
 
         # default values
@@ -86,6 +89,10 @@ module.exports = class FileCollection extends Backbone.Collection
 
         t1 = f1.get 'type'
         t2 = f2.get 'type'
+
+        # new folders should be at the topmost
+        if f1.get('editnew') then return -1
+        if f2.get('editnew') then return 1
 
         if @type is 'name'
             n1 = f1.get('name').toLocaleLowerCase()

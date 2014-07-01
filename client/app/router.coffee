@@ -1,6 +1,7 @@
 app = require 'application'
 File = require './models/file'
 FileCollection = require './collections/files'
+MergedCollection = require './lib/merged_collection'
 FolderView = require './views/folder'
 
 ###
@@ -56,9 +57,13 @@ module.exports = class Router extends Backbone.Router
             # because destroying the view also removes the element
             $('html').append $ '<body></body>'
 
+        # we generate a mixed collection with content & uploads
+        filteredUploads = app.uploadQueue.filteredByFolder folder, collection.comparator
+        mergedCollection = MergedCollection(collection, filteredUploads, 'name')
+
         @folderView = new FolderView
             model: folder
-            collection: collection
+            collection: mergedCollection
             baseCollection: app.baseCollection
             breadcrumbs: app.breadcrumbs
             uploadQueue: app.uploadQueue
