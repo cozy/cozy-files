@@ -38,11 +38,11 @@ File.byFullPath = (params, callback) ->
 File.createNewFile = (data, file, callback) =>
     upload = true
     attachBinary = (newFile) ->
-        newFile.attachBinary file.path, {"name": "file"}, (err) ->
+        newFile.attachBinary file.path, {"name": "file"}, (err, res, body) ->
             upload = false
             if err
-                newFile.destroy (err) ->
-                    callback new Error "Error attaching binary: #{err}"
+                newFile.destroy (error) ->
+                    callback "Error attaching binary: #{err}"
             else
                 index newFile
 

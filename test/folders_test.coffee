@@ -407,14 +407,17 @@ describe "Folders management", ->
                 done()
 
         it "Then root folder lastModification should be updated", (done) ->
-            client.get "folders/folders", (err, res, folders) =>
-                folder = folders.pop()
-                while folders.length > 0 and  folder.name isnt 'rootfile'
+            @timeout 3*60*1000
+            setTimeout () =>
+                client.get "folders/folders", (err, res, folders) =>                
                     folder = folders.pop()
+                    while folders.length > 0 and  folder.name isnt 'rootfile'
+                        folder = folders.pop()
 
-                lastModification = moment folder.lastModification
-                (lastModification > @now).should.be.ok
-                done()
+                    lastModification = moment folder.lastModification
+                    (lastModification > @now).should.be.ok
+                    done()
+            , 2.5*60*1000
 
         it "And I send a request to rename a file in that folder", (done) ->
             file =
