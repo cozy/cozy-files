@@ -45,6 +45,17 @@ module.exports =
     "tooltip share"            : "Share"
 
     # folder template
+    'and x files'         : """
+       and %{smart_count} other file ||||
+       and %{smart_count} other files
+    """
+    "already exists"      : "already exists."
+    "failed to upload"    : "could not be sent to server."
+    "upload complete"     : """
+        One file successfully uploaded. ||||
+        %{smart_count} files successfully uploaded.
+    """
+
     "upload caption"            : "Upload a new file"
     "upload msg"                : "Drag files or click here to choose files."
     "upload msg selected"       : """
