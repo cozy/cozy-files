@@ -27,7 +27,7 @@ module.exports.main = function(req, res, next) {
       } else {
         locale = results[0], tags = results[1];
         return res.render('index.jade', {
-          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + tags + "\";"
+          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + tags + "\".split(',');"
         });
       }
     };

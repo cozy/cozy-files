@@ -111,18 +111,26 @@ Initialize the model and start the actual code
 module.exports = {
   initialize: function() {
     var Router;
+    this.isPublic = window.location.pathname.indexOf('/public/') === 0;
     this.baseCollection = new FileCollection();
     this.uploadQueue = new UploadQueue();
     this.socket = new SocketListener();
     this.socket.watch(this.baseCollection);
     Router = require('router');
     this.router = new Router();
-    this.root = new File({
-      id: "root",
-      path: "",
-      name: t('root folder name'),
-      type: "folder"
-    });
+    if (window.rootFolder != null) {
+      this.root = new File(window.rootFolder);
+      this.root.canUpload = window.canUpload || false;
+      this.root.publicNotificationsEnabled = window.publicNofications || false;
+      this.root.publicKey = window.publicKey || "";
+    } else {
+      this.root = new File({
+        id: "root",
+        path: "",
+        name: t('root folder name'),
+        type: "folder"
+      });
+    }
     this.baseCollection.add(this.root);
     window.app = this;
     Backbone.history.start();
@@ -136,7 +144,8 @@ module.exports = {
 ;require.register("collections/files", function(exports, require, module) {
 var File, FileCollection,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 File = require('../models/file');
 
@@ -208,12 +217,20 @@ module.exports = FileCollection = (function(_super) {
     path = folder.getRepository();
     return folder.fetchContent((function(_this) {
       return function(err, content, parents) {
+        var contentIDs, itemsToRemove;
         if (err != null) {
           return callback(err);
         } else {
-          _this.add(content, {
-            merge: true
+          _this.set(content, {
+            remove: false
           });
+          contentIDs = _.pluck(content, 'id');
+          path = folder.getRepository();
+          itemsToRemove = _this.getSubCollection(path).filter(function(item) {
+            var _ref;
+            return _ref = item.get('id'), __indexOf.call(contentIDs, _ref) < 0;
+          });
+          _this.remove(itemsToRemove);
           if (!_this.isPathCached(path)) {
             _this.cachedPaths.push(path);
           }
@@ -256,6 +273,23 @@ module.exports = FileCollection = (function(_super) {
     })(this));
   };
 
+  FileCollection.prototype.existingPaths = function() {
+    return this.map(function(model) {
+      return model.getRepository();
+    });
+  };
+
+  FileCollection.prototype.getSubCollection = function(path) {
+    var filter;
+    filter = function(file) {
+      return file.get('path') === path && !file.isRoot();
+    };
+    return new BackboneProjections.Filtered(this, {
+      filter: filter,
+      comparator: this.comparator
+    });
+  };
+
   FileCollection.prototype.comparator = function(f1, f2) {
     var n1, n2, sort, t1, t2;
     if (this.type == null) {
@@ -266,6 +300,12 @@ module.exports = FileCollection = (function(_super) {
     }
     t1 = f1.get('type');
     t2 = f2.get('type');
+    if (f1.get('editnew')) {
+      return -1;
+    }
+    if (f2.get('editnew')) {
+      return 1;
+    }
     if (this.type === 'name') {
       n1 = f1.get('name').toLocaleLowerCase();
       n2 = f2.get('name').toLocaleLowerCase();
@@ -298,60 +338,227 @@ module.exports = FileCollection = (function(_super) {
 });
 
 ;require.register("collections/upload_queue", function(exports, require, module) {
-var UploadQueue,
+var File, Helpers, UploadQueue,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+File = require('../models/file');
+
+Helpers = require('../lib/folder_helpers');
 
 module.exports = UploadQueue = (function(_super) {
   __extends(UploadQueue, _super);
 
   function UploadQueue() {
+    this.uploadWorker = __bind(this.uploadWorker, this);
+    this.sumProp = __bind(this.sumProp, this);
+    this.computeProgress = __bind(this.computeProgress, this);
     return UploadQueue.__super__.constructor.apply(this, arguments);
   }
 
   UploadQueue.prototype.loaded = 0;
 
   UploadQueue.prototype.initialize = function() {
-    return this.listenTo(this, 'sync', (function(_this) {
-      return function() {
-        _this.loaded++;
-        return _this.trigger('upload-progress', {
-          loaded: _this.loaded,
-          total: _this.length
-        });
+    this.asyncQueue = async.queue(this.uploadWorker, 5);
+    this.listenTo(this, 'add', (function(_this) {
+      return function(model) {
+        _this.completed = false;
+        return _this.asyncQueue.push(model);
       };
     })(this));
+    this.listenTo(this, 'remove', (function(_this) {
+      return function(model) {
+        return model.error = 'aborted';
+      };
+    })(this));
+    this.listenTo(this, 'sync', (function(_this) {
+      return function() {
+        return _this.loaded++;
+      };
+    })(this));
+    this.listenTo(this, 'progress', _.throttle((function(_this) {
+      return function() {
+        return _this.trigger('upload-progress', _this.computeProgress());
+      };
+    })(this), 100));
+    return this.asyncQueue.drain = (function(_this) {
+      return function() {
+        _this.completed = true;
+        return _this.trigger('upload-complete');
+      };
+    })(this);
   };
 
-  UploadQueue.prototype.isAllLoaded = function() {
-    return this.loaded === this.length;
+  UploadQueue.prototype.add = function() {
+    if (this.completed) {
+      this.reset();
+    }
+    return UploadQueue.__super__.add.apply(this, arguments);
   };
 
   UploadQueue.prototype.reset = function(models, options) {
     this.loaded = 0;
-    return UploadQueue.__super__.reset.call(this, models, options);
+    this.completed = false;
+    return UploadQueue.__super__.reset.apply(this, arguments);
   };
 
-  UploadQueue.prototype.processUpload = function(callback) {
-    var toUpload;
-    toUpload = this.filter(function(file) {
-      return !file.isUploaded;
+  UploadQueue.prototype.computeProgress = function() {
+    return this.progress = {
+      loadedFiles: this.loaded,
+      totalFiles: this.length,
+      loadedBytes: this.sumProp('loaded'),
+      totalBytes: this.sumProp('total')
+    };
+  };
+
+  UploadQueue.prototype.sumProp = function(prop) {
+    var iter;
+    iter = function(sum, model) {
+      return sum + model[prop];
+    };
+    return this.reduce(iter, 0);
+  };
+
+  UploadQueue.prototype.uploadWorker = function(model, cb) {
+    if (model.existing || model.error || model.isUploaded) {
+      return cb(null);
+    }
+    return model.save(null, {
+      success: (function(_this) {
+        return function() {
+          model.file = null;
+          model.isUploaded = true;
+          model.loaded = model.total;
+          if (!app.baseCollection.get(model.id)) {
+            app.baseCollection.add(model);
+          }
+          return cb(null);
+        };
+      })(this),
+      error: (function(_this) {
+        return function(_, err) {
+          var body, e;
+          body = (function() {
+            try {
+              return JSON.parse(err.responseText);
+            } catch (_error) {
+              e = _error;
+              return {
+                msg: null
+              };
+            }
+          })();
+          if (err.status === 400 && body.msg === 'This file already exists') {
+            model.existing = true;
+            return cb(new Error(body.msg));
+          }
+          model.tries = 1 + (model.tries || 0);
+          if (model.tries > 3) {
+            model.error = t(err.msg || "modal error file upload");
+          } else {
+            _this.asyncQueue.push(model);
+          }
+          return cb(err);
+        };
+      })(this)
     });
-    return async.eachLimit(toUpload, 5, function(file, cb) {
-      if (file.error || file.isUploaded) {
-        return cb(null);
-      }
-      return file.save(null, {
-        success: function() {
-          return cb(null);
-        },
-        error: function(err) {
-          file.error = t(err.msg || "modal error file upload");
-          file.trigger('sync');
-          return cb(null);
+  };
+
+  UploadQueue.prototype.addBlobs = function(blobs, folder) {
+    var existingPaths, i, nonBlockingLoop;
+    i = 0;
+    existingPaths = app.baseCollection.existingPaths();
+    return (nonBlockingLoop = (function(_this) {
+      return function() {
+        var blob, model, path, relPath, _ref;
+        if (!(blob = blobs[i++])) {
+          return;
         }
+        path = folder.getRepository() || '';
+        relPath = blob.relativePath || blob.mozRelativePath || blob.webkitRelativePath || blob.msRelativePath;
+        if (relPath) {
+          path += '/' + Helpers.dirName(relPath);
+        }
+        model = new File({
+          type: 'file',
+          "class": 'document',
+          size: blob.size,
+          name: blob.name,
+          path: path,
+          lastModification: blob.lastModifiedDate
+        });
+        if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
+          model.existing = true;
+        } else {
+          model.file = blob;
+          model.loaded = 0;
+          model.total = blob.size;
+        }
+        _this.add(model);
+        return setTimeout(nonBlockingLoop, 2);
+      };
+    })(this))();
+  };
+
+  UploadQueue.prototype.addFolderBlobs = function(blobs, parent) {
+    var dir, folder, name, parts, path, prefix, _i, _len, _ref;
+    _ref = Helpers.nestedDirs(blobs).reverse();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      dir = _ref[_i];
+      prefix = parent.getRepository();
+      parts = dir.split('/').filter(function(x) {
+        return x;
       });
-    }, callback);
+      name = parts[parts.length - 1];
+      path = [prefix].concat(parts.slice(0, -1)).join('/');
+      console.log(parts, name, path);
+      folder = new File({
+        type: "folder",
+        name: name,
+        path: path
+      });
+      this.asyncQueue.unshift(folder);
+    }
+    blobs = _.filter(blobs, function(blob) {
+      var _ref1;
+      return (_ref1 = blob.name) !== '.' && _ref1 !== '..';
+    });
+    return this.addBlobs(blobs, parent);
+  };
+
+  UploadQueue.prototype.filteredByFolder = function(folder, comparator) {
+    var filteredUploads;
+    return filteredUploads = new BackboneProjections.Filtered(this, {
+      filter: function(file) {
+        return file.get('path') === folder.getRepository() && !file.isUploaded;
+      },
+      comparator: comparator
+    });
+  };
+
+  UploadQueue.prototype.getResults = function() {
+    var error, existing, status, success;
+    error = [];
+    existing = [];
+    success = 0;
+    this.each(function(model) {
+      if (model.error) {
+        return error.push(model);
+      } else if (model.existing) {
+        return existing.push(model);
+      } else {
+        return success++;
+      }
+    });
+    status = error.length ? 'error' : existing.length ? 'warning' : 'success';
+    return {
+      status: status,
+      error: error,
+      existing: existing,
+      success: success
+    };
   };
 
   return UploadQueue;
@@ -538,6 +745,85 @@ module.exports = {
 };
 });
 
+;require.register("lib/merged_collection", function(exports, require, module) {
+var MergedCollection;
+
+module.exports = MergedCollection = function(a, b, uniqAttr) {
+  var events, mixed, reset, sameAs;
+  if (uniqAttr == null) {
+    uniqAttr = 'id';
+  }
+  mixed = new Backbone.Collection([], {
+    comparator: a.comparator
+  });
+  mixed.A = a;
+  mixed.B = b;
+  (reset = function() {
+    mixed.reset([]);
+    a.forEach(function(model) {
+      return mixed.add(model);
+    });
+    return b.forEach(function(model) {
+      if (!mixed.get(model.id)) {
+        return mixed.add(model);
+      }
+    });
+  })();
+  sameAs = function(model, collection) {
+    var search;
+    search = {};
+    search[uniqAttr] = model.get(uniqAttr);
+    return collection.findWhere(search);
+  };
+  events = {
+    reset: (function(_this) {
+      return function() {
+        return reset();
+      };
+    })(this),
+    remove: (function(_this) {
+      return function(model, collection) {
+        var existingOther, other;
+        other = collection === a ? b : a;
+        mixed.remove(model);
+        if (model.id && (existingOther = sameAs(model, other))) {
+          return mixed.add(existingOther);
+        }
+      };
+    })(this),
+    add: function(model, collection) {
+      var existing;
+      if (existing = sameAs(model, mixed)) {
+        if (collection === a) {
+          mixed.remove(existing);
+          return mixed.add(model);
+        } else {
+
+        }
+      } else {
+        return mixed.add(model);
+      }
+    },
+    'change:id': function(model) {
+      var dups, toRemove;
+      dups = mixed.where({
+        id: model.id
+      });
+      if (dups.length === 2) {
+        toRemove = dups[0].collection === b ? 0 : 1;
+        return mixed.remove(dups[toRemove]);
+      }
+    },
+    sort: function() {
+      return mixed.sort();
+    }
+  };
+  a.bind(events);
+  b.bind(events);
+  return mixed;
+};
+});
+
 ;require.register("lib/socket", function(exports, require, module) {
 var File, SocketListener,
   __hasProp = {}.hasOwnProperty,
@@ -567,7 +853,6 @@ module.exports = SocketListener = (function(_super) {
 
   SocketListener.prototype.onRemoteCreate = function(model) {
     if (this.isInCachedFolder(model)) {
-      console.info("remote create", model);
       if (!(this.collection.get(model.get("id")))) {
         return this.collection.add(model, {
           merge: true
@@ -578,14 +863,12 @@ module.exports = SocketListener = (function(_super) {
 
   SocketListener.prototype.onRemoteDelete = function(model) {
     if (this.isInCachedFolder(model)) {
-      console.info("remote delete", model);
       return this.collection.remove(model);
     }
   };
 
   SocketListener.prototype.onRemoteUpdate = function(model, collection) {
     if (this.isInCachedFolder(model)) {
-      console.info("remote update", model);
       return collection.add(model, {
         merge: true
       });
@@ -765,6 +1048,7 @@ module.exports = {
   "root folder name": "root",
   "breadcrumbs search title": "Search",
   "modal error file exists": "Sorry, a file or folder having this name already exists",
+  "modal error size": "Sorry, you haven't enough storage space",
   "modal error file upload": "File could not be sent to server",
   "modal error folder create": "Folder could not be created",
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
@@ -785,6 +1069,10 @@ module.exports = {
   "tooltip edit": "Rename",
   "tooltip download": "Download",
   "tooltip share": "Share",
+  'and x files': "and %{smart_count} other file ||||\nand %{smart_count} other files",
+  "already exists": "already exists.",
+  "failed to upload": "could not be sent to server.",
+  "upload complete": "One file successfully uploaded. ||||\n%{smart_count} files successfully uploaded.",
   "upload caption": "Upload a new file",
   "upload msg": "Drag files or click here to choose files.",
   "upload msg selected": "You have selected %{smart_count} file, click Add to upload it. ||||\nYou have selected %{smart_count} files, click Add to upload them.",
@@ -882,6 +1170,7 @@ module.exports = {
   "root folder name": "racine",
   "breadcrumbs search title": "Recherche",
   "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+  "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
   "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
   "modal error folder create": "Le dossier n'a pas pu être créé",
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
@@ -1088,7 +1377,7 @@ client = require('../lib/client');
 module.exports = File = (function(_super) {
   __extends(File, _super);
 
-  File.prototype.breadcrumb = null;
+  File.prototype.breadcrumb = [];
 
   function File(options) {
     var doctype, _ref;
@@ -1103,8 +1392,29 @@ module.exports = File = (function(_super) {
     return this.get('type') === 'folder';
   };
 
+  File.prototype.isFile = function() {
+    return this.get('type') === 'file';
+  };
+
+  File.prototype.isSearch = function() {
+    return this.get('type') === 'search';
+  };
+
   File.prototype.isRoot = function() {
     return this.get('id') === 'root';
+  };
+
+  File.prototype.parse = function(data) {
+    delete data.success;
+    return data;
+  };
+
+  File.prototype.getRepository = function() {
+    if (this.isRoot()) {
+      return "";
+    } else {
+      return "" + (this.get("path")) + "/" + (this.get("name"));
+    }
   };
 
   File.prototype.sync = function(method, model, options) {
@@ -1116,6 +1426,7 @@ module.exports = File = (function(_super) {
       formdata.append('file', model.file);
       formdata.append('lastModification', model.get('lastModification'));
       progress = function(e) {
+        model.loaded = e.loaded;
         return model.trigger('progress', e);
       };
       _.extend(options, {
@@ -1124,9 +1435,6 @@ module.exports = File = (function(_super) {
         xhr: function() {
           var xhr;
           xhr = $.ajaxSettings.xhr();
-          if (xhr instanceof window.XMLHttpRequest) {
-            xhr.addEventListener('progress', progress, false);
-          }
           if (xhr.upload) {
             xhr.upload.addEventListener('progress', progress, false);
           }
@@ -1134,17 +1442,62 @@ module.exports = File = (function(_super) {
         }
       });
     }
-    this.isUploaded = true;
     return Backbone.sync.apply(this, arguments);
   };
 
   File.prototype.urlRoot = function() {
-    if (this.get("type") === "folder") {
-      return 'folders/';
-    } else if (this.get("type") === "search") {
-      return 'search/';
+    var prefix;
+    prefix = app.isPublic ? '../' : '';
+    if (this.isFolder()) {
+      return prefix + 'folders/';
+    } else if (this.isSearch()) {
+      return prefix + 'search/';
     } else {
-      return 'files/';
+      return prefix + 'files/';
+    }
+  };
+
+  File.prototype.url = function(toAppend) {
+    var key, url;
+    if (toAppend == null) {
+      toAppend = '';
+    }
+    url = File.__super__.url.call(this);
+    key = app.isPublic ? window.location.search : '';
+    return url + toAppend + key;
+  };
+
+  File.prototype.getPublicURL = function(key) {
+    if (this.isFile()) {
+      return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id + "/attach/" + (this.get('name'));
+    } else {
+      return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
+    }
+  };
+
+  File.prototype.getZipURL = function() {
+    var toAppend;
+    if (this.isFolder()) {
+      toAppend = ".zip";
+      return this.url(toAppend);
+    }
+  };
+
+  File.prototype.getAttachmentUrl = function() {
+    var toAppend;
+    if (this.isFile()) {
+      toAppend = "/attach/" + (this.get('name'));
+      return this.url(toAppend);
+    }
+  };
+
+  File.prototype.getDownloadUrl = function() {
+    var toAppend;
+    if (this.isFile()) {
+      toAppend = "/download/" + (this.get('name'));
+      return this.url(toAppend);
+    } else if (this.isFolder()) {
+      return this.getZipURL();
     }
   };
 
@@ -1197,22 +1550,6 @@ module.exports = File = (function(_super) {
     })(this);
   };
 
-  File.prototype.repository = function() {
-    return this.getRepository();
-  };
-
-  File.prototype.getRepository = function() {
-    if (this.get('id') === "root") {
-      return "";
-    } else {
-      return "" + (this.get("path")) + "/" + (this.get("name"));
-    }
-  };
-
-  File.prototype.getPublicURL = function(key) {
-    return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
-  };
-
 
   /*
       ONLY RELEVANT IF IT'S A FOLDER
@@ -1221,8 +1558,16 @@ module.exports = File = (function(_super) {
    */
 
   File.prototype.fetchContent = function(callbacks) {
+    var key, url;
     this.prepareCallbacks(callbacks);
-    return client.post("" + (this.urlRoot()) + "content", {
+    url = "" + (this.urlRoot()) + "content";
+    key = window.location.search;
+    if (app.isPublic && !this.isSearch()) {
+      url = "" + (this.urlRoot()) + this.id + "/content" + key;
+    } else if (this.isSearch()) {
+      url += key;
+    }
+    return client.post(url, {
       id: this.id
     }, (function(_this) {
       return function(err, body) {
@@ -1237,7 +1582,7 @@ module.exports = File = (function(_super) {
             content = body;
             parents = [];
           }
-          _this.setBreadcrumb(parents);
+          _this.setBreadcrumb(parents || []);
           return callbacks(null, content, parents);
         }
       };
@@ -1259,7 +1604,7 @@ module.exports = File = (function(_super) {
 });
 
 ;require.register("router", function(exports, require, module) {
-var File, FileCollection, FolderView, Router, app,
+var File, FileCollection, FolderView, MergedCollection, PublicFolderView, Router, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1269,7 +1614,11 @@ File = require('./models/file');
 
 FileCollection = require('./collections/files');
 
+MergedCollection = require('./lib/merged_collection');
+
 FolderView = require('./views/folder');
+
+PublicFolderView = require('./views/public_folder');
 
 
 /*
@@ -1338,6 +1687,7 @@ module.exports = Router = (function(_super) {
   };
 
   Router.prototype._renderFolderView = function(folder, collection, query) {
+    var filteredUploads, mergedCollection;
     if (query == null) {
       query = '';
     }
@@ -1345,15 +1695,27 @@ module.exports = Router = (function(_super) {
       this.folderView.destroy();
       $('html').append($('<body></body>'));
     }
-    this.folderView = new FolderView({
+    filteredUploads = app.uploadQueue.filteredByFolder(folder, collection.comparator);
+    mergedCollection = MergedCollection(collection, filteredUploads, 'name');
+    this.folderView = this._getFolderView({
       model: folder,
-      collection: collection,
+      collection: mergedCollection,
       baseCollection: app.baseCollection,
       breadcrumbs: app.breadcrumbs,
       uploadQueue: app.uploadQueue,
       query: query
     });
     return this.folderView.render();
+  };
+
+  Router.prototype._getFolderView = function(params) {
+    if (app.isPublic) {
+      return new PublicFolderView(_.extend(params, {
+        rootFolder: app.root
+      }));
+    } else {
+      return new FolderView(params);
+    }
   };
 
   return Router;
@@ -1381,6 +1743,9 @@ module.exports = BreadcrumbsView = (function(_super) {
 
   BreadcrumbsView.prototype.render = function() {
     var folder, opacity, _i, _len, _ref;
+    if (this.collection[0].id !== 'root') {
+      this.collection.shift();
+    }
     opacity = this.collection.length === 1 ? '0.5' : '1';
     this.$el.css('opacity', opacity);
     this.$el.empty();
@@ -1400,7 +1765,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 });
 
 ;require.register("views/file", function(exports, require, module) {
-var BaseView, FileView, ModalShareView, ModalView, TagsView, client,
+var BaseView, FileView, ModalShareView, ModalView, ProgressBar, TagsView, client,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1409,9 +1774,11 @@ BaseView = require('../lib/base_view');
 
 ModalView = require("./modal");
 
-ModalShareView = require("./modal_share");
+ModalShareView = null;
 
-TagsView = require("./tags");
+TagsView = require("../widgets/tags");
+
+ProgressBar = require('../widgets/progressbar');
 
 client = require("../lib/client");
 
@@ -1439,9 +1806,9 @@ module.exports = FileView = (function(_super) {
     'click a.file-share': 'onShare',
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
-    'click a.file-edit-cancel': 'render',
+    'click a.file-edit-cancel': 'onCancelClicked',
     'click a.file-move': 'onMoveClicked',
-    'keydown input': 'onKeyPress'
+    'keydown input.file-edit-name': 'onKeyPress'
   };
 
   FileView.prototype.template = function(args) {
@@ -1452,9 +1819,26 @@ module.exports = FileView = (function(_super) {
     }
   };
 
+  FileView.prototype.getRenderData = function() {
+    return _.extend(FileView.__super__.getRenderData.call(this), {
+      attachmentUrl: this.model.getAttachmentUrl(),
+      downloadUrl: this.model.getDownloadUrl()
+    });
+  };
+
   FileView.prototype.initialize = function(options) {
     this.isSearchMode = options.isSearchMode;
     return this.listenTo(this.model, 'change', this.render);
+  };
+
+  FileView.prototype.render = function() {
+    if (_.isEqual(Object.keys(this.model.changed), ['tags'])) {
+      return;
+    }
+    FileView.__super__.render.apply(this, arguments);
+    if (!app.isPublic) {
+      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+    }
   };
 
   FileView.prototype.onDeleteClicked = function() {
@@ -1519,7 +1903,6 @@ module.exports = FileView = (function(_super) {
       return this.model.save({
         name: name
       }, {
-        wait: true,
         success: (function(_this) {
           return function(data) {
             return _this.render();
@@ -1537,6 +1920,14 @@ module.exports = FileView = (function(_super) {
       });
     } else {
       return ModalView.error(t("modal error empty name"));
+    }
+  };
+
+  FileView.prototype.onCancelClicked = function() {
+    if (this.model.isNew()) {
+      return this.model.destroy();
+    } else {
+      return this.render();
     }
   };
 
@@ -1635,11 +2026,23 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.afterRender = function() {
-    this.tags = new TagsView({
-      el: this.$('.tags'),
-      model: this.model
-    });
-    return this.tags.render();
+    var cell;
+    if (this.model.file) {
+      this.$('.type-column-cell').remove();
+      this.$('.date-column-cell').remove();
+      this.progressbar = new ProgressBar({
+        model: this.model
+      });
+      cell = $('<td colspan="2"></td>');
+      cell.append(this.progressbar.render().$el);
+      return this.$('.size-column-cell').after(cell);
+    } else {
+      this.tags = new TagsView({
+        el: this.$('.tags'),
+        model: this.model
+      });
+      return this.tags.render();
+    }
   };
 
   return FileView;
@@ -1753,7 +2156,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FileCollection, FilesView, FolderView, ModalFolderView, ModalShareView, ModalUploadView,
+var BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalShareView, UploadStatusView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1764,15 +2167,15 @@ FilesView = require('./files');
 
 BreadcrumbsView = require("./breadcrumbs");
 
-ModalUploadView = require('./modal_upload');
-
-ModalFolderView = require('./modal_folder');
+UploadStatusView = require('./upload_status');
 
 ModalShareView = require('./modal_share');
 
-File = require('../models/file');
+Modal = require('./modal');
 
-FileCollection = require('../collections/files');
+ModalShareView = null;
+
+File = require('../models/file');
 
 
 /*
@@ -1784,7 +2187,7 @@ module.exports = FolderView = (function(_super) {
   __extends(FolderView, _super);
 
   function FolderView() {
-    this.validateNewModel = __bind(this.validateNewModel, this);
+    this.onFilesSelected = __bind(this.onFilesSelected, this);
     return FolderView.__super__.constructor.apply(this, arguments);
   }
 
@@ -1795,11 +2198,13 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.events = function() {
     return {
       'click #button-new-folder': 'onNewFolderClicked',
-      'click #button-upload-new-file': 'onUploadNewFileClicked',
       'click #new-folder-send': 'onAddFolder',
       'click #cancel-new-folder': 'onCancelFolder',
       'click #cancel-new-file': 'onCancelFile',
       'click #share-state': 'onShareClicked',
+      'click #download-link': 'onDownloadAsZipClicked',
+      'change #uploader': 'onFilesSelected',
+      'change #folder-uploader': 'onDirectorySelected',
       'dragstart #files': 'onDragStart',
       'dragenter #files': 'onDragEnter',
       'dragover #files': 'onDragEnter',
@@ -1813,7 +2218,10 @@ module.exports = FolderView = (function(_super) {
     FolderView.__super__.initialize.call(this, options);
     this.baseCollection = options.baseCollection;
     this.uploadQueue = options.uploadQueue;
-    return this.query = options.query;
+    this.query = options.query;
+    if (!app.isPublic) {
+      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+    }
   };
 
   FolderView.prototype.destroy = function() {
@@ -1826,8 +2234,10 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.getRenderData = function() {
     return {
+      supportsDirectoryUpload: this.testEnableDirectoryUpload(),
       model: this.model.toJSON(),
-      query: this.query
+      query: this.query,
+      zipUrl: this.model.getZipURL()
     };
   };
 
@@ -1835,13 +2245,15 @@ module.exports = FolderView = (function(_super) {
     this.uploadButton = this.$('#button-upload-new-file');
     this.renderBreadcrumb();
     this.renderFileList();
+    this.renderUploadStatus();
     return this.refreshData();
   };
 
   FolderView.prototype.renderBreadcrumb = function() {
     this.$('#crumbs').empty();
     this.breadcrumbsView = new BreadcrumbsView({
-      collection: this.model.breadcrumb
+      collection: this.model.breadcrumb,
+      model: this.model
     });
     return this.$("#crumbs").append(this.breadcrumbsView.render().$el);
   };
@@ -1853,6 +2265,13 @@ module.exports = FolderView = (function(_super) {
       isSearchMode: this.model.get('type') === "search"
     });
     return this.filesList.render();
+  };
+
+  FolderView.prototype.renderUploadStatus = function() {
+    this.uploadStatus = new UploadStatusView({
+      collection: this.uploadQueue
+    });
+    return this.uploadStatus.render().$el.appendTo(this.$('#upload-status-container'));
   };
 
   FolderView.prototype.spin = function(state) {
@@ -1876,20 +2295,17 @@ module.exports = FolderView = (function(_super) {
       Button handlers
    */
 
-  FolderView.prototype.onUploadNewFileClicked = function() {
-    return this.modal = new ModalUploadView({
-      model: this.model,
-      validator: this.validateNewModel,
-      uploadQueue: this.uploadQueue
-    });
-  };
-
   FolderView.prototype.onNewFolderClicked = function() {
-    return this.modal = new ModalFolderView({
-      model: this.model,
-      validator: this.validateNewModel,
-      uploadQueue: this.uploadQueue
+    var newFolder, view;
+    newFolder = new File({
+      editnew: true,
+      name: '',
+      type: 'folder',
+      path: this.model.repository()
     });
+    this.collection.add(newFolder);
+    view = this.filesList.views[newFolder.cid];
+    return view.onEditClicked();
   };
 
   FolderView.prototype.onShareClicked = function() {
@@ -1898,22 +2314,9 @@ module.exports = FolderView = (function(_super) {
     });
   };
 
-  FolderView.prototype.validateNewModel = function(model) {
-    var found, myChildren;
-    myChildren = model.get('path') === this.model.getRepository();
-    found = this.filesList.collection.findWhere({
-      name: model.get('name')
-    });
-    if (myChildren && found) {
-      return t('modal error file exists');
-    } else {
-      return null;
-    }
-  };
-
 
   /*
-      Drag and Drop to upload
+      Drag and Drop and Upload
    */
 
   FolderView.prototype.onDragStart = function(e) {
@@ -1924,32 +2327,48 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.onDragEnter = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    this.uploadButton.addClass('btn-cozy-contrast');
-    return this.$('#files-drop-zone').show();
+    if (!this.isPublic || this.canUpload) {
+      this.uploadButton.addClass('btn-cozy-contrast');
+      return this.$('#files-drop-zone').show();
+    }
   };
 
   FolderView.prototype.onDragLeave = function(e) {
     e.preventDefault();
     e.stopPropagation();
+    if (!this.isPublic || this.canUpload) {
+      this.uploadButton.removeClass('btn-cozy-contrast');
+      return this.$('#files-drop-zone').hide();
+    }
+  };
+
+  FolderView.prototype.onDrop = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (this.isPublic && !this.canUpload) {
+      return false;
+    }
+    this.onFilesSelected(e);
     this.uploadButton.removeClass('btn-cozy-contrast');
     return this.$('#files-drop-zone').hide();
   };
 
-  FolderView.prototype.onDrop = function(e) {
-    var filesToUpload;
-    e.preventDefault();
-    e.stopPropagation();
-    filesToUpload = e.dataTransfer.files;
-    if (filesToUpload.length > 0) {
-      this.modal = new ModalUploadView({
-        model: this.model,
-        validator: this.validateNewModel,
-        files: filesToUpload,
-        uploadQueue: this.uploadQueue
-      });
+  FolderView.prototype.onDirectorySelected = function(e) {
+    var files;
+    files = this.$('#folder-uploader')[0].files;
+    if (!files.length) {
+      return;
     }
-    this.uploadButton.removeClass('btn-cozy-contrast');
-    return this.$('#files-drop-zone').hide();
+    return this.uploadQueue.addFolderBlobs(files, this.model);
+  };
+
+  FolderView.prototype.onFilesSelected = function(e) {
+    var files, _ref;
+    files = ((_ref = e.dataTransfer) != null ? _ref.files : void 0) || e.target.files;
+    if (!files.length) {
+      return;
+    }
+    return this.uploadQueue.addBlobs(files, this.model);
   };
 
 
@@ -1980,6 +2399,23 @@ module.exports = FolderView = (function(_super) {
     }
     this.renderBreadcrumb();
     return this.renderFileList();
+  };
+
+
+  /* Misc */
+
+  FolderView.prototype.testEnableDirectoryUpload = function() {
+    var input, supportsDirectoryUpload;
+    input = $('<input type="file">')[0];
+    supportsDirectoryUpload = (input.directory != null) || (input.mozdirectory != null) || (input.webkitdirectory != null) || (input.msdirectory != null);
+    return supportsDirectoryUpload;
+  };
+
+  FolderView.prototype.onDownloadAsZipClicked = function(event) {
+    if (this.collection.length === 0) {
+      event.preventDefault();
+      return Modal.error(t('modal error zip empty folder'));
+    }
   };
 
   return FolderView;
@@ -2094,234 +2530,6 @@ module.exports = ModalView = (function(_super) {
 module.exports.error = function(code, cb) {
   return new ModalView(t("modal error"), code, t("modal ok"), false, cb);
 };
-});
-
-;require.register("views/modal_folder", function(exports, require, module) {
-var BaseView, Client, File, Helpers, Modal, ModalFolderView, ModalUploadView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-BaseView = require('../lib/base_view');
-
-Modal = require("./modal");
-
-Helpers = require('../lib/folder_helpers');
-
-File = require('../models/file');
-
-ModalUploadView = require('./modal_upload');
-
-Client = require("../lib/client");
-
-module.exports = ModalFolderView = (function(_super) {
-  __extends(ModalFolderView, _super);
-
-  ModalFolderView.prototype.id = "dialog-new-folder";
-
-  ModalFolderView.prototype.className = "modal fade";
-
-  ModalFolderView.prototype.attributes = {
-    'tab-index': -1
-  };
-
-  ModalFolderView.prototype.template = require('./templates/modal_folder');
-
-  function ModalFolderView(options, callback) {
-    this.onYes = __bind(this.onYes, this);
-    this.doUploadFolder = __bind(this.doUploadFolder, this);
-    this.doCreateFolder = __bind(this.doCreateFolder, this);
-    this.onUploaderChange = __bind(this.onUploaderChange, this);
-    this.onKeyUp = __bind(this.onKeyUp, this);
-    this.onShow = __bind(this.onShow, this);
-    this.hideAndDestroy = __bind(this.hideAndDestroy, this);
-    this.uploadQueue = options.uploadQueue;
-    Modal.__super__.constructor.apply(this, arguments);
-    this.callback = callback;
-    this.validator = options.validator;
-  }
-
-  ModalFolderView.prototype.events = function() {
-    return _.extend(ModalFolderView.__super__.events.apply(this, arguments), {
-      'keyup #inputName': 'onKeyUp',
-      'change #folder-uploader': 'onUploaderChange'
-    });
-  };
-
-  ModalFolderView.prototype.initialize = function() {
-    ModalFolderView.__super__.initialize.apply(this, arguments);
-    return this.prefix = this.model.repository();
-  };
-
-  ModalFolderView.prototype.afterRender = function() {
-    var supportsDirectoryUpload, uploadDirectoryInput;
-    uploadDirectoryInput = this.$("#folder-uploader")[0];
-    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
-    if (supportsDirectoryUpload) {
-      this.$("#folder-upload-form").removeClass('hide');
-    }
-    this.uploader = this.$('#folder-uploader');
-    this.inputName = this.$('#inputName');
-    this.submitButton = this.$("#modal-dialog-yes");
-    return this.$el.on('show', this.onShow);
-  };
-
-  ModalFolderView.prototype.hideAndDestroy = function() {
-    this.hide();
-    return setTimeout((function(_this) {
-      return function() {
-        return _this.destroy();
-      };
-    })(this), 500);
-  };
-
-  ModalFolderView.prototype.onShow = function() {
-    return setTimeout((function(_this) {
-      return function() {
-        return _this.inputName.focus();
-      };
-    })(this), 500);
-  };
-
-  ModalFolderView.prototype.onKeyUp = function(event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      event.stopPropagation();
-      return this.onYes();
-    } else {
-      this.action = 'create';
-      this.uploader.val('');
-      if (this.inputName.val().length > 0) {
-        return this.enableCreateButtonState();
-      } else {
-        return this.disableCreateButtonState();
-      }
-    }
-  };
-
-  ModalFolderView.prototype.onUploaderChange = function() {
-    this.action = 'upload';
-    this.inputName.val('');
-    return this.enableCreateButtonState();
-  };
-
-  ModalFolderView.prototype.enableCreateButtonState = function() {
-    var element;
-    element = $('#modal-dialog-yes');
-    if (element.prop('disabled')) {
-      return element.prop('disabled', 'false').button('refresh');
-    }
-  };
-
-  ModalFolderView.prototype.disableCreateButtonState = function() {
-    var element;
-    element = $('#modal-dialog-yes');
-    if (!element.prop('disabled')) {
-      return element.prop('disabled', 'true');
-    }
-  };
-
-  ModalFolderView.prototype.doSaveFolder = function(folder, callback) {
-    var err;
-    if (err = this.validator(folder)) {
-      return Modal.error(t("modal error folder exists"));
-    }
-    this.submitButton.html('&nbsp;').spin('tiny');
-    return folder.save(null, {
-      always: function() {
-        return this.submitButton.spin(false).text(t('new folder send'));
-      },
-      success: (function(_this) {
-        return function(data) {
-          _this.hideAndDestroy();
-          return callback(null);
-        };
-      })(this),
-      error: function(_, err) {
-        if (err.status === 400) {
-          Modal.error(t("modal error folder exists"));
-        } else {
-          Modal.error(t("modal error folder create"));
-        }
-        return callback(err);
-      }
-    });
-  };
-
-  ModalFolderView.prototype.doCreateFolder = function(callback) {
-    var errors, folder;
-    folder = new File({
-      name: this.$('#inputName').val(),
-      path: this.prefix,
-      type: "folder"
-    });
-    if (errors = folder.validate()) {
-      return Modal.error(t("modal error no data"));
-    }
-    return this.doSaveFolder(folder, callback);
-  };
-
-  ModalFolderView.prototype.doUploadFolder = function(callback) {
-    var dirs, files;
-    files = this.$('#folder-uploader')[0].files;
-    if (!files.length) {
-      return Modal.error(t("modal error no data"));
-    }
-    dirs = Helpers.nestedDirs(files);
-    return async.each(dirs, (function(_this) {
-      return function(dir, cb) {
-        var folder, parts, path;
-        dir = Helpers.removeTralingSlash(dir);
-        parts = dir.split('/');
-        path = "" + _this.prefix + "/" + (parts.slice(0, -1).join('/'));
-        path = Helpers.removeTralingSlash(path);
-        folder = new File({
-          name: parts.slice(-1)[0],
-          path: path,
-          type: "folder"
-        });
-        return _this.doSaveFolder(folder, function(err) {
-          if (err) {
-            console.log(err);
-          }
-          return cb(null);
-        });
-      };
-    })(this), (function(_this) {
-      return function(err) {
-        var file, relPath, _i, _len;
-        files = _.filter(files, function(file) {
-          var _ref;
-          return (_ref = file.name) !== '.' && _ref !== '..';
-        });
-        for (_i = 0, _len = files.length; _i < _len; _i++) {
-          file = files[_i];
-          relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath || file.msRelativePath;
-          file.path = "" + _this.prefix + "/" + (Helpers.dirName(relPath));
-        }
-        return new ModalUploadView({
-          model: _this.model,
-          files: files,
-          validator: function() {
-            return null;
-          },
-          uploadQueue: _this.uploadQueue
-        });
-      };
-    })(this));
-  };
-
-  ModalFolderView.prototype.onYes = function() {
-    var doStuff;
-    doStuff = this.action === 'upload' ? this.doUploadFolder : this.doCreateFolder;
-    return doStuff(function() {
-      return console.log(arguments);
-    });
-  };
-
-  return ModalFolderView;
-
-})(Modal);
 });
 
 ;require.register("views/modal_share", function(exports, require, module) {
@@ -2480,274 +2688,14 @@ module.exports = ModalShareView = (function(_super) {
 })(CozyClearanceModal);
 });
 
-;require.register("views/modal_upload", function(exports, require, module) {
-var File, Modal, ModalUploadView, ProgressBar, UploadedFileView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-Modal = require('./modal');
-
-File = require('../models/file');
-
-ProgressBar = require('../widgets/progressbar');
-
-UploadedFileView = require('./uploaded_file_view');
-
-module.exports = ModalUploadView = (function(_super) {
-  __extends(ModalUploadView, _super);
-
-  ModalUploadView.prototype.id = "dialog-upload-file";
-
-  ModalUploadView.prototype.className = "modal fade";
-
-  ModalUploadView.prototype.attributes = {
-    'tab-index': -1
-  };
-
-  ModalUploadView.prototype.template = require('./templates/modal_upload');
-
-  ModalUploadView.prototype.events = function() {
-    return _.extend(ModalUploadView.__super__.events.apply(this, arguments), {
-      'dragover': 'onDragEnter',
-      'dragenter': 'onDragEnter',
-      'dragleave': 'onDragLeave',
-      'drop': 'onDrop',
-      'change #uploader': 'onUploaderChange',
-      'mousedown #uploader': 'handleUploaderActive'
-    });
-  };
-
-  function ModalUploadView(options, callback) {
-    this.doUploadFiles = __bind(this.doUploadFiles, this);
-    this.onDrop = __bind(this.onDrop, this);
-    this.onUploaderChange = __bind(this.onUploaderChange, this);
-    this.updateMessage = __bind(this.updateMessage, this);
-    this.handleUploaderActive = __bind(this.handleUploaderActive, this);
-    this.afterRender = __bind(this.afterRender, this);
-    var _ref;
-    this.uploadQueue = options.uploadQueue;
-    Modal.__super__.constructor.apply(this, arguments);
-    this.callback = callback;
-    this.validator = options.validator;
-    this.files = options.files;
-    this.views = {};
-    if (((_ref = this.files) != null ? _ref.length : void 0) > 0) {
-      this.onYes();
-    }
-  }
-
-  ModalUploadView.prototype.initialize = function() {
-    this.listenTo(this.uploadQueue, 'add', this.afterRender);
-    this.listenTo(this.uploadQueue, 'upload-progress', (function(_this) {
-      return function(progress) {
-        _this.totalProgress.trigger('progress', progress);
-        if (_this.uploadQueue.isAllLoaded()) {
-          return _this.afterRender();
-        }
-      };
-    })(this));
-    return ModalUploadView.__super__.initialize.call(this);
-  };
-
-  ModalUploadView.prototype.afterRender = function() {
-    var noButton;
-    this.input = this.$('#uploader input');
-    this.label = this.$('#uploader .text');
-    if (this.uploadQueue.length > 0) {
-      noButton = $('#modal-dialog-no');
-      noButton.html('&nbsp;');
-      noButton.spin('small');
-      this.subRenderTotalProgressBar();
-      this.subRenderFileUploadProgress();
-      if (this.uploadQueue.isAllLoaded()) {
-        noButton = $('#modal-dialog-no');
-        noButton.spin(false);
-        noButton.html(t('upload end button'));
-        return this.uploadQueue.reset();
-      }
-    }
-  };
-
-  ModalUploadView.prototype.subRenderTotalProgressBar = function() {
-    var progressbar;
-    this.$('#progress-total').empty();
-    this.views = [];
-    this.totalProgress = new Backbone.Model();
-    this.totalProgress.loaded = this.uploadQueue.loaded;
-    this.totalProgress.total = this.uploadQueue.length;
-    progressbar = new ProgressBar({
-      model: this.totalProgress
-    }).render();
-    $("<span>" + (t('total progress')) + "</span>").appendTo(this.$('#progress-total'));
-    return progressbar.$el.appendTo(this.$('#progress-total'));
-  };
-
-  ModalUploadView.prototype.subRenderFileUploadProgress = function() {
-    var filesEl;
-    this.$('#progress-part').empty();
-    filesEl = [];
-    _.map(Object.keys(this.views), (function(_this) {
-      return function(viewID) {
-        return _this.views[viewID].$el.detach();
-      };
-    })(this));
-    return this.uploadQueue.forEach((function(_this) {
-      return function(uploadingFile) {
-        var uploadEl, uploadView;
-        uploadView = _this.views[uploadingFile.cid];
-        if (uploadView == null) {
-          uploadEl = new UploadedFileView({
-            model: uploadingFile
-          });
-          _this.views[uploadingFile.cid] = uploadEl;
-        }
-        return _this.$('#progress-part').append(uploadEl.render().$el);
-      };
-    })(this));
-  };
-
-  ModalUploadView.prototype.onNo = function() {
-    this.input.val("");
-    this.hide();
-    return setTimeout(((function(_this) {
-      return function() {
-        return _this.destroy();
-      };
-    })(this)), 500);
-  };
-
-  ModalUploadView.prototype.onYes = function() {
-    return this.doUploadFiles((function(_this) {
-      return function() {
-        return typeof _this.callback === "function" ? _this.callback() : void 0;
-      };
-    })(this));
-  };
-
-  ModalUploadView.prototype.handleUploaderActive = function() {
-    this.$('#uploader').addClass('active');
-    return $(document).one('mouseup', (function(_this) {
-      return function() {
-        return _this.$('#uploader').removeClass('active');
-      };
-    })(this));
-  };
-
-  ModalUploadView.prototype.updateMessage = function() {
-    var msg;
-    if (this.files.length) {
-      msg = t('upload msg selected', {
-        smart_count: this.files.length
-      });
-      $('#modal-dialog-yes').prop("disabled", false);
-    } else {
-      msg = t('upload msg');
-      $('#modal-dialog-yes').prop("disabled", true);
-    }
-    return this.label.text(msg);
-  };
-
-  ModalUploadView.prototype.onUploaderChange = function(e) {
-    this.files = this.input[0].files;
-    return this.updateMessage();
-  };
-
-  ModalUploadView.prototype.onDragEnter = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    return this.$('.modal-body').css('background-color', 'yellow');
-  };
-
-  ModalUploadView.prototype.onDragLeave = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    return this.$('.modal-body').css('background-color', '');
-  };
-
-  ModalUploadView.prototype.onDrop = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.files = _.filter(e.dataTransfer.files, function(attach) {
-      return attach.type !== '';
-    });
-    return this.updateMessage();
-  };
-
-  ModalUploadView.prototype.doUploadFiles = function(callback) {
-    var models;
-    models = _.map(this.files, (function(_this) {
-      return function(blob) {
-        var fileModel;
-        fileModel = new File({
-          type: 'file',
-          name: blob.name,
-          path: blob.path || _this.model.getRepository(),
-          lastModification: blob.lastModifiedDate
-        });
-        fileModel.file = blob;
-        fileModel.loaded = 0;
-        fileModel.total = blob.size;
-        fileModel.error = _this.validator(fileModel);
-        return fileModel;
-      };
-    })(this));
-    this.uploadQueue.add(models);
-    this.uploadQueue.processUpload(callback);
-    this.files = [];
-    this.input.val("");
-    return this.updateMessage();
-  };
-
-  ModalUploadView.prototype.destroy = function() {
-    this.stopListening(this.uploadQueue);
-    return ModalUploadView.__super__.destroy.call(this);
-  };
-
-  return ModalUploadView;
-
-})(Modal);
-});
-
 ;require.register("views/public_folder", function(exports, require, module) {
-var File, FileCollection, FilesView, FolderView, Modal, PublicFilesView, PublicFolderView,
+var FolderView, PublicFolderView, client,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-window.CozySocketListener = {
-  fake: ''
-};
 
 FolderView = require('./folder');
 
-File = require('../models/file');
-
-FilesView = require('./files');
-
-FileCollection = require('../collections/files');
-
-Modal = require('./modal');
-
-PublicFilesView = (function(_super) {
-  __extends(PublicFilesView, _super);
-
-  function PublicFilesView() {
-    return PublicFilesView.__super__.constructor.apply(this, arguments);
-  }
-
-  PublicFilesView.prototype.initialize = function(collection, model) {
-    this.collection = collection;
-    this.model = model;
-    return FilesView.__super__.initialize.apply(this, arguments);
-  };
-
-  PublicFilesView.prototype.addItem = function() {
-    return window.location.reload();
-  };
-
-  return PublicFilesView;
-
-})(FilesView);
+client = require('../lib/client');
 
 module.exports = PublicFolderView = (function(_super) {
   __extends(PublicFolderView, _super);
@@ -2756,121 +2704,73 @@ module.exports = PublicFolderView = (function(_super) {
     return PublicFolderView.__super__.constructor.apply(this, arguments);
   }
 
-  PublicFolderView.prototype.el = document.getElementsByTagName('body')[0];
-
-  PublicFolderView.prototype.templates = function() {
-    return '';
-  };
+  PublicFolderView.prototype.events = _.extend(FolderView.prototype.events, {
+    'click #notifications': 'onToggleNotificationClicked'
+  });
 
   PublicFolderView.prototype.initialize = function(options) {
-    var old;
-    this.model = new File(_.extend(options.folder, {
-      type: 'folder'
-    }));
-    this.uploadQueue = options.uploadQueue;
-    old = File.prototype.urlRoot;
-    File.prototype.urlRoot = function() {
-      return '../' + old.apply(this, arguments) + window.location.search;
-    };
-    this.collection = new FileCollection([]);
-    this.filesList = new PublicFilesView(this.collection, this.model);
-    return this.$('#download-link').click(function(event) {
-      if (window.numElements === 0) {
-        event.preventDefault();
-        return Modal.error(t('modal error zip empty folder'));
-      }
+    PublicFolderView.__super__.initialize.call(this, options);
+    return this.rootFolder = options.rootFolder;
+  };
+
+  PublicFolderView.prototype.afterRender = function() {
+    var classes;
+    PublicFolderView.__super__.afterRender.call(this);
+    classes = ' public';
+    if (this.rootFolder.canUpload) {
+      classes += ' can-upload';
+    }
+    return this.$el.addClass(classes);
+  };
+
+  PublicFolderView.prototype.getRenderData = function() {
+    return _.extend(PublicFolderView.__super__.getRenderData.call(this), {
+      isPublic: true,
+      areNotificationsEnabled: this.rootFolder.publicNotificationsEnabled,
+      hasPublicKey: this.rootFolder.publicKey.length > 0
     });
   };
 
-  PublicFolderView.prototype.onCancelFolder = function() {
-    PublicFolderView.__super__.onCancelFolder.apply(this, arguments);
-    if (this.$('.progress-name').length) {
-      return window.location.reload();
+  PublicFolderView.prototype.onToggleNotificationClicked = function() {
+    var key, url;
+    key = window.location.search;
+    url = "" + (this.model.urlRoot()) + this.rootFolder.id + "/notifications" + key;
+    if (this.rootFolder.publicNotificationsEnabled) {
+      this.rootFolder.publicNotificationsEnabled = false;
+      this.$('#notifications').html('&nbsp;');
+      this.$('#notifications').spin('tiny');
+      return client.put(url, {
+        notificationsState: false
+      }, (function(_this) {
+        return function(err) {
+          _this.$('#notifications').spin(false);
+          if (err == null) {
+            _this.$('#notifications').html(t('notifications disabled'));
+            return _this.$('#notifications').removeClass('toggled');
+          }
+        };
+      })(this));
+    } else {
+      this.rootFolder.publicNotificationsEnabled = true;
+      this.$('#notifications').html('&nbsp;');
+      this.$('#notifications').spin('tiny');
+      return client.put(url, {
+        notificationsState: true
+      }, (function(_this) {
+        return function(err) {
+          _this.$('#notifications').spin(false);
+          if (err == null) {
+            _this.$('#notifications').html(t('notifications enabled'));
+            return _this.$('#notifications').addClass('toggled');
+          }
+        };
+      })(this));
     }
   };
 
   return PublicFolderView;
 
 })(FolderView);
-});
-
-;require.register("views/tags", function(exports, require, module) {
-var BaseView, TagsView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-BaseView = require('../lib/base_view');
-
-module.exports = TagsView = (function(_super) {
-  __extends(TagsView, _super);
-
-  function TagsView() {
-    this.refresh = __bind(this.refresh, this);
-    this.tagRemoved = __bind(this.tagRemoved, this);
-    this.tagClicked = __bind(this.tagClicked, this);
-    this.tagAdded = __bind(this.tagAdded, this);
-    return TagsView.__super__.constructor.apply(this, arguments);
-  }
-
-  TagsView.prototype.initialize = function() {
-    return TagsView.__super__.initialize.apply(this, arguments);
-  };
-
-  TagsView.prototype.afterRender = function() {
-    this.$el.tagit({
-      availableTags: window.tags || [],
-      placeholderText: t('tag'),
-      afterTagAdded: this.tagAdded,
-      afterTagRemoved: this.tagRemoved,
-      onTagClicked: this.tagClicked
-    });
-    this.duringRefresh = false;
-    $('.ui-widget-content .ui-autocomplete-input').keypress(function(event) {
-      var keyCode;
-      keyCode = event.keyCode || event.which;
-      if (keyCode === 9) {
-        return $('.zone .type').first().select();
-      }
-    });
-    return this;
-  };
-
-  TagsView.prototype.tagAdded = function(event, ui) {
-    if (!(this.duringRefresh || ui.duringInitialization)) {
-      this.model.set('tags', this.$el.tagit('assignedTags'));
-      return this.model.save();
-    }
-  };
-
-  TagsView.prototype.tagClicked = function(event, ui) {
-    $("#search-box").val("tag:" + ui.tagLabel);
-    $("#search-box").trigger('keyup');
-    return $(".dropdown-menu").hide();
-  };
-
-  TagsView.prototype.tagRemoved = function(event, ui) {
-    if (!(this.duringRefresh || ui.duringInitialization)) {
-      this.model.set('tags', this.$el.tagit('assignedTags'));
-      return this.model.save();
-    }
-  };
-
-  TagsView.prototype.refresh = function() {
-    var tag, _i, _len, _ref;
-    this.duringRefresh = true;
-    this.$el.tagit('removeAll');
-    _ref = this.model.get('tags');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      tag = _ref[_i];
-      this.$el.tagit('createTag', tag);
-    }
-    return this.duringRefresh = false;
-  };
-
-  return TagsView;
-
-})(BaseView);
 });
 
 ;require.register("views/templates/breadcrumbs_element", function(exports, require, module) {
@@ -2911,7 +2811,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -2919,20 +2819,18 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
-if ( model.tags)
-{
-// iterate model.tags
+// iterate model.tags || []
 ;(function(){
-  var $$obj = model.tags;
+  var $$obj = model.tags || [];
   if ('number' == typeof $$obj.length) {
 
     for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
       var tag = $$obj[$index];
 
-buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
     }
 
   } else {
@@ -2940,13 +2838,12 @@ buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) 
     for (var $index in $$obj) {
       $$l++;      var tag = $$obj[$index];
 
-buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
     }
 
   }
 }).call(this);
 
-}
 buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
@@ -2960,7 +2857,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></div><!-- empty by default--></td><td class=\"size-column-cell\">");
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></div><!-- empty by default--></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3008,7 +2905,30 @@ else
 {
 buf.push("<i class=\"fa fa-file-o\"></i>");
 }
-buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><!-- empty!--></div><!-- empty by default--></td><td class=\"size-column-cell\">");
+buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\">");
+// iterate model.tags || []
+;(function(){
+  var $$obj = model.tags || [];
+  if ('number' == typeof $$obj.length) {
+
+    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
+      var tag = $$obj[$index];
+
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+    }
+
+  } else {
+    var $$l = 0;
+    for (var $index in $$obj) {
+      $$l++;      var tag = $$obj[$index];
+
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+    }
+
+  }
+}).call(this);
+
+buf.push("</ul><!-- empty!--></div><!-- empty by default--></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3046,7 +2966,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -3054,20 +2974,18 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "files/" + (model.id) + "/attach/" + (model.name) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
-if ( model.tags)
-{
-// iterate model.tags
+// iterate model.tags || []
 ;(function(){
-  var $$obj = model.tags;
+  var $$obj = model.tags || [];
   if ('number' == typeof $$obj.length) {
 
     for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
       var tag = $$obj[$index];
 
-buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
     }
 
   } else {
@@ -3075,13 +2993,12 @@ buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) 
     for (var $index in $$obj) {
       $$l++;      var tag = $$obj[$index];
 
-buf.push("<li>" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "</li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
     }
 
   }
 }).call(this);
 
-}
 buf.push("</ul><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
 if ( model.clearance == 'public')
 {
@@ -3095,7 +3012,7 @@ else
 {
 buf.push("<span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "folders/" + (model.id) + "/zip/" + (model.name) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\">");
+buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("title", "" + (t('tooltip move')) + "", true, false)) + " class=\"file-move\"><span class=\"glyphicon glyphicon-arrow-right\"></span></a><a" + (jade.attr("title", "" + (t('tooltip delete')) + "", true, false)) + " class=\"file-delete\"><span class=\"glyphicon glyphicon-remove-circle\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div></div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3161,8 +3078,12 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),query = locals_.query,model = locals_.model;
-buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\"><input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + "/>");
+var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,supportsDirectoryUpload = locals_.supportsDirectoryUpload,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\">");
+if ( !isPublic || hasPublicKey)
+{
+buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + "/>");
+}
 if ( model.type != 'search')
 {
 buf.push("<div id=\"upload-buttons\" class=\"pull-right\">");
@@ -3183,9 +3104,27 @@ buf.push("" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_inte
 }
 buf.push("</a>&nbsp;");
 }
-buf.push("<a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><img src=\"images/add-file.png\"/></a>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a>&nbsp;<span>&nbsp;</span></div>");
+buf.push("<div class=\"btn-group\"><a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"/><img src=\"images/add-file.png\"/></a>");
+if ( supportsDirectoryUpload)
+{
+buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>Upload a folder</span></a></li></ul>");
 }
-buf.push("</p></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\">&nbsp;</div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
+buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a></div>");
+if ( isPublic && hasPublicKey)
+{
+if ( areNotificationsEnabled)
+{
+buf.push("<a id=\"notifications\" class=\"btn btn-cozy toggled\">" + (jade.escape(null == (jade_interp = t('notifications enabled')) ? "" : jade_interp)) + "</a>");
+}
+else
+{
+buf.push("<a id=\"notifications\" class=\"btn btn-cozy\">" + (jade.escape(null == (jade_interp = t('notifications disabled')) ? "" : jade_interp)) + "</a>");
+}
+buf.push("&nbsp;");
+}
+buf.push("<a id=\"download-link\"" + (jade.attr("href", "" + (zipUrl) + "", true, false)) + (jade.attr("title", t("download"), true, false)) + " class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("download")) == null ? '' : jade_interp)) + "&nbsp;<i class=\"icon-arrow-down icon-white\"></i></a>");
+}
+buf.push("</p></div></div><div class=\"row\"><div id=\"upload-status-container\" class=\"col-lg-12\"></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\">&nbsp;</div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -3245,25 +3184,6 @@ if (typeof define === 'function' && define.amd) {
 }
 });
 
-;require.register("views/templates/modal_upload", function(exports, require, module) {
-var __templateData = function template(locals) {
-var buf = [];
-var jade_mixins = {};
-var jade_interp;
-
-buf.push("<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" data-dismiss=\"modal\" aria-hidden=\"true\" class=\"close\">×</button><h4 class=\"modal-title\">" + (jade.escape((jade_interp = t("upload caption")) == null ? '' : jade_interp)) + "</h4></div><div class=\"modal-body\"><fieldset><div class=\"form-group\"><div id=\"uploader\"><div class=\"text\">" + (jade.escape((jade_interp = t("upload msg")) == null ? '' : jade_interp)) + "</div><input type=\"file\" multiple=\"multiple\"/></div></div></fieldset><div id=\"progress-total\"></div><div id=\"progress-part\"></div></div><div class=\"modal-footer\"><button id=\"modal-dialog-no\" type=\"button\" data-dismiss=\"modal\" class=\"btn btn-link\">" + (jade.escape((jade_interp = t("upload close")) == null ? '' : jade_interp)) + "</button><button id=\"modal-dialog-yes\" type=\"button\" disabled=\"disabled\" class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("upload send")) == null ? '' : jade_interp)) + "</button></div></div></div>");;return buf.join("");
-};
-if (typeof define === 'function' && define.amd) {
-  define([], function() {
-    return __templateData;
-  });
-} else if (typeof module === 'object' && module && module.exports) {
-  module.exports = __templateData;
-} else {
-  __templateData;
-}
-});
-
 ;require.register("views/templates/progressbar", function(exports, require, module) {
 var __templateData = function template(locals) {
 var buf = [];
@@ -3281,6 +3201,151 @@ if (typeof define === 'function' && define.amd) {
 } else {
   __templateData;
 }
+});
+
+;require.register("views/templates/upload_status", function(exports, require, module) {
+var __templateData = function template(locals) {
+var buf = [];
+var jade_mixins = {};
+var jade_interp;
+var locals_ = (locals || {}),value = locals_.value;
+buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\">" + (jade.escape(null == (jade_interp = t('total progress') + value) ? "" : jade_interp)) + "</div></div>");;return buf.join("");
+};
+if (typeof define === 'function' && define.amd) {
+  define([], function() {
+    return __templateData;
+  });
+} else if (typeof module === 'object' && module && module.exports) {
+  module.exports = __templateData;
+} else {
+  __templateData;
+}
+});
+
+;require.register("views/upload_status", function(exports, require, module) {
+var BaseView, File, ProgressBar, UploadStatusView, UploadedFileView,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+File = require('../models/file');
+
+ProgressBar = require('../widgets/progressbar');
+
+UploadedFileView = require('./uploaded_file_view');
+
+module.exports = UploadStatusView = (function(_super) {
+  __extends(UploadStatusView, _super);
+
+  function UploadStatusView() {
+    return UploadStatusView.__super__.constructor.apply(this, arguments);
+  }
+
+  UploadStatusView.prototype.id = "upload-status";
+
+  UploadStatusView.prototype.template = require('./templates/upload_status');
+
+  UploadStatusView.prototype.events = function() {
+    return {
+      'click .confirm': 'resetCollection'
+    };
+  };
+
+  UploadStatusView.prototype.initialize = function() {
+    UploadStatusView.__super__.initialize.apply(this, arguments);
+    this.listenTo(this.collection, 'add', this.uploadCount);
+    this.listenTo(this.collection, 'remove', this.uploadCount);
+    this.listenTo(this.collection, 'reset', this.render);
+    this.listenTo(this.collection, 'upload-progress', this.progress);
+    return this.listenTo(this.collection, 'upload-complete', this.complete);
+  };
+
+  UploadStatusView.prototype.getRenderData = function() {
+    var data, e, value;
+    e = this.collection.progress;
+    value = e ? parseInt(100 * e.loadedBytes / e.totalBytes) + '%' : '0 %';
+    return data = {
+      value: value,
+      collection: this.collection
+    };
+  };
+
+  UploadStatusView.prototype.progress = function(e) {
+    var p;
+    this.$el.removeClass('success danger warning');
+    p = parseInt(100 * e.loadedBytes / e.totalBytes) + '%';
+    return this.progressbar.text("" + (t('total progress')) + " : " + p).width(p);
+  };
+
+  UploadStatusView.prototype.complete = function() {
+    var result;
+    this.$('.progress').remove();
+    this.$('.btn-success').text('Ok').addClass('confirm');
+    result = this.collection.getResults();
+    this.$el.addClass(result.status);
+    return this.$('span').text([
+      result.success ? t('upload complete', {
+        smart_count: result.success
+      }) : void 0, result.existing.length ? this.makeExistingSentence(result.existing) : void 0, result.error.length ? this.makeErrorSentence(result.error) : void 0
+    ].join(' '));
+  };
+
+  UploadStatusView.prototype.makeExistingSentence = function(existing) {
+    var parts;
+    parts = [existing[0].get('name')];
+    if (existing.length > 1) {
+      parts.push(t('and x files', {
+        smart_count: existing.length - 1
+      }));
+    }
+    parts.push(t('already exists'));
+    return parts.join(' ');
+  };
+
+  UploadStatusView.prototype.makeErrorSentence = function(errors) {
+    var parts;
+    parts = [errors[0].get('name')];
+    if (errors.length > 1) {
+      parts.push(t('and x files', {
+        smart_count: errors.length - 1
+      }));
+    }
+    parts.push(t('failed to upload'));
+    return parts.join(' ');
+  };
+
+  UploadStatusView.prototype.resetCollection = function() {
+    return this.collection.reset();
+  };
+
+  UploadStatusView.prototype.uploadCount = function(e) {
+    if (this.collection.length) {
+      this.$el.slideDown();
+    }
+    if (this.completed && !this.collection.completed) {
+      this.render();
+    }
+    this.counter.text(this.collection.length);
+    return this.counterDone.text(this.collection.loaded);
+  };
+
+  UploadStatusView.prototype.afterRender = function() {
+    this.$el.removeClass('success danger warning');
+    if (!this.collection.length) {
+      this.$el.hide();
+    }
+    this.counter = this.$('.counter');
+    this.counterDone = this.$('.counter-done');
+    this.progressbar = this.$('.progress-bar');
+    if (this.collection.completed) {
+      return this.complete();
+    }
+  };
+
+  return UploadStatusView;
+
+})(BaseView);
 });
 
 ;require.register("views/uploaded_file_view", function(exports, require, module) {
@@ -3338,6 +3403,155 @@ module.exports = UploadedFileView = (function(_super) {
 })(BaseView);
 });
 
+;require.register("widgets/autocomplete", function(exports, require, module) {
+var Autocomplete, BaseView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+BaseView = require('../lib/base_view');
+
+module.exports = Autocomplete = (function(_super) {
+  __extends(Autocomplete, _super);
+
+  function Autocomplete() {
+    this.unbind = __bind(this.unbind, this);
+    this.delayedUnbind = __bind(this.delayedUnbind, this);
+    this.onInputKeyDown = __bind(this.onInputKeyDown, this);
+    return Autocomplete.__super__.constructor.apply(this, arguments);
+  }
+
+  Autocomplete.prototype.className = 'autocomplete';
+
+  Autocomplete.prototype.tagName = 'ul';
+
+  Autocomplete.prototype.events = function() {
+    return {
+      'click li': 'onClick'
+    };
+  };
+
+  Autocomplete.prototype.onInputKeyDown = function(e) {
+    var delta, _ref;
+    if ((_ref = e.keyCode) === 38 || _ref === 40) {
+      delta = e.keyCode - 39;
+      this.select(this.selectedIndex + delta);
+      e.preventDefault();
+      return e.stopPropagation();
+    }
+  };
+
+  Autocomplete.prototype.onClick = function(e) {
+    var $target, event;
+    e.target.classList.add('selected');
+    this.input.val(e.target.dataset.value);
+    event = $.Event('keydown');
+    event.keyCode = 13;
+    this.input.trigger(event);
+    e.preventDefault();
+    e.stopPropagation();
+    $target = this.$target;
+    this.unbindCancel = true;
+    return this.input.focus();
+  };
+
+  Autocomplete.prototype.initialize = function() {
+    return this.tags = window.tags.map(function(value, idx) {
+      var el, lc;
+      el = document.createElement('li');
+      el.textContent = value;
+      el.dataset.value = value;
+      el.dataset.index = idx;
+      lc = value.toLowerCase();
+      return {
+        value: value,
+        el: el,
+        lc: lc
+      };
+    });
+  };
+
+  Autocomplete.prototype.position = function() {
+    var pos;
+    pos = this.input.offset();
+    pos.top += this.input.height() + 2;
+    pos.width = this.input.width() + 2;
+    return this.$el.appendTo($('body')).css(pos).show();
+  };
+
+  Autocomplete.prototype.refresh = function(search, existings) {
+    var selected, tag, _i, _len, _ref, _ref1;
+    search = this.input.val();
+    selected = (_ref = this.visible) != null ? _ref[this.selectedIndex] : void 0;
+    _ref1 = this.tags;
+    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+      tag = _ref1[_i];
+      tag.el.classList.remove('selected');
+    }
+    this.visible = this.tags.filter(function(tag) {
+      var _ref2;
+      return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && ~tag.lc.indexOf(search.toLowerCase());
+    });
+    if (selected && __indexOf.call(this.visible, selected) >= 0) {
+      this.selectedIndex = this.visible.indexOf(selected);
+    } else {
+      this.selectedIndex = -1;
+    }
+    return this.$el.empty().append(_.pluck(this.visible, 'el'));
+  };
+
+  Autocomplete.prototype.select = function(index) {
+    var tag, _i, _len, _ref;
+    _ref = this.tags;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      tag = _ref[_i];
+      tag.el.classList.remove('selected');
+    }
+    index = (index + this.visible.length) % this.visible.length;
+    this.selectedIndex = index;
+    this.visible[this.selectedIndex].el.classList.add('selected');
+    return this.input.val(this.visible[this.selectedIndex].value);
+  };
+
+  Autocomplete.prototype.bind = function($target) {
+    if ($target === this.$target) {
+      return;
+    }
+    if (this.$target) {
+      this.unbind();
+    }
+    this.$target = $target;
+    this.input = this.$target.find('input');
+    this.position();
+    this.input.on('keydown', this.onInputKeyDown);
+    this.input.on('blur', this.delayedUnbind);
+    return this.selectedIndex = -1;
+  };
+
+  Autocomplete.prototype.delayedUnbind = function() {
+    this.unbindCancel = false;
+    return setTimeout(this.unbind, 100);
+  };
+
+  Autocomplete.prototype.unbind = function() {
+    if (this.unbindCancel) {
+      return;
+    }
+    this.input.off('keydown', this.onInputKeyDown);
+    this.input.off('blur', this.delayedUnbind);
+    this.input.val('');
+    this.$target = null;
+    this.$el.hide();
+    this.$el.detach();
+    return this.selectedIndex = -1;
+  };
+
+  return Autocomplete;
+
+})(BaseView);
+});
+
 ;require.register("widgets/progressbar", function(exports, require, module) {
 var BaseView, ProgressbarView,
   __hasProp = {}.hasOwnProperty,
@@ -3366,7 +3580,7 @@ module.exports = ProgressbarView = (function(_super) {
 
   ProgressbarView.prototype.update = function(e) {
     this.value = this.getProgression(e.loaded, e.total);
-    return this.render();
+    return this.$('.progress-bar').text(this.value + '%').width(this.value + '%');
   };
 
   ProgressbarView.prototype.getProgression = function(loaded, total) {
@@ -3383,6 +3597,144 @@ module.exports = ProgressbarView = (function(_super) {
   return ProgressbarView;
 
 })(BaseView);
+});
+
+;require.register("widgets/tags", function(exports, require, module) {
+var Autocomplete, BaseView, TagsView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+BaseView = require('../lib/base_view');
+
+Autocomplete = require('./autocomplete');
+
+module.exports = TagsView = (function(_super) {
+  __extends(TagsView, _super);
+
+  function TagsView() {
+    this.refresh = __bind(this.refresh, this);
+    this.deleteTag = __bind(this.deleteTag, this);
+    this.refreshAutocomplete = __bind(this.refreshAutocomplete, this);
+    this.onKeyDown = __bind(this.onKeyDown, this);
+    return TagsView.__super__.constructor.apply(this, arguments);
+  }
+
+  TagsView.prototype.events = function() {
+    return {
+      'click .tag': 'tagClicked',
+      'click .tag .deleter': 'deleteTag',
+      'focus input': 'onFocus',
+      'keydown input': 'onKeyDown',
+      'keyup input': 'refreshAutocomplete'
+    };
+  };
+
+  TagsView.prototype.template = function() {
+    return "<input type=\"text\" placeholder=\"" + (t('tag')) + "\">";
+  };
+
+  TagsView.prototype.initialize = function() {
+    return this.listenTo(this.model, 'change:tags', this.refresh);
+  };
+
+  TagsView.prototype.onFocus = function(e) {
+    TagsView.autocomplete.bind(this.$el);
+    return TagsView.autocomplete.refresh('', this.tags);
+  };
+
+  TagsView.prototype.onKeyDown = function(e) {
+    var val, _ref, _ref1, _ref2;
+    val = this.input.val();
+    if (val === '' && e.keyCode === 8) {
+      this.tags = this.tags.slice(0, -1);
+      this.model.save({
+        tags: this.tags
+      });
+      this.refresh();
+      TagsView.autocomplete.refresh('', this.tags);
+      TagsView.autocomplete.position();
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (val && ((_ref = e.keyCode) === 188 || _ref === 32 || _ref === 9 || _ref === 13)) {
+      if (__indexOf.call(this.tags, val) < 0) {
+        this.tags.push(val);
+      }
+      this.model.save({
+        tags: this.tags
+      });
+      this.input.val('');
+      this.refresh();
+      TagsView.autocomplete.refresh('', this.tags);
+      TagsView.autocomplete.position();
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if ((_ref1 = e.keyCode) === 188 || _ref1 === 32 || _ref1 === 9 || _ref1 === 13) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if ((_ref2 = e.keyCode) === 40 || _ref2 === 38) {
+      return true;
+    }
+    if (val && e.keyCode !== 8) {
+      this.refreshAutocomplete();
+      return true;
+    }
+  };
+
+  TagsView.prototype.refreshAutocomplete = function(e) {
+    var _ref;
+    if ((_ref = e != null ? e.keyCode : void 0) === 40 || _ref === 38 || _ref === 8) {
+      return;
+    }
+    return TagsView.autocomplete.refresh(this.input.val(), this.tags);
+  };
+
+  TagsView.prototype.deleteTag = function(e) {
+    var tag;
+    tag = e.target.parentNode.dataset.value;
+    return this.model.save({
+      tags: this.tags = _.without(this.tags, tag)
+    });
+  };
+
+  TagsView.prototype.afterRender = function() {
+    this.refresh();
+    this.tags = this.model.get('tags');
+    return this.input = this.$('input');
+  };
+
+  TagsView.prototype.refresh = function() {
+    var html, tag;
+    this.$('.tag').remove();
+    html = ((function() {
+      var _i, _len, _ref, _results;
+      _ref = this.model.get('tags') || [];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tag = _ref[_i];
+        _results.push("<li class=\"tag\" data-value=\"" + tag + "\">\n    " + tag + "\n    <span class=\"deleter\"> &times; </span>\n</li>");
+      }
+      return _results;
+    }).call(this)).join('');
+    return this.$el.prepend(html);
+  };
+
+  return TagsView;
+
+})(BaseView);
+
+TagsView.autocomplete = new Autocomplete({
+  id: 'tagsAutocomplete'
+});
+
+TagsView.autocomplete.render();
 });
 
 ;

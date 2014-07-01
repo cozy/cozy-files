@@ -22,25 +22,22 @@ module.exports.afterStart = function(app, server, callback) {
   feed.initialize(server);
   realtime = RealtimeAdapter({
     server: server
-  }, ['file.*', 'folder.*', 'contact.*']);
+  }, ['file.*', 'folder.*', 'contact.*'], {
+    resource: '/public/socket.io'
+  });
   init.updateIndex();
   updateIndex = function(type, id) {
     return type.find(id, (function(_this) {
       return function(err, file) {
         if (err) {
           if (err) {
-            return console.log(err.stack);
+            return console.log("updateIndex err", err.stack);
           }
         }
-        return file.index(['name'], function(err) {
-          if (err) {
-            if (err) {
-              return console.log(err.stack);
-            }
-          } else {
-
-          }
-        });
+        if (!file) {
+          return console.log("updateIndex : no file", id);
+        }
+        return file.index(['name'], function(err) {});
       };
     })(this));
   };
