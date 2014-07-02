@@ -426,17 +426,15 @@ module.exports = UploadQueue = (function(_super) {
       return cb(null);
     }
     return model.save(null, {
-      success: (function(_this) {
-        return function() {
-          model.file = null;
-          model.isUploaded = true;
-          model.loaded = model.total;
-          if (!app.baseCollection.get(model.id)) {
-            app.baseCollection.add(model);
-          }
-          return cb(null);
-        };
-      })(this),
+      success: function() {
+        model.file = null;
+        model.isUploaded = true;
+        model.loaded = model.total;
+        if (!app.baseCollection.get(model.id)) {
+          app.baseCollection.add(model);
+        }
+        return cb(null);
+      },
       error: (function(_this) {
         return function(_, err) {
           var body, e;
@@ -450,9 +448,13 @@ module.exports = UploadQueue = (function(_super) {
               };
             }
           })();
-          if (err.status === 400 && body.msg === 'This file already exists') {
+          if (err.status === 400 && body.code === 'EEXISTS') {
             model.existing = true;
             return cb(new Error(body.msg));
+          }
+          if (err.status === 400 && body.code === 'ESTORAGE') {
+            model.error = new Error(body.msg);
+            return cb(model.error);
           }
           model.tries = 1 + (model.tries || 0);
           if (model.tries > 3) {
@@ -1189,6 +1191,10 @@ module.exports = {
   "tooltip share": "Partager",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
+  'and x files': "et un autre fichier ||||\net %{smart_count} autres fichiers",
+  "already exists": "existent déjà.",
+  "failed to upload": "n'ont pas pu être envoyé au serveur",
+  "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
   "upload caption": "Ajouter des fichiers",
   "upload msg": "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
   "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
@@ -1305,6 +1311,10 @@ module.exports = {
   "tooltip edit": "Redenumire",
   "tooltip download": "Descărcare",
   "tooltip share": "Partajare",
+  'and x files': "și un alt fișier ||||\nși %{smart_count} alte fișiere",
+  "already exists": "există deja.",
+  "failed to upload": "nu au putut fi trimise la server.",
+  "upload complete": "dosarul a fost trimis cu succes la server ||||\n%{smart_count} dosare au fost trimise cu succes la server.",
   "upload caption": "Încărcare fișier",
   "upload msg": "Alegeți fișierul de încărcat:",
   "upload close": "Anulare",
@@ -2530,6 +2540,234 @@ module.exports = ModalView = (function(_super) {
 module.exports.error = function(code, cb) {
   return new ModalView(t("modal error"), code, t("modal ok"), false, cb);
 };
+});
+
+;require.register("views/modal_folder", function(exports, require, module) {
+var BaseView, Client, File, Helpers, Modal, ModalFolderView, ModalUploadView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BaseView = require('../lib/base_view');
+
+Modal = require("./modal");
+
+Helpers = require('../lib/folder_helpers');
+
+File = require('../models/file');
+
+ModalUploadView = require('./modal_upload');
+
+Client = require("../lib/client");
+
+module.exports = ModalFolderView = (function(_super) {
+  __extends(ModalFolderView, _super);
+
+  ModalFolderView.prototype.id = "dialog-new-folder";
+
+  ModalFolderView.prototype.className = "modal fade";
+
+  ModalFolderView.prototype.attributes = {
+    'tab-index': -1
+  };
+
+  ModalFolderView.prototype.template = require('./templates/modal_folder');
+
+  function ModalFolderView(options, callback) {
+    this.onYes = __bind(this.onYes, this);
+    this.doUploadFolder = __bind(this.doUploadFolder, this);
+    this.doCreateFolder = __bind(this.doCreateFolder, this);
+    this.onUploaderChange = __bind(this.onUploaderChange, this);
+    this.onKeyUp = __bind(this.onKeyUp, this);
+    this.onShow = __bind(this.onShow, this);
+    this.hideAndDestroy = __bind(this.hideAndDestroy, this);
+    this.uploadQueue = options.uploadQueue;
+    Modal.__super__.constructor.apply(this, arguments);
+    this.callback = callback;
+    this.validator = options.validator;
+  }
+
+  ModalFolderView.prototype.events = function() {
+    return _.extend(ModalFolderView.__super__.events.apply(this, arguments), {
+      'keyup #inputName': 'onKeyUp',
+      'change #folder-uploader': 'onUploaderChange'
+    });
+  };
+
+  ModalFolderView.prototype.initialize = function() {
+    ModalFolderView.__super__.initialize.apply(this, arguments);
+    return this.prefix = this.model.getRepository();
+  };
+
+  ModalFolderView.prototype.afterRender = function() {
+    var supportsDirectoryUpload, uploadDirectoryInput;
+    uploadDirectoryInput = this.$("#folder-uploader")[0];
+    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
+    if (supportsDirectoryUpload) {
+      this.$("#folder-upload-form").removeClass('hide');
+    }
+    this.uploader = this.$('#folder-uploader');
+    this.inputName = this.$('#inputName');
+    this.submitButton = this.$("#modal-dialog-yes");
+    return this.$el.on('show', this.onShow);
+  };
+
+  ModalFolderView.prototype.hideAndDestroy = function() {
+    this.hide();
+    return setTimeout((function(_this) {
+      return function() {
+        return _this.destroy();
+      };
+    })(this), 500);
+  };
+
+  ModalFolderView.prototype.onShow = function() {
+    return setTimeout((function(_this) {
+      return function() {
+        return _this.inputName.focus();
+      };
+    })(this), 500);
+  };
+
+  ModalFolderView.prototype.onKeyUp = function(event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      event.stopPropagation();
+      return this.onYes();
+    } else {
+      this.action = 'create';
+      this.uploader.val('');
+      if (this.inputName.val().length > 0) {
+        return this.enableCreateButtonState();
+      } else {
+        return this.disableCreateButtonState();
+      }
+    }
+  };
+
+  ModalFolderView.prototype.onUploaderChange = function() {
+    this.action = 'upload';
+    this.inputName.val('');
+    return this.enableCreateButtonState();
+  };
+
+  ModalFolderView.prototype.enableCreateButtonState = function() {
+    var element;
+    element = $('#modal-dialog-yes');
+    if (element.prop('disabled')) {
+      return element.prop('disabled', 'false').button('refresh');
+    }
+  };
+
+  ModalFolderView.prototype.disableCreateButtonState = function() {
+    var element;
+    element = $('#modal-dialog-yes');
+    if (!element.prop('disabled')) {
+      return element.prop('disabled', 'true');
+    }
+  };
+
+  ModalFolderView.prototype.doSaveFolder = function(folder, callback) {
+    var err;
+    if (err = this.validator(folder)) {
+      return Modal.error(t("modal error folder exists"));
+    }
+    this.submitButton.html('&nbsp;').spin('tiny');
+    return folder.save(null, {
+      always: function() {
+        return this.submitButton.spin(false).text(t('new folder send'));
+      },
+      success: (function(_this) {
+        return function(data) {
+          _this.hideAndDestroy();
+          return callback(null);
+        };
+      })(this),
+      error: function(_, err) {
+        if (err.status === 400) {
+          Modal.error(t("modal error folder exists"));
+        } else {
+          Modal.error(t("modal error folder create"));
+        }
+        return callback(err);
+      }
+    });
+  };
+
+  ModalFolderView.prototype.doCreateFolder = function(callback) {
+    var errors, folder;
+    folder = new File({
+      name: this.$('#inputName').val(),
+      path: this.prefix,
+      type: "folder"
+    });
+    if (errors = folder.validate()) {
+      return Modal.error(t("modal error no data"));
+    }
+    return this.doSaveFolder(folder, callback);
+  };
+
+  ModalFolderView.prototype.doUploadFolder = function(callback) {
+    var dirs, files;
+    files = this.$('#folder-uploader')[0].files;
+    if (!files.length) {
+      return Modal.error(t("modal error no data"));
+    }
+    dirs = Helpers.nestedDirs(files);
+    return async.each(dirs, (function(_this) {
+      return function(dir, cb) {
+        var folder, parts, path;
+        dir = Helpers.removeTralingSlash(dir);
+        parts = dir.split('/');
+        path = "" + _this.prefix + "/" + (parts.slice(0, -1).join('/'));
+        path = Helpers.removeTralingSlash(path);
+        folder = new File({
+          name: parts.slice(-1)[0],
+          path: path,
+          type: "folder"
+        });
+        return _this.doSaveFolder(folder, function(err) {
+          if (err) {
+            console.log(err);
+          }
+          return cb(null);
+        });
+      };
+    })(this), (function(_this) {
+      return function(err) {
+        var file, relPath, _i, _len;
+        files = _.filter(files, function(file) {
+          var _ref;
+          return (_ref = file.name) !== '.' && _ref !== '..';
+        });
+        for (_i = 0, _len = files.length; _i < _len; _i++) {
+          file = files[_i];
+          relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath || file.msRelativePath;
+          file.path = "" + _this.prefix + "/" + (Helpers.dirName(relPath));
+        }
+        return new ModalUploadView({
+          model: _this.model,
+          files: files,
+          validator: function() {
+            return null;
+          },
+          uploadQueue: _this.uploadQueue
+        });
+      };
+    })(this));
+  };
+
+  ModalFolderView.prototype.onYes = function() {
+    var doStuff;
+    doStuff = this.action === 'upload' ? this.doUploadFolder : this.doCreateFolder;
+    return doStuff(function() {
+      return console.log(arguments);
+    });
+  };
+
+  return ModalFolderView;
+
+})(Modal);
 });
 
 ;require.register("views/modal_share", function(exports, require, module) {

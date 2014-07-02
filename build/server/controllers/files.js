@@ -143,6 +143,7 @@ module.exports.create = function(req, res, next) {
         if (sameFiles.length > 0) {
           return res.send({
             error: true,
+            code: 'EEXISTS',
             msg: "This file already exists"
           }, 400);
         } else {
@@ -165,16 +166,18 @@ module.exports.create = function(req, res, next) {
               resetTimeout();
               if (err) {
                 if (err.toString().indexOf('enough storage') !== -1) {
-                  return res.send({
+                  res.send({
                     error: true,
+                    code: 'ESTORAGE',
                     msg: "modal error size"
                   }, 400);
                 } else {
-                  return res.send({
+                  res.send({
                     error: true,
                     msg: err
-                  }, 400);
+                  }, 500);
                 }
+                return;
               }
               who = req.guestEmail || 'owner';
               return sharing.notifyChanges(who, newfile, function(err) {
