@@ -2,7 +2,6 @@ BaseView = require '../lib/base_view'
 FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
-ModalShareView = require './modal_share'
 Modal = require './modal'
 ModalShareView = null
 
@@ -48,6 +47,8 @@ module.exports = class FolderView extends BaseView
         # prevent contacts loading in shared area
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
+
+        return this
 
     destroy: ->
         @breadcrumbsView.destroy()
@@ -115,7 +116,7 @@ module.exports = class FolderView extends BaseView
             editnew: true
             name: ''
             type: 'folder'
-            path: @model.repository()
+            path: @model.getRepository()
 
         @collection.add newFolder
         view = @filesList.views[newFolder.cid]

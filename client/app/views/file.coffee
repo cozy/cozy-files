@@ -38,12 +38,13 @@ module.exports = class FileView extends BaseView
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @render
 
-    render: ->
-        return if _.isEqual Object.keys(@model.changed), ['tags']
-        super
         # prevent contacts loading in shared area
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
+
+    render: ->
+        return if _.isEqual Object.keys(@model.changed), ['tags']
+        return super
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>

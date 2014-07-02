@@ -126,8 +126,6 @@ module.exports = class UploadQueue extends Backbone.Collection
             name = parts[parts.length - 1]
             path = [prefix].concat(parts[...-1]).join '/'
 
-            console.log parts, name, path
-
             folder = new File
                 type: "folder"
                 name: name

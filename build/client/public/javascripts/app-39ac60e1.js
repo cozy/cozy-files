@@ -513,7 +513,6 @@ module.exports = UploadQueue = (function(_super) {
       });
       name = parts[parts.length - 1];
       path = [prefix].concat(parts.slice(0, -1)).join('/');
-      console.log(parts, name, path);
       folder = new File({
         type: "folder",
         name: name,
@@ -1828,17 +1827,17 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.initialize = function(options) {
     this.isSearchMode = options.isSearchMode;
-    return this.listenTo(this.model, 'change', this.render);
+    this.listenTo(this.model, 'change', this.render);
+    if (!app.isPublic) {
+      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+    }
   };
 
   FileView.prototype.render = function() {
     if (_.isEqual(Object.keys(this.model.changed), ['tags'])) {
       return;
     }
-    FileView.__super__.render.apply(this, arguments);
-    if (!app.isPublic) {
-      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
-    }
+    return FileView.__super__.render.apply(this, arguments);
   };
 
   FileView.prototype.onDeleteClicked = function() {
@@ -2169,8 +2168,6 @@ BreadcrumbsView = require("./breadcrumbs");
 
 UploadStatusView = require('./upload_status');
 
-ModalShareView = require('./modal_share');
-
 Modal = require('./modal');
 
 ModalShareView = null;
@@ -2220,8 +2217,11 @@ module.exports = FolderView = (function(_super) {
     this.uploadQueue = options.uploadQueue;
     this.query = options.query;
     if (!app.isPublic) {
-      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+      if (ModalShareView == null) {
+        ModalShareView = require("./modal_share");
+      }
     }
+    return this;
   };
 
   FolderView.prototype.destroy = function() {
@@ -2301,7 +2301,7 @@ module.exports = FolderView = (function(_super) {
       editnew: true,
       name: '',
       type: 'folder',
-      path: this.model.repository()
+      path: this.model.getRepository()
     });
     this.collection.add(newFolder);
     view = this.filesList.views[newFolder.cid];
