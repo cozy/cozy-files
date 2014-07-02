@@ -12,9 +12,15 @@ module.exports = MergedCollection = (a, b, uniqAttr='id') ->
     mixed.B = b
 
     do reset = () ->
-        mixed.reset []
-        a.forEach (model) -> mixed.add model
-        b.forEach (model) -> mixed.add model unless mixed.get model.id
+        models = []
+        ids = []
+        a.forEach (model) ->
+            models.push model
+            ids.push model.id
+        b.forEach (model) ->
+            models.push model unless model.id in ids
+
+        mixed.reset models
 
     sameAs = (model, collection) ->
         search = {}

@@ -10,7 +10,7 @@ module.exports = class UploadStatusView extends BaseView
     template: require './templates/upload_status'
 
     events: ->
-        'click .confirm': 'resetCollection'
+        'click #dismiss': 'resetCollection'
 
     initialize: ->
         super
@@ -36,7 +36,7 @@ module.exports = class UploadStatusView extends BaseView
 
     complete: ->
         @$('.progress').remove()
-        @$('.btn-success').text('Ok').addClass('confirm')
+        @dismiss.show()
 
         result = @collection.getResults()
 
@@ -84,5 +84,6 @@ module.exports = class UploadStatusView extends BaseView
         @counter = @$('.counter')
         @counterDone = @$('.counter-done')
         @progressbar = @$('.progress-bar')
+        @dismiss = @$('#dismiss').hide()
         if @collection.completed then @complete()
 
