@@ -97,7 +97,11 @@ module.exports.create = (req, res, next) ->
         File.byFullPath key: fullPath, (err, sameFiles) =>
             return next err if err
             if sameFiles.length > 0
-                res.send error:true, msg: "This file already exists", 400
+                res.send
+                    error: true
+                    code: 'EEXISTS'
+                    msg: "This file already exists"
+                , 400
             else
                 file = req.files["file"]
                 now = moment().toISOString()
@@ -118,10 +122,16 @@ module.exports.create = (req, res, next) ->
                     File.createNewFile data, file, (err, newfile) =>
                         resetTimeout()
                         if err
-                            return if err.toString().indexOf('enough storage') isnt -1
-                                res.send error:true, msg: "modal error size", 400
+                            if err.toString().indexOf('enough storage') isnt -1
+                                res.send
+                                    error: true
+                                    code: 'ESTORAGE'
+                                    msg: "modal error size"
+                                , 400
                             else
-                                res.send error:true, msg: err, 400
+                                res.send error:true, msg: err, 500
+
+                            return # break request handling
 
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newfile, (err) ->

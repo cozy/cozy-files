@@ -46,6 +46,16 @@ module.exports =
     "file edit cancel"          : "Annuler"
 
     # folder template
+    'and x files'         : """
+       et un autre fichier ||||
+       et %{smart_count} autres fichiers
+    """
+    "already exists"      : "existent déjà."
+    "failed to upload"    : "n'ont pas pu être envoyé au serveur"
+    "upload complete"     : """
+        Le fichier a été transféré. ||||
+        %{smart_count} fichiers ont été transférés.
+    """
     "upload caption"            : "Ajouter des fichiers"
     "upload msg"                : "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne."
     "upload msg selected"       : """

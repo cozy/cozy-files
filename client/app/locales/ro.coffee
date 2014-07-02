@@ -45,6 +45,16 @@ module.exports =
     "tooltip share"            : "Partajare"
 
     # folder template
+    'and x files'         : """
+       și un alt fișier ||||
+       și %{smart_count} alte fișiere
+    """
+    "already exists"      : "există deja."
+    "failed to upload"    : "nu au putut fi trimise la server."
+    "upload complete"     : """
+        dosarul a fost trimis cu succes la server ||||
+        %{smart_count} dosare au fost trimise cu succes la server.
+    """
     "upload caption"            : "Încărcare fișier"
     "upload msg"                : "Alegeți fișierul de încărcat:"
     "upload close"              : "Anulare"

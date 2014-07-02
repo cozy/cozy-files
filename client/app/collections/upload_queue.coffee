@@ -19,6 +19,7 @@ module.exports = class UploadQueue extends Backbone.Collection
             @completed = false
             @asyncQueue.push model
 
+        # never happens, but should be handled
         @listenTo this, 'remove', (model) =>
             model.error = 'aborted'
 
@@ -58,7 +59,7 @@ module.exports = class UploadQueue extends Backbone.Collection
     uploadWorker: (model, cb) =>
         return cb null if model.existing or model.error or model.isUploaded
         model.save null,
-            success: =>
+            success: ->
                 model.file = null
                 model.isUploaded = true
                 model.loaded = model.total
@@ -69,9 +70,13 @@ module.exports = class UploadQueue extends Backbone.Collection
                 body = try JSON.parse(err.responseText)
                 catch e then msg: null
 
-                if err.status is 400 and body.msg is 'This file already exists'
+                if err.status is 400 and body.code is 'EEXISTS'
                     model.existing = true
                     return cb new Error body.msg
+
+                if err.status is 400 and body.code is 'ESTORAGE'
+                    model.error = new Error body.msg
+                    return cb model.error
 
                 model.tries = 1 + (model.tries or 0)
                 if model.tries > 3
@@ -98,7 +103,6 @@ module.exports = class UploadQueue extends Backbone.Collection
 
             if relPath then path += '/' + Helpers.dirName relPath
 
-            # @TODO handle file exists
             model = new File
                 type: 'file'
                 class: 'document'
