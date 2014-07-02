@@ -159,7 +159,9 @@ module.exports = class UploadQueue extends Backbone.Collection
         success = 0
 
         @each (model) ->
-            if model.error then error.push model
+            if model.error
+                console.log "Upload Error", model.getRepository(), model.error
+                error.push model
             else if model.existing then existing.push model
             else success++
 
