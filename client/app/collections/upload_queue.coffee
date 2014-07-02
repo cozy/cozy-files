@@ -57,7 +57,9 @@ module.exports = class UploadQueue extends Backbone.Collection
         @reduce iter, 0
 
     uploadWorker: (model, cb) =>
-        return cb null if model.existing or model.error or model.isUploaded
+        if model.existing or model.error or model.isUploaded
+            setTimeout cb, 10
+
         model.save null,
             success: ->
                 model.file = null
