@@ -73,14 +73,20 @@ module.exports = class UploadStatusView extends BaseView
         @collection.reset()
 
     uploadCount: (e) ->
-        @$el.slideDown easing: 'linear' if @collection.length
+        if @collection.length
+            @$el.slideDown easing: 'linear'
+            $('#content').animate 'margin-top': 108,
+                easing: 'linear'
+
         @render() if @completed and not @collection.completed
         @counter.text @collection.length
         @counterDone.text @collection.loaded
 
     afterRender: ->
+        unless @collection.length
+            @$el.hide()
+            $('#content').css 'margin-top': 56
         @$el.removeClass 'success danger warning'
-        @$el.hide() unless @collection.length
         @counter = @$('.counter')
         @counterDone = @$('.counter-done')
         @progressbar = @$('.progress-bar')
