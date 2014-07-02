@@ -139,7 +139,7 @@ div#affixbar
     &:first-of-type
       padding-top: 15px
     &:last-of-type
-      height 54px
+      height 60px
   a.btn
     height: 35px
 
@@ -178,8 +178,10 @@ table#table-items
     opacity: 0.5
 
   td
-      padding: 0px 5px 0 0
       height: 40px
+
+      .progress
+        margin-bottom 0px
 
   td.type-column-cell
   td.size-column-cell
@@ -459,9 +461,9 @@ tr.folder-row
   input
       cursor: pointer
       position: absolute
-      width: 4000px
+      width: 200px
       display: block
-      height: 3000px
+      height: 45px
       font-size: 300px
       top: 0px
       right: 0px
@@ -727,8 +729,9 @@ body.error-404 .error-frame
 .public
   #affixbar
     #share-state
-    #button-upload-new-file
+    #upload-btngroup
     #button-new-folder
+    .row:last-of-type
       display none
 
     #notifications
@@ -739,6 +742,9 @@ body.error-404 .error-frame
     #button-upload-new-file
     #button-new-folder
       display inline-block
+
+  #content
+    margin-top 56px
 
   #files
     .tagit-new

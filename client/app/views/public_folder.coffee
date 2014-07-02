@@ -3,7 +3,8 @@ client = require '../lib/client'
 
 module.exports = class PublicFolderView extends FolderView
 
-    events: _.extend FolderView::events, 'click #notifications': 'onToggleNotificationClicked'
+    events: -> _.extend super,
+        'click #notifications': 'onToggleNotificationClicked'
 
 
     initialize: (options) ->

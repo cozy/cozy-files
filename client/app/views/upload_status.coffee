@@ -73,7 +73,7 @@ module.exports = class UploadStatusView extends BaseView
         @collection.reset()
 
     uploadCount: (e) ->
-        @$el.slideDown() if @collection.length
+        @$el.slideDown easing: 'linear' if @collection.length
         @render() if @completed and not @collection.completed
         @counter.text @collection.length
         @counterDone.text @collection.loaded

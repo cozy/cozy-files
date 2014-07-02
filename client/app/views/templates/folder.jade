@@ -3,12 +3,9 @@
     .row
       .col-lg-12
         #crumbs.pull-left
-
-
-        block actions
-          p.pull-right
+        div.pull-right
             if !isPublic || hasPublicKey
-              input#search-box(type="search", value="#{query}")
+              input#search-box.pull-right(type="search", value="#{query}")
 
             if model.type != 'search'
               #upload-buttons.pull-right
@@ -29,7 +26,7 @@
                   | &nbsp;
 
                 //- file & folder uploaders
-                .btn-group
+                .btn-group#upload-btngroup
                   a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
                     input#uploader(type="file", multiple)
                     img(src="images/add-file.png")
