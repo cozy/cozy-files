@@ -668,18 +668,16 @@ module.exports.publicList = function(req, res, next) {
           return CozyInstance.getLocale(cb);
         }
       ], function(err, results) {
-        var html, imports, lang, node_env, publicKey;
+        var html, imports, lang, publicKey;
         if (err) {
           return errortemplate(err);
         }
         lang = results[0];
         publicKey = req.query.key || "";
         imports = "window.rootFolder = " + (JSON.stringify(folder)) + ";\nwindow.locale = \"" + lang + "\";\nwindow.tags = [];\nwindow.canUpload = " + (rule.perm === 'rw') + "\nwindow.publicNofications = " + (rule.notifications || false) + "\nwindow.publicKey = \"" + publicKey + "\"";
-        node_env = process.env.NODE_ENV;
         try {
           html = jade.renderFile(template, {
-            imports: imports,
-            node_env: node_env
+            imports: imports
           });
           return res.send(html);
         } catch (_error) {

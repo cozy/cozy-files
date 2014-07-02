@@ -747,7 +747,8 @@ module.exports = {
 });
 
 ;require.register("lib/merged_collection", function(exports, require, module) {
-var MergedCollection;
+var MergedCollection,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 module.exports = MergedCollection = function(a, b, uniqAttr) {
   var events, mixed, reset, sameAs;
@@ -760,15 +761,20 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
   mixed.A = a;
   mixed.B = b;
   (reset = function() {
-    mixed.reset([]);
+    var ids, models;
+    models = [];
+    ids = [];
     a.forEach(function(model) {
-      return mixed.add(model);
+      models.push(model);
+      return ids.push(model.id);
     });
-    return b.forEach(function(model) {
-      if (!mixed.get(model.id)) {
-        return mixed.add(model);
+    b.forEach(function(model) {
+      var _ref;
+      if (_ref = model.id, __indexOf.call(ids, _ref) < 0) {
+        return models.push(model);
       }
     });
+    return mixed.reset(models);
   })();
   sameAs = function(model, collection) {
     var search;
@@ -2542,234 +2548,6 @@ module.exports.error = function(code, cb) {
 };
 });
 
-;require.register("views/modal_folder", function(exports, require, module) {
-var BaseView, Client, File, Helpers, Modal, ModalFolderView, ModalUploadView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-BaseView = require('../lib/base_view');
-
-Modal = require("./modal");
-
-Helpers = require('../lib/folder_helpers');
-
-File = require('../models/file');
-
-ModalUploadView = require('./modal_upload');
-
-Client = require("../lib/client");
-
-module.exports = ModalFolderView = (function(_super) {
-  __extends(ModalFolderView, _super);
-
-  ModalFolderView.prototype.id = "dialog-new-folder";
-
-  ModalFolderView.prototype.className = "modal fade";
-
-  ModalFolderView.prototype.attributes = {
-    'tab-index': -1
-  };
-
-  ModalFolderView.prototype.template = require('./templates/modal_folder');
-
-  function ModalFolderView(options, callback) {
-    this.onYes = __bind(this.onYes, this);
-    this.doUploadFolder = __bind(this.doUploadFolder, this);
-    this.doCreateFolder = __bind(this.doCreateFolder, this);
-    this.onUploaderChange = __bind(this.onUploaderChange, this);
-    this.onKeyUp = __bind(this.onKeyUp, this);
-    this.onShow = __bind(this.onShow, this);
-    this.hideAndDestroy = __bind(this.hideAndDestroy, this);
-    this.uploadQueue = options.uploadQueue;
-    Modal.__super__.constructor.apply(this, arguments);
-    this.callback = callback;
-    this.validator = options.validator;
-  }
-
-  ModalFolderView.prototype.events = function() {
-    return _.extend(ModalFolderView.__super__.events.apply(this, arguments), {
-      'keyup #inputName': 'onKeyUp',
-      'change #folder-uploader': 'onUploaderChange'
-    });
-  };
-
-  ModalFolderView.prototype.initialize = function() {
-    ModalFolderView.__super__.initialize.apply(this, arguments);
-    return this.prefix = this.model.getRepository();
-  };
-
-  ModalFolderView.prototype.afterRender = function() {
-    var supportsDirectoryUpload, uploadDirectoryInput;
-    uploadDirectoryInput = this.$("#folder-uploader")[0];
-    supportsDirectoryUpload = uploadDirectoryInput.directory || uploadDirectoryInput.mozdirectory || uploadDirectoryInput.webkitdirectory || uploadDirectoryInput.msdirectory;
-    if (supportsDirectoryUpload) {
-      this.$("#folder-upload-form").removeClass('hide');
-    }
-    this.uploader = this.$('#folder-uploader');
-    this.inputName = this.$('#inputName');
-    this.submitButton = this.$("#modal-dialog-yes");
-    return this.$el.on('show', this.onShow);
-  };
-
-  ModalFolderView.prototype.hideAndDestroy = function() {
-    this.hide();
-    return setTimeout((function(_this) {
-      return function() {
-        return _this.destroy();
-      };
-    })(this), 500);
-  };
-
-  ModalFolderView.prototype.onShow = function() {
-    return setTimeout((function(_this) {
-      return function() {
-        return _this.inputName.focus();
-      };
-    })(this), 500);
-  };
-
-  ModalFolderView.prototype.onKeyUp = function(event) {
-    if (event.keyCode === 13) {
-      event.preventDefault();
-      event.stopPropagation();
-      return this.onYes();
-    } else {
-      this.action = 'create';
-      this.uploader.val('');
-      if (this.inputName.val().length > 0) {
-        return this.enableCreateButtonState();
-      } else {
-        return this.disableCreateButtonState();
-      }
-    }
-  };
-
-  ModalFolderView.prototype.onUploaderChange = function() {
-    this.action = 'upload';
-    this.inputName.val('');
-    return this.enableCreateButtonState();
-  };
-
-  ModalFolderView.prototype.enableCreateButtonState = function() {
-    var element;
-    element = $('#modal-dialog-yes');
-    if (element.prop('disabled')) {
-      return element.prop('disabled', 'false').button('refresh');
-    }
-  };
-
-  ModalFolderView.prototype.disableCreateButtonState = function() {
-    var element;
-    element = $('#modal-dialog-yes');
-    if (!element.prop('disabled')) {
-      return element.prop('disabled', 'true');
-    }
-  };
-
-  ModalFolderView.prototype.doSaveFolder = function(folder, callback) {
-    var err;
-    if (err = this.validator(folder)) {
-      return Modal.error(t("modal error folder exists"));
-    }
-    this.submitButton.html('&nbsp;').spin('tiny');
-    return folder.save(null, {
-      always: function() {
-        return this.submitButton.spin(false).text(t('new folder send'));
-      },
-      success: (function(_this) {
-        return function(data) {
-          _this.hideAndDestroy();
-          return callback(null);
-        };
-      })(this),
-      error: function(_, err) {
-        if (err.status === 400) {
-          Modal.error(t("modal error folder exists"));
-        } else {
-          Modal.error(t("modal error folder create"));
-        }
-        return callback(err);
-      }
-    });
-  };
-
-  ModalFolderView.prototype.doCreateFolder = function(callback) {
-    var errors, folder;
-    folder = new File({
-      name: this.$('#inputName').val(),
-      path: this.prefix,
-      type: "folder"
-    });
-    if (errors = folder.validate()) {
-      return Modal.error(t("modal error no data"));
-    }
-    return this.doSaveFolder(folder, callback);
-  };
-
-  ModalFolderView.prototype.doUploadFolder = function(callback) {
-    var dirs, files;
-    files = this.$('#folder-uploader')[0].files;
-    if (!files.length) {
-      return Modal.error(t("modal error no data"));
-    }
-    dirs = Helpers.nestedDirs(files);
-    return async.each(dirs, (function(_this) {
-      return function(dir, cb) {
-        var folder, parts, path;
-        dir = Helpers.removeTralingSlash(dir);
-        parts = dir.split('/');
-        path = "" + _this.prefix + "/" + (parts.slice(0, -1).join('/'));
-        path = Helpers.removeTralingSlash(path);
-        folder = new File({
-          name: parts.slice(-1)[0],
-          path: path,
-          type: "folder"
-        });
-        return _this.doSaveFolder(folder, function(err) {
-          if (err) {
-            console.log(err);
-          }
-          return cb(null);
-        });
-      };
-    })(this), (function(_this) {
-      return function(err) {
-        var file, relPath, _i, _len;
-        files = _.filter(files, function(file) {
-          var _ref;
-          return (_ref = file.name) !== '.' && _ref !== '..';
-        });
-        for (_i = 0, _len = files.length; _i < _len; _i++) {
-          file = files[_i];
-          relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath || file.msRelativePath;
-          file.path = "" + _this.prefix + "/" + (Helpers.dirName(relPath));
-        }
-        return new ModalUploadView({
-          model: _this.model,
-          files: files,
-          validator: function() {
-            return null;
-          },
-          uploadQueue: _this.uploadQueue
-        });
-      };
-    })(this));
-  };
-
-  ModalFolderView.prototype.onYes = function() {
-    var doStuff;
-    doStuff = this.action === 'upload' ? this.doUploadFolder : this.doCreateFolder;
-    return doStuff(function() {
-      return console.log(arguments);
-    });
-  };
-
-  return ModalFolderView;
-
-})(Modal);
-});
-
 ;require.register("views/modal_share", function(exports, require, module) {
 var BaseView, CozyClearanceModal, Modal, ModalShareView, client,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -2942,9 +2720,11 @@ module.exports = PublicFolderView = (function(_super) {
     return PublicFolderView.__super__.constructor.apply(this, arguments);
   }
 
-  PublicFolderView.prototype.events = _.extend(FolderView.prototype.events, {
-    'click #notifications': 'onToggleNotificationClicked'
-  });
+  PublicFolderView.prototype.events = function() {
+    return _.extend(PublicFolderView.__super__.events.apply(this, arguments), {
+      'click #notifications': 'onToggleNotificationClicked'
+    });
+  };
 
   PublicFolderView.prototype.initialize = function(options) {
     PublicFolderView.__super__.initialize.call(this, options);
@@ -3317,10 +3097,10 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,supportsDirectoryUpload = locals_.supportsDirectoryUpload,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
-buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><p class=\"pull-right\">");
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><div class=\"pull-right\">");
 if ( !isPublic || hasPublicKey)
 {
-buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + "/>");
+buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + " class=\"pull-right\"/>");
 }
 if ( model.type != 'search')
 {
@@ -3342,7 +3122,7 @@ buf.push("" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_inte
 }
 buf.push("</a>&nbsp;");
 }
-buf.push("<div class=\"btn-group\"><a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"/><img src=\"images/add-file.png\"/></a>");
+buf.push("<div id=\"upload-btngroup\" class=\"btn-group\"><a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"/><img src=\"images/add-file.png\"/></a>");
 if ( supportsDirectoryUpload)
 {
 buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>Upload a folder</span></a></li></ul>");
@@ -3362,7 +3142,7 @@ buf.push("&nbsp;");
 }
 buf.push("<a id=\"download-link\"" + (jade.attr("href", "" + (zipUrl) + "", true, false)) + (jade.attr("title", t("download"), true, false)) + " class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("download")) == null ? '' : jade_interp)) + "&nbsp;<i class=\"icon-arrow-down icon-white\"></i></a>");
 }
-buf.push("</p></div></div><div class=\"row\"><div id=\"upload-status-container\" class=\"col-lg-12\"></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\">&nbsp;</div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
+buf.push("</div></div></div><div class=\"row\"><div id=\"upload-status-container\" class=\"col-lg-12\"></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\">&nbsp;</div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -3447,7 +3227,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),value = locals_.value;
-buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\">" + (jade.escape(null == (jade_interp = t('total progress') + value) ? "" : jade_interp)) + "</div></div>");;return buf.join("");
+buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div id=\"dismiss\" class=\"btn btn-cozy pull-right\">" + (jade.escape(null == (jade_interp = t('ok')) ? "" : jade_interp)) + "</div><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\">" + (jade.escape(null == (jade_interp = t('total progress') + value) ? "" : jade_interp)) + "</div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -3486,7 +3266,7 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.events = function() {
     return {
-      'click .confirm': 'resetCollection'
+      'click #dismiss': 'resetCollection'
     };
   };
 
@@ -3519,7 +3299,7 @@ module.exports = UploadStatusView = (function(_super) {
   UploadStatusView.prototype.complete = function() {
     var result;
     this.$('.progress').remove();
-    this.$('.btn-success').text('Ok').addClass('confirm');
+    this.dismiss.show();
     result = this.collection.getResults();
     this.$el.addClass(result.status);
     return this.$('span').text([
@@ -3559,7 +3339,9 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.uploadCount = function(e) {
     if (this.collection.length) {
-      this.$el.slideDown();
+      this.$el.slideDown({
+        easing: 'linear'
+      });
     }
     if (this.completed && !this.collection.completed) {
       this.render();
@@ -3576,6 +3358,7 @@ module.exports = UploadStatusView = (function(_super) {
     this.counter = this.$('.counter');
     this.counterDone = this.$('.counter-done');
     this.progressbar = this.$('.progress-bar');
+    this.dismiss = this.$('#dismiss').hide();
     if (this.collection.completed) {
       return this.complete();
     }
