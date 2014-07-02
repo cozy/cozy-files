@@ -81,12 +81,15 @@ module.exports = class FileView extends BaseView
             range.moveStart "character", 0
             range.select()
 
+        @$el.addClass 'edit-mode'
+
     onShare: -> new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
         if name and name isnt ""
+            @$el.removeClass 'edit-mode'
             @model.save name: name,
                 success: (data) =>
                     @render()
@@ -99,6 +102,7 @@ module.exports = class FileView extends BaseView
             ModalView.error t("modal error empty name")
 
     onCancelClicked: ->
+        @$el.removeClass 'edit-mode'
         if @model.isNew() then @model.destroy()
         else @render()
 
