@@ -19,6 +19,9 @@ module.exports = class File extends Backbone.Model
     isSearch: -> return @get('type') is 'search'
     isRoot: -> return @get('id') is 'root'
 
+    # Only relevant if it's a file
+    isBeingUploaded: -> return @isFile() and @file? and not @isUploaded
+
     parse: (data) ->
         delete data.success
         return data
@@ -86,7 +89,10 @@ module.exports = class File extends Backbone.Model
 
     # Only relevant if model is a file
     getAttachmentUrl: ->
-        if @isFile()
+        # if the file is being uploaded, it's not accessible (yet)
+        if @isBeingUploaded()
+            "#"
+        else if @isFile()
             toAppend = "/attach/#{@get 'name'}"
             @url toAppend
 
