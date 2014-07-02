@@ -81,7 +81,7 @@ module.exports.create = (req, res, next) ->
         Folder.all (err, folders) =>
             available = pathHelpers.checkIfPathAvailable folder, folders
             if not available
-                res.send error: true, msg: "This folder already exists", 400
+                res.send code: 'EEXISTS', error: true, msg: "This folder already exists", 400
             else
                 fullPath = folder.path
                 parents = folders.filter (tested) ->
@@ -164,7 +164,7 @@ module.exports.modify = (req, res, next) ->
             oldTags = file.tags
             tags = [].concat oldTags
             for tag in newTags
-                tags.push tag if tags.indexOf tag is -1
+                tags.push tag if tags.indexOf(tag) is -1
 
             data =
                 path: modifiedPath
