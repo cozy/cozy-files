@@ -109,8 +109,8 @@ module.exports = class FileCollection extends Backbone.Collection
         t2 = f2.get 'type'
 
         # new folders should be at the topmost
-        if f1.get('editnew') then return -1
-        if f2.get('editnew') then return 1
+        if f1.isNew() then return -1
+        if f2.isNew() then return 1
 
         if @type is 'name'
             n1 = f1.get('name').toLocaleLowerCase()

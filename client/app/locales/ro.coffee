@@ -78,6 +78,7 @@ module.exports =
 
     "yes"                       : "Da"
     "no"                        : "Nu"
+    "ok"                        : "Ok"
 
     "name"                      : "Nume"
     "type"                      : "Tip"

@@ -90,6 +90,7 @@ module.exports =
 
     "yes"                       : "Yes"
     "no"                        : "No"
+    "ok"                        : "Ok"
 
     "name"                      : "Name"
     "type"                      : "Type"

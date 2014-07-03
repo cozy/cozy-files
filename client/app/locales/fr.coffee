@@ -88,6 +88,7 @@ module.exports =
 
     "yes"                       : "Oui"
     "no"                        : "Non"
+    "ok"                        : "Ok"
 
     "name"                      : "Nom"
     "type"                      : "Type"

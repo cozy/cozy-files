@@ -112,15 +112,22 @@ module.exports = class FolderView extends BaseView
     ###
 
     onNewFolderClicked: ->
-        newFolder = new File
-            editnew: true
-            name: ''
-            type: 'folder'
-            path: @model.getRepository()
 
-        @collection.add newFolder
-        view = @filesList.views[newFolder.cid]
-        view.onEditClicked()
+        if @newFolder
+            # there is already a new folder
+            @filesList.views[@newFolder.cid].$('.file-edit-name').focus()
+        else
+            @newFolder ?= new File
+                name: ''
+                type: 'folder'
+                path: @model.getRepository()
+
+            @baseCollection.add @newFolder
+            view = @filesList.views[@newFolder.cid]
+            view.onEditClicked()
+
+            @newFolder.once 'sync destroy', =>
+                @newFolder = null
 
 
     onShareClicked: -> new ModalShareView model: @model

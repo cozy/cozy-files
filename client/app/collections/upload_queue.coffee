@@ -17,7 +17,10 @@ module.exports = class UploadQueue extends Backbone.Collection
         # when a model is added, we queue it for upload
         @listenTo this, 'add', (model) =>
             @completed = false
-            @asyncQueue.push model
+            # Files at the bottom, Folder at the top
+            if model.get('type') is 'file' then @asyncQueue.push model
+            else if model.get('type') is 'folder' then @asyncQueue.unshift model
+            else throw new Error('adding wrong typed model to upload queue')
 
         # never happens, but should be handled
         @listenTo this, 'remove', (model) =>
@@ -57,7 +60,9 @@ module.exports = class UploadQueue extends Backbone.Collection
         @reduce iter, 0
 
     uploadWorker: (model, cb) =>
-        return cb null if model.existing or model.error or model.isUploaded
+        if model.existing or model.error or model.isUploaded
+            setTimeout cb, 10
+
         model.save null,
             success: ->
                 model.file = null
@@ -135,8 +140,11 @@ module.exports = class UploadQueue extends Backbone.Collection
                 name: name
                 path: path
 
-            # add folder to be saved (top of queue)
-            @asyncQueue.unshift folder
+            folder.loaded = 0
+            folder.total = 100 # ~ size of the query
+
+            # add folder to be saved
+            @add folder
 
         # Folder will be created, we can safely add files to bottom of queue
         blobs = _.filter blobs, (blob) ->
@@ -157,7 +165,9 @@ module.exports = class UploadQueue extends Backbone.Collection
         success = 0
 
         @each (model) ->
-            if model.error then error.push model
+            if model.error
+                console.log "Upload Error", model.getRepository(), model.error
+                error.push model
             else if model.existing then existing.push model
             else success++
 

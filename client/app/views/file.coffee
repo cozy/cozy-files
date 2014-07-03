@@ -37,15 +37,39 @@ module.exports = class FileView extends BaseView
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
-        @listenTo @model, 'change', @render
+        @listenTo @model, 'change', @refresh
+        @listenTo @model, 'request', =>
+            @$('.spinholder').spin 'small'
+        @listenTo @model, 'sync error', =>
+            @$('.spinholder').spin false
 
         # prevent contacts loading in shared area
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
 
-    render: ->
-        return if _.isEqual Object.keys(@model.changed), ['tags']
-        return super
+    refresh: ->
+
+        changes = Object.keys(@model.changed)
+
+        if changes.length is 1
+            if changes[0] is 'tags'
+                return # only tags has changed, TagsView handle it
+
+            if changes[0] is 'lastModification'
+                # this change often, let's not re-render the whole view
+                date = moment(@model.changed.lastModification).calendar()
+                @$('td.date-column-cell span').text date
+                return
+
+        # more complex change = rerender
+        @render()
+
+
+
+    displayError: (msg) ->
+        @errorField ?= $('<span class="error">').insertAfter @$('.tags')
+        if msg is false then @errorField.hide()
+        else @errorField.text msg
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
@@ -92,15 +116,16 @@ module.exports = class FileView extends BaseView
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
             @model.save name: name,
+                wait: true,
                 success: (data) =>
                     @render()
                 error: (model, err) =>
-                    if err.status is 400
-                        ModalView.error t("modal error in use")
-                    else
-                        ModalView.error t("modal error rename")
+                    @$('.file-edit-name').focus()
+                    @displayError if err.status is 400 then t 'modal error in use'
+                    else t 'modal error rename'
+
         else
-            ModalView.error t("modal error empty name")
+            @displayError t("modal error empty name")
 
     onCancelClicked: ->
         @$el.removeClass 'edit-mode'

@@ -15,7 +15,10 @@ module.exports = class TagsView extends BaseView
     """
 
     initialize: ->
-        @listenTo @model, 'change:tags', @refresh
+        @tags = @model.get('tags')
+        @listenTo @model, 'change:tags', =>
+            @tags = @model.get('tags')
+            @refresh()
 
     onFocus: (e) ->
         TagsView.autocomplete.bind this.$el
@@ -26,8 +29,7 @@ module.exports = class TagsView extends BaseView
         val = @input.val()
 
         if val is '' and e.keyCode is 8 #BACKSPACE
-            @tags = @tags[0..-2]
-            @model.save tags: @tags
+            @setTags @tags[0..-2] # remove last tag
             @refresh()
             TagsView.autocomplete.refresh('', @tags)
             TagsView.autocomplete.position()
@@ -38,7 +40,7 @@ module.exports = class TagsView extends BaseView
         # COMMA, SPACE, TAB, ENTER
         if val and e.keyCode in [188, 32, 9, 13]
             @tags.push val unless val in @tags
-            @model.save tags: @tags
+            @setTags @tags
             @input.val ''
             @refresh()
             TagsView.autocomplete.refresh('', @tags)
@@ -64,10 +66,25 @@ module.exports = class TagsView extends BaseView
         return if e?.keyCode in [40, 38, 8]
         TagsView.autocomplete.refresh @input.val(), @tags
 
+    tagClicked: (e) =>
+        tag = e.target.dataset.value
+        # simulate search
+        $("#search-box").val("tag:#{tag}").trigger 'keyup'
+
+
+    setTags: (newTags) =>
+        @tags = newTags
+        @refresh()
+        clearTimeout @saveLater
+        @saveLater = setTimeout =>
+            @model.save tags: @tags
+        , 3000 # 3s
+
     deleteTag: (e) =>
         tag = e.target.parentNode.dataset.value
-        @model.save
-            tags: @tags = _.without @tags, tag
+        @setTags _.without @tags, tag
+        e.stopPropagation()
+        e.preventDefault()
 
     afterRender: ->
         @refresh()
@@ -81,7 +98,7 @@ module.exports = class TagsView extends BaseView
                     #{tag}
                     <span class="deleter"> &times; </span>
                 </li>
-            """ for tag in @model.get('tags') or []).join ''
+            """ for tag in @tags or []).join ''
         @$el.prepend html
 
 TagsView.autocomplete = new Autocomplete(id: 'tagsAutocomplete')
