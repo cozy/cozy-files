@@ -28,8 +28,6 @@ module.exports = class TagsView extends BaseView
         else
             TagsView.autocomplete.$el.show()
 
-        val = @input.val()
-
     onKeyDown: (e) =>
 
         val = @input.val()
