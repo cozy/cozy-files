@@ -39,7 +39,10 @@ else
       a.caption.btn.btn-link(
           href="files/#{model.id}/attach/#{model.name}", 
           title="#{t('download file')}", target="_blank")
-        i.fa.fa-file-o
+        if model.mime && this.mimeClasses[model.mime]
+          i(class="fa #{this.mimeClasses[model.mime]}")
+        else
+          i.fa.fa-file-o
         | #{model.name}
     ul.tags
       if model.tags
