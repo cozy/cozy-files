@@ -6,7 +6,8 @@ td
         a.caption.btn.btn-link(
             href="#folders/#{model.id}", title="#{t('open folder')}")
           i.fa.fa-folder
-          | #{model.name}
+          span
+            | #{model.name}
       else if model.type == 'file'
         a.caption.btn.btn-link(
             href="#{attachmentUrl}",
@@ -15,7 +16,8 @@ td
             i(class="fa #{this.mimeClasses[model.mime]}")
           else
             i.fa.fa-file-o
-          | #{model.name}
+          span
+            | #{model.name}
     block tags
       ul.tags
         for tag in model.tags || []
