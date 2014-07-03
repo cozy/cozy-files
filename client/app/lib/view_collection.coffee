@@ -21,13 +21,24 @@ module.exports = class ViewCollection extends BaseView
     views: {}
     itemViewOptions: ->
 
+    # Gets the selector of the item views
+    getItemViewSelector: ->
+        classNames = @itemview::className.replace ' ', '.'
+        return "#{@itemview::tagName}.#{classNames}"
+
     # add 'empty' class to view when there is no subview
     onChange: ->
         @$el.toggleClass 'empty', _.size(@views) is 0
 
-    # can be overriden if we want to place the subviews somewhere else
+    # we append the views at a specific index
+    # based on their order in the collection
     appendView: (view) ->
-        @$collectionEl.append view.el
+        index = @collection.indexOf view.model
+        if index is 0 # insert at the beginning
+            @$collectionEl.prepend view.$el
+        else
+            selector = @getItemViewSelector()
+            view.$el.insertAfter $(selector).eq(index - 1)
 
     # bind listeners to the collection
     initialize: ->
@@ -36,6 +47,7 @@ module.exports = class ViewCollection extends BaseView
         @listenTo @collection, "reset",   @onReset
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
+        @listenTo @collection, "sort",    @onSort
 
         @collectionEl = el if not @collectionEl?
 
@@ -47,7 +59,7 @@ module.exports = class ViewCollection extends BaseView
     # after render, we reattach the views
     afterRender: ->
         @$collectionEl = $ @collectionEl
-        @appendView view.$el for id, view of @views
+        @appendView view for id, view of @views
         @onReset @collection
         @onChange @views
 
@@ -75,3 +87,15 @@ module.exports = class ViewCollection extends BaseView
         delete @views[model.cid]
 
         @onChange @views
+
+    # We don't re-render the view if the order has not changed
+    # Based on Marionette.ViewCollection
+    onSort: ->
+        selector = @getItemViewSelector()
+        $itemViews = $ selector
+        orderChanged = @collection.find (item, index) =>
+            view = @views[item.cid]
+            indexView = $itemViews.index view.$el
+            return view and indexView isnt index
+
+        @render() if orderChanged
