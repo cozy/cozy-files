@@ -1844,6 +1844,70 @@ module.exports = FileView = (function(_super) {
     'keydown input.file-edit-name': 'onKeyPress'
   };
 
+  FileView.prototype.mimeClasses = {
+    'application/octet-stream': 'fa-file-o',
+    'application/x-binary': 'fa-file',
+    'text/plain': 'fa-file-text-o',
+    'text/richtext': 'fa-file-text-o',
+    'application/x-rtf': 'fa-file-text-o',
+    'application/rtf': 'fa-file-text-o',
+    'application/msword': 'fa-file-word-o',
+    'application/mspowerpoint': 'fa-file-powerpoint-o',
+    'application/vnd.ms-powerpoint': 'fa-file-powerpoint-o',
+    'application/x-mspowerpoint': 'fa-file-powerpoint-o',
+    'application/excel': 'fa-file-excel-o',
+    'application/x-excel': 'fa-file-excel-o',
+    'aaplication/vnd.ms-excel': 'fa-file-excel-o',
+    'application/x-msexcel': 'fa-file-excel-o',
+    'application/pdf': 'fa-file-pdf-o',
+    'text/html': 'fa-file-code-o',
+    'text/asp': 'fa-file-code-o',
+    'text/css': 'fa-file-code-o',
+    'application/x-javascript': 'fa-file-code-o',
+    'application/x-lisp': 'fa-file-code-o',
+    'application/xml': 'fa-file-code-o',
+    'text/xml': 'fa-file-code-o',
+    'application/x-sh': 'fa-file-code-o',
+    'text/x-script.python': 'fa-file-code-o',
+    'application/x-bytecode.python': 'fa-file-code-o',
+    'text/x-java-source': 'fa-file-code-o',
+    'application/postscript': 'fa-image',
+    'image/gif': 'fa-image',
+    'image/jpg': 'fa-image',
+    'image/jpeg': 'fa-image',
+    'image/pjpeg': 'fa-image',
+    'image/x-pict': 'fa-image',
+    'image/pict': 'fa-image',
+    'image/png': 'fa-image',
+    'image/x-pcx': 'fa-image',
+    'image/x-portable-pixmap': 'fa-image',
+    'image/x-tiff': 'fa-image',
+    'image/tiff': 'fa-image',
+    'audio/aiff': 'fa-file-audio-o',
+    'audio/x-aiff': 'fa-file-audio-o',
+    'audio/midi': 'fa-file-audio-o',
+    'audio/x-midi': 'fa-file-audio-o',
+    'audio/x-mid': 'fa-file-audio-o',
+    'audio/mpeg': 'fa-file-audio-o',
+    'audio/x-mpeg': 'fa-file-audio-o',
+    'audio/mpeg3': 'fa-file-audio-o',
+    'audio/x-mpeg3': 'fa-file-audio-o',
+    'audio/wav': 'fa-file-audio-o',
+    'audio/x-wav': 'fa-file-audio-o',
+    'video/avi': 'fa-file-video-o',
+    'video/mpeg': 'fa-file-video-o',
+    'application/zip': 'fa-file-archive-o',
+    'multipart/x-zip': 'fa-file-archive-o',
+    'multipart/x-zip': 'fa-file-archive-o',
+    'application/x-bzip': 'fa-file-archive-o',
+    'application/x-bzip2': 'fa-file-archive-o',
+    'application/x-gzip': 'fa-file-archive-o',
+    'application/x-compress': 'fa-file-archive-o',
+    'application/x-compressed': 'fa-file-archive-o',
+    'application/x-zip-compressed': 'fa-file-archive-o',
+    'multipart/x-gzip': 'fa-file-archive-o'
+  };
+
   FileView.prototype.template = function(args) {
     if (this.isSearchMode) {
       return this.templateSearch(args);
@@ -2906,7 +2970,16 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\">");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-file-o\"></i>");
+}
+buf.push("" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -3066,7 +3139,16 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\"><i class=\"fa fa-file-o\"></i>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"caption btn btn-link\">");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-file-o\"></i>");
+}
+buf.push("" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -3760,8 +3842,15 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.onFocus = function(e) {
+    var val;
     TagsView.autocomplete.bind(this.$el);
-    return TagsView.autocomplete.refresh('', this.tags);
+    TagsView.autocomplete.refresh('', this.tags);
+    if (this.input.val() === '') {
+      TagsView.autocomplete.$el.hide();
+    } else {
+      TagsView.autocomplete.$el.show();
+    }
+    return val = this.input.val();
   };
 
   TagsView.prototype.onKeyDown = function(e) {
@@ -3805,6 +3894,9 @@ module.exports = TagsView = (function(_super) {
 
   TagsView.prototype.refreshAutocomplete = function(e) {
     var _ref;
+    if (this.input.val() !== '') {
+      TagsView.autocomplete.$el.show();
+    }
     if ((_ref = e != null ? e.keyCode : void 0) === 40 || _ref === 38 || _ref === 8) {
       return;
     }

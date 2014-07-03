@@ -17,6 +17,7 @@ module.exports = File = americano.getModel('File', {
   path: String,
   name: String,
   docType: String,
+  mime: String,
   creationDate: String,
   lastModification: String,
   "class": String,
@@ -108,7 +109,7 @@ File.prototype.getPublicURL = function(cb) {
       if (err) {
         return cb(err);
       }
-      url = "" + domain + "public/files/files/" + _this.id;
+      url = "" + domain + "public/files/files/" + _this.id + "/attach/" + _this.name;
       return cb(null, url);
     };
   })(this));
