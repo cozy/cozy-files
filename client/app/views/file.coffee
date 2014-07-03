@@ -31,6 +31,7 @@ module.exports = class FileView extends BaseView
 
     getRenderData: ->
         _.extend super(),
+            isBeingUploaded: @model.isBeingUploaded()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
 
@@ -81,12 +82,15 @@ module.exports = class FileView extends BaseView
             range.moveStart "character", 0
             range.select()
 
+        @$el.addClass 'edit-mode'
+
     onShare: -> new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
         if name and name isnt ""
+            @$el.removeClass 'edit-mode'
             @model.save name: name,
                 success: (data) =>
                     @render()
@@ -99,6 +103,7 @@ module.exports = class FileView extends BaseView
             ModalView.error t("modal error empty name")
 
     onCancelClicked: ->
+        @$el.removeClass 'edit-mode'
         if @model.isNew() then @model.destroy()
         else @render()
 
@@ -222,14 +227,16 @@ module.exports = class FileView extends BaseView
             @render()
 
     afterRender: ->
-        # if it's an upload
-        if @model.file
+        # if the file is being uploaded
+        if @model.isBeingUploaded()
             @$('.type-column-cell').remove()
             @$('.date-column-cell').remove()
             @progressbar = new ProgressBar(model: @model)
             cell = $('<td colspan="2"></td>')
             cell.append @progressbar.render().$el
             @$('.size-column-cell').after cell
+            # we don't want the file link to react
+            @$('a.caption.btn').click (event) -> event.preventDefault()
         else
             @tags = new TagsView
                 el: @$('.tags')

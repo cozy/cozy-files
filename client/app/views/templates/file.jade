@@ -19,24 +19,25 @@ td
             span.deleter &times;
 
     block actions
-      .operations
-        a.file-share(title="#{t('tooltip share')}")
-          if model.clearance == 'public'
-            span.fa.fa-globe
-          else if model.clearance && model.clearance.length > 0
-            span.fa.fa-users #{model.clearance.length}
-          else
-            span.fa.fa-lock
-        a.file-edit(title="#{t('tooltip edit')}")
-          span.glyphicon.glyphicon-edit
-        a.file-move(title="#{t('tooltip move')}")
-          span.glyphicon.glyphicon-arrow-right
-        a.file-delete(title="#{t('tooltip delete')}")
-          span.glyphicon.glyphicon-remove-circle
-        a.file-download(
-            href="#{downloadUrl}",
-            target="_blank", title="#{t('tooltip download')}")
-          span.glyphicon.glyphicon-cloud-download
+      if !isBeingUploaded
+        .operations
+          a.file-share(title="#{t('tooltip share')}")
+            if model.clearance == 'public'
+              span.fa.fa-globe
+            else if model.clearance && model.clearance.length > 0
+              span.fa.fa-users #{model.clearance.length}
+            else
+              span.fa.fa-lock
+          a.file-edit(title="#{t('tooltip edit')}")
+            span.glyphicon.glyphicon-edit
+          a.file-move(title="#{t('tooltip move')}")
+            span.glyphicon.glyphicon-arrow-right
+          a.file-delete(title="#{t('tooltip delete')}")
+            span.glyphicon.glyphicon-remove-circle
+          a.file-download(
+              href="#{downloadUrl}",
+              target="_blank", title="#{t('tooltip download')}")
+            span.glyphicon.glyphicon-cloud-download
   block file-path
     // empty by default
 td.size-column-cell

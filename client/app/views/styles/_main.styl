@@ -235,7 +235,10 @@ tr.folder-row
       color: mediumcolor
 
     .tags input
-      visibility: visible
+      visibility visible
+
+  &.edit-mode .tags input
+      visibility hidden
 
   td
     vertical-align: middle
@@ -731,7 +734,6 @@ body.error-404 .error-frame
     #share-state
     #upload-btngroup
     #button-new-folder
-    .row:last-of-type
       display none
 
     #notifications
@@ -739,12 +741,12 @@ body.error-404 .error-frame
       display inline-block
 
   &.can-upload #affixbar
-    #button-upload-new-file
+    #upload-btngroup
     #button-new-folder
       display inline-block
 
   #content
-    margin-top 56px
+    margin-top 115px
 
   #files
     .tagit-new

@@ -155,14 +155,21 @@ module.exports = class FolderView extends BaseView
         @$('#files-drop-zone').hide()
 
     onDirectorySelected: (e) ->
-        files = @$('#folder-uploader')[0].files
+        input = @$ '#folder-uploader'
+        files = input[0].files
         return unless files.length
         @uploadQueue.addFolderBlobs files, @model
+        # reset the input
+        input.replaceWith input.clone true
 
     onFilesSelected: (e) =>
         files = e.dataTransfer?.files or e.target.files
         return unless files.length
         @uploadQueue.addBlobs files, @model
+        if e.target?
+            target = $ e.target
+            # reset the input
+            target.replaceWith target.clone true
 
     ###
         Search
