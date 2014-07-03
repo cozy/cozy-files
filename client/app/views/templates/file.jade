@@ -11,7 +11,10 @@ td
         a.caption.btn.btn-link(
             href="#{attachmentUrl}",
             title="#{t('download file')}", target="_blank")
-          i.fa.fa-file-o
+          if model.mime && this.mimeClasses[model.mime]
+            i(class="fa #{this.mimeClasses[model.mime]}")
+          else
+            i.fa.fa-file-o
           | #{model.name}
     block tags
       ul.tags

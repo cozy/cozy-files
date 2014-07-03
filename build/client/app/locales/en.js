@@ -59,6 +59,7 @@ module.exports = {
   "video": "Video",
   "yes": "Yes",
   "no": "No",
+  "ok": "Ok",
   "name": "Name",
   "type": "Type",
   "size": "Size",

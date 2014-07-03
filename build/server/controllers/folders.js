@@ -111,6 +111,7 @@ module.exports.create = function(req, res, next) {
         available = pathHelpers.checkIfPathAvailable(folder, folders);
         if (!available) {
           return res.send({
+            code: 'EEXISTS',
             error: true,
             msg: "This folder already exists"
           }, 400);
@@ -241,7 +242,7 @@ module.exports.modify = function(req, res, next) {
       tags = [].concat(oldTags);
       for (_i = 0, _len = newTags.length; _i < _len; _i++) {
         tag = newTags[_i];
-        if (tags.indexOf(tag === -1)) {
+        if (tags.indexOf(tag) === -1) {
           tags.push(tag);
         }
       }

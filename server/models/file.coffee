@@ -10,6 +10,7 @@ module.exports = File = americano.getModel 'File',
     path: String
     name: String
     docType: String
+    mime: String
     creationDate: String
     lastModification: String
     class: String
