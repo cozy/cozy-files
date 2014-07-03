@@ -24,11 +24,6 @@ module.exports = class FilesView extends ViewCollection
         @itemViewOptions = -> isSearchMode: options.isSearchMode
         @chevron = order: @collection.order, type: @collection.type
 
-        @listenTo @collection, "add", @render
-        @listenTo @collection, "remove", @render
-        @listenTo @collection, "sort", @render
-        @listenTo @collection, "reset", @render
-
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
