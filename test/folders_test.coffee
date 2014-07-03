@@ -90,7 +90,7 @@ describe "Folders management", ->
             @body.path.should.be.equal "/root"
 
         it "And root folder lastModification should be updated", (done) ->
-            @timeout 2*60*1000
+            @timeout(2 * 60 * 1000)
             setTimeout () =>
                 client.get "folders/folders", (err, res, folders) =>
                     folder = folders.pop()
@@ -99,7 +99,7 @@ describe "Folders management", ->
                     lastModification = moment folder.lastModification
                     (lastModification > @now).should.be.ok
                     done()
-            , 1.5*60*1000
+            , 1.5 * 60 * 1000
 
 
     describe "Rename folder", =>
@@ -410,7 +410,7 @@ describe "Folders management", ->
                 done()
 
         it "Then root folder lastModification should be updated", (done) ->
-            @timeout 2*60*1000
+            @timeout(2 * 60 * 1000)
             setTimeout () =>
                 client.get "folders/folders", (err, res, folders) =>                
                     folder = folders.pop()
@@ -420,7 +420,7 @@ describe "Folders management", ->
                     lastModification = moment folder.lastModification
                     (lastModification > @now).should.be.ok
                     done()
-            , 1.5*60*1000
+            , 1.5 * 60 * 1000
 
         it "And I send a request to rename a file in that folder", (done) ->
             file =

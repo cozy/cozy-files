@@ -157,7 +157,7 @@ resetTimeout = () =>
     clearTimeout(timeout) if timeout?
     timeout = setTimeout () =>
         updateParents()
-    , 60*1000
+    , 60 * 1000
 
 
 # Save in RAM lastModification date for parents
