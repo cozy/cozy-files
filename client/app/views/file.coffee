@@ -37,15 +37,34 @@ module.exports = class FileView extends BaseView
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
-        @listenTo @model, 'change', @render
+        @listenTo @model, 'change', @refresh
+        @listenTo @model, 'request', =>
+            @$('.spinholder').spin 'small'
+        @listenTo @model, 'sync error', =>
+            @$('.spinholder').spin false
 
         # prevent contacts loading in shared area
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
 
-    render: ->
-        return if _.isEqual Object.keys(@model.changed), ['tags']
-        return super
+    refresh: ->
+
+        changes = Object.keys(@model.changed)
+
+        if changes.length is 1
+            if changes[0] is 'tags'
+                return # only tags has changed, TagsView handle it
+
+            if changes[0] is 'lastModification'
+                # this change often, let's not re-render the whole view
+                date = moment(@model.changed.lastModification).calendar()
+                @$('td.date-column-cell span').text date
+                return
+
+        # more complex change = rerender
+        @render()
+
+
 
     displayError: (msg) ->
         @errorField ?= $('<span class="error">').insertAfter @$('.tags')

@@ -16,8 +16,9 @@ module.exports = class Autocomplete extends BaseView
             e.stopPropagation()
 
     onClick: (e) ->
-        e.target.classList.add 'selected'
         @input.val e.target.dataset.value
+
+        # pretend we press enter
         event = $.Event('keydown')
         event.keyCode = 13 #enter
         @input.trigger event
@@ -25,6 +26,7 @@ module.exports = class Autocomplete extends BaseView
         e.stopPropagation()
         $target = @$target
         @unbindCancel = true
+        @input.parents('.folder-row').addClass 'pseudohover'
         @input.focus()
 
 
@@ -86,12 +88,14 @@ module.exports = class Autocomplete extends BaseView
 
     delayedUnbind: =>
         @unbindCancel = false
-        setTimeout @unbind, 100
+        clearTimeout @delayedUnbindTimeout if @delayedUnbindTimeout
+        @delayedUnbindTimeout = setTimeout @unbind, 100
 
     unbind: =>
-        return if @unbindCancel
+        return if @unbindCancel or not @input
         @input.off 'keydown', @onInputKeyDown
         @input.off 'blur', @delayedUnbind
+        @input.parents('.folder-row').removeClass 'pseudohover'
         @input.val('')
         @$target = null
         @$el.hide()
