@@ -23,6 +23,12 @@ module.exports = class TagsView extends BaseView
     onFocus: (e) ->
         TagsView.autocomplete.bind this.$el
         TagsView.autocomplete.refresh '', @tags
+        if @input.val() is ''
+            TagsView.autocomplete.$el.hide()
+        else
+            TagsView.autocomplete.$el.show()
+
+        val = @input.val()
 
     onKeyDown: (e) =>
 
@@ -63,6 +69,9 @@ module.exports = class TagsView extends BaseView
             return true
 
     refreshAutocomplete: (e) =>
+        if @input.val() isnt ''
+            TagsView.autocomplete.$el.show()
+
         return if e?.keyCode in [40, 38, 8]
         TagsView.autocomplete.refresh @input.val(), @tags
 
