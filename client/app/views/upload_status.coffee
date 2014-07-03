@@ -45,10 +45,10 @@ module.exports = class UploadStatusView extends BaseView
             if result.success
                 t 'upload complete', smart_count: result.success
             if result.existing.length
-                @makeExistingSentence(result.existing)
+                @makeExistingSentence result.existing
 
             if result.error.length
-                @makeErrorSentence(result.error)
+                @makeErrorSentence result.error
         ].join ' '
 
     # generate a sentence explaining existing files
@@ -62,6 +62,7 @@ module.exports = class UploadStatusView extends BaseView
 
     # generate a sentence explaining error files
     makeErrorSentence: (errors) ->
+        console.log errors
         parts = [errors[0].get('name')]
         if errors.length > 1
             parts.push t('and x files', smart_count: errors.length - 1)

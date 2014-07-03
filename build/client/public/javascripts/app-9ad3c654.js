@@ -300,10 +300,10 @@ module.exports = FileCollection = (function(_super) {
     }
     t1 = f1.get('type');
     t2 = f2.get('type');
-    if (f1.isNew()) {
+    if (f1.isFolder() && f1.isNew()) {
       return -1;
     }
-    if (f2.isNew()) {
+    if (f2.isFolder() && f2.isNew()) {
       return 1;
     }
     if (this.type === 'name') {
@@ -974,12 +974,25 @@ module.exports = ViewCollection = (function(_super) {
 
   ViewCollection.prototype.itemViewOptions = function() {};
 
+  ViewCollection.prototype.getItemViewSelector = function() {
+    var classNames;
+    classNames = this.itemview.prototype.className.replace(' ', '.');
+    return "" + this.itemview.prototype.tagName + "." + classNames;
+  };
+
   ViewCollection.prototype.onChange = function() {
     return this.$el.toggleClass('empty', _.size(this.views) === 0);
   };
 
   ViewCollection.prototype.appendView = function(view) {
-    return this.$collectionEl.append(view.el);
+    var index, selector;
+    index = this.collection.indexOf(view.model);
+    if (index === 0) {
+      return this.$collectionEl.prepend(view.$el);
+    } else {
+      selector = this.getItemViewSelector();
+      return view.$el.insertAfter($(selector).eq(index - 1));
+    }
   };
 
   ViewCollection.prototype.initialize = function() {
@@ -988,6 +1001,7 @@ module.exports = ViewCollection = (function(_super) {
     this.listenTo(this.collection, "reset", this.onReset);
     this.listenTo(this.collection, "add", this.addItem);
     this.listenTo(this.collection, "remove", this.removeItem);
+    this.listenTo(this.collection, "sort", this.onSort);
     if (this.collectionEl == null) {
       return this.collectionEl = el;
     }
@@ -1009,7 +1023,7 @@ module.exports = ViewCollection = (function(_super) {
     _ref = this.views;
     for (id in _ref) {
       view = _ref[id];
-      this.appendView(view.$el);
+      this.appendView(view);
     }
     this.onReset(this.collection);
     return this.onChange(this.views);
@@ -1045,6 +1059,23 @@ module.exports = ViewCollection = (function(_super) {
     this.views[model.cid].remove();
     delete this.views[model.cid];
     return this.onChange(this.views);
+  };
+
+  ViewCollection.prototype.onSort = function() {
+    var $itemViews, orderChanged, selector;
+    selector = this.getItemViewSelector();
+    $itemViews = $(selector);
+    orderChanged = this.collection.find((function(_this) {
+      return function(item, index) {
+        var indexView, view;
+        view = _this.views[item.cid];
+        indexView = $itemViews.index(view.$el);
+        return view && indexView !== index;
+      };
+    })(this));
+    if (orderChanged) {
+      return this.render();
+    }
   };
 
   return ViewCollection;
@@ -2224,14 +2255,10 @@ module.exports = FilesView = (function(_super) {
         isSearchMode: options.isSearchMode
       };
     };
-    this.chevron = {
+    return this.chevron = {
       order: this.collection.order,
       type: this.collection.type
     };
-    this.listenTo(this.collection, "add", this.render);
-    this.listenTo(this.collection, "remove", this.render);
-    this.listenTo(this.collection, "sort", this.render);
-    return this.listenTo(this.collection, "reset", this.render);
   };
 
   FilesView.prototype.afterRender = function() {
@@ -3484,6 +3511,7 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.makeErrorSentence = function(errors) {
     var parts;
+    console.log(errors);
     parts = [errors[0].get('name')];
     if (errors.length > 1) {
       parts.push(t('and x files', {
@@ -3842,15 +3870,13 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.onFocus = function(e) {
-    var val;
     TagsView.autocomplete.bind(this.$el);
     TagsView.autocomplete.refresh('', this.tags);
     if (this.input.val() === '') {
-      TagsView.autocomplete.$el.hide();
+      return TagsView.autocomplete.$el.hide();
     } else {
-      TagsView.autocomplete.$el.show();
+      return TagsView.autocomplete.$el.show();
     }
-    return val = this.input.val();
   };
 
   TagsView.prototype.onKeyDown = function(e) {
