@@ -152,12 +152,12 @@ module.exports.create = (req, res, next) ->
                     else
                         createFile()
 
-# After 2 minutes of inactivity, update parents
+# After 1 minute of inactivity, update parents
 resetTimeout = () =>
     clearTimeout(timeout) if timeout?
     timeout = setTimeout () =>
         updateParents()
-    , 2*60*1000
+    , 60 * 1000
 
 
 # Save in RAM lastModification date for parents

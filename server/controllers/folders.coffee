@@ -71,7 +71,10 @@ normalizePath = (path) ->
 # * Tag folder with parent folder tags
 # * Create Folder and index its name
 # * Send notification if required
+folderParent = {}
+timeout = null
 module.exports.create = (req, res, next) ->
+    clearTimeout(timeout) if timeout?
     folder = req.body
     folder.path = normalizePath folder.path
 
@@ -93,6 +96,7 @@ module.exports.create = (req, res, next) ->
                     folder.lastModification = now
 
                     Folder.createNewFolder folder, (err, newFolder) ->
+                        resetTimeout()
                         return next err if err
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newFolder, (err) ->
@@ -107,12 +111,32 @@ module.exports.create = (req, res, next) ->
                     folder.tags = parent.tags
 
                     parent.lastModification = now
-                    parent.save (err) ->
-                        if err then next err
-                        else createFolder()
+                    folderParent[parent.name] = parent
+                    #parent.save (err) ->
+                    #    if err then next err
+                    #else 
+                    createFolder()
                 else
                     folder.tags = []
                     createFolder()
+
+# After 1 minute of inactivity, update parents
+resetTimeout = () =>
+    clearTimeout(timeout) if timeout?
+    timeout = setTimeout () =>
+        updateParents()
+    , 60 * 1000
+
+
+# Save in RAM lastModification date for parents
+# Update folder parent once all files are uploaded
+updateParents = () ->
+    errors = {}
+    for name in Object.keys(folderParent)
+        folder = folderParent[name]
+        folder.save (err) ->
+            errors[folder.name] = err if err?
+    folderParent = {}
 
 module.exports.find = (req, res, next) ->
     res.send req.folder
