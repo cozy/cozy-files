@@ -80,7 +80,7 @@ File::getFullPath = ->
 File::getPublicURL = (cb) ->
     CozyInstance.getURL (err, domain) =>
         return cb err if err
-        url = "#{domain}public/files/files/#{@id}"
+        url = "#{domain}public/files/files/#{@id}/attach/#{@name}"
         cb null, url
 
 File::getParents = (callback) ->
