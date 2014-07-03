@@ -103,9 +103,9 @@ module.exports = class File extends Backbone.Model
         else if @isFolder()
             @getZipURL()
 
-    validate: ->
+    validate: (attrs) ->
         errors = []
-        if not @get("name") or @get("name") is ""
+        if not attrs.name or attrs.name is ''
             errors.push
                 field: 'name'
                 value: "A name must be set."
