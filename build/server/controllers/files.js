@@ -218,7 +218,7 @@ resetTimeout = (function(_this) {
     }
     return timeout = setTimeout(function() {
       return updateParents();
-    }, 2 * 60 * 1000);
+    }, 60 * 1000);
   };
 })(this);
 
