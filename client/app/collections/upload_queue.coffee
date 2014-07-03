@@ -176,7 +176,3 @@ module.exports = class UploadQueue extends Backbone.Collection
         else 'success'
 
         return {status, error, existing, success}
-
-
-
-
