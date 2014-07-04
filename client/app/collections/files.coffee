@@ -88,6 +88,11 @@ module.exports = class FileCollection extends Backbone.Collection
                     @getFolderContent folder, ->
                         callback null, folder, collection
 
+    refreshCache: (path) ->
+
+    clearCache: (path) ->
+
+
     existingPaths: ->
         @map (model) -> model.getRepository()
 
@@ -109,8 +114,8 @@ module.exports = class FileCollection extends Backbone.Collection
         t2 = f2.get 'type'
 
         # new folders should be at the topmost
-        if f1.isFolder() and f1.isNew() then return -1
-        if f2.isFolder() and f2.isNew() then return 1
+        if f1.isFolder() and not f2.isFolder() and f1.isNew() then return -1
+        if f2.isFolder() and not f1.isFolder() and f2.isNew() then return 1
 
         if @type is 'name'
             n1 = f1.get('name').toLocaleLowerCase()
