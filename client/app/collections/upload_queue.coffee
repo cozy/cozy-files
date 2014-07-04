@@ -26,8 +26,8 @@ module.exports = class UploadQueue extends Backbone.Collection
         @listenTo this, 'remove', (model) =>
             model.error = 'aborted'
 
-        # when an upload complete, we keep counts
-        @listenTo this, 'sync', => @loaded++
+        # when an upload completes or fails, we keep counts
+        @listenTo this, 'sync error', (model) => @loaded++
 
         # proxy progress events, throttled to every 100ms
         @listenTo this, 'progress', _.throttle =>
@@ -129,8 +129,9 @@ module.exports = class UploadQueue extends Backbone.Collection
 
     addFolderBlobs: (blobs, parent) ->
 
-        dirs = Helpers.nestedDirs(blobs).reverse()
+        dirs = Helpers.nestedDirs blobs
         i = 0
+        #console.log dirs
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop
@@ -153,7 +154,7 @@ module.exports = class UploadQueue extends Backbone.Collection
                 path: path
 
             folder.loaded = 0
-            folder.total = 100 # ~ size of the query
+            folder.total = 250 # ~ size of the query
 
             # add folder to be saved
             @add folder
