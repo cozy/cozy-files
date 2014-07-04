@@ -129,7 +129,19 @@ module.exports = class UploadQueue extends Backbone.Collection
 
     addFolderBlobs: (blobs, parent) ->
 
-        for dir in Helpers.nestedDirs(blobs).reverse()
+        dirs = Helpers.nestedDirs(blobs).reverse()
+        i = 0
+        do nonBlockingLoop = =>
+
+            # if no more folders to add, leave the loop
+            unless dir = dirs[i++]
+                # folders will be created
+                # we can safely add files to bottom of queue
+                blobs = _.filter blobs, (blob) ->
+                    blob.name not in ['.', '..']
+                @addBlobs blobs, parent
+                return
+
             prefix = parent.getRepository()
             parts = dir.split('/').filter (x) -> x # ?remove empty last part
             name = parts[parts.length - 1]
@@ -146,10 +158,7 @@ module.exports = class UploadQueue extends Backbone.Collection
             # add folder to be saved
             @add folder
 
-        # Folder will be created, we can safely add files to bottom of queue
-        blobs = _.filter blobs, (blob) ->
-            blob.name not in ['.', '..']
-        @addBlobs blobs, parent
+            setTimeout nonBlockingLoop, 2
 
     filteredByFolder: (folder, comparator) ->
         filteredUploads = new BackboneProjections.Filtered this,
