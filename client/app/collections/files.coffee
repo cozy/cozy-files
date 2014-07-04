@@ -125,6 +125,23 @@ module.exports = class FileCollection extends Backbone.Collection
         sort = if @order is 'asc' then -1 else 1
 
         if t1 is t2
+            if @type is 'class' and n1 is n2
+
+                # Sort by name if the class is the same
+                n1 = f1.get('name').toLocaleLowerCase()
+                n2 = f2.get('name').toLocaleLowerCase()
+
+                # Get both file extensions
+                e1 = n1.split('.').pop()
+                e2 = n2.split('.').pop()
+
+                if e1 isnt e2
+                    # Sort by file extension if they are different
+                    if e1 > e2 then return -sort
+                    if e1 < e2 then return sort
+                    return 0
+
+            # Sort normally
             if n1 > n2 then return -sort
             else if n1 < n2 then return sort
             else return 0
