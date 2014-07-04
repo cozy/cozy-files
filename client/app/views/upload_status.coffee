@@ -90,6 +90,9 @@ module.exports = class UploadStatusView extends BaseView
         unless @collection.length
             @$el.hide()
             $('#content').css 'margin-top': 56
+        else
+            $('#content').css 'margin-top': 108
+
         @$el.removeClass 'success danger warning'
         @counter = @$('.counter')
         @counterDone = @$('.counter-done')
