@@ -21,7 +21,10 @@ module.exports = class FilesView extends ViewCollection
     initialize: (options) ->
         super options
 
-        @itemViewOptions = -> isSearchMode: options.isSearchMode
+        @itemViewOptions = ->
+            isSearchMode: options.isSearchMode
+            uploadQueue: options.uploadQueue
+
         @chevron = order: @collection.order, type: @collection.type
 
     afterRender: ->

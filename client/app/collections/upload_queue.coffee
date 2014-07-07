@@ -11,6 +11,9 @@ module.exports = class UploadQueue extends Backbone.Collection
     # number of files actually loaded
     loaded: 0
 
+    # list of paths where files are being uploaded
+    uploadingPaths: {}
+
     initialize: ->
         @asyncQueue = async.queue @uploadWorker, 5
 
@@ -27,7 +30,9 @@ module.exports = class UploadQueue extends Backbone.Collection
             model.error = 'aborted'
 
         # when an upload completes or fails, we keep counts
-        @listenTo this, 'sync error', (model) => @loaded++
+        @listenTo this, 'sync error', (model) =>
+            #@uploadingPaths[@model.get('path')]--
+            @loaded++
 
         # proxy progress events, throttled to every 100ms
         @listenTo this, 'progress', _.throttle =>
@@ -46,6 +51,7 @@ module.exports = class UploadQueue extends Backbone.Collection
     reset: (models, options) ->
         @loaded = 0
         @completed = false
+        @uploadingPaths = {}
         super
 
     computeProgress: =>
@@ -124,6 +130,7 @@ module.exports = class UploadQueue extends Backbone.Collection
                 model.total = blob.size
 
             @add model
+            @markAsBeingUploaded model
 
             setTimeout nonBlockingLoop, 2
 
@@ -158,6 +165,7 @@ module.exports = class UploadQueue extends Backbone.Collection
 
             # add folder to be saved
             @add folder
+            @markAsBeingUploaded folder
 
             setTimeout nonBlockingLoop, 2
 
@@ -186,3 +194,27 @@ module.exports = class UploadQueue extends Backbone.Collection
         else 'success'
 
         return {status, error, existing, success}
+
+    # we keep track of models being uploaded by path
+    markAsBeingUploaded: (model) ->
+        # appending a / prevents conflict with elements
+        # having the same prefix in their names
+        path = model.get('path') + '/'
+        unless @uploadingPaths[path]?
+            @uploadingPaths[path] = 0
+
+        @uploadingPaths[path]++
+
+    # returns the number of children elements being uploading for a given path
+    getNumUploadingElementsByPath: (path) ->
+        # appending a / prevents conflict with elements
+        # having the same prefix in their names
+        path = path + '/'
+
+        return _.reduce @uploadingPaths, (memo, value, index) ->
+
+            if index.indexOf(path) isnt -1 or path is ''
+                return memo + value
+            else
+                return memo
+        , 0

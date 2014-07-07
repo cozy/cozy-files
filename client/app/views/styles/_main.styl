@@ -1,6 +1,10 @@
 @import 'nib'
 @import '_colors'
 
+@keyframes spin
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+
 
 html, body
   height: 100%
@@ -251,6 +255,8 @@ tr.folder-row
     span.caption
       padding-left 3px // 3 for file and 6 for folder
 
+    .caption-wrapper .fa-folder.spin
+      animation spin 2s infinite ease-out
   // the filename
   .caption
     font-size: 16px
@@ -258,6 +264,7 @@ tr.folder-row
     padding: 0
     margin-left: 0px
     margin-right: 10px
+
 
 
   .caption:hover
