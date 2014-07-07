@@ -3,4 +3,5 @@ span Upload en cours. Ne quittez pas votre navigateur.
 #dismiss.btn.btn-cozy.pull-right= t('ok')
 .progress.active.pull-right
     .progress-bar.progress-bar-info(
-        style="width: " + value)= t('total progress') + value
+        style="width: " + value)
+    .progress-bar.progress-bar-content #{t('total progress')} #{value}

@@ -31,15 +31,15 @@ module.exports = class UploadStatusView extends BaseView
 
     progress: (e) ->
         @$el.removeClass 'success danger warning'
-        p = parseInt(100 * e.loadedBytes / e.totalBytes) + '%'
-        @progressbar.text("#{t('total progress')} : #{p}").width(p)
+        percentage = parseInt(100 * e.loadedBytes / e.totalBytes) + '%'
+        @progressbar.width percentage
+        @progressbarContent.text "#{t('total progress')} : #{percentage}"
 
     complete: ->
         @$('.progress').remove()
         @dismiss.show()
 
         result = @collection.getResults()
-
         @$el.addClass result.status
         @$('span').text [
             if result.success
@@ -94,9 +94,10 @@ module.exports = class UploadStatusView extends BaseView
             $('#content').css 'margin-top': 108
 
         @$el.removeClass 'success danger warning'
-        @counter = @$('.counter')
-        @counterDone = @$('.counter-done')
-        @progressbar = @$('.progress-bar')
+        @counter = @$ '.counter'
+        @counterDone = @$ '.counter-done'
+        @progressbar = @$ '.progress-bar-info'
+        @progressbarContent = @$ '.progress-bar-content'
         @dismiss = @$('#dismiss').hide()
         if @collection.completed then @complete()
 
