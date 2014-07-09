@@ -58,7 +58,7 @@ module.exports =
   "name editor"           : "Editeur de nom"
   "prefix"                : "Préfixe"
   "placeholder prefix"    : "M."
-  "first name"            : "Prénom courrant"
+  "first name"            : "Prénom courant"
   "placeholder first"     : "Pierre"
   "middle name"           : "Autres prénoms"
   "placeholder middle"    : "Marie Jacque"

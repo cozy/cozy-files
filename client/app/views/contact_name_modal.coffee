@@ -10,6 +10,8 @@ module.exports = class CallImporterView extends BaseView
     id: 'namemodal'
     tagName: 'div'
     className: 'modal fade'
+    attributes:
+        tabindex: '-1'
 
     events:
         'click #cancel-btn': 'close'
