@@ -64,6 +64,7 @@ In order to run the tests, you must only have the Data System started.
 ## Icons
 
 by [iconmonstr](http://iconmonstr.com/).
+
 Main icon by [Elegant Themes](http://www.elegantthemes.com/blog/freebie-of-the-week/beautiful-flat-icons-for-free).
 
 ## License
@@ -71,7 +72,7 @@ Main icon by [Elegant Themes](http://www.elegantthemes.com/blog/freebie-of-the-w
 Cozy Contacts is developed by Cozy Cloud and distributed under the AGPL v3 license.
 
 ## What is Cozy?
-
+A
 ![Cozy Logo](https://raw.github.com/mycozycloud/cozy-setup/gh-pages/assets/images/happycloud.png)
 
 [Cozy](http://cozy.io) is a platform that brings all your web services in the
