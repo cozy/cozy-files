@@ -88,11 +88,6 @@ module.exports = class FileCollection extends Backbone.Collection
                     @getFolderContent folder, ->
                         callback null, folder, collection
 
-    refreshCache: (path) ->
-
-    clearCache: (path) ->
-
-
     existingPaths: ->
         @map (model) -> model.getRepository()
 
