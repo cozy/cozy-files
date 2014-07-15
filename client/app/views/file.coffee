@@ -86,7 +86,6 @@ module.exports = class FileView extends BaseView
         'application/x-zip-compressed'  : 'fa-file-archive-o'
         'multipart/x-gzip'              : 'fa-file-archive-o'
 
-
     template: (args) ->
         if @isSearchMode
             @templateSearch args
@@ -111,9 +110,25 @@ module.exports = class FileView extends BaseView
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
 
+        # If the model is a folder, we listen to the upload queue to enable or
+        # disable the "something is being uploaded in my tree" indicator
+        if @model.isFolder()
+            uploadQueue = options.uploadQueue
+            path = @model.getRepository()
+            numUploadChildren = uploadQueue.getNumUploadingElementsByPath path
+            @hasUploadingChildren = numUploadChildren > 0
+
+            @listenTo uploadQueue, 'add remove reset', =>
+                hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0
+                @$('.fa-folder').toggleClass 'spin', hasItems
+
+            @listenTo uploadQueue, 'upload-complete', =>
+                @hasUploadingChildren = false
+                @$('.fa-folder').removeClass 'spin'
+
     refresh: ->
 
-        changes = Object.keys(@model.changed)
+        changes = Object.keys @model.changed
 
         if changes.length is 1
             if changes[0] is 'tags'
@@ -127,7 +142,6 @@ module.exports = class FileView extends BaseView
 
         # more complex change = rerender
         @render()
-
 
 
     displayError: (msg) ->
@@ -331,3 +345,7 @@ module.exports = class FileView extends BaseView
                 el: @$('.tags')
                 model: @model
             @tags.render()
+
+        # if it's a folder and if it has children being uploaded
+        if @hasUploadingChildren
+            @$('.fa-folder').addClass 'spin'
