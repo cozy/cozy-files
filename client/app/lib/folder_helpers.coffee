@@ -24,15 +24,14 @@ nestedDirs: (fileList) ->
 
         # get an array of the folders making the file path
         foldersOfPath = parents.split('/')[...-1]
-        preventUselessLoops = false
-        while foldersOfPath.length > 0 and not preventUselessLoops
+        while foldersOfPath.length > 0
             parent = foldersOfPath.join '/'
             if not (parent in addedPath)
                 dirs.push path: parent, depth: foldersOfPath.length
                 addedPath.push parent
                 foldersOfPath.pop()
             else
-                preventUselessLoops = true
+                break
 
     # put them in a list, sorted by nest level
     dirs.sort (a, b) ->
