@@ -96,85 +96,94 @@ module.exports.create = (req, res, next) ->
     fields = {}
 
     # Parse given form to extract image blobs.
-    form = new multiparty.Form
-        autoFields: true
+    form = new multiparty.Form()
     form.parse req
 
     form.on 'part', (part) ->
         # Get field, form is processed one way, be sure that fields are sent
         # before the file.
+        # Parts are porcessed sequentially, so the data event shoudl be
+        # processed before reaching the file part.
         unless part.filename?
             fields[part.name] = ''
             part.on 'data', (buffer) ->
                 fields[part.name] = buffer.toString()
+
         # We assume that only one file is sent.
         else
-            log.debug fields
-            log.debug 'file ' + part.filename
-            processFile fields.name, fields.path, part
 
-    processFile = (name, path, file) ->
-        if not name or name is ""
-            next new Error "Invalid arguments: no name given"
-        else
-        path = normalizePath path
-        fullPath = "#{path}/#{name}"
-        File.byFullPath key: fullPath, (err, sameFiles) =>
-            return next err if err
-            if sameFiles.length > 0
-                res.send
-                    error: true
-                    code: 'EEXISTS'
-                    msg: "This file already exists"
-                , 400
+            # we do not write a subfunction because it seems to load the whole
+            # stream in memory.
+            name = fields.name
+            path = fields.path
+
+            if not name or name is ""
+                next new Error "Invalid arguments: no name given"
             else
-                now = moment().toISOString()
-                fileClass = getFileClass file
-
-                ## calculate metadata
-                data =
-                    name: name
-                    path: path
-                    creationDate: now
-                    lastModification: now
-                    mime: mime.lookup name
-                    size: file.length
-                    tags: []
-                    class: fileClass
-
-
-                createFile = =>
-                    File.createNewFile data, file, (err, newfile) =>
-                        resetTimeout()
-                        if err
-                            if err.toString().indexOf('enough storage') isnt -1
-                                res.send
-                                    error: true
-                                    code: 'ESTORAGE'
-                                    msg: "modal error size"
-                                , 400
-                            else
-                                res.send error:true, msg: err, 500
-
-                        else
-                            who = req.guestEmail or 'owner'
-                            sharing.notifyChanges who, newfile, (err) ->
-                                console.log err if err
-                                res.send newfile, 200
-
-                ## find parent folder
-                Folder.byFullPath key: data.path, (err, parents) =>
+                # Check that the file does'nt exist yet.
+                path = normalizePath path
+                fullPath = "#{path}/#{name}"
+                File.byFullPath key: fullPath, (err, sameFiles) =>
                     return next err if err
-                    if parents.length > 0
-                        # inherit parent folder tags and update its last
-                        # modification date
-                        parent = parents[0]
-                        data.tags = parent.tags
-                        parent.lastModification = now
-                        folderParent[parent.name] = parent
-                        createFile()
+                    if sameFiles.length > 0
+                        res.send
+                            error: true
+                            code: 'EEXISTS'
+                            msg: "This file already exists"
+                        , 400
                     else
-                        createFile()
+                        now = moment().toISOString()
+                        fileClass = getFileClass part
+
+                        # Generate file metadata.
+                        data =
+                            name: name
+                            path: path
+                            creationDate: now
+                            lastModification: now
+                            mime: mime.lookup name
+                            size: part.byteCount
+                            tags: []
+                            class: fileClass
+
+                        # Create a file object and link to it a binary object.
+                        # Then it uploads the stream as an attachment of the
+                        # binary.
+                        createFile = =>
+                            File.createNewFile data, part, (err, newfile) =>
+                                resetTimeout()
+                                if err
+                                    stringErr = err.toString()
+                                    if stringErr.indexOf('enough storage') isnt -1
+                                        res.send
+                                            error: true
+                                            code: 'ESTORAGE'
+                                            msg: "modal error size"
+                                        , 400
+                                    else
+                                        res.send error:true, msg: err, 500
+
+                                else
+                                    # Handle clearance notifications.
+                                    who = req.guestEmail or 'owner'
+                                    sharing.notifyChanges who, newfile, (err) ->
+                                        console.log err if err
+                                        res.send newfile, 200
+
+                        # find parent folder for updating its last modification
+                        # date and applying tags to uploaded file.
+                        Folder.byFullPath key: data.path, (err, parents) =>
+                            return next err if err
+                            if parents.length > 0
+                                # inherit parent folder tags and update its last
+                                # modification date
+                                parent = parents[0]
+                                data.tags = parent.tags
+                                parent.lastModification = now
+                                folderParent[parent.name] = parent
+                                createFile()
+                            else
+                                createFile()
 
 
 # After 1 minute of inactivity, update parents
@@ -218,7 +227,6 @@ module.exports.modify = (req, res, next) ->
                 res.send success: 'Tags successfully changed', 200
 
     else if (not body.name or body.name is "") and not body.path?
-        log.debug body
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 

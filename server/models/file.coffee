@@ -39,6 +39,10 @@ File.byFullPath = (params, callback) ->
 File.createNewFile = (data, file, callback) =>
     upload = true
     attachBinary = (newFile) ->
+
+        # Here file is a stream. For some weird reason, request-json requires
+        # that a path field should be set before uploading.
+        file.path = data.name
         newFile.attachBinary file, {"name": "file"}, (err, res, body) ->
             upload = false
             if err
@@ -47,11 +51,16 @@ File.createNewFile = (data, file, callback) =>
             else
                 index newFile
 
+    # Index file name to Cozy indexer to allow quick search on it.
     index = (newFile) ->
         newFile.index ["name"], (err) ->
             console.log err if err
             callback null, newFile
 
+    # This action is required to ensure that the application is not stopped by
+    # the "autostop" feature of the controller. It could occurs if the file is
+    # too long to upload. The controller could think that the application is
+    # unactive.
     keepAlive = () =>
         if upload
             feed.publish 'usage.application', 'files'
@@ -59,6 +68,8 @@ File.createNewFile = (data, file, callback) =>
                 keepAlive()
             , 60*1000
 
+    # Create file document then attach file stream as binary to that file
+    # document.
     File.create data, (err, newFile) =>
         if err
             callback new Error "Server error while creating file; #{err}"
