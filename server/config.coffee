@@ -20,9 +20,7 @@ config =
             'view engine': 'jade'
             'views': path.resolve __dirname, 'views'
         use: [
-            americano.bodyParser
-                limit: 10 * GB
-                maxFieldsSize: 10 * GB
+            americano.bodyParser()
             require('cozy-i18n-helper').middleware
             americano.errorHandler
                 dumpExceptions: true

@@ -1,6 +1,8 @@
 fs = require 'fs'
 async = require 'async'
 moment = require 'moment'
+multiparty = require 'multiparty'
+mime = require 'mime'
 
 File = require '../models/file'
 Folder = require '../models/folder'
@@ -26,7 +28,7 @@ processAttachement = (req, res, next, download) ->
     else contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
-    stream = file.getBinary "file", (err, resp, body) =>
+    stream = file.getBinary file.name, (err, resp, body) =>
         next err if err
 
     stream.pipefilter = (source, dest) ->
@@ -38,7 +40,8 @@ processAttachement = (req, res, next, download) ->
 
 
 getFileClass = (file) ->
-    switch file.type.split('/')[0]
+    type = file.headers['content-type']
+    switch type.split('/')[0]
         when 'image' then fileClass = "image"
         when 'application' then fileClass = "document"
         when 'text' then fileClass = "document"
@@ -89,11 +92,33 @@ folderParent = {}
 timeout = null
 module.exports.create = (req, res, next) ->
     clearTimeout(timeout) if timeout?
-    if not req.body.name or req.body.name is ""
-        next new Error "Invalid arguments"
-    else
-        req.body.path = normalizePath req.body.path
-        fullPath = "#{req.body.path}/#{req.body.name}"
+
+    fields = {}
+
+    # Parse given form to extract image blobs.
+    form = new multiparty.Form
+        autoFields: true
+    form.parse req
+
+    form.on 'part', (part) ->
+        # Get field, form is processed one way, be sure that fields are sent
+        # before the file.
+        unless part.filename?
+            fields[part.name] = ''
+            part.on 'data', (buffer) ->
+                fields[part.name] = buffer.toString()
+        # We assume that only one file is sent.
+        else
+            log.debug fields
+            log.debug 'file ' + part.filename
+            processFile fields.name, fields.path, part
+
+    processFile = (name, path, file) ->
+        if not name or name is ""
+            next new Error "Invalid arguments: no name given"
+        else
+        path = normalizePath path
+        fullPath = "#{path}/#{name}"
         File.byFullPath key: fullPath, (err, sameFiles) =>
             return next err if err
             if sameFiles.length > 0
@@ -103,20 +128,20 @@ module.exports.create = (req, res, next) ->
                     msg: "This file already exists"
                 , 400
             else
-                file = req.files["file"]
                 now = moment().toISOString()
                 fileClass = getFileClass file
 
-                # calculate metadata
+                ## calculate metadata
                 data =
-                    name: req.body.name
-                    path: req.body.path
+                    name: name
+                    path: path
                     creationDate: now
                     lastModification: now
-                    mime: file.type
-                    size: file.size
+                    mime: mime.lookup name
+                    size: file.length
                     tags: []
                     class: fileClass
+
 
                 createFile = =>
                     File.createNewFile data, file, (err, newfile) =>
@@ -131,14 +156,13 @@ module.exports.create = (req, res, next) ->
                             else
                                 res.send error:true, msg: err, 500
 
-                            return # break request handling
+                        else
+                            who = req.guestEmail or 'owner'
+                            sharing.notifyChanges who, newfile, (err) ->
+                                console.log err if err
+                                res.send newfile, 200
 
-                        who = req.guestEmail or 'owner'
-                        sharing.notifyChanges who, newfile, (err) ->
-                            console.log err if err
-                            res.send newfile, 200
-
-                # find parent folder
+                ## find parent folder
                 Folder.byFullPath key: data.path, (err, parents) =>
                     return next err if err
                     if parents.length > 0
@@ -151,6 +175,7 @@ module.exports.create = (req, res, next) ->
                         createFile()
                     else
                         createFile()
+
 
 # After 1 minute of inactivity, update parents
 resetTimeout = () =>

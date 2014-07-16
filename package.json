@@ -31,7 +31,9 @@
     "cozy-clearance": "0.1.11",
     "cozy-notifications-helper": "1.0.2",
     "node-polyglot": "0.3.0",
-    "request-json": "0.4.10"
+    "request-json": "0.4.10",
+    "multiparty": "3.3.0",
+    "mime": "^1.2.11"
   },
   "devDependencies": {
     "coffee-script": "latest",

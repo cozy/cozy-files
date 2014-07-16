@@ -39,7 +39,7 @@ File.byFullPath = (params, callback) ->
 File.createNewFile = (data, file, callback) =>
     upload = true
     attachBinary = (newFile) ->
-        newFile.attachBinary file.path, {"name": "file"}, (err, res, body) ->
+        newFile.attachBinary file, {"name": "file"}, (err, res, body) ->
             upload = false
             if err
                 newFile.destroy (error) ->
@@ -50,14 +50,7 @@ File.createNewFile = (data, file, callback) =>
     index = (newFile) ->
         newFile.index ["name"], (err) ->
             console.log err if err
-            unlink newFile
-
-    unlink = (newFile) ->
-       fs.unlink file.path, (err) ->
-            if err
-                callback new Error "Error removing uploaded file: #{err}"
-            else
-                callback null, newFile
+            callback null, newFile
 
     keepAlive = () =>
         if upload
@@ -65,7 +58,6 @@ File.createNewFile = (data, file, callback) =>
             setTimeout () =>
                 keepAlive()
             , 60*1000
-
 
     File.create data, (err, newFile) =>
         if err
