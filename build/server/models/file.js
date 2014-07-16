@@ -46,10 +46,11 @@ File.byFullPath = function(params, callback) {
 
 File.createNewFile = (function(_this) {
   return function(data, file, callback) {
-    var attachBinary, index, keepAlive, unlink, upload;
+    var attachBinary, index, keepAlive, upload;
     upload = true;
     attachBinary = function(newFile) {
-      return newFile.attachBinary(file.path, {
+      file.path = data.name;
+      return newFile.attachBinary(file, {
         "name": "file"
       }, function(err, res, body) {
         upload = false;
@@ -67,16 +68,7 @@ File.createNewFile = (function(_this) {
         if (err) {
           console.log(err);
         }
-        return unlink(newFile);
-      });
-    };
-    unlink = function(newFile) {
-      return fs.unlink(file.path, function(err) {
-        if (err) {
-          return callback(new Error("Error removing uploaded file: " + err));
-        } else {
-          return callback(null, newFile);
-        }
+        return callback(null, newFile);
       });
     };
     keepAlive = function() {

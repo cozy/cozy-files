@@ -29,10 +29,7 @@ config = {
       'views': path.resolve(__dirname, 'views')
     },
     use: [
-      americano.bodyParser({
-        limit: 10 * GB,
-        maxFieldsSize: 10 * GB
-      }), require('cozy-i18n-helper').middleware, americano.errorHandler({
+      americano.bodyParser(), require('cozy-i18n-helper').middleware, americano.errorHandler({
         dumpExceptions: true,
         showStack: true
       }), staticMiddleware, publicStatic
