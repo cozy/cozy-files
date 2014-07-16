@@ -43,7 +43,7 @@ processAttachement = function(req, res, next, download) {
     contentHeader = "inline; filename=" + file.name;
   }
   res.setHeader('Content-Disposition', contentHeader);
-  stream = file.getBinary(file.name, (function(_this) {
+  stream = file.getBinary('file', (function(_this) {
     return function(err, resp, body) {
       if (err) {
         return next(err);
