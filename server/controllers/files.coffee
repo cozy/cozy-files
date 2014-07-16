@@ -28,7 +28,7 @@ processAttachement = (req, res, next, download) ->
     else contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
-    stream = file.getBinary file.name, (err, resp, body) =>
+    stream = file.getBinary 'file', (err, resp, body) =>
         next err if err
 
     stream.pipefilter = (source, dest) ->
