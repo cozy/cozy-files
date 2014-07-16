@@ -291,7 +291,7 @@ module.exports = FileCollection = (function(_super) {
   };
 
   FileCollection.prototype.comparator = function(f1, f2) {
-    var n1, n2, sort, t1, t2;
+    var e1, e2, n1, n2, sort, t1, t2;
     if (this.type == null) {
       this.type = 'name';
     }
@@ -300,10 +300,10 @@ module.exports = FileCollection = (function(_super) {
     }
     t1 = f1.get('type');
     t2 = f2.get('type');
-    if (f1.isFolder() && f1.isNew()) {
+    if (f1.isFolder() && !f2.isFolder() && f1.isNew()) {
       return -1;
     }
-    if (f2.isFolder() && f2.isNew()) {
+    if (f2.isFolder() && !f1.isFolder() && f2.isNew()) {
       return 1;
     }
     if (this.type === 'name') {
@@ -318,6 +318,21 @@ module.exports = FileCollection = (function(_super) {
     }
     sort = this.order === 'asc' ? -1 : 1;
     if (t1 === t2) {
+      if (this.type === 'class' && n1 === n2) {
+        n1 = f1.get('name').toLocaleLowerCase();
+        n2 = f2.get('name').toLocaleLowerCase();
+        e1 = n1.split('.').pop();
+        e2 = n2.split('.').pop();
+        if (e1 !== e2) {
+          if (e1 > e2) {
+            return -sort;
+          }
+          if (e1 < e2) {
+            return sort;
+          }
+          return 0;
+        }
+      }
       if (n1 > n2) {
         return -sort;
       } else if (n1 < n2) {
@@ -360,6 +375,8 @@ module.exports = UploadQueue = (function(_super) {
 
   UploadQueue.prototype.loaded = 0;
 
+  UploadQueue.prototype.uploadingPaths = {};
+
   UploadQueue.prototype.initialize = function() {
     this.asyncQueue = async.queue(this.uploadWorker, 5);
     this.listenTo(this, 'add', (function(_this) {
@@ -379,8 +396,8 @@ module.exports = UploadQueue = (function(_super) {
         return model.error = 'aborted';
       };
     })(this));
-    this.listenTo(this, 'sync', (function(_this) {
-      return function() {
+    this.listenTo(this, 'sync error', (function(_this) {
+      return function(model) {
         return _this.loaded++;
       };
     })(this));
@@ -407,6 +424,7 @@ module.exports = UploadQueue = (function(_super) {
   UploadQueue.prototype.reset = function(models, options) {
     this.loaded = 0;
     this.completed = false;
+    this.uploadingPaths = {};
     return UploadQueue.__super__.reset.apply(this, arguments);
   };
 
@@ -505,36 +523,45 @@ module.exports = UploadQueue = (function(_super) {
           model.total = blob.size;
         }
         _this.add(model);
+        _this.markAsBeingUploaded(model);
         return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
   };
 
   UploadQueue.prototype.addFolderBlobs = function(blobs, parent) {
-    var dir, folder, name, parts, path, prefix, _i, _len, _ref;
-    _ref = Helpers.nestedDirs(blobs).reverse();
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      dir = _ref[_i];
-      prefix = parent.getRepository();
-      parts = dir.split('/').filter(function(x) {
-        return x;
-      });
-      name = parts[parts.length - 1];
-      path = [prefix].concat(parts.slice(0, -1)).join('/');
-      folder = new File({
-        type: "folder",
-        name: name,
-        path: path
-      });
-      folder.loaded = 0;
-      folder.total = 100;
-      this.add(folder);
-    }
-    blobs = _.filter(blobs, function(blob) {
-      var _ref1;
-      return (_ref1 = blob.name) !== '.' && _ref1 !== '..';
-    });
-    return this.addBlobs(blobs, parent);
+    var dirs, i, nonBlockingLoop;
+    dirs = Helpers.nestedDirs(blobs);
+    i = 0;
+    return (nonBlockingLoop = (function(_this) {
+      return function() {
+        var dir, folder, name, parts, path, prefix;
+        if (!(dir = dirs[i++])) {
+          blobs = _.filter(blobs, function(blob) {
+            var _ref;
+            return (_ref = blob.name) !== '.' && _ref !== '..';
+          });
+          _this.addBlobs(blobs, parent);
+          return;
+        }
+        prefix = parent.getRepository();
+        parts = dir.split('/').filter(function(x) {
+          return x;
+        });
+        name = parts[parts.length - 1];
+        path = [prefix].concat(parts.slice(0, -1)).join('/');
+        folder = new File({
+          type: "folder",
+          name: name,
+          path: path
+        });
+        folder.loaded = 0;
+        folder.total = 250;
+        _this.add(folder);
+        _this.markAsBeingUploaded(folder);
+        return setTimeout(nonBlockingLoop, 2);
+      };
+    })(this))();
   };
 
   UploadQueue.prototype.filteredByFolder = function(folder, comparator) {
@@ -569,6 +596,26 @@ module.exports = UploadQueue = (function(_super) {
       existing: existing,
       success: success
     };
+  };
+
+  UploadQueue.prototype.markAsBeingUploaded = function(model) {
+    var path;
+    path = model.get('path') + '/';
+    if (this.uploadingPaths[path] == null) {
+      this.uploadingPaths[path] = 0;
+    }
+    return this.uploadingPaths[path]++;
+  };
+
+  UploadQueue.prototype.getNumUploadingElementsByPath = function(path) {
+    path = path + '/';
+    return _.reduce(this.uploadingPaths, function(memo, value, index) {
+      if (index.indexOf(path) !== -1 || path === '') {
+        return memo + value;
+      } else {
+        return memo;
+      }
+    }, 0);
   };
 
   return UploadQueue;
@@ -706,6 +753,8 @@ exports.del = function(url, callbacks) {
 });
 
 ;require.register("lib/folder_helpers", function(exports, require, module) {
+var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
 module.exports = {
   removeTralingSlash: function(path) {
     if (path.slice(-1) === '/') {
@@ -717,30 +766,30 @@ module.exports = {
     return path.split('/').slice(0, -1).join('/');
   },
   nestedDirs: function(fileList) {
-    var dir, dirs, file, levels, nestLevel, parent, path, relPath, _i, _len;
-    levels = {};
+    var addedPath, dir, dirs, file, foldersOfPath, parent, parents, relPath, _i, _len;
+    dirs = [];
+    addedPath = [];
     for (_i = 0, _len = fileList.length; _i < _len; _i++) {
       file = fileList[_i];
       relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
-      parent = relPath.slice(0, relPath.lastIndexOf(file.name));
-      nestLevel = parent.split('/').length - 1;
-      levels[parent] = nestLevel;
-    }
-    dirs = (function() {
-      var _j, _len1, _ref, _results;
-      _ref = Object.keys(levels);
-      _results = [];
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        path = _ref[_j];
-        _results.push({
-          path: path,
-          nestLevel: levels[path]
-        });
+      parents = relPath.slice(0, relPath.lastIndexOf(file.name));
+      foldersOfPath = parents.split('/').slice(0, -1);
+      while (foldersOfPath.length > 0) {
+        parent = foldersOfPath.join('/');
+        if (!(__indexOf.call(addedPath, parent) >= 0)) {
+          dirs.push({
+            path: parent,
+            depth: foldersOfPath.length
+          });
+          addedPath.push(parent);
+          foldersOfPath.pop();
+        } else {
+          break;
+        }
       }
-      return _results;
-    })();
+    }
     dirs.sort(function(a, b) {
-      return a.nestLevel - b.nestLevel;
+      return a.depth - b.depth;
     });
     return (function() {
       var _j, _len1, _results;
@@ -974,6 +1023,8 @@ module.exports = ViewCollection = (function(_super) {
 
   ViewCollection.prototype.itemViewOptions = function() {};
 
+  ViewCollection.prototype.bufferEl = null;
+
   ViewCollection.prototype.getItemViewSelector = function() {
     var classNames;
     classNames = this.itemview.prototype.className.replace(' ', '.');
@@ -985,13 +1036,39 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.appendView = function(view) {
-    var index, selector;
+    var brother, brotherAfter, index, selector;
     index = this.collection.indexOf(view.model);
     if (index === 0) {
-      return this.$collectionEl.prepend(view.$el);
+      if (this.isBuffering) {
+        $(this.bufferEl).prepend(view.$el);
+      } else {
+        this.$collectionEl.prepend(view.$el);
+      }
     } else {
-      selector = this.getItemViewSelector();
-      return view.$el.insertAfter($(selector).eq(index - 1));
+      if (this.isBuffering) {
+        brother = this.bufferEl.childNodes[index - 1];
+        if (brother != null) {
+          brotherAfter = brother.nextSibling;
+          this.bufferEl.insertBefore(view.el, brotherAfter);
+        }
+      } else {
+        selector = this.getItemViewSelector();
+        view.$el.insertAfter($(selector).eq(index - 1));
+      }
+    }
+
+    /*
+        If buffering is enabled, we batch all appendView to one DOM request
+        thanks to a document fragment. Data are added one by one so we use
+        a set timeout
+     */
+    if (this.isBuffering) {
+      clearTimeout(this.timeout);
+      return this.timeout = setTimeout((function(_this) {
+        return function() {
+          return _this.cleanBuffer();
+        };
+      })(this), 1);
     }
   };
 
@@ -1003,7 +1080,21 @@ module.exports = ViewCollection = (function(_super) {
     this.listenTo(this.collection, "remove", this.removeItem);
     this.listenTo(this.collection, "sort", this.onSort);
     if (this.collectionEl == null) {
-      return this.collectionEl = el;
+      this.collectionEl = el;
+    }
+    return this.initializeBuffering();
+  };
+
+  ViewCollection.prototype.initializeBuffering = function() {
+    this.isBuffering = true;
+    return this.bufferEl = document.createDocumentFragment();
+  };
+
+  ViewCollection.prototype.cleanBuffer = function() {
+    if (this.isBuffering) {
+      this.isBuffering = false;
+      this.$collectionEl.html(this.bufferEl);
+      return this.bufferEl = null;
     }
   };
 
@@ -1956,6 +2047,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.initialize = function(options) {
+    var numUploadChildren, path, uploadQueue;
     this.isSearchMode = options.isSearchMode;
     this.listenTo(this.model, 'change', this.refresh);
     this.listenTo(this.model, 'request', (function(_this) {
@@ -1969,7 +2061,28 @@ module.exports = FileView = (function(_super) {
       };
     })(this));
     if (!app.isPublic) {
-      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+      if (ModalShareView == null) {
+        ModalShareView = require("./modal_share");
+      }
+    }
+    if (this.model.isFolder()) {
+      uploadQueue = options.uploadQueue;
+      path = this.model.getRepository();
+      numUploadChildren = uploadQueue.getNumUploadingElementsByPath(path);
+      this.hasUploadingChildren = numUploadChildren > 0;
+      this.listenTo(uploadQueue, 'add remove reset', (function(_this) {
+        return function() {
+          var hasItems;
+          hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0;
+          return _this.$('.fa-folder').toggleClass('spin', hasItems);
+        };
+      })(this));
+      return this.listenTo(uploadQueue, 'upload-complete', (function(_this) {
+        return function() {
+          _this.hasUploadingChildren = false;
+          return _this.$('.fa-folder').removeClass('spin');
+        };
+      })(this));
     }
   };
 
@@ -2196,7 +2309,7 @@ module.exports = FileView = (function(_super) {
       cell = $('<td colspan="2"></td>');
       cell.append(this.progressbar.render().$el);
       this.$('.size-column-cell').after(cell);
-      return this.$('a.caption.btn').click(function(event) {
+      this.$('a.caption.btn').click(function(event) {
         return event.preventDefault();
       });
     } else {
@@ -2204,7 +2317,10 @@ module.exports = FileView = (function(_super) {
         el: this.$('.tags'),
         model: this.model
       });
-      return this.tags.render();
+      this.tags.render();
+    }
+    if (this.hasUploadingChildren) {
+      return this.$('.fa-folder').addClass('spin');
     }
   };
 
@@ -2252,7 +2368,8 @@ module.exports = FilesView = (function(_super) {
     FilesView.__super__.initialize.call(this, options);
     this.itemViewOptions = function() {
       return {
-        isSearchMode: options.isSearchMode
+        isSearchMode: options.isSearchMode,
+        uploadQueue: options.uploadQueue
       };
     };
     return this.chevron = {
@@ -2422,6 +2539,7 @@ module.exports = FolderView = (function(_super) {
     this.filesList = new FilesView({
       model: this.model,
       collection: this.collection,
+      uploadQueue: this.uploadQueue,
       isSearchMode: this.model.get('type') === "search"
     });
     return this.filesList.render();
@@ -3415,7 +3533,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),value = locals_.value;
-buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div id=\"dismiss\" class=\"btn btn-cozy pull-right\">" + (jade.escape(null == (jade_interp = t('ok')) ? "" : jade_interp)) + "</div><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\">" + (jade.escape(null == (jade_interp = t('total progress') + value) ? "" : jade_interp)) + "</div></div>");;return buf.join("");
+buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div id=\"dismiss\" class=\"btn btn-cozy pull-right\">" + (jade.escape(null == (jade_interp = t('ok')) ? "" : jade_interp)) + "</div><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\"></div><div class=\"progress-bar progress-bar-content\">" + (jade.escape((jade_interp = t('total progress')) == null ? '' : jade_interp)) + " " + (jade.escape((jade_interp = value) == null ? '' : jade_interp)) + "</div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -3478,10 +3596,11 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   UploadStatusView.prototype.progress = function(e) {
-    var p;
+    var percentage;
     this.$el.removeClass('success danger warning');
-    p = parseInt(100 * e.loadedBytes / e.totalBytes) + '%';
-    return this.progressbar.text("" + (t('total progress')) + " : " + p).width(p);
+    percentage = parseInt(100 * e.loadedBytes / e.totalBytes) + '%';
+    this.progressbar.width(percentage);
+    return this.progressbarContent.text("" + (t('total progress')) + " : " + percentage);
   };
 
   UploadStatusView.prototype.complete = function() {
@@ -3556,11 +3675,16 @@ module.exports = UploadStatusView = (function(_super) {
       $('#content').css({
         'margin-top': 56
       });
+    } else {
+      $('#content').css({
+        'margin-top': 108
+      });
     }
     this.$el.removeClass('success danger warning');
     this.counter = this.$('.counter');
     this.counterDone = this.$('.counter-done');
-    this.progressbar = this.$('.progress-bar');
+    this.progressbar = this.$('.progress-bar-info');
+    this.progressbarContent = this.$('.progress-bar-content');
     this.dismiss = this.$('#dismiss').hide();
     if (this.collection.completed) {
       return this.complete();

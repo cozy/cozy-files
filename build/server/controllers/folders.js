@@ -339,66 +339,47 @@ module.exports.modify = function(req, res, next) {
 };
 
 module.exports.destroy = function(req, res, next) {
-  var currentFolder, destroyIfIsSubdirectory, destroySubFiles, destroySubFolders, directory;
+  var currentFolder, directory;
   currentFolder = req.folder;
   directory = "" + currentFolder.path + "/" + currentFolder.name;
-  destroyIfIsSubdirectory = function(file, cb) {
-    var pathToTest;
-    pathToTest = "" + file.path + "/";
-    if (pathToTest.indexOf("" + directory + "/") === 0) {
-      return file.destroy(cb);
-    } else {
-      return cb(null);
+  return async.parallel([
+    function(cb) {
+      return Folder.all(cb);
+    }, function(cb) {
+      return File.all(cb);
     }
-  };
-  destroySubFolders = function(callback) {
-    return Folder.all(function(err, folders) {
-      if (err) {
+  ], function(err, elements) {
+    var destroyElement, elementsToDelete, files, folders;
+    if (err != null) {
+      return next(err);
+    }
+    folders = elements[0], files = elements[1];
+    elements = files.concat(folders);
+    elementsToDelete = elements.filter(function(element) {
+      var pathToTest;
+      pathToTest = "" + element.path + "/";
+      return pathToTest.indexOf("" + directory + "/") === 0;
+    });
+    destroyElement = function(element, cb) {
+      return element.destroy(cb);
+    };
+    return async.each(elementsToDelete, destroyElement, function(err) {
+      if (err != null) {
         return next(err);
       } else {
-        return async.each(folders, destroyIfIsSubdirectory, function(err) {
-          if (err) {
+        return currentFolder.destroy(function(err) {
+          if (err != null) {
             return next(err);
           } else {
-            return callback();
+            return currentFolder.updateParentModifDate(function(err) {
+              if (err != null) {
+                log.raw(err);
+              }
+              return res.send(204);
+            });
           }
         });
       }
-    });
-  };
-  destroySubFiles = function(callback) {
-    return File.all((function(_this) {
-      return function(err, files) {
-        if (err) {
-          return next(err);
-        } else {
-          return async.each(files, destroyIfIsSubdirectory, function(err) {
-            if (err) {
-              return next(err);
-            } else {
-              return callback();
-            }
-          });
-        }
-      };
-    })(this));
-  };
-  return destroySubFolders(function() {
-    return destroySubFiles(function() {
-      return currentFolder.destroy(function(err) {
-        if (err) {
-          return next(err);
-        } else {
-          return currentFolder.updateParentModifDate(function(err) {
-            if (err) {
-              log.raw(err);
-            }
-            return res.send({
-              success: "Folder succesfuly deleted: " + directory
-            });
-          });
-        }
-      });
     });
   });
 };
