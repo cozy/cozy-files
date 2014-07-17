@@ -3,21 +3,24 @@ td
   div.caption-wrapper
     block title
       if model.type == 'folder'
-        a.caption.btn.btn-link(
-            href="#folders/#{model.id}", title="#{t('open folder')}")
+        .caption.btn.btn-link
+          input.selector(type="checkbox")
           i.fa.fa-folder
-          span
-            | #{model.name}
+          a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
+            span
+              | #{model.name}
       else if model.type == 'file'
-        a.caption.btn.btn-link(
-            href="#{attachmentUrl}",
-            title="#{t('download file')}", target="_blank")
+        .caption.btn.btn-link
+          input.selector(type="checkbox")
           if model.mime && this.mimeClasses[model.mime]
             i(class="fa #{this.mimeClasses[model.mime]}")
           else
             i.fa.fa-file-o
-          span
-            | #{model.name}
+          a.btn-link(
+            href="#{attachmentUrl}",
+            title="#{t('download file')}", target="_blank")
+              span
+                | #{model.name}
     block tags
       ul.tags
         for tag in model.tags || []

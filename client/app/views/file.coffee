@@ -22,6 +22,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit-cancel' : 'onCancelClicked'
         'click a.file-move'        : 'onMoveClicked'
         'keydown input.file-edit-name'  : 'onKeyPress'
+        'change input.selector': 'onSelectChanged'
 
     mimeClasses:
         'application/octet-stream'      : 'fa-file-o'
@@ -249,14 +250,14 @@ module.exports = class FileView extends BaseView
             <option value="#{path}">#{path}</option>
         """
 
-        firstCell = @$el.find('td:first-child')
+        firstCell = @$el.find 'td:first-child'
 
         client.get 'folders/list', (err, paths) =>
             if err
-                alert err
+                Modal.error err
             else
-                parentPath = @model.get('path')
-                fullPath =  @model.get('path') + "/" + @model.get('name')
+                parentPath = @model.get 'path'
+                fullPath =  @model.getRepository()
                 type = @model.get 'type'
 
                 # Add root folder to list.
@@ -322,12 +323,17 @@ module.exports = class FileView extends BaseView
                 @$el.find('td:first-child').append moveForm
 
 
-
     onKeyPress: (e) =>
         if e.keyCode is 13
             @onSaveClicked()
         else if e.keyCode is 27
             @render()
+
+    onSelectChanged: (event) ->
+        isChecked = $(event.target).is ':checked'
+        @$el.toggleClass 'selected', isChecked
+        @model.isSelected = isChecked
+        return true
 
     afterRender: ->
         # if the file is being uploaded

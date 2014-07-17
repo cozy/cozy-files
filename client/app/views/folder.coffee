@@ -3,6 +3,7 @@ FilesView = require './files'
 BreadcrumbsView = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
 Modal = require './modal'
+ModalBulkMove = require './modal_bulk_move'
 ModalShareView = null
 
 File = require '../models/file'
@@ -28,6 +29,12 @@ module.exports = class FolderView extends BaseView
         'change #uploader': 'onFilesSelected'
         'change #folder-uploader': 'onDirectorySelected'
 
+        'change #select-all': 'onSelectAllChanged'
+        'change input.selector': 'onSelectChanged'
+
+        'click #button-bulk-remove': 'bulkRemove'
+        'click #button-bulk-move'  : 'bulkMove'
+
         'dragstart #files' : 'onDragStart'
         'dragenter #files' : 'onDragEnter'
         'dragover #files'  : 'onDragEnter'
@@ -51,6 +58,10 @@ module.exports = class FolderView extends BaseView
         return this
 
     destroy: ->
+        # reset selection for each models
+        @collection.forEach (element) -> element.isSelected = false
+
+        # properly destroy subviews
         @breadcrumbsView.destroy()
         @breadcrumbsView = null
         @filesList.destroy()
@@ -212,8 +223,62 @@ module.exports = class FolderView extends BaseView
         @renderFileList()
 
 
-    ### Misc ###
+    ###
+        Select elements management
+    ###
+    onSelectAllChanged: (event) ->
+        isChecked = $(event.target).is ':checked'
+        @$('input.selector').prop 'checked', isChecked
+        @collection.forEach (element) -> element.isSelected = isChecked
 
+        @$('tr.folder-row').toggleClass 'selected', isChecked
+
+        @toggleFolderActions()
+
+    onSelectChanged: -> @toggleFolderActions()
+
+    # Gets the number of selected elements from DOM
+    getSelectedElements: ->
+        return @collection.filter (element) ->
+            return element.isSelected? and element.isSelected
+
+    # we don't show the same actions wether there are selected elements or not
+    toggleFolderActions: ->
+        selectedElements = @getSelectedElements()
+        if selectedElements.length > 0
+            @$('#share-state').hide()
+            @$('#upload-btngroup').hide()
+            @$('#button-new-folder').hide()
+            @$('#bulk-actions-btngroup').addClass 'enabled'
+        else
+            @$('#share-state').show()
+            @$('#upload-btngroup').show()
+            @$('#button-new-folder').show()
+            @$('#bulk-actions-btngroup').removeClass 'enabled'
+
+        # we check the "select-all" checkbox if there are few elements selected
+        @$('input#select-all').prop 'checked', selectedElements.length >= 3
+
+
+    ###
+        Bulk actions management
+    ###
+    bulkRemove: ->
+        new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
+            if confirm
+                async.eachLimit @getSelectedElements(), 10, (element, cb) ->
+                    element.destroy error: -> cb()
+                , (err) ->
+                    Modal.error t("modal delete error")
+
+    bulkMove: ->
+        new ModalBulkMove
+            collection: @getSelectedElements()
+            parentPath: @model.getRepository()
+
+    ###
+        Misc
+    ###
     testEnableDirectoryUpload: ->
         input = $('<input type="file">')[0]
         supportsDirectoryUpload = input.directory? or

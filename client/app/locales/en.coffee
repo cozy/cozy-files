@@ -161,4 +161,10 @@ module.exports =
     'error occured canceling move': 'An error occured while canceling move.'
     'error occured while moving element': 'An error occured while moving element'
 
-    'file successfully moved to': 'File successfully move to'
+    'file successfully moved to': 'File successfully moved to'
+
+    # Bulk move modal
+    'moving selected elements': 'Moving selected elements'
+    'move elements to': "Move elements to"
+    "elements successfully moved to": 'Elements successfully moved to'
+    'close': 'Close'
