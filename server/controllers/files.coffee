@@ -3,6 +3,7 @@ async = require 'async'
 moment = require 'moment'
 multiparty = require 'multiparty'
 mime = require 'mime'
+feed = require '../lib/feed'
 
 File = require '../models/file'
 Folder = require '../models/folder'
@@ -97,7 +98,6 @@ module.exports.create = (req, res, next) ->
 
     # Parse given form to extract image blobs.
     form = new multiparty.Form()
-    form.parse req
 
     form.on 'part', (part) ->
         # Get field, form is processed one way, be sure that fields are sent
@@ -146,29 +146,63 @@ module.exports.create = (req, res, next) ->
                             tags: []
                             class: fileClass
 
+                        upload = true
+
                         # Create a file object and link to it a binary object.
                         # Then it uploads the stream as an attachment of the
                         # binary.
                         createFile = =>
-                            File.createNewFile data, part, (err, newfile) =>
-                                resetTimeout()
-                                if err
-                                    stringErr = err.toString()
-                                    if stringErr.indexOf('enough storage') isnt -1
-                                        res.send
-                                            error: true
-                                            code: 'ESTORAGE'
-                                            msg: "modal error size"
-                                        , 400
-                                    else
-                                        res.send error:true, msg: err, 500
+                            attachBinary = (newFile) ->
 
-                                else
-                                    # Handle clearance notifications.
+                                # Here file is a stream. For some weird reason, request-json requires
+                                # that a path field to be set before uploading.
+                                part.path = data.name
+                                newFile.attachBinary part, {"name": "file"}, (err, res, body) ->
+                                    upload = false
+                                    if err
+                                        newFile.destroy (error) ->
+                                            stringErr = err.toString()
+                                            if stringErr.indexOf('enough storage') isnt -1
+                                                res.send
+                                                    error: true
+                                                    code: 'ESTORAGE'
+                                                    msg: "modal error size"
+                                                , 400
+                                            else
+                                                next err
+                                    else
+                                        index newFile
+
+                            # Index file name to Cozy indexer to allow quick search on it.
+                            index = (newFile) ->
+                                newFile.index ["name"], (err) ->
+                                    log.debug err if err
                                     who = req.guestEmail or 'owner'
-                                    sharing.notifyChanges who, newfile, (err) ->
-                                        console.log err if err
-                                        res.send newfile, 200
+                                    sharing.notifyChanges who, newFile, (err) ->
+                                        log.debug err if err
+                                        res.send newFile, 200
+
+                            # This action is required to ensure that the application is not stopped by
+                            # the "autostop" feature of the controller. It could occurs if the file is
+                            # too long to upload. The controller could think that the application is
+                            # unactive.
+                            keepAlive = () =>
+                                if upload
+                                    feed.publish 'usage.application', 'files'
+                                    setTimeout () =>
+                                        keepAlive()
+                                    , 60*1000
+
+                            # Create file document then attach file stream as binary to that file
+                            # document.
+                            File.create data, (err, newFile) =>
+                                if err
+                                    next err
+                                else
+                                    attachBinary newFile
+                                    keepAlive()
+
+
 
                         # find parent folder for updating its last modification
                         # date and applying tags to uploaded file.
@@ -185,6 +219,10 @@ module.exports.create = (req, res, next) ->
                             else
                                 createFile()
 
+    form.on 'error', (err) ->
+        log.error err
+
+    form.parse req
 
 # After 1 minute of inactivity, update parents
 resetTimeout = () =>
