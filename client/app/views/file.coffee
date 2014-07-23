@@ -107,6 +107,8 @@ module.exports = class FileView extends BaseView
         @listenTo @model, 'sync error', =>
             @$('.spinholder').spin false
 
+        @listenTo @model, 'toggle-select', @onToggleSelect
+
         # prevent contacts loading in shared area
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
@@ -334,7 +336,15 @@ module.exports = class FileView extends BaseView
         isChecked = $(event.target).is ':checked'
         @$el.toggleClass 'selected', isChecked
         @model.isSelected = isChecked
+
+        @onToggleSelect()
         return true
+
+    onToggleSelect: ->
+        if @model.isSelected
+            @$('.file-move, .file-delete').hide()
+        else
+            @$('.file-move, .file-delete').show()
 
     afterRender: ->
         # if the file is being uploaded
@@ -352,6 +362,12 @@ module.exports = class FileView extends BaseView
                 el: @$('.tags')
                 model: @model
             @tags.render()
+
+        # hides the file move and remove buttons if they are in a bulk selection
+        if @model.isSelected
+            @$('.file-move, .file-delete').hide()
+        else
+            @$('.file-move, .file-delete').show()
 
         # if it's a folder and if it has children being uploaded
         if @hasUploadingChildren

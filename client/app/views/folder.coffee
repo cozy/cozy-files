@@ -229,7 +229,9 @@ module.exports = class FolderView extends BaseView
     onSelectAllChanged: (event) ->
         isChecked = $(event.target).is ':checked'
         @$('input.selector').prop 'checked', isChecked
-        @collection.forEach (element) -> element.isSelected = isChecked
+        @collection.forEach (element) ->
+            element.isSelected = isChecked
+            element.trigger 'toggle-select'
 
         @$('tr.folder-row').toggleClass 'selected', isChecked
 
