@@ -229,10 +229,10 @@ module.exports = class FileView extends BaseView
         """
 
         errorTemplate = """
-            <div>
+            <div class="move-error">
                 <span class="error">
-                #{'error occured while moving element'}: #{@model.get 'name'}.
-                #</span>
+                #{'modal error file exists'}: #{@model.get 'name'}.
+                </span>
             </div>
         """
 
@@ -273,7 +273,8 @@ module.exports = class FileView extends BaseView
 
                 # Cancel move action on cancel clicked.
                 cancelButton =  moveForm.find(".cancel-move-btn")
-                cancelButton.click ->
+                cancelButton.click =>
+                    @$('.move-error').remove()
                     moveForm.remove()
 
                 # Perform move operation on move clicked.
@@ -310,7 +311,7 @@ module.exports = class FileView extends BaseView
                     # Can't use Backbone model due to a weird sync
                     # I can't figure out what is causing view to re-render.
                     client.put "#{type}s/#{id}", path: path, (err) =>
-                        if err
+                        if err?
                             firstCell.append errorTemplate
                         else
                             showMoveResult()

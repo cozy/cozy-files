@@ -46,7 +46,6 @@ module.exports = class ModalBulkMoveView extends Modal
                 forbiddenPaths = @collection
                     .filter (element) -> element.isFolder()
                     .map (element) -> element.getRepository()
-                #forbiddenPaths.push @parentPath unless @parentPath is ""
 
                 allowedPaths = _.filter paths, (path) =>
                     # we append a / to prevent issue where folders
@@ -79,20 +78,24 @@ module.exports = class ModalBulkMoveView extends Modal
             # Hides loading indicator
             @$('#modal-dialog-yes').hide()
 
-            # Shows the success form
-            @moveForm.fadeOut => @moveForm.remove()
-            movedInfos = $ @movedTemplate newPath
+            if err?
+                # Shows an error
+                Modal.error t 'modal error file exists'
+            else
+                # Shows the success form
+                @moveForm.fadeOut => @moveForm.remove()
+                movedInfos = $ @movedTemplate newPath
 
-            # Cancel handler
-            cancelButton =  movedInfos.find '.cancel-move-btn'
-            cancelButton.click =>
-                @bulkUpdate previousPath, (err) =>
-                    if err?
-                        Modal.error t 'error occured canceling move'
-                    else
-                        @onNo()
+                # Cancel handler
+                cancelButton =  movedInfos.find '.cancel-move-btn'
+                cancelButton.click =>
+                    @bulkUpdate previousPath, (err) =>
+                        if err?
+                            Modal.error t 'error occured canceling move'
+                        else
+                            @onNo()
 
-            @$el.find('.modal-body').append movedInfos
+                @$el.find('.modal-body').append movedInfos
 
     # Process the update for all the selected elements
     bulkUpdate: (newPath, callback) ->
