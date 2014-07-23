@@ -208,9 +208,8 @@ module.exports.modify = (req, res, next) ->
         isPublic = body.public
         newFullPath = "#{newPath}/#{newName}"
         previousFullPath = "#{previousPath}/#{previousName}"
-        fullPath = "#{req.body.path}/#{req.body.name}"
 
-        File.byFullPath key: fullPath, (err, sameFiles) =>
+        File.byFullPath key: newFullPath, (err, sameFiles) ->
             return next err if err
 
             modificationSuccess =  (err) ->
@@ -221,9 +220,9 @@ module.exports.modify = (req, res, next) ->
 
             if sameFiles.length > 0
                 log.info "No modification: Name #{newName} already exists."
-                res.send
+                res.send 400,
                     error: true
-                    msg: "The name is already in use.", 400
+                    msg: "The name is already in use."
             else
                 data =
                     name: newName
