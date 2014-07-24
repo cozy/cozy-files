@@ -22,7 +22,6 @@ monkeypatch = (ctx, fn, after) ->
     old = ctx[fn]
 
     ctx[fn] = ->
-        #before?.apply null, arguments
         after.apply @, arguments
 
 combinedStreamPath = 'americano-cozy/' + \
@@ -258,6 +257,7 @@ module.exports.create = (req, res, next) ->
         log.error err
 
     form.parse req
+
 
 # After 1 minute of inactivity, update parents
 resetTimeout = () =>
