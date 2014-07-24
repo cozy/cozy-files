@@ -18,6 +18,41 @@ normalizePath = (path) ->
     path = "" if path is "/"
     path
 
+monkeypatch = (ctx, fn, after) ->
+    old = ctx[fn]
+
+    ctx[fn] = ->
+        #before?.apply null, arguments
+        after.apply @, arguments
+
+combinedStreamPath = 'americano-cozy/' + \
+                     'node_modules/jugglingdb-cozy-adapter/' + \
+                     'node_modules/request-json/' + \
+                     'node_modules/request/' + \
+                     'node_modules/form-data/' + \
+                     'node_modules/combined-stream'
+
+monkeypatch require(combinedStreamPath).prototype, 'pause', ->
+    if not @pauseStreams
+       return
+
+    if(@pauseStreams and typeof(@_currentStream.pause) is 'function')
+        @_currentStream.pause()
+    @emit 'pause'
+
+
+monkeypatch require(combinedStreamPath).prototype, 'resume', ->
+    if not @_released
+        @_released = true
+        @writable = true
+        @_getNext()
+
+    if @pauseStreams and typeof(@_currentStream.resume) is 'function'
+        @_currentStream.resume()
+
+    @emit 'resume'
+
+
 ## Helpers ##
 
 

@@ -6,6 +6,7 @@ feed = require '../lib/feed'
 Folder = require './folder'
 CozyInstance = require './cozy_instance'
 
+
 module.exports = File = americano.getModel 'File',
     path: String
     name: String
@@ -19,7 +20,6 @@ module.exports = File = americano.getModel 'File',
     modificationHistory: Object
     clearance: (x) -> x
     tags: (x) -> x
-
 
 File.all = (params, callback) ->
     File.request "all", params, callback
@@ -111,7 +111,6 @@ File::updateParentModifDate = (callback) ->
             parent.save callback
         else
             callback()
-
 
 
 if process.env.NODE_ENV is 'test'
