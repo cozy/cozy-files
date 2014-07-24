@@ -55,6 +55,10 @@ module.exports = class FolderView extends BaseView
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
 
+        # refresh folder action buttons after bulk actions
+        @listenTo @baseCollection, 'toggle-select', @toggleFolderActions
+        @listenTo @baseCollection, 'remove', @toggleFolderActions
+
         return this
 
     destroy: ->
