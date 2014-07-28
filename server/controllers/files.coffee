@@ -4,6 +4,7 @@ moment = require 'moment'
 multiparty = require 'multiparty'
 mime = require 'mime'
 feed = require '../lib/feed'
+downloader = require '../lib/downloader'
 
 File = require '../models/file'
 Folder = require '../models/folder'
@@ -18,11 +19,15 @@ normalizePath = (path) ->
     path = "" if path is "/"
     path
 
+
+# Dirty stuff while waiting that combined stream library get fixed and included
+# in every dependencies.
 monkeypatch = (ctx, fn, after) ->
     old = ctx[fn]
 
     ctx[fn] = ->
         after.apply @, arguments
+
 
 combinedStreamPath = 'americano-cozy/' + \
                      'node_modules/jugglingdb-cozy-adapter/' + \
@@ -39,7 +44,6 @@ monkeypatch require(combinedStreamPath).prototype, 'pause', ->
         @_currentStream.pause()
     @emit 'pause'
 
-
 monkeypatch require(combinedStreamPath).prototype, 'resume', ->
     if not @_released
         @_released = true
@@ -50,28 +54,34 @@ monkeypatch require(combinedStreamPath).prototype, 'resume', ->
         @_currentStream.resume()
 
     @emit 'resume'
+# End of dirty stuff
 
 
 ## Helpers ##
-
 
 # Put right headers in response, then stream file to the response.
 processAttachement = (req, res, next, download) ->
     file = req.file
 
-    if download then contentHeader = "attachment; filename=#{file.name}"
-    else contentHeader = "inline; filename=#{file.name}"
+    if download
+        contentHeader = "attachment; filename=#{file.name}"
+    else
+        contentHeader = "inline; filename=#{file.name}"
     res.setHeader 'Content-Disposition', contentHeader
 
-    stream = file.getBinary 'file', (err, resp, body) =>
-        next err if err
+    downloader.download "/data/#{file.id}/binaries/file", (stream) ->
+        if stream.statusCode is 200
+            stream.pipefilter = (source, dest) ->
+                XSSmimeTypes = ['text/html', 'image/svg+xml']
+                if source.headers['content-type'] in XSSmimeTypes
+                    dest.setHeader 'content-type', 'text/plain'
+            stream.pipe res
 
-    stream.pipefilter = (source, dest) ->
-        XSSmimeTypes = ['text/html', 'image/svg+xml']
-        if source.headers['content-type'] in XSSmimeTypes
-            dest.setHeader 'content-type', 'text/plain'
+        else if stream.statusCode is 404
+            next new Error 'An error occured while downloading the file: file not found.'
 
-    stream.pipe res
+        else
+            next new Error 'An error occured while downloading the file.'
 
 
 getFileClass = (file) ->
