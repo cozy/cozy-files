@@ -67,7 +67,6 @@ processAttachement = (req, res, next, download) ->
         contentHeader = "attachment; filename=#{file.name}"
     else
         contentHeader = "inline; filename=#{file.name}"
-        res.setHeader 'Content-type', file.mime
     res.setHeader 'Content-Disposition', contentHeader
     res.setHeader 'Content-Length', file.size
 
@@ -80,7 +79,10 @@ processAttachement = (req, res, next, download) ->
             stream.pipe res
 
         else if stream.statusCode is 404
-            next new Error 'An error occured while downloading the file: file not found.'
+            err = new Error 'An error occured while downloading the file: ' + \
+                            'file not found.'
+            err.status = 404
+            next err
 
         else
             next new Error 'An error occured while downloading the file.'
@@ -200,17 +202,36 @@ module.exports.create = (req, res, next) ->
                         # Then it uploads the stream as an attachment of the
                         # binary.
                         createFile = =>
+
+                            # This action is required to ensure that the
+                            # application is not stopped by the "autostop"
+                            # feature of the controller. It could occurs if the
+                            # file is too long to upload. The controller could
+                            # think that the application is
+                            # unactive.
+                            keepAlive = ->
+                                if upload
+                                    feed.publish 'usage.application', 'files'
+                                    setTimeout ->
+                                        keepAlive()
+                                    , 60*1000
+
+                            # Here file is a stream. For some weird reason,
+                            # request-json requires that a path field to be set
+                            # before uploading.
                             attachBinary = (newFile) ->
 
-                                # Here file is a stream. For some weird reason, request-json requires
-                                # that a path field to be set before uploading.
+                                isStorageError = (err) ->
+                                    stringErr = err.toString()
+                                    return stringErr.indexOf('enough storage')
+
                                 part.path = data.name
-                                newFile.attachBinary part, {"name": "file"}, (err, res, body) ->
+                                data = {"name": "file"}
+                                newFile.attachBinary part, data, (err) ->
                                     upload = false
                                     if err
                                         newFile.destroy (error) ->
-                                            stringErr = err.toString()
-                                            if stringErr.indexOf('enough storage') isnt -1
+                                            if isStorageError(error) isnt -1
                                                 res.send
                                                     error: true
                                                     code: 'ESTORAGE'
@@ -221,7 +242,8 @@ module.exports.create = (req, res, next) ->
                                     else
                                         index newFile
 
-                            # Index file name to Cozy indexer to allow quick search on it.
+                            # Index file name to Cozy indexer to allow quick
+                            # search on it.
                             index = (newFile) ->
                                 newFile.index ["name"], (err) ->
                                     log.debug err if err
@@ -230,19 +252,8 @@ module.exports.create = (req, res, next) ->
                                         log.debug err if err
                                         res.send newFile, 200
 
-                            # This action is required to ensure that the application is not stopped by
-                            # the "autostop" feature of the controller. It could occurs if the file is
-                            # too long to upload. The controller could think that the application is
-                            # unactive.
-                            keepAlive = ->
-                                if upload
-                                    feed.publish 'usage.application', 'files'
-                                    setTimeout ->
-                                        keepAlive()
-                                    , 60*1000
-
-                            # Create file document then attach file stream as binary to that file
-                            # document.
+                            # Create file document then attach file stream as
+                            # binary to that file document.
                             File.create data, (err, newFile) =>
                                 if err
                                     next err
@@ -250,15 +261,13 @@ module.exports.create = (req, res, next) ->
                                     attachBinary newFile
                                     keepAlive()
 
-
-
                         # find parent folder for updating its last modification
                         # date and applying tags to uploaded file.
                         Folder.byFullPath key: data.path, (err, parents) =>
                             return next err if err
                             if parents.length > 0
-                                # inherit parent folder tags and update its last
-                                # modification date
+                                # inherit parent folder tags and update its
+                                # last modification date
                                 parent = parents[0]
                                 data.tags = parent.tags
                                 parent.lastModification = now
