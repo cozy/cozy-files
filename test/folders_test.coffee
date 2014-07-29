@@ -72,7 +72,7 @@ describe "Folders management", ->
                 @id = body.id
                 done()
 
-   	    it "And I send a request to get a folder", (done) ->
+           it "And I send a request to get a folder", (done) ->
             client.get "folders/#{@id}", (err, res, body) =>
                 @err = err
                 @res = res
@@ -179,7 +179,7 @@ describe "Folders management", ->
             @res.statusCode.should.be.equal 200
 
         it "And two folders should be returned", ->
-        	@body.length.should.be.equal 3
+            @body.length.should.be.equal 3
 
 
     describe "Change folder path", =>
@@ -341,7 +341,7 @@ describe "Folders management", ->
                 done()
 
 
-   	    it "And I send a request to remove a subfolder", (done) ->
+           it "And I send a request to remove a subfolder", (done) ->
             @now = moment()
             client.del "folders/#{@testSubId}/", (err, res, body) =>
                 @err = err
@@ -361,7 +361,7 @@ describe "Folders management", ->
                 done()
 
 
-   	    it "When I send a request to remove the root folder", (done) ->
+           it "When I send a request to remove the root folder", (done) ->
             client.del "folders/#{@rootId}/", (err, res, body) =>
                 @err = err
                 @res = res

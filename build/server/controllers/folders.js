@@ -363,7 +363,11 @@ module.exports.destroy = function(req, res, next) {
       return pathToTest.indexOf("" + directory + "/") === 0;
     });
     destroyElement = function(element, cb) {
-      return element.destroy(cb);
+      if (element.binary != null) {
+        return element.destroyWithBinary(cb);
+      } else {
+        return element.destroy(cb);
+      }
     };
     return async.each(elementsToDelete, destroyElement, function(err) {
       if (err != null) {
