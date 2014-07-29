@@ -269,7 +269,12 @@ module.exports.destroy = (req, res, next) ->
             pathToTest = "#{element.path}/"
             return pathToTest.indexOf("#{directory}/") is 0
 
-        destroyElement = (element, cb) -> element.destroy cb
+        destroyElement = (element, cb) ->
+            if element.binary?
+                element.destroyWithBinary cb
+            else
+                element.destroy cb
+
         async.each elementsToDelete, destroyElement, (err) ->
             if err? then next err
             else

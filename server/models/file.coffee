@@ -2,8 +2,11 @@ fs = require 'fs'
 americano = require 'americano-cozy'
 moment = require 'moment'
 feed = require '../lib/feed'
+log = require('printit')
+    prefix: 'file-model'
 
 Folder = require './folder'
+Binary = require './binary'
 CozyInstance = require './cozy_instance'
 
 
@@ -112,6 +115,15 @@ File::updateParentModifDate = (callback) ->
         else
             callback()
 
+File::destroyWithBinary = (callback) ->
+    if @binary?
+        binary = new Binary @binary.file
+        binary.destroy (err) =>
+            if err
+                log.error "Cannot destroy binary linked to document #{@id}"
+            @destroy callback
+    else
+        @destroy callback
 
 if process.env.NODE_ENV is 'test'
     File::index = (fields, callback) -> callback null
