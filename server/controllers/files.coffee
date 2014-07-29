@@ -3,21 +3,15 @@ async = require 'async'
 moment = require 'moment'
 multiparty = require 'multiparty'
 mime = require 'mime'
-feed = require '../lib/feed'
-downloader = require '../lib/downloader'
-
-File = require '../models/file'
-Folder = require '../models/folder'
-sharing = require '../helpers/sharing'
-pathHelpers = require '../helpers/path'
 log = require('printit')
     prefix: 'files'
 
-
-normalizePath = (path) ->
-    path = "/#{path}" if path[0] isnt '/'
-    path = "" if path is "/"
-    path
+File = require '../models/file'
+Folder = require '../models/folder'
+feed = require '../lib/feed'
+sharing = require '../helpers/sharing'
+pathHelpers = require '../helpers/path'
+{normalizePath, processAttachment, getFileClass} = require '../helpers/file'
 
 
 # Dirty stuff while waiting that combined stream library get fixed and included
@@ -59,47 +53,6 @@ monkeypatch require(combinedStreamPath).prototype, 'resume', ->
 
 ## Helpers ##
 
-# Put right headers in response, then stream file to the response.
-processAttachement = (req, res, next, download) ->
-    file = req.file
-
-    if download
-        contentHeader = "attachment; filename=#{file.name}"
-    else
-        contentHeader = "inline; filename=#{file.name}"
-    res.setHeader 'Content-Disposition', contentHeader
-    res.setHeader 'Content-Length', file.size
-
-    downloader.download "/data/#{file.id}/binaries/file", (stream) ->
-        if stream.statusCode is 200
-            stream.pipefilter = (source, dest) ->
-                XSSmimeTypes = ['text/html', 'image/svg+xml']
-                if source.headers['content-type'] in XSSmimeTypes
-                    dest.setHeader 'content-type', 'text/plain'
-            stream.pipe res
-
-        else if stream.statusCode is 404
-            err = new Error 'An error occured while downloading the file: ' + \
-                            'file not found.'
-            err.status = 404
-            next err
-
-        else
-            next new Error 'An error occured while downloading the file.'
-
-
-getFileClass = (file) ->
-    type = file.headers['content-type']
-    switch type.split('/')[0]
-        when 'image' then fileClass = "image"
-        when 'application' then fileClass = "document"
-        when 'text' then fileClass = "document"
-        when 'audio' then fileClass = "music"
-        when 'video' then fileClass = "video"
-        else
-            fileClass = "file"
-    fileClass
-
 
 module.exports.fetch = (req, res, next, id) ->
     File.request 'all', key: id, (err, file) ->
@@ -119,6 +72,7 @@ module.exports.fetch = (req, res, next, id) ->
 
 
 ## Actions ##
+
 
 module.exports.find = (req, res) ->
     res.send req.file
@@ -188,7 +142,7 @@ module.exports.create = (req, res, next) ->
                         # Generate file metadata.
                         data =
                             name: name
-                            path: path
+                            path: normalizePath path
                             creationDate: now
                             lastModification: now
                             mime: mime.lookup name
@@ -355,7 +309,7 @@ module.exports.modify = (req, res, next) ->
             else
                 data =
                     name: newName
-                    path: newPath
+                    path: normalizePath newPath
                     public: isPublic
                     lastModification: moment().toISOString()
 
@@ -370,6 +324,7 @@ module.exports.modify = (req, res, next) ->
                             file.index ["name"], modificationSuccess
 
 
+# Perform file removal and binaries removal.
 module.exports.destroy = (req, res, next) ->
     file = req.file
     file.destroy (err) =>
@@ -382,12 +337,14 @@ module.exports.destroy = (req, res, next) ->
                 res.send success: 'File successfully deleted'
 
 
+# Perform download as an inline attachment.
 module.exports.getAttachment = (req, res, next) ->
-    processAttachement req, res, next, false
+    processAttachment req, res, next, false
 
 
+# Perform download as a traditional attachment.
 module.exports.downloadAttachment = (req, res, next) ->
-    processAttachement req, res, next, true
+    processAttachment req, res, next, true
 
 
 # Check if the research should be performed on tag or not.
