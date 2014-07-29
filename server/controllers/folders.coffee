@@ -254,46 +254,31 @@ module.exports.destroy = (req, res, next) ->
     currentFolder = req.folder
     directory = "#{currentFolder.path}/#{currentFolder.name}"
 
-    destroyIfIsSubdirectory = (file, cb) ->
-        pathToTest = "#{file.path}/"
-        # the trailing slash ensures that folder with the same prefix
-        # won't be deleted
-        if pathToTest.indexOf("#{directory}/") is 0
-            file.destroy cb
-        else
-            cb null
+    # get all files and folders to determine the children of the deleted folder
+    async.parallel [
+        (cb) -> Folder.all cb
+        (cb) -> File.all cb
+    ], (err, elements) ->
+        if err? then return next err
 
-    destroySubFolders = (callback) ->
-        Folder.all (err, folders) ->
-            if err then next err
+        [folders, files] = elements
+
+        # get the path of files and folders to delete
+        elements = files.concat folders
+        elementsToDelete = elements.filter (element) ->
+            pathToTest = "#{element.path}/"
+            return pathToTest.indexOf("#{directory}/") is 0
+
+        destroyElement = (element, cb) -> element.destroy cb
+        async.each elementsToDelete, destroyElement, (err) ->
+            if err? then next err
             else
-                # Remove folders in the current folder
-                async.each folders, destroyIfIsSubdirectory, (err) ->
-                    if err then next err
+                currentFolder.destroy (err) ->
+                    if err? then next err
                     else
-                        callback()
-
-    destroySubFiles = (callback) ->
-        File.all (err, files) =>
-            if err then next err
-            else
-                # Remove files in this directory
-                async.each files, destroyIfIsSubdirectory, (err) ->
-                    if err then next err
-                    else
-                        callback()
-
-    destroySubFolders ->
-        # Remove the current folder
-        destroySubFiles ->
-            currentFolder.destroy (err) ->
-                if err then next err
-                else
-                    currentFolder.updateParentModifDate (err) ->
-                        log.raw err if err
-                        res.send
-                            success: "Folder succesfuly deleted: #{directory}"
-
+                        currentFolder.updateParentModifDate (err) ->
+                            log.raw err if err?
+                            res.send 204
 
 module.exports.findFiles = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
@@ -303,7 +288,6 @@ module.exports.findFiles = (req, res, next) ->
                 if err then next err
                 else
                     res.send files, 200
-
 
 module.exports.allFolders = (req, res, next) ->
     Folder.all (err, folders) ->

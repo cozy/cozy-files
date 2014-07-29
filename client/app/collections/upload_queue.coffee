@@ -11,6 +11,9 @@ module.exports = class UploadQueue extends Backbone.Collection
     # number of files actually loaded
     loaded: 0
 
+    # list of paths where files are being uploaded
+    uploadingPaths: {}
+
     initialize: ->
         @asyncQueue = async.queue @uploadWorker, 5
 
@@ -26,8 +29,10 @@ module.exports = class UploadQueue extends Backbone.Collection
         @listenTo this, 'remove', (model) =>
             model.error = 'aborted'
 
-        # when an upload complete, we keep counts
-        @listenTo this, 'sync', => @loaded++
+        # when an upload completes or fails, we keep counts
+        @listenTo this, 'sync error', (model) =>
+            #@uploadingPaths[@model.get('path')]--
+            @loaded++
 
         # proxy progress events, throttled to every 100ms
         @listenTo this, 'progress', _.throttle =>
@@ -46,6 +51,7 @@ module.exports = class UploadQueue extends Backbone.Collection
     reset: (models, options) ->
         @loaded = 0
         @completed = false
+        @uploadingPaths = {}
         super
 
     computeProgress: =>
@@ -124,12 +130,26 @@ module.exports = class UploadQueue extends Backbone.Collection
                 model.total = blob.size
 
             @add model
+            @markAsBeingUploaded model
 
             setTimeout nonBlockingLoop, 2
 
     addFolderBlobs: (blobs, parent) ->
 
-        for dir in Helpers.nestedDirs(blobs).reverse()
+        dirs = Helpers.nestedDirs blobs
+        i = 0
+        #console.log dirs
+        do nonBlockingLoop = =>
+
+            # if no more folders to add, leave the loop
+            unless dir = dirs[i++]
+                # folders will be created
+                # we can safely add files to bottom of queue
+                blobs = _.filter blobs, (blob) ->
+                    blob.name not in ['.', '..']
+                @addBlobs blobs, parent
+                return
+
             prefix = parent.getRepository()
             parts = dir.split('/').filter (x) -> x # ?remove empty last part
             name = parts[parts.length - 1]
@@ -141,15 +161,13 @@ module.exports = class UploadQueue extends Backbone.Collection
                 path: path
 
             folder.loaded = 0
-            folder.total = 100 # ~ size of the query
+            folder.total = 250 # ~ size of the query
 
             # add folder to be saved
             @add folder
+            @markAsBeingUploaded folder
 
-        # Folder will be created, we can safely add files to bottom of queue
-        blobs = _.filter blobs, (blob) ->
-            blob.name not in ['.', '..']
-        @addBlobs blobs, parent
+            setTimeout nonBlockingLoop, 2
 
     filteredByFolder: (folder, comparator) ->
         filteredUploads = new BackboneProjections.Filtered this,
@@ -176,3 +194,27 @@ module.exports = class UploadQueue extends Backbone.Collection
         else 'success'
 
         return {status, error, existing, success}
+
+    # we keep track of models being uploaded by path
+    markAsBeingUploaded: (model) ->
+        # appending a / prevents conflict with elements
+        # having the same prefix in their names
+        path = model.get('path') + '/'
+        unless @uploadingPaths[path]?
+            @uploadingPaths[path] = 0
+
+        @uploadingPaths[path]++
+
+    # returns the number of children elements being uploading for a given path
+    getNumUploadingElementsByPath: (path) ->
+        # appending a / prevents conflict with elements
+        # having the same prefix in their names
+        path = path + '/'
+
+        return _.reduce @uploadingPaths, (memo, value, index) ->
+
+            if index.indexOf(path) isnt -1 or path is ''
+                return memo + value
+            else
+                return memo
+        , 0

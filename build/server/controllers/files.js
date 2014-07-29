@@ -77,8 +77,10 @@ processAttachement = function(req, res, next, download) {
     contentHeader = "attachment; filename=" + file.name;
   } else {
     contentHeader = "inline; filename=" + file.name;
+    res.setHeader('Content-type', file.mime);
   }
   res.setHeader('Content-Disposition', contentHeader);
+  res.setHeader('Content-Length', file.size);
   return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
     if (stream.statusCode === 200) {
       stream.pipefilter = function(source, dest) {

@@ -9,18 +9,32 @@ dirName: (path) ->
     return path.split('/')[...-1].join('/')
 
 nestedDirs: (fileList) ->
-    levels = {}
+
+    # list of folders to create
+    dirs = []
+
+    # cache the key of folders to prevent useless loops
+    addedPath = []
 
     # make an object with keys paths, values nest level
+    # from each files we build the tree to recreate it
     for file in fileList
         relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
-        parent = relPath.slice(0, relPath.lastIndexOf(file.name))
-        nestLevel = parent.split('/').length - 1
-        levels[parent] = nestLevel
+        parents = relPath.slice(0, relPath.lastIndexOf(file.name))
+
+        # get an array of the folders making the file path
+        foldersOfPath = parents.split('/')[...-1]
+        while foldersOfPath.length > 0
+            parent = foldersOfPath.join '/'
+            if not (parent in addedPath)
+                dirs.push path: parent, depth: foldersOfPath.length
+                addedPath.push parent
+                foldersOfPath.pop()
+            else
+                break
 
     # put them in a list, sorted by nest level
-    dirs = (path: path, nestLevel: levels[path] for path in Object.keys(levels))
     dirs.sort (a, b) ->
-        return a.nestLevel - b.nestLevel
+        return a.depth - b.depth
 
     return (dir.path for dir in dirs)

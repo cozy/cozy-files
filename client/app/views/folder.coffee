@@ -90,6 +90,7 @@ module.exports = class FolderView extends BaseView
         @filesList = new FilesView
                 model: @model
                 collection: @collection
+                uploadQueue: @uploadQueue
                 isSearchMode: @model.get('type') is "search"
 
         @filesList.render()

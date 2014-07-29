@@ -21,6 +21,8 @@ module.exports = class ViewCollection extends BaseView
     views: {}
     itemViewOptions: ->
 
+    bufferEl: null
+
     # Gets the selector of the item views
     getItemViewSelector: ->
         classNames = @itemview::className.replace ' ', '.'
@@ -35,10 +37,32 @@ module.exports = class ViewCollection extends BaseView
     appendView: (view) ->
         index = @collection.indexOf view.model
         if index is 0 # insert at the beginning
-            @$collectionEl.prepend view.$el
+            if @isBuffering
+                $(@bufferEl).prepend view.$el
+            else
+                @$collectionEl.prepend view.$el
         else
-            selector = @getItemViewSelector()
-            view.$el.insertAfter $(selector).eq(index - 1)
+            if @isBuffering
+                brother = @bufferEl.childNodes[index - 1]
+                # if the user goes back and forth during upload
+                # brother may not be defined
+                if brother?
+                    brotherAfter = brother.nextSibling
+                    @bufferEl.insertBefore view.el, brotherAfter
+            else
+                selector = @getItemViewSelector()
+                view.$el.insertAfter $(selector).eq(index - 1)
+
+        ###
+            If buffering is enabled, we batch all appendView to one DOM request
+            thanks to a document fragment. Data are added one by one so we use
+            a set timeout
+        ###
+        if @isBuffering
+            clearTimeout @timeout
+            @timeout = setTimeout =>
+                @cleanBuffer()
+            , 1
 
     # bind listeners to the collection
     initialize: ->
@@ -50,6 +74,21 @@ module.exports = class ViewCollection extends BaseView
         @listenTo @collection, "sort",    @onSort
 
         @collectionEl = el if not @collectionEl?
+
+        # we only use buffer for the first render
+        @initializeBuffering()
+
+    # enable buffering
+    initializeBuffering: ->
+        @isBuffering = true
+        @bufferEl = document.createDocumentFragment()
+
+    # append the buffer to the DOM, removes it and disable buffering
+    cleanBuffer: ->
+        if @isBuffering
+            @isBuffering = false
+            @$collectionEl.html @bufferEl
+            @bufferEl = null
 
     # if we have views before a render call, we detach them
     render: ->

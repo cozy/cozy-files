@@ -1,6 +1,10 @@
 @import 'nib'
 @import '_colors'
 
+@keyframes spin
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+
 
 html, body
   height: 100%
@@ -251,6 +255,8 @@ tr.folder-row
     span.caption
       padding-left 3px // 3 for file and 6 for folder
 
+    .caption-wrapper .fa-folder.spin
+      animation spin 2s infinite ease-out
   // the filename
   .caption
     font-size: 16px
@@ -258,6 +264,7 @@ tr.folder-row
     padding: 0
     margin-left: 0px
     margin-right: 10px
+
 
 
   .caption:hover
@@ -630,32 +637,43 @@ tr.folder-row
 .spinner
     display: inline-block
 
-.progress-bar
-  font-size 14px
+.progress
+  position relative
+  background lightblue
 
-.progress-name
-  margin-bottom 8px
-  height 20px
-  line-height 20px
+  .progress-bar
+    font-size 14px
+    position absolute
 
-  span
-    display inline-block
-    overflow hidden
+    &.progress-bar-content
+      width 100%
+      background transparent
+      color #fff
+      text-align center
 
-  .name
-    font-weight bold
-    white-space nowrap
-    text-overflow ellipsis
-    width: 150px
-  .error
-    color red
-  .success
-    color green
-  .progressview
-    display inline-block
-    width: 380px
-    .progress
-      margin-bottom 0px
+  .progress-name
+    margin-bottom 8px
+    height 20px
+    line-height 20px
+
+    span
+      display inline-block
+      overflow hidden
+
+    .name
+      font-weight bold
+      white-space nowrap
+      text-overflow ellipsis
+      width: 150px
+    .error
+      color red
+    .success
+      color green
+    .progressview
+      display inline-block
+      width: 380px
+      .progress
+        margin-bottom 0px
 
 .footer
   text-align: center
