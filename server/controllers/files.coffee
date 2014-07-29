@@ -8,6 +8,7 @@ log = require('printit')
 
 File = require '../models/file'
 Folder = require '../models/folder'
+Binary = require '../models/binary'
 feed = require '../lib/feed'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
@@ -327,14 +328,17 @@ module.exports.modify = (req, res, next) ->
 # Perform file removal and binaries removal.
 module.exports.destroy = (req, res, next) ->
     file = req.file
-    file.destroy (err) =>
-        if err
-            log.error "Cannot destroy document #{file.id}"
-            next err
-        else
-            file.updateParentModifDate (err) ->
-                log.raw err if err
-                res.send success: 'File successfully deleted'
+    binary = new Binary req.file.binary.file
+    binary.destroy (err) ->
+        log.error "Cannot destroy binary attached to document #{file.id}"
+        file.destroy (err) ->
+            if err
+                log.error "Cannot destroy document #{file.id}"
+                next err
+            else
+                file.updateParentModifDate (err) ->
+                    log.raw err if err
+                    res.send success: 'File successfully deleted'
 
 
 # Perform download as an inline attachment.
