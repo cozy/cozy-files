@@ -164,9 +164,11 @@ module.exports.create = (req, res, next) ->
             path = fields.path
 
             if not name or name is ""
-                next new Error "Invalid arguments: no name given"
+                err = new Error "Invalid arguments: no name given"
+                err.status = 400
+                next err
             else
-                # Check that the file does'nt exist yet.
+                # Check that the file doesn't exist yet.
                 path = normalizePath path
                 fullPath = "#{path}/#{name}"
                 File.byFullPath key: fullPath, (err, sameFiles) =>
@@ -232,10 +234,10 @@ module.exports.create = (req, res, next) ->
                             # the "autostop" feature of the controller. It could occurs if the file is
                             # too long to upload. The controller could think that the application is
                             # unactive.
-                            keepAlive = () =>
+                            keepAlive = ->
                                 if upload
                                     feed.publish 'usage.application', 'files'
-                                    setTimeout () =>
+                                    setTimeout ->
                                         keepAlive()
                                     , 60*1000
 
