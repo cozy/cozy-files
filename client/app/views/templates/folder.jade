@@ -37,10 +37,18 @@
                       li: a#button-upload-folder
                         input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory)
                         span Upload a folder
-
                 | &nbsp;
                 a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
                   img(src="images/add-folder.png")
+
+                //- bulk actions: move and remove
+                .btn-group#bulk-actions-btngroup
+                  a#button-bulk-move.btn.btn-cozy.btn-cozy
+                    | Move all&nbsp;
+                    span.glyphicon.glyphicon-arrow-right
+                  a#button-bulk-remove.btn.btn-cozy.btn-cozy
+                    | Remove all&nbsp;
+                    span.glyphicon.glyphicon-remove-circle
 
               //- notification toggle button
               if isPublic && hasPublicKey

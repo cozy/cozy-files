@@ -199,8 +199,13 @@ table#table-items
 
   .table-headers
 
-    td:first-child
-      padding-left: 3px
+    td:first-child input[type=checkbox]
+      width 20px
+      margin 0 15px 0 0
+      font-size 16px
+
+      &:focus
+        outline none
 
     td
       border-top: 0
@@ -241,6 +246,10 @@ tr.folder-row
   &.edit-mode .tags input
       visibility hidden
 
+  // mandatory to override bootstrap
+  &.selected > td
+    background green + 95% !important
+
   td
     vertical-align: middle
 
@@ -264,6 +273,21 @@ tr.folder-row
     padding: 0
     margin-left: 0px
     margin-right: 10px
+
+    input[type=checkbox]
+      display none
+      width 20px
+      margin 0 15px 0 0
+      &:checked
+        display inline-block
+      &:checked + .fa
+          display none
+
+    &:hover
+      .fa
+        display none
+      input[type=checkbox]
+        display inline-block
 
 
 
@@ -459,6 +483,14 @@ tr.folder-row
           &:after
             display none
 
+#bulk-actions-btngroup
+  display none
+  &.enabled
+    display inline-block
+
+  a
+    border-radius 10px
+    margin 0 2.5px
 
 #button-upload-new-file
   position: relative

@@ -371,8 +371,8 @@ describe "Folders management", ->
         it "Then error should not exist", ->
             should.not.exist @err
 
-        it "And 200 should be returned as response code", ->
-            @res.statusCode.should.be.equal 200
+        it "And 204 should be returned as response code", ->
+            @res.statusCode.should.be.equal 204
 
         it "And root folder should be deleted", (done) ->
             client.get "folders/#{@rootId}/" , (err, res, body) ->

@@ -159,3 +159,8 @@ module.exports =
     "error occured while moving element": "Une erreur est survenue en déplaçant l'élément."
     "file successfully moved to": 'Fichier déplacé avec succès vers '
 
+    # Bulk move modal
+    'moving selected elements': 'Déplacer des éléments'
+    'move elements to': "Déplacer les éléments vers "
+    "elements successfully moved to": 'Eléments déplacés avec succès vers '
+    'close': 'Fermer'
