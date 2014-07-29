@@ -174,7 +174,7 @@ module.exports.create = function(req, res, next) {
   fields = {};
   form = new multiparty.Form();
   form.on('part', function(part) {
-    var fullPath, name, path;
+    var err, fullPath, name, path;
     if (part.filename == null) {
       fields[part.name] = '';
       return part.on('data', function(buffer) {
@@ -184,7 +184,9 @@ module.exports.create = function(req, res, next) {
       name = fields.name;
       path = fields.path;
       if (!name || name === "") {
-        return next(new Error("Invalid arguments: no name given"));
+        err = new Error("Invalid arguments: no name given");
+        err.status = 400;
+        return next(err);
       } else {
         path = normalizePath(path);
         fullPath = "" + path + "/" + name;
@@ -332,7 +334,7 @@ updateParents = function() {
 };
 
 module.exports.modify = function(req, res, next) {
-  var body, file, fullPath, isPublic, newFullPath, newName, newPath, previousFullPath, previousName, previousPath, tags, _ref, _ref1;
+  var body, file, isPublic, newFullPath, newName, newPath, previousFullPath, previousName, previousPath, tags, _ref, _ref1;
   log.info("File modification of " + req.file.name + "...");
   file = req.file;
   body = req.body;
@@ -369,41 +371,40 @@ module.exports.modify = function(req, res, next) {
     isPublic = body["public"];
     newFullPath = "" + newPath + "/" + newName;
     previousFullPath = "" + previousPath + "/" + previousName;
-    fullPath = "" + req.body.path + "/" + req.body.name;
     return File.byFullPath({
-      key: fullPath
-    }, (function(_this) {
-      return function(err, sameFiles) {
-        var data, modificationSuccess;
+      key: newFullPath
+    }, function(err, sameFiles) {
+      var data, modificationSuccess;
+      if (err) {
+        return next(err);
+      }
+      modificationSuccess = function(err) {
         if (err) {
-          return next(err);
+          log.raw(err);
         }
-        modificationSuccess = function(err) {
-          if (err) {
-            log.raw(err);
-          }
-          log.info(("Filechanged from " + previousFullPath + " ") + ("to " + newFullPath));
-          return res.send({
-            success: 'File successfully modified'
-          });
+        log.info(("Filechanged from " + previousFullPath + " ") + ("to " + newFullPath));
+        return res.send({
+          success: 'File successfully modified'
+        });
+      };
+      if (sameFiles.length > 0) {
+        log.info("No modification: Name " + newName + " already exists.");
+        return res.send(400, {
+          error: true,
+          msg: "The name is already in use."
+        });
+      } else {
+        data = {
+          name: newName,
+          path: newPath,
+          "public": isPublic,
+          lastModification: moment().toISOString()
         };
-        if (sameFiles.length > 0) {
-          log.info("No modification: Name " + newName + " already exists.");
-          return res.send({
-            error: true,
-            msg: "The name is already in use."
-          }, 400);
-        } else {
-          data = {
-            name: newName,
-            path: newPath,
-            "public": isPublic,
-            lastModification: moment().toISOString()
-          };
-          if (body.clearance) {
-            data.clearance = body.clearance;
-          }
-          return file.updateAttributes(data, function(err) {
+        if (body.clearance) {
+          data.clearance = body.clearance;
+        }
+        return file.updateAttributes(data, (function(_this) {
+          return function(err) {
             if (err) {
               return next(new Error('Cannot modify file'));
             } else {
@@ -414,10 +415,10 @@ module.exports.modify = function(req, res, next) {
                 return file.index(["name"], modificationSuccess);
               });
             }
-          });
-        }
-      };
-    })(this));
+          };
+        })(this));
+      }
+    });
   }
 };
 
