@@ -54,7 +54,7 @@ module.exports = class Autocomplete extends BaseView
             tag.el.classList.remove 'selected'
 
         @visible = @tags.filter (tag) ->
-            tag.value not in existings and
+            tag.value not in existings and tag.lc? and
             ~tag.lc.indexOf search.toLowerCase()
 
         if selected and selected in @visible

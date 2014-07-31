@@ -16,6 +16,7 @@ module.exports = class TagsView extends BaseView
 
     initialize: ->
         @tags = @model.get('tags')
+        @tags = tag for tag in @tags when tag?
         @listenTo @model, 'change:tags', =>
             @tags = @model.get('tags')
             @refresh()
@@ -85,7 +86,7 @@ module.exports = class TagsView extends BaseView
         clearTimeout @saveLater
         @saveLater = setTimeout =>
             @model.save tags: @tags
-        , 3000 # 3s
+        , 1000 # 3s
 
     deleteTag: (e) =>
         tag = e.target.parentNode.dataset.value
