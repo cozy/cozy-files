@@ -468,7 +468,8 @@ module.exports.publicList = (req, res, next) ->
     folder = req.folder
 
     # if the page is requested by the user
-    if req.accepts('html, json') is 'html'
+    console.log req.accepts 'html, json'
+    if ~req.accepts('html, json').indexOf 'html'
         errortemplate = (err) ->
             err = new Error 'File not found'
             err.status = 404
