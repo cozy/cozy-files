@@ -4076,6 +4076,9 @@ module.exports = Autocomplete = (function(_super) {
     var selected, tag, _i, _len, _ref, _ref1;
     search = this.input.val();
     selected = (_ref = this.visible) != null ? _ref[this.selectedIndex] : void 0;
+    if (existings == null) {
+      existings = [];
+    }
     _ref1 = this.tags;
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       tag = _ref1[_i];
@@ -4322,6 +4325,9 @@ module.exports = TagsView = (function(_super) {
 
   TagsView.prototype.setTags = function(newTags) {
     this.tags = newTags;
+    if (this.tags == null) {
+      this.tags = [];
+    }
     this.refresh();
     clearTimeout(this.saveLater);
     return this.saveLater = setTimeout((function(_this) {
