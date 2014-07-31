@@ -16,6 +16,7 @@ module.exports = class TagsView extends BaseView
 
     initialize: ->
         tags = @model.get('tags')
+        tags ?= []
         @tags = []
         @tags.push tag for tag in tags when tag?
         @listenTo @model, 'change:tags', =>
