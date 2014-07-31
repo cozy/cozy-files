@@ -4236,6 +4236,9 @@ module.exports = TagsView = (function(_super) {
   TagsView.prototype.initialize = function() {
     var tag, _i, _len, _ref;
     this.tags = this.model.get('tags');
+    if (this.tags == null) {
+      this.tags = [];
+    }
     _ref = this.tags;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       tag = _ref[_i];
