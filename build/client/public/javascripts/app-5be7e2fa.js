@@ -4280,6 +4280,9 @@ module.exports = TagsView = (function(_super) {
       return;
     }
     if (val && ((_ref = e.keyCode) === 188 || _ref === 32 || _ref === 9 || _ref === 13)) {
+      if (this.tags == null) {
+        this.tags = [];
+      }
       if (__indexOf.call(this.tags, val) < 0) {
         this.tags.push(val);
       }
