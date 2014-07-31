@@ -46,6 +46,7 @@ module.exports = class TagsView extends BaseView
 
         # COMMA, SPACE, TAB, ENTER
         if val and e.keyCode in [188, 32, 9, 13]
+            @tags ?= []
             @tags.push val unless val in @tags
             @setTags @tags
             @input.val ''
