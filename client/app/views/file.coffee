@@ -342,9 +342,9 @@ module.exports = class FileView extends BaseView
 
     onToggleSelect: ->
         if @model.isSelected
-            @$('.file-move, .file-delete').hide()
+            @$('.file-move, .file-delete').addClass 'hidden'
         else
-            @$('.file-move, .file-delete').show()
+            @$('.file-move, .file-delete').removeClass 'hidden'
 
     afterRender: ->
         # if the file is being uploaded
@@ -365,9 +365,9 @@ module.exports = class FileView extends BaseView
 
         # hides the file move and remove buttons if they are in a bulk selection
         if @model.isSelected
-            @$('.file-move, .file-delete').hide()
+            @$('.file-move, .file-delete').addClass 'hidden'
         else
-            @$('.file-move, .file-delete').show()
+            @$('.file-move, .file-delete').removeClass 'hidden'
 
         # if it's a folder and if it has children being uploaded
         if @hasUploadingChildren
