@@ -2320,9 +2320,9 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.onToggleSelect = function() {
     if (this.model.isSelected) {
-      return this.$('.file-move, .file-delete').hide();
+      return this.$('.file-move, .file-delete').addClass('hidden');
     } else {
-      return this.$('.file-move, .file-delete').show();
+      return this.$('.file-move, .file-delete').removeClass('hidden');
     }
   };
 
@@ -2348,9 +2348,9 @@ module.exports = FileView = (function(_super) {
       this.tags.render();
     }
     if (this.model.isSelected) {
-      this.$('.file-move, .file-delete').hide();
+      this.$('.file-move, .file-delete').addClass('hidden');
     } else {
-      this.$('.file-move, .file-delete').show();
+      this.$('.file-move, .file-delete').removeClass('hidden');
     }
     if (this.hasUploadingChildren) {
       return this.$('.fa-folder').addClass('spin');
@@ -4083,7 +4083,7 @@ module.exports = Autocomplete = (function(_super) {
     }
     this.visible = this.tags.filter(function(tag) {
       var _ref2;
-      return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && ~tag.lc.indexOf(search.toLowerCase());
+      return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase());
     });
     if (selected && __indexOf.call(this.visible, selected) >= 0) {
       this.selectedIndex = this.visible.indexOf(selected);
@@ -4234,7 +4234,15 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.initialize = function() {
+    var tag, _i, _len, _ref;
     this.tags = this.model.get('tags');
+    _ref = this.tags;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      tag = _ref[_i];
+      if (tag != null) {
+        this.tags = tag;
+      }
+    }
     return this.listenTo(this.model, 'change:tags', (function(_this) {
       return function() {
         _this.tags = _this.model.get('tags');
@@ -4319,7 +4327,7 @@ module.exports = TagsView = (function(_super) {
           tags: _this.tags
         });
       };
-    })(this), 3000);
+    })(this), 1000);
   };
 
   TagsView.prototype.deleteTag = function(e) {
