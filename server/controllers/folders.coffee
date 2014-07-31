@@ -1,4 +1,3 @@
-
 jade = require 'jade'
 async = require 'async'
 archiver = require 'archiver'
@@ -6,6 +5,7 @@ moment = require 'moment'
 log = require('printit')
     prefix: 'folders'
 
+downloader = require '../lib/downloader'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
 Folder = require '../models/folder'
@@ -269,7 +269,12 @@ module.exports.destroy = (req, res, next) ->
             pathToTest = "#{element.path}/"
             return pathToTest.indexOf("#{directory}/") is 0
 
-        destroyElement = (element, cb) -> element.destroy cb
+        destroyElement = (element, cb) ->
+            if element.binary?
+                element.destroyWithBinary cb
+            else
+                element.destroy cb
+
         async.each elementsToDelete, destroyElement, (err) ->
             if err? then next err
             else
@@ -380,7 +385,8 @@ module.exports.searchContent = (req, res, next) ->
 
                 sendResults = (results) -> res.send 200, results
 
-                # if there is a key we must filter the results so it doesn't display unshared files and folders
+                # if there is a key we must filter the results so it doesn't
+                # display unshared files and folders
                 if key?
                     isAuthorized = (element, callback) ->
                         sharing.checkClearance element, req, (authorized) ->
@@ -391,44 +397,54 @@ module.exports.searchContent = (req, res, next) ->
                 else
                     sendResults content
 
+
 # List files contained in the folder and return them as a zip archive.
-# TODO: add subfolders
 module.exports.zip = (req, res, next) ->
     folder = req.folder
     archive = archiver('zip')
 
-    addToArchive = (file, cb) ->
-        stream = file.getBinary "file", (err, resp, body) =>
-            if err then next err
-        name = file.path.replace(key, "") + "/" + file.name
-        archive.append stream, name: name, cb
+    key = "#{folder.path}/#{folder.name}"
 
+    # Download file with custom low level downloader and pipe the result in the
+    # archiver.
+    addToArchive = (file, cb) ->
+        downloader.download "/data/#{file.id}/binaries/file", (stream) ->
+            if stream.statusCode is 200
+                name = file.path.replace(key, "") + "/" + file.name
+                archive.append stream, name: name
+                stream.on 'end', cb
+            else
+                callback()
+
+    # Build zip from file list and pip the result in the response.
     makeZip = (zipName, files) ->
+
+        # Start the streaming.
+        archive.pipe res
+
+        # Set headers describing the final zip file.
+        disposition = "attachment; filename=\"#{zipName}.zip\""
+        res.setHeader 'Content-Disposition', disposition
+        res.setHeader 'Content-Type', 'application/zip'
+
         async.eachSeries files, addToArchive, (err) ->
             if err then next err
             else
-                archive.pipe res
+                archive.finalize (err, bytes) ->
+                    if err then next err
 
-                disposition = "attachment; filename=\"#{zipName}.zip\""
-                res.setHeader 'Content-Disposition', disposition
-                res.setHeader 'Content-Type', 'application/zip'
 
-        archive.finalize (err, bytes) ->
-            if err
-                res.send error: true, msg: "Server error occured: #{err}", 500
-            else
-                console.log "Zip created"
-
-    key = "#{folder.path}/#{folder.name}"
+    # Grab all files, maybe we should make things proper here. Retrieving all
+    # files is a little bit overkill.
     File.all (err, files) ->
         if err then next err
         else
-            zipName = folder.name?.replace(/\W/g, '')
-
-            # check that the name is not already taken
+            # Check that files is contained in the given subfolder.
             selectedFiles = files.filter (file) ->
                 "#{file.path}/".indexOf("#{key}/") is 0
 
+            # Build zip file.
+            zipName = folder.name?.replace(/\W/g, '')
             makeZip zipName, selectedFiles
 
 
@@ -446,6 +462,7 @@ module.exports.changeNotificationsState = (req, res, next) ->
                 folder.updateAttributes clearance: clearance, (err) ->
                     if err? then next err
                     else res.send 201
+
 
 module.exports.publicList = (req, res, next) ->
     folder = req.folder

@@ -89,5 +89,3 @@ module.exports =
 
     'public/search/content':
         post: folders.searchContent
-
-

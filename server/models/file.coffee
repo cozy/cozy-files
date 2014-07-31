@@ -2,9 +2,13 @@ fs = require 'fs'
 americano = require 'americano-cozy'
 moment = require 'moment'
 feed = require '../lib/feed'
+log = require('printit')
+    prefix: 'file-model'
 
 Folder = require './folder'
+Binary = require './binary'
 CozyInstance = require './cozy_instance'
+
 
 module.exports = File = americano.getModel 'File',
     path: String
@@ -19,7 +23,6 @@ module.exports = File = americano.getModel 'File',
     modificationHistory: Object
     clearance: (x) -> x
     tags: (x) -> x
-
 
 File.all = (params, callback) ->
     File.request "all", params, callback
@@ -39,7 +42,11 @@ File.byFullPath = (params, callback) ->
 File.createNewFile = (data, file, callback) =>
     upload = true
     attachBinary = (newFile) ->
-        newFile.attachBinary file.path, {"name": "file"}, (err, res, body) ->
+
+        # Here file is a stream. For some weird reason, request-json requires
+        # that a path field should be set before uploading.
+        file.path = data.name
+        newFile.attachBinary file, {"name": "file"}, (err, res, body) ->
             upload = false
             if err
                 newFile.destroy (error) ->
@@ -47,18 +54,16 @@ File.createNewFile = (data, file, callback) =>
             else
                 index newFile
 
+    # Index file name to Cozy indexer to allow quick search on it.
     index = (newFile) ->
         newFile.index ["name"], (err) ->
             console.log err if err
-            unlink newFile
+            callback null, newFile
 
-    unlink = (newFile) ->
-       fs.unlink file.path, (err) ->
-            if err
-                callback new Error "Error removing uploaded file: #{err}"
-            else
-                callback null, newFile
-
+    # This action is required to ensure that the application is not stopped by
+    # the "autostop" feature of the controller. It could occurs if the file is
+    # too long to upload. The controller could think that the application is
+    # unactive.
     keepAlive = () =>
         if upload
             feed.publish 'usage.application', 'files'
@@ -66,7 +71,8 @@ File.createNewFile = (data, file, callback) =>
                 keepAlive()
             , 60*1000
 
-
+    # Create file document then attach file stream as binary to that file
+    # document.
     File.create data, (err, newFile) =>
         if err
             callback new Error "Server error while creating file; #{err}"
@@ -109,9 +115,16 @@ File::updateParentModifDate = (callback) ->
         else
             callback()
 
-
+File::destroyWithBinary = (callback) ->
+    if @binary?
+        binary = new Binary @binary.file
+        binary.destroy (err) =>
+            if err
+                log.error "Cannot destroy binary linked to document #{@id}"
+            @destroy callback
+    else
+        @destroy callback
 
 if process.env.NODE_ENV is 'test'
     File::index = (fields, callback) -> callback null
     File::search =  (query, callback) -> callback null, []
-

@@ -22,6 +22,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit-cancel' : 'onCancelClicked'
         'click a.file-move'        : 'onMoveClicked'
         'keydown input.file-edit-name'  : 'onKeyPress'
+        'change input.selector': 'onSelectChanged'
 
     mimeClasses:
         'application/octet-stream'      : 'fa-file-o'
@@ -105,6 +106,8 @@ module.exports = class FileView extends BaseView
             @$('.spinholder').spin 'small'
         @listenTo @model, 'sync error', =>
             @$('.spinholder').spin false
+
+        @listenTo @model, 'toggle-select', @onToggleSelect
 
         # prevent contacts loading in shared area
         unless app.isPublic
@@ -228,10 +231,10 @@ module.exports = class FileView extends BaseView
         """
 
         errorTemplate = """
-            <div>
+            <div class="move-error">
                 <span class="error">
-                #{'error occured while moving element'}: #{@model.get 'name'}.
-                #</span>
+                #{'modal error file exists'}: #{@model.get 'name'}.
+                </span>
             </div>
         """
 
@@ -249,14 +252,14 @@ module.exports = class FileView extends BaseView
             <option value="#{path}">#{path}</option>
         """
 
-        firstCell = @$el.find('td:first-child')
+        firstCell = @$el.find 'td:first-child'
 
         client.get 'folders/list', (err, paths) =>
             if err
-                alert err
+                Modal.error err
             else
-                parentPath = @model.get('path')
-                fullPath =  @model.get('path') + "/" + @model.get('name')
+                parentPath = @model.get 'path'
+                fullPath =  @model.getRepository()
                 type = @model.get 'type'
 
                 # Add root folder to list.
@@ -272,7 +275,8 @@ module.exports = class FileView extends BaseView
 
                 # Cancel move action on cancel clicked.
                 cancelButton =  moveForm.find(".cancel-move-btn")
-                cancelButton.click ->
+                cancelButton.click =>
+                    @$('.move-error').remove()
                     moveForm.remove()
 
                 # Perform move operation on move clicked.
@@ -309,7 +313,7 @@ module.exports = class FileView extends BaseView
                     # Can't use Backbone model due to a weird sync
                     # I can't figure out what is causing view to re-render.
                     client.put "#{type}s/#{id}", path: path, (err) =>
-                        if err
+                        if err?
                             firstCell.append errorTemplate
                         else
                             showMoveResult()
@@ -322,12 +326,25 @@ module.exports = class FileView extends BaseView
                 @$el.find('td:first-child').append moveForm
 
 
-
     onKeyPress: (e) =>
         if e.keyCode is 13
             @onSaveClicked()
         else if e.keyCode is 27
             @render()
+
+    onSelectChanged: (event) ->
+        isChecked = $(event.target).is ':checked'
+        @$el.toggleClass 'selected', isChecked
+        @model.isSelected = isChecked
+
+        @onToggleSelect()
+        return true
+
+    onToggleSelect: ->
+        if @model.isSelected
+            @$('.file-move, .file-delete').hide()
+        else
+            @$('.file-move, .file-delete').show()
 
     afterRender: ->
         # if the file is being uploaded
@@ -345,6 +362,12 @@ module.exports = class FileView extends BaseView
                 el: @$('.tags')
                 model: @model
             @tags.render()
+
+        # hides the file move and remove buttons if they are in a bulk selection
+        if @model.isSelected
+            @$('.file-move, .file-delete').hide()
+        else
+            @$('.file-move, .file-delete').show()
 
         # if it's a folder and if it has children being uploaded
         if @hasUploadingChildren

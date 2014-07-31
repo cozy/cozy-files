@@ -115,5 +115,9 @@ module.exports = {
   "move element to": "Déplacer l'élément vers ",
   "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
   "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
-  "file successfully moved to": 'Fichier déplacé avec succès vers '
+  "file successfully moved to": 'Fichier déplacé avec succès vers ',
+  'moving selected elements': 'Déplacer des éléments',
+  'move elements to': "Déplacer les éléments vers ",
+  "elements successfully moved to": 'Eléments déplacés avec succès vers ',
+  'close': 'Fermer'
 };

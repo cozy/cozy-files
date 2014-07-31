@@ -1,52 +1,57 @@
 fs = require 'fs'
 async = require 'async'
 moment = require 'moment'
-
-File = require '../models/file'
-Folder = require '../models/folder'
-sharing = require '../helpers/sharing'
-pathHelpers = require '../helpers/path'
+multiparty = require 'multiparty'
+mime = require 'mime'
 log = require('printit')
     prefix: 'files'
 
+File = require '../models/file'
+Folder = require '../models/folder'
+feed = require '../lib/feed'
+sharing = require '../helpers/sharing'
+pathHelpers = require '../helpers/path'
+{normalizePath, processAttachment, getFileClass} = require '../helpers/file'
 
-normalizePath = (path) ->
-    path = "/#{path}" if path[0] isnt '/'
-    path = "" if path is "/"
-    path
+
+# Dirty stuff while waiting that combined stream library get fixed and included
+# in every dependencies.
+monkeypatch = (ctx, fn, after) ->
+    old = ctx[fn]
+
+    ctx[fn] = ->
+        after.apply @, arguments
+
+
+combinedStreamPath = 'americano-cozy/' + \
+                     'node_modules/jugglingdb-cozy-adapter/' + \
+                     'node_modules/request-json/' + \
+                     'node_modules/request/' + \
+                     'node_modules/form-data/' + \
+                     'node_modules/combined-stream'
+
+monkeypatch require(combinedStreamPath).prototype, 'pause', ->
+    if not @pauseStreams
+       return
+
+    if(@pauseStreams and typeof(@_currentStream.pause) is 'function')
+        @_currentStream.pause()
+    @emit 'pause'
+
+monkeypatch require(combinedStreamPath).prototype, 'resume', ->
+    if not @_released
+        @_released = true
+        @writable = true
+        @_getNext()
+
+    if @pauseStreams and typeof(@_currentStream.resume) is 'function'
+        @_currentStream.resume()
+
+    @emit 'resume'
+# End of dirty stuff
+
 
 ## Helpers ##
-
-
-# Put right headers in response, then stream file to the response.
-processAttachement = (req, res, next, download) ->
-    file = req.file
-
-    if download then contentHeader = "attachment; filename=#{file.name}"
-    else contentHeader = "inline; filename=#{file.name}"
-    res.setHeader 'Content-Disposition', contentHeader
-
-    stream = file.getBinary "file", (err, resp, body) =>
-        next err if err
-
-    stream.pipefilter = (source, dest) ->
-        XSSmimeTypes = ['text/html', 'image/svg+xml']
-        if source.headers['content-type'] in XSSmimeTypes
-            dest.setHeader 'content-type', 'text/plain'
-
-    stream.pipe res
-
-
-getFileClass = (file) ->
-    switch file.type.split('/')[0]
-        when 'image' then fileClass = "image"
-        when 'application' then fileClass = "document"
-        when 'text' then fileClass = "document"
-        when 'audio' then fileClass = "music"
-        when 'video' then fileClass = "video"
-        else
-            fileClass = "file"
-    fileClass
 
 
 module.exports.fetch = (req, res, next, id) ->
@@ -67,6 +72,7 @@ module.exports.fetch = (req, res, next, id) ->
 
 
 ## Actions ##
+
 
 module.exports.find = (req, res) ->
     res.send req.file
@@ -89,68 +95,146 @@ folderParent = {}
 timeout = null
 module.exports.create = (req, res, next) ->
     clearTimeout(timeout) if timeout?
-    if not req.body.name or req.body.name is ""
-        next new Error "Invalid arguments"
-    else
-        req.body.path = normalizePath req.body.path
-        fullPath = "#{req.body.path}/#{req.body.name}"
-        File.byFullPath key: fullPath, (err, sameFiles) =>
-            return next err if err
-            if sameFiles.length > 0
-                res.send
-                    error: true
-                    code: 'EEXISTS'
-                    msg: "This file already exists"
-                , 400
+
+    fields = {}
+
+    # Parse given form to extract image blobs.
+    form = new multiparty.Form()
+
+    form.on 'part', (part) ->
+        # Get field, form is processed one way, be sure that fields are sent
+        # before the file.
+        # Parts are porcessed sequentially, so the data event shoudl be
+        # processed before reaching the file part.
+        unless part.filename?
+            fields[part.name] = ''
+            part.on 'data', (buffer) ->
+                fields[part.name] = buffer.toString()
+
+        # We assume that only one file is sent.
+        else
+
+            # we do not write a subfunction because it seems to load the whole
+            # stream in memory.
+            name = fields.name
+            path = fields.path
+
+            if not name or name is ""
+                err = new Error "Invalid arguments: no name given"
+                err.status = 400
+                next err
             else
-                file = req.files["file"]
-                now = moment().toISOString()
-                fileClass = getFileClass file
-
-                # calculate metadata
-                data =
-                    name: req.body.name
-                    path: req.body.path
-                    creationDate: now
-                    lastModification: now
-                    mime: file.type
-                    size: file.size
-                    tags: []
-                    class: fileClass
-
-                createFile = =>
-                    File.createNewFile data, file, (err, newfile) =>
-                        resetTimeout()
-                        if err
-                            if err.toString().indexOf('enough storage') isnt -1
-                                res.send
-                                    error: true
-                                    code: 'ESTORAGE'
-                                    msg: "modal error size"
-                                , 400
-                            else
-                                res.send error:true, msg: err, 500
-
-                            return # break request handling
-
-                        who = req.guestEmail or 'owner'
-                        sharing.notifyChanges who, newfile, (err) ->
-                            console.log err if err
-                            res.send newfile, 200
-
-                # find parent folder
-                Folder.byFullPath key: data.path, (err, parents) =>
+                # Check that the file doesn't exist yet.
+                path = normalizePath path
+                fullPath = "#{path}/#{name}"
+                File.byFullPath key: fullPath, (err, sameFiles) =>
                     return next err if err
-                    if parents.length > 0
-                        # inherit parent folder tags and update its last
-                        # modification date
-                        parent = parents[0]
-                        data.tags = parent.tags
-                        parent.lastModification = now
-                        folderParent[parent.name] = parent
-                        createFile()
+                    if sameFiles.length > 0
+                        res.send
+                            error: true
+                            code: 'EEXISTS'
+                            msg: "This file already exists"
+                        , 400
                     else
-                        createFile()
+                        now = moment().toISOString()
+                        fileClass = getFileClass part
+
+                        # Generate file metadata.
+                        data =
+                            name: name
+                            path: normalizePath path
+                            creationDate: now
+                            lastModification: now
+                            mime: mime.lookup name
+                            size: part.byteCount
+                            tags: []
+                            class: fileClass
+
+                        upload = true
+
+                        # Create a file object and link to it a binary object.
+                        # Then it uploads the stream as an attachment of the
+                        # binary.
+                        createFile = =>
+
+                            # This action is required to ensure that the
+                            # application is not stopped by the "autostop"
+                            # feature of the controller. It could occurs if the
+                            # file is too long to upload. The controller could
+                            # think that the application is
+                            # unactive.
+                            keepAlive = ->
+                                if upload
+                                    feed.publish 'usage.application', 'files'
+                                    setTimeout ->
+                                        keepAlive()
+                                    , 60*1000
+
+                            # Here file is a stream. For some weird reason,
+                            # request-json requires that a path field to be set
+                            # before uploading.
+                            attachBinary = (newFile) ->
+
+                                isStorageError = (err) ->
+                                    stringErr = err.toString()
+                                    return stringErr.indexOf('enough storage')
+
+                                part.path = data.name
+                                data = {"name": "file"}
+                                newFile.attachBinary part, data, (err) ->
+                                    upload = false
+                                    if err
+                                        newFile.destroy (error) ->
+                                            if isStorageError(error) isnt -1
+                                                res.send
+                                                    error: true
+                                                    code: 'ESTORAGE'
+                                                    msg: "modal error size"
+                                                , 400
+                                            else
+                                                next err
+                                    else
+                                        index newFile
+
+                            # Index file name to Cozy indexer to allow quick
+                            # search on it.
+                            index = (newFile) ->
+                                newFile.index ["name"], (err) ->
+                                    log.debug err if err
+                                    who = req.guestEmail or 'owner'
+                                    sharing.notifyChanges who, newFile, (err) ->
+                                        log.debug err if err
+                                        res.send newFile, 200
+
+                            # Create file document then attach file stream as
+                            # binary to that file document.
+                            File.create data, (err, newFile) =>
+                                if err
+                                    next err
+                                else
+                                    attachBinary newFile
+                                    keepAlive()
+
+                        # find parent folder for updating its last modification
+                        # date and applying tags to uploaded file.
+                        Folder.byFullPath key: data.path, (err, parents) =>
+                            return next err if err
+                            if parents.length > 0
+                                # inherit parent folder tags and update its
+                                # last modification date
+                                parent = parents[0]
+                                data.tags = parent.tags
+                                parent.lastModification = now
+                                folderParent[parent.name] = parent
+                                createFile()
+                            else
+                                createFile()
+
+    form.on 'error', (err) ->
+        log.error err
+
+    form.parse req
+
 
 # After 1 minute of inactivity, update parents
 resetTimeout = () =>
@@ -193,7 +277,6 @@ module.exports.modify = (req, res, next) ->
                 res.send success: 'Tags successfully changed', 200
 
     else if (not body.name or body.name is "") and not body.path?
-        log.debug body
         log.info "No arguments, no modification performed for #{req.file.name}"
         next new Error "Invalid arguments, name should be specified."
 
@@ -208,9 +291,8 @@ module.exports.modify = (req, res, next) ->
         isPublic = body.public
         newFullPath = "#{newPath}/#{newName}"
         previousFullPath = "#{previousPath}/#{previousName}"
-        fullPath = "#{req.body.path}/#{req.body.name}"
 
-        File.byFullPath key: fullPath, (err, sameFiles) =>
+        File.byFullPath key: newFullPath, (err, sameFiles) ->
             return next err if err
 
             modificationSuccess =  (err) ->
@@ -221,13 +303,13 @@ module.exports.modify = (req, res, next) ->
 
             if sameFiles.length > 0
                 log.info "No modification: Name #{newName} already exists."
-                res.send
+                res.send 400,
                     error: true
-                    msg: "The name is already in use.", 400
+                    msg: "The name is already in use."
             else
                 data =
                     name: newName
-                    path: newPath
+                    path: normalizePath newPath
                     public: isPublic
                     lastModification: moment().toISOString()
 
@@ -242,9 +324,10 @@ module.exports.modify = (req, res, next) ->
                             file.index ["name"], modificationSuccess
 
 
+# Perform file removal and binaries removal.
 module.exports.destroy = (req, res, next) ->
     file = req.file
-    file.destroy (err) =>
+    file.destroyWithBinary (err) ->
         if err
             log.error "Cannot destroy document #{file.id}"
             next err
@@ -254,12 +337,14 @@ module.exports.destroy = (req, res, next) ->
                 res.send success: 'File successfully deleted'
 
 
+# Perform download as an inline attachment.
 module.exports.getAttachment = (req, res, next) ->
-    processAttachement req, res, next, false
+    processAttachment req, res, next, false
 
 
+# Perform download as a traditional attachment.
 module.exports.downloadAttachment = (req, res, next) ->
-    processAttachement req, res, next, true
+    processAttachment req, res, next, true
 
 
 # Check if the research should be performed on tag or not.
