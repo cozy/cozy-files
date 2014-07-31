@@ -49,6 +49,7 @@ module.exports = class Autocomplete extends BaseView
     refresh: (search, existings) ->
         search = @input.val()
         selected = @visible?[@selectedIndex]
+        existings ?= []
 
         for tag in @tags
             tag.el.classList.remove 'selected'

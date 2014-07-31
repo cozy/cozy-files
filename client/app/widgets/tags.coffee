@@ -84,6 +84,7 @@ module.exports = class TagsView extends BaseView
 
     setTags: (newTags) =>
         @tags = newTags
+        @tags ?= []
         @refresh()
         clearTimeout @saveLater
         @saveLater = setTimeout =>
