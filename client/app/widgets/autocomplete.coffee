@@ -74,6 +74,9 @@ module.exports = class Autocomplete extends BaseView
 
         @$el.empty().append _.pluck @visible, 'el'
 
+        # styles the list when it's empty
+        @$el.toggleClass 'empty', @visible.length is 0
+
     select: (index) ->
 
         for tag in @tags
