@@ -73,8 +73,10 @@ module.exports = class Autocomplete extends BaseView
         index = (index + @visible.length) % @visible.length
 
         @selectedIndex = index
-        @visible[@selectedIndex].el.classList.add 'selected'
-        @input.val @visible[@selectedIndex].value
+        visibleElement = @visible[@selectedIndex]
+        if visibleElement?
+            visibleElement.el.classList.add 'selected'
+            @input.val visibleElement.value
 
     bind: ($target) ->
         return if $target is @$target
