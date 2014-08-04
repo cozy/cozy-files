@@ -4,6 +4,7 @@ moment = require 'moment'
 
 helpers = require './helpers'
 client = helpers.getClient()
+dsClient = helpers.getClient 'http://localhost:9101/'
 
 describe "Files management", ->
 
@@ -176,7 +177,7 @@ describe "Files management", ->
             @body.path.should.be.equal "/perso"
 
 
-    describe "Delete file", =>
+    describe.only "Delete file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
@@ -185,6 +186,12 @@ describe "Files management", ->
             client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
+                done()
+
+        it "Then we retrieve the binary ID", (done) ->
+            dsClient.get "data/#{@id}/", (err, res, body) =>
+                should.exist body.binary
+                @binaryID = body.binary.file.id
                 done()
 
         it "And I send a request to remove the file", (done) ->
@@ -205,6 +212,12 @@ describe "Files management", ->
             client.get "files/#{@id}" , (err, res, body) ->
                 res.statusCode.should.equal 404
                 done()
+
+        it "And the binary should be deleted", (done) ->
+            dsClient.get "data/#{@binaryID}/", (err, res, body) ->
+                should.exist body.error
+                done()
+
 
     describe "Tag file", =>
         it "When I send a request to create a file", (done) ->
