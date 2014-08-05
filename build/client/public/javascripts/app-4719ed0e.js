@@ -1642,7 +1642,7 @@ module.exports = File = (function(_super) {
   File.prototype.getZipURL = function() {
     var toAppend;
     if (this.isFolder()) {
-      toAppend = ".zip";
+      toAppend = "/zip/" + (this.get('name'));
       return this.url(toAppend);
     }
   };

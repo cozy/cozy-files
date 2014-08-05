@@ -435,7 +435,7 @@ module.exports.zip = (req, res, next) ->
 
 
     # Grab all files and files of children folders
-    File.byFolder startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
+    File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
         if err then next err
         else
             # Build zip file.

@@ -606,7 +606,7 @@ module.exports.zip = function(req, res, next) {
       }
     });
   };
-  return File.byFolder({
+  return File.byFullPath({
     startkey: "" + key + "/",
     endkey: "" + key + "/\ufff0"
   }, function(err, files) {
