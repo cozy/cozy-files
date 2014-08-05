@@ -170,6 +170,10 @@ module.exports.create = (req, res, next) ->
                                         keepAlive()
                                     , 60*1000
 
+                                    # Defers parent's lastModification date
+                                    # update
+                                    resetTimeout()
+
                             # Here file is a stream. For some weird reason,
                             # request-json requires that a path field to be set
                             # before uploading.
