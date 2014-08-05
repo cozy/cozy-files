@@ -1,5 +1,9 @@
 BaseView = require '../lib/base_view'
 
+ENTER_KEY = 13
+ARROW_UP_KEY = 38
+ARROW_DOWN_KEY = 40
+
 module.exports = class Autocomplete extends BaseView
 
     className: 'autocomplete'
@@ -9,8 +13,8 @@ module.exports = class Autocomplete extends BaseView
         'click li': 'onClick'
 
     onInputKeyDown: (e) =>
-        if e.keyCode in [38, 40] # UP & DOWN
-            delta = e.keyCode - 39
+        if e.keyCode in [ARROW_UP_KEY, ARROW_DOWN_KEY]
+            delta = e.keyCode - 39 # delta will be +/- 1
             @select @selectedIndex + delta
             e.preventDefault()
             e.stopPropagation()
@@ -19,20 +23,24 @@ module.exports = class Autocomplete extends BaseView
         @input.val e.target.dataset.value
 
         # pretend we press enter
-        event = $.Event('keydown')
-        event.keyCode = 13 #enter
+        event = $.Event 'keydown'
+        event.keyCode = ENTER_KEY
         @input.trigger event
         e.preventDefault()
         e.stopPropagation()
-        $target = @$target
         @unbindCancel = true
+
         @input.parents('.folder-row').addClass 'pseudohover'
         @input.focus()
 
 
-    initialize: ->
+    initialize: (options = {}) ->
+
+        # maximum number of tags to display in the list
+        @limit = options.limit or 10
+
         @tags = window.tags.map (value, idx) ->
-            el = document.createElement('li')
+            el = document.createElement 'li'
             el.textContent = value
             el.dataset.value = value
             el.dataset.index = idx
@@ -54,9 +62,10 @@ module.exports = class Autocomplete extends BaseView
         for tag in @tags
             tag.el.classList.remove 'selected'
 
-        @visible = @tags.filter (tag) ->
-            tag.value not in existings and tag.lc? and
-            ~tag.lc.indexOf search.toLowerCase()
+        @visible = @tags.filter (tag, index) =>
+            return (tag.value not in existings) and tag.lc? and \
+            ~tag.lc.indexOf(search.toLowerCase()) and \
+            index < @limit
 
         if selected and selected in @visible
             @selectedIndex = @visible.indexOf selected
@@ -64,6 +73,9 @@ module.exports = class Autocomplete extends BaseView
             @selectedIndex = -1
 
         @$el.empty().append _.pluck @visible, 'el'
+
+        # styles the list when it's empty
+        @$el.toggleClass 'empty', @visible.length is 0
 
     select: (index) ->
 
@@ -73,8 +85,10 @@ module.exports = class Autocomplete extends BaseView
         index = (index + @visible.length) % @visible.length
 
         @selectedIndex = index
-        @visible[@selectedIndex].el.classList.add 'selected'
-        @input.val @visible[@selectedIndex].value
+        visibleElement = @visible[@selectedIndex]
+        if visibleElement?
+            visibleElement.el.classList.add 'selected'
+            @input.val visibleElement.value
 
     bind: ($target) ->
         return if $target is @$target
@@ -97,7 +111,7 @@ module.exports = class Autocomplete extends BaseView
         @input.off 'keydown', @onInputKeyDown
         @input.off 'blur', @delayedUnbind
         @input.parents('.folder-row').removeClass 'pseudohover'
-        @input.val('')
+        @input.val ''
         @$target = null
         @$el.hide()
         @$el.detach()

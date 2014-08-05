@@ -4,6 +4,10 @@ moment = require 'moment'
 
 helpers = require './helpers'
 client = helpers.getClient()
+dsClient = helpers.getClient 'http://localhost:9101/'
+
+if process.env.NODE_ENV in ['test', 'production']
+    dsClient.setBasicAuth process.env.NAME, process.env.TOKEN
 
 describe "Files management", ->
 
@@ -187,6 +191,12 @@ describe "Files management", ->
                 @id = body.id
                 done()
 
+        it "Then we retrieve the binary ID", (done) ->
+            dsClient.get "data/#{@id}/", (err, res, body) =>
+                should.exist body.binary
+                @binaryID = body.binary.file.id
+                done()
+
         it "And I send a request to remove the file", (done) ->
             @timeout 3000
             client.del "files/#{@id}", (err, res, body) =>
@@ -205,6 +215,12 @@ describe "Files management", ->
             client.get "files/#{@id}" , (err, res, body) ->
                 res.statusCode.should.equal 404
                 done()
+
+        it "And the binary should be deleted", (done) ->
+            dsClient.get "data/#{@binaryID}/", (err, res, body) ->
+                should.exist body.error
+                done()
+
 
     describe "Tag file", =>
         it "When I send a request to create a file", (done) ->

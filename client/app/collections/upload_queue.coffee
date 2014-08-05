@@ -31,7 +31,8 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         # when an upload completes or fails, we keep counts
         @listenTo this, 'sync error', (model) =>
-            #@uploadingPaths[@model.get('path')]--
+            path = model.get('path') + '/'
+            @uploadingPaths[path]--
             @loaded++
 
         # proxy progress events, throttled to every 100ms
@@ -212,7 +213,6 @@ module.exports = class UploadQueue extends Backbone.Collection
         path = path + '/'
 
         return _.reduce @uploadingPaths, (memo, value, index) ->
-
             if index.indexOf(path) isnt -1 or path is ''
                 return memo + value
             else
