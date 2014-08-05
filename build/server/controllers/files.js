@@ -158,9 +158,10 @@ module.exports.create = function(req, res, next) {
                 keepAlive = function() {
                   if (upload) {
                     feed.publish('usage.application', 'files');
-                    return setTimeout(function() {
+                    setTimeout(function() {
                       return keepAlive();
                     }, 60 * 1000);
+                    return resetTimeout();
                   }
                 };
                 attachBinary = function(newFile) {
