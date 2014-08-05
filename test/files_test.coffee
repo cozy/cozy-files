@@ -6,6 +6,9 @@ helpers = require './helpers'
 client = helpers.getClient()
 dsClient = helpers.getClient 'http://localhost:9101/'
 
+if process.env.NODE_ENV in ['test', 'production']
+    dsClient.setBasicAuth process.env.NAME, process.env.TOKEN
+
 describe "Files management", ->
 
     before helpers.startApp
@@ -177,7 +180,7 @@ describe "Files management", ->
             @body.path.should.be.equal "/perso"
 
 
-    describe.only "Delete file", =>
+    describe "Delete file", =>
 
         it "When I send a request to create a file", (done) ->
             file =
