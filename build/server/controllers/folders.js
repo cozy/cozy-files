@@ -584,7 +584,7 @@ module.exports.zip = function(req, res, next) {
         });
         return stream.on('end', cb);
       } else {
-        return callback();
+        return cb();
       }
     });
   };
