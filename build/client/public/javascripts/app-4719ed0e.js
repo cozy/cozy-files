@@ -398,6 +398,9 @@ module.exports = UploadQueue = (function(_super) {
     })(this));
     this.listenTo(this, 'sync error', (function(_this) {
       return function(model) {
+        var path;
+        path = model.get('path') + '/';
+        _this.uploadingPaths[path]--;
         return _this.loaded++;
       };
     })(this));
@@ -1639,7 +1642,7 @@ module.exports = File = (function(_super) {
   File.prototype.getZipURL = function() {
     var toAppend;
     if (this.isFolder()) {
-      toAppend = ".zip";
+      toAppend = "/zip/" + (this.get('name'));
       return this.url(toAppend);
     }
   };
@@ -3996,13 +3999,19 @@ module.exports = UploadedFileView = (function(_super) {
 });
 
 ;require.register("widgets/autocomplete", function(exports, require, module) {
-var Autocomplete, BaseView,
+var ARROW_DOWN_KEY, ARROW_UP_KEY, Autocomplete, BaseView, ENTER_KEY,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 BaseView = require('../lib/base_view');
+
+ENTER_KEY = 13;
+
+ARROW_UP_KEY = 38;
+
+ARROW_DOWN_KEY = 40;
 
 module.exports = Autocomplete = (function(_super) {
   __extends(Autocomplete, _super);
@@ -4026,7 +4035,7 @@ module.exports = Autocomplete = (function(_super) {
 
   Autocomplete.prototype.onInputKeyDown = function(e) {
     var delta, _ref;
-    if ((_ref = e.keyCode) === 38 || _ref === 40) {
+    if ((_ref = e.keyCode) === ARROW_UP_KEY || _ref === ARROW_DOWN_KEY) {
       delta = e.keyCode - 39;
       this.select(this.selectedIndex + delta);
       e.preventDefault();
@@ -4035,20 +4044,23 @@ module.exports = Autocomplete = (function(_super) {
   };
 
   Autocomplete.prototype.onClick = function(e) {
-    var $target, event;
+    var event;
     this.input.val(e.target.dataset.value);
     event = $.Event('keydown');
-    event.keyCode = 13;
+    event.keyCode = ENTER_KEY;
     this.input.trigger(event);
     e.preventDefault();
     e.stopPropagation();
-    $target = this.$target;
     this.unbindCancel = true;
     this.input.parents('.folder-row').addClass('pseudohover');
     return this.input.focus();
   };
 
-  Autocomplete.prototype.initialize = function() {
+  Autocomplete.prototype.initialize = function(options) {
+    if (options == null) {
+      options = {};
+    }
+    this.limit = options.limit || 10;
     return this.tags = window.tags.map(function(value, idx) {
       var el, lc;
       el = document.createElement('li');
@@ -4084,20 +4096,23 @@ module.exports = Autocomplete = (function(_super) {
       tag = _ref1[_i];
       tag.el.classList.remove('selected');
     }
-    this.visible = this.tags.filter(function(tag) {
-      var _ref2;
-      return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase());
-    });
+    this.visible = this.tags.filter((function(_this) {
+      return function(tag, index) {
+        var _ref2;
+        return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase()) && index < _this.limit;
+      };
+    })(this));
     if (selected && __indexOf.call(this.visible, selected) >= 0) {
       this.selectedIndex = this.visible.indexOf(selected);
     } else {
       this.selectedIndex = -1;
     }
-    return this.$el.empty().append(_.pluck(this.visible, 'el'));
+    this.$el.empty().append(_.pluck(this.visible, 'el'));
+    return this.$el.toggleClass('empty', this.visible.length === 0);
   };
 
   Autocomplete.prototype.select = function(index) {
-    var tag, _i, _len, _ref;
+    var tag, visibleElement, _i, _len, _ref;
     _ref = this.tags;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       tag = _ref[_i];
@@ -4105,8 +4120,11 @@ module.exports = Autocomplete = (function(_super) {
     }
     index = (index + this.visible.length) % this.visible.length;
     this.selectedIndex = index;
-    this.visible[this.selectedIndex].el.classList.add('selected');
-    return this.input.val(this.visible[this.selectedIndex].value);
+    visibleElement = this.visible[this.selectedIndex];
+    if (visibleElement != null) {
+      visibleElement.el.classList.add('selected');
+      return this.input.val(visibleElement.value);
+    }
   };
 
   Autocomplete.prototype.bind = function($target) {

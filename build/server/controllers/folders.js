@@ -606,16 +606,16 @@ module.exports.zip = function(req, res, next) {
       }
     });
   };
-  return File.all(function(err, files) {
-    var selectedFiles, zipName, _ref;
+  return File.byFullPath({
+    startkey: "" + key + "/",
+    endkey: "" + key + "/\ufff0"
+  }, function(err, files) {
+    var zipName, _ref;
     if (err) {
       return next(err);
     } else {
-      selectedFiles = files.filter(function(file) {
-        return ("" + file.path + "/").indexOf("" + key + "/") === 0;
-      });
       zipName = (_ref = folder.name) != null ? _ref.replace(/\W/g, '') : void 0;
-      return makeZip(zipName, selectedFiles);
+      return makeZip(zipName, files);
     }
   });
 };

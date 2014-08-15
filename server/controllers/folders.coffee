@@ -434,18 +434,13 @@ module.exports.zip = (req, res, next) ->
                     if err then next err
 
 
-    # Grab all files, maybe we should make things proper here. Retrieving all
-    # files is a little bit overkill.
-    File.all (err, files) ->
+    # Grab all files and files of children folders
+    File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
         if err then next err
         else
-            # Check that files is contained in the given subfolder.
-            selectedFiles = files.filter (file) ->
-                "#{file.path}/".indexOf("#{key}/") is 0
-
             # Build zip file.
-            zipName = folder.name?.replace(/\W/g, '')
-            makeZip zipName, selectedFiles
+            zipName = folder.name?.replace /\W/g, ''
+            makeZip zipName, files
 
 
 module.exports.changeNotificationsState = (req, res, next) ->
