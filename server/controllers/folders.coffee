@@ -401,7 +401,7 @@ module.exports.searchContent = (req, res, next) ->
 # List files contained in the folder and return them as a zip archive.
 module.exports.zip = (req, res, next) ->
     folder = req.folder
-    archive = archiver('zip')
+    archive = archiver 'zip'
 
     key = "#{folder.path}/#{folder.name}"
 
@@ -414,7 +414,7 @@ module.exports.zip = (req, res, next) ->
                 archive.append stream, name: name
                 stream.on 'end', cb
             else
-                callback()
+                cb()
 
     # Build zip from file list and pip the result in the response.
     makeZip = (zipName, files) ->
