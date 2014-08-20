@@ -22,8 +22,7 @@ module.exports =
             contentHeader = "attachment; filename=#{file.name}"
         else
             contentHeader = "inline; filename=#{file.name}"
-        res.setHeader 'Content-Disposition', contentHeader
-        res.setHeader 'Content-Length', file.size
+        res.setHeader 'content-disposition', contentHeader
 
         # Perform download with the lowel level node js api to avoid too much
         # memory consumption.
@@ -33,6 +32,11 @@ module.exports =
                     XSSmimeTypes = ['text/html', 'image/svg+xml']
                     if source.headers['content-type'] in XSSmimeTypes
                         dest.setHeader 'content-type', 'text/plain'
+
+                # Set headers from data system response data.
+                res.setHeader 'content-length', stream.headers['content-length']
+                res.setHeader 'content-type', stream.headers['content-type']
+
                 stream.pipe res
 
             else if stream.statusCode is 404
