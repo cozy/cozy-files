@@ -21,8 +21,7 @@ module.exports = {
     } else {
       contentHeader = "inline; filename=" + file.name;
     }
-    res.setHeader('Content-Disposition', contentHeader);
-    res.setHeader('Content-Length', file.size);
+    res.setHeader('content-disposition', contentHeader);
     return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
       var err;
       if (stream.statusCode === 200) {
@@ -33,6 +32,8 @@ module.exports = {
             return dest.setHeader('content-type', 'text/plain');
           }
         };
+        res.setHeader('content-length', stream.headers['content-length']);
+        res.setHeader('content-type', stream.headers['content-type']);
         return stream.pipe(res);
       } else if (stream.statusCode === 404) {
         err = new Error('An error occured while downloading the file: ' + 'file not found.');
