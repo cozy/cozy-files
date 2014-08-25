@@ -73,7 +73,7 @@ module.exports =
         post: [public_auth.checkClearance('r', 'folder'), folders.findContent]
     'public/folders/:folderid/notifications':
         put: [public_auth.checkClearance('r', 'folder'), folders.changeNotificationsState]
-    'public/folders/:folderid.zip':
+    'public/folders/:folderid/zip/:name':
         get: [public_auth.checkClearance('r', 'folder'), folders.zip]
     'public/folders/:folderid':
         get: folders.publicList
