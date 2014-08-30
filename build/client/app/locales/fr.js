@@ -15,6 +15,7 @@ module.exports = {
   "modal error folder create": "Le dossier n'a pas pu être créé",
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
   "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
+  "upload running": "Upload en cours. Ne quittez pas votre navigateur.",
   "modal are you sure": "Etes-vous sûr ?",
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",

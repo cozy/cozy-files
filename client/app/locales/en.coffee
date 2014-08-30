@@ -21,6 +21,8 @@ module.exports =
     "modal error folder create" : "Folder could not be created"
     "modal error folder exists" : "Sorry, a file or folder having this name already exists"
     "modal error zip empty folder" : "You can't download an empty folder as a ZIP."
+    "upload running": "Upload is running. Do not close your browser"
+
 
     # file view
     "modal are you sure"        : "Are you sure ?"

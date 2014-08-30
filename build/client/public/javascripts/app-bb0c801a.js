@@ -1194,6 +1194,7 @@ module.exports = {
   "modal error folder create": "Folder could not be created",
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
   "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
+  "upload running": "Upload is running. Do not close your browser",
   "modal are you sure": "Are you sure ?",
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
@@ -1321,6 +1322,7 @@ module.exports = {
   "modal error folder create": "Le dossier n'a pas pu être créé",
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
   "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
+  "upload running": "Upload en cours. Ne quittez pas votre navigateur.",
   "modal are you sure": "Etes-vous sûr ?",
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",
@@ -3780,7 +3782,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),value = locals_.value;
-buf.push("<span>Upload en cours. Ne quittez pas votre navigateur.</span><div id=\"dismiss\" class=\"btn btn-cozy pull-right\">" + (jade.escape(null == (jade_interp = t('ok')) ? "" : jade_interp)) + "</div><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\"></div><div class=\"progress-bar progress-bar-content\">" + (jade.escape((jade_interp = t('total progress')) == null ? '' : jade_interp)) + " " + (jade.escape((jade_interp = value) == null ? '' : jade_interp)) + "</div></div>");;return buf.join("");
+buf.push("<span>" + (jade.escape(null == (jade_interp = t('upload running')) ? "" : jade_interp)) + "</span><div id=\"dismiss\" class=\"btn btn-cozy pull-right\">" + (jade.escape(null == (jade_interp = t('ok')) ? "" : jade_interp)) + "</div><div class=\"progress active pull-right\"><div" + (jade.attr("style", "width: " + value, true, false)) + " class=\"progress-bar progress-bar-info\"></div><div class=\"progress-bar progress-bar-content\">" + (jade.escape((jade_interp = t('total progress')) == null ? '' : jade_interp)) + " " + (jade.escape((jade_interp = value) == null ? '' : jade_interp)) + "</div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
