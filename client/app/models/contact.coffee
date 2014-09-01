@@ -65,21 +65,6 @@ module.exports = class Contact extends Backbone.Model
 
         return attrs
 
-    sync: (method, model, options) ->
-        if @picture
-            options.contentType = false
-            options.data = new FormData()
-            options.data.append 'picture', @picture
-            options.data.append 'contact', JSON.stringify @toJSON()
-            success = options.success
-            options.success = (resp) =>
-                success resp
-                @hasPicture = true
-                @trigger 'change', this, {}
-                delete @picture
-
-        super(method, model, options)
-
     getBest: (name) ->
         result = null
         @dataPoints.each (dp) ->
