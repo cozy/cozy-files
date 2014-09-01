@@ -1707,26 +1707,6 @@ module.exports = Contact = (function(_super) {
     return attrs;
   };
 
-  Contact.prototype.sync = function(method, model, options) {
-    var success;
-    if (this.picture) {
-      options.contentType = false;
-      options.data = new FormData();
-      options.data.append('picture', this.picture);
-      options.data.append('contact', JSON.stringify(this.toJSON()));
-      success = options.success;
-      options.success = (function(_this) {
-        return function(resp) {
-          success(resp);
-          _this.hasPicture = true;
-          _this.trigger('change', _this, {});
-          return delete _this.picture;
-        };
-      })(this);
-    }
-    return Contact.__super__.sync.call(this, method, model, options);
-  };
-
   Contact.prototype.getBest = function(name) {
     var result, _ref;
     result = null;
@@ -2909,7 +2889,7 @@ module.exports = ContactView = (function(_super) {
     return this.model.save({
       success: (function(_this) {
         return function() {
-          return _this.collection.fire('change');
+          return _this.collection.trigger('change', _this.model);
         };
       })(this)
     });
