@@ -91,6 +91,10 @@
   globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
+var ContactListener;
+
+ContactListener = require('./lib/contact_listener');
+
 module.exports = {
   initialize: function() {
     var Config, ContactsCollection, ContactsList, Router, e, locales;
@@ -116,6 +120,8 @@ module.exports = {
     });
     this.contactslist.$el.appendTo($('body'));
     this.contactslist.render();
+    this.watcher = new ContactListener();
+    this.watcher.watch(this.contacts);
     this.config = new Config(window.config || {});
     delete window.config;
     if (window.initcontacts != null) {
@@ -491,6 +497,47 @@ module.exports.parse = function(log, context, callback, progress) {
     throw new Error("Format not parsable");
   }
 };
+});
+
+;require.register("lib/contact_listener", function(exports, require, module) {
+var Contact, ContactListener,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Contact = require('../models/contact');
+
+module.exports = ContactListener = (function(_super) {
+  __extends(ContactListener, _super);
+
+  function ContactListener() {
+    return ContactListener.__super__.constructor.apply(this, arguments);
+  }
+
+  ContactListener.prototype.models = {
+    'contact': Contact
+  };
+
+  ContactListener.prototype.events = ['contact.create', 'contact.update', 'contact.delete'];
+
+  ContactListener.prototype.onRemoteCreate = function(model) {
+    return this.collection.add(model, {
+      merge: true
+    });
+  };
+
+  ContactListener.prototype.onRemoteUpdate = function(model, collection) {
+    return this.collection.add(model, {
+      merge: true
+    });
+  };
+
+  ContactListener.prototype.onRemoteDelete = function(model) {
+    return this.collection.remove(model);
+  };
+
+  return ContactListener;
+
+})(CozySocketListener);
 });
 
 ;require.register("lib/phone_number", function(exports, require, module) {
@@ -2859,7 +2906,13 @@ module.exports = ContactView = (function(_super) {
     }
     this.needSaving = false;
     this.savedInfo.show().text('saving changes');
-    return this.model.save();
+    return this.model.save({
+      success: (function(_this) {
+        return function() {
+          return _this.collection.fire('change');
+        };
+      })(this)
+    });
   };
 
   ContactView.prototype.showNameModal = function() {
@@ -3259,7 +3312,8 @@ module.exports = ContactsList = (function(_super) {
 
   ContactsList.prototype.initialize = function() {
     ContactsList.__super__.initialize.apply(this, arguments);
-    return this.listenTo(this.collection, 'change', this.onContactChanged);
+    this.listenTo(this.collection, 'change', this.onContactChanged);
+    return this.listenTo(this.collection, 'add', this.onContactChanged);
   };
 
   ContactsList.prototype.afterRender = function() {

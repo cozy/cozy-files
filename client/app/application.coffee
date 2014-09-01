@@ -1,3 +1,5 @@
+ContactListener = require './lib/contact_listener'
+
 module.exports =
 
     initialize: ->
@@ -25,6 +27,9 @@ module.exports =
         @contactslist = new ContactsList collection: @contacts
         @contactslist.$el.appendTo $('body')
         @contactslist.render()
+
+        @watcher = new ContactListener()
+        @watcher.watch @contacts
 
         @config = new Config(window.config or {})
         delete window.config
