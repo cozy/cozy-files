@@ -1,4 +1,4 @@
-logwatch = require './server/initializers/finglogwatch'
+contactwatch = require './server/initializers/contactwatch'
 americano = require('americano')
 
 
@@ -8,12 +8,14 @@ start = (port, callback) ->
         port: port
     , (app, server) ->
 
-        # start realtime and sync Fing's log with contact's log
-        logwatch server, (err) ->
+        # start contact watch to upadte UI when new contact are added
+        # or modified
+        contactwatch server, (err) ->
             callback? null, app, server
 
 if not module.parent
     port = process.env.PORT or 9114
+    host = "0.0.0.0"
     start port, (err) ->
         if err
             console.log "Initialization failed, not starting"
