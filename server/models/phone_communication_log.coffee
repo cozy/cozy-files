@@ -37,16 +37,16 @@ PCLog.mergeToContactLog = (callback) ->
         converted = logs.map PCLog.toContactLog
         ContactLog.merge converted, (callback)
 
-PCLog.toContactLog = (finglog) ->
+PCLog.toContactLog = (calllog) ->
     out =
-        timestamp: finglog.timestamp
-        direction: finglog.direction
-        remote: tel: finglog.correspondantNumber
-        type: finglog.type
-        snippet: finglog.snippet
+        timestamp: calllog.timestamp
+        direction: calllog.direction
+        remote: tel: calllog.correspondantNumber
+        type: calllog.type
+        snippet: calllog.snippet
 
     if out.type is 'VOICE'
-        out.content = duration: finglog.chipCount
+        out.content = duration: calllog.chipCount
 
     return out
 
