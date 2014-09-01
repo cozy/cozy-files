@@ -15,7 +15,6 @@ start = (port, callback) ->
 
 if not module.parent
     port = process.env.PORT or 9114
-    host = "0.0.0.0"
     start port, (err) ->
         if err
             console.log "Initialization failed, not starting"
