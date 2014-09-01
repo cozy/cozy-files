@@ -173,8 +173,10 @@ module.exports = class ContactView extends ViewCollection
         return unless @needSaving
         @needSaving = false
         @savedInfo.show().text 'saving changes'
+
         @model.save
-           success: => @collection.fire 'change'
+           success: =>
+               @collection.trigger 'change', @model
 
     showNameModal: =>
         modal = new NameModal
