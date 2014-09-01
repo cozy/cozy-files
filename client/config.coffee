@@ -3,7 +3,6 @@ exports.config =
     # See http://brunch.readthedocs.org/en/latest/config.html for documentation.
     paths:
         public: 'public'
-        test: '_specs'
 
     plugins:
         coffeelint:
@@ -22,7 +21,7 @@ exports.config =
             order:
                 before: [
                     # Backbone
-                    'vendor/scripts/jquery-1.9.1.js',
+                    'vendor/scripts/jquery-2.1.1.js',
                     'vendor/scripts/underscore.js',
                     'vendor/scripts/backbone.js',
                     # Twitter Bootstrap jquery plugins
@@ -44,4 +43,8 @@ exports.config =
         templates:
             defaultExtension: 'jade'
             joinTo: 'javascripts/app.js'
+
+    plugins:
+        jade:
+            globals: ['t', 'moment', 'filesize']
     framework: 'backbone'

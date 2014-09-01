@@ -1,16 +1,12 @@
 {
-  "name": "cozy-contacts",
-  "version": "0.0.1",
-  "description": "Contact management application for Cozy Cloud",
-  "dependencies": {},
-  "devDependencies": {
-    "css-brunch": "> 1.0 < 1.5",
-    "javascript-brunch": "> 1.0 < 1.5",
-    "coffee-script-brunch": "> 1.0 < 1.5",
-    "jade-brunch": "> 1.0 < 1.5",
-    "stylus-brunch": ">= 1.0 < 1.4"
+  "dependencies": {
+    "javascript-brunch": "1.7.1",
+    "css-brunch": "1.7.0",
+    "coffee-script-brunch": "1.8.0",
+    "stylus-brunch": "1.8.0",
+    "jade-brunch": "1.8.1",
+    "digest-brunch": "1.2.2",
+    "clean-css-brunch": "1.7.1"
   },
-  "repository": "https://github.com/mycozycloud/cozy-contacts",
-  "author": "Romain M. Foucault",
-  "readmeFilename": "README.md"
+  "devDependencies": {}
 }

@@ -784,11 +784,13 @@ a {
   padding: 0;
   border: 1px solid #fe8800;
 }
-
 .tagit-autocomplete.ui-widget-content .ui-state-focus {
-    border-radius: 0;
-    background: #34a6ff;
-    color: #fff;
-    border: none;
-    margin: 0 !important;
+  border-radius: 0;
+  background: #34a6ff;
+  color: #fff;
+  border: none;
+  margin: 0 !important;
 }
+
+
+/*# sourceMappingURL=app.css.map*/
