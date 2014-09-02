@@ -18,6 +18,7 @@ module.exports = class ContactsList extends ViewCollection
     initialize: ->
         super
         @listenTo @collection, 'change', @onContactChanged
+        @listenTo @collection, 'sync', @onContactChanged
         @listenTo @collection, 'add', @onContactChanged
 
     afterRender: ->
