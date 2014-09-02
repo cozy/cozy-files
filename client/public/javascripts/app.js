@@ -3293,6 +3293,7 @@ module.exports = ContactsList = (function(_super) {
   ContactsList.prototype.initialize = function() {
     ContactsList.__super__.initialize.apply(this, arguments);
     this.listenTo(this.collection, 'change', this.onContactChanged);
+    this.listenTo(this.collection, 'sync', this.onContactChanged);
     return this.listenTo(this.collection, 'add', this.onContactChanged);
   };
 

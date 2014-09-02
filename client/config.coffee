@@ -1,6 +1,5 @@
 exports.config =
 
-    # See http://brunch.readthedocs.org/en/latest/config.html for documentation.
     paths:
         public: 'public'
 
@@ -11,6 +10,7 @@ exports.config =
 
     conventions:
         vendor: /(vendor)|(_specs)(\/|\\)/ # do not wrap tests in modules
+
     files:
         javascripts:
             defaultExtension: 'coffee'
@@ -46,5 +46,5 @@ exports.config =
 
     plugins:
         jade:
-            globals: ['t', 'moment', 'filesize']
+            globals: ['t', 'moment']
     framework: 'backbone'
