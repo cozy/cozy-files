@@ -326,11 +326,13 @@ textarea
       box-shadow: none
       text-shadow: none
       border-radius: 0
-      font-family: main
-      background: #ECECEC
+      font-family: styled
+      background: #ebf6ff
+      color: #0067b8
 
       .tagit-label, .tagit-close .text-icon
-          color: #888
+          color: #0067b8
+          font-size: 12px
 
     .tagit-choice:hover
         background: orange
@@ -364,7 +366,7 @@ textarea
     width 100%
     font-family main
     font-size 30px
-    margin-bottom 0px
+    margin-bottom 2px
     padding-top: 0
 
 
@@ -526,6 +528,9 @@ textarea
       opacity 0
       text-shadow: none
       width auto
+      background: #EEE
+      font-weight: normal
+      color:  #777
 
       &:hover
         background-color orange
@@ -542,10 +547,13 @@ textarea
         .type
           width 25%
           font-family styled
+          font-size: 17px
 
         .value
           width 55%
           font-family main
+          font-size: 17px
+
 
         .dpremove, .dpaction
           width 5%
@@ -581,10 +589,12 @@ textarea
 #more-options
 #create-task
     width: 100%
-    color: #999
-    background: #ECECEC
     padding: 5px
     margin-right: 10px
+    background: #EEE
+    color: #777
+    font-weight: normal
+
 
 #create-task:hover
 #more-options:hover
@@ -594,17 +604,15 @@ textarea
 
 #adder
     .button
-        padding: 3px
+        padding: 6px
         margin-right: 10px
-        color: #999
-        background: #ECECEC
         font-weight: normal
         line-height: 30px
+        color: white
 
     .button:hover
         text-decoration: none
         color: white
-        background: orange
 
 #importer
     .loading

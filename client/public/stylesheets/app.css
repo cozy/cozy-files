@@ -423,12 +423,14 @@ textarea {
   box-shadow: none;
   text-shadow: none;
   border-radius: 0;
-  font-family: main;
-  background: #ececec;
+  font-family: styled;
+  background: #ebf6ff;
+  color: #0067b8;
 }
 #contact ul.tagit .tagit-choice .tagit-label,
 #contact ul.tagit .tagit-choice .tagit-close .text-icon {
-  color: #888;
+  color: #0067b8;
+  font-size: 12px;
 }
 #contact ul.tagit .tagit-choice:hover {
   background: #fe8800;
@@ -464,7 +466,7 @@ textarea {
   width: 100%;
   font-family: main;
   font-size: 30px;
-  margin-bottom: 0px;
+  margin-bottom: 2px;
   padding-top: 0;
 }
 #contact #name:hover {
@@ -646,6 +648,9 @@ textarea {
   opacity: 0;
   text-shadow: none;
   width: auto;
+  background: #eee;
+  font-weight: normal;
+  color: #777;
 }
 #left .zone a.btn.add:hover {
   background-color: #fe8800;
@@ -663,10 +668,12 @@ textarea {
 #left .zone ul li .type {
   width: 25%;
   font-family: styled;
+  font-size: 17px;
 }
 #left .zone ul li .value {
   width: 55%;
   font-family: main;
+  font-size: 17px;
 }
 #left .zone ul li .dpremove,
 #left .zone ul li .dpaction {
@@ -701,10 +708,11 @@ textarea {
 #more-options,
 #create-task {
   width: 100%;
-  color: #999;
-  background: #ececec;
   padding: 5px;
   margin-right: 10px;
+  background: #eee;
+  color: #777;
+  font-weight: normal;
 }
 #create-task:hover,
 #more-options:hover {
@@ -713,17 +721,15 @@ textarea {
   background: #fe8800;
 }
 #adder .button {
-  padding: 3px;
+  padding: 6px;
   margin-right: 10px;
-  color: #999;
-  background: #ececec;
   font-weight: normal;
   line-height: 30px;
+  color: #fff;
 }
 #adder .button:hover {
   text-decoration: none;
   color: #fff;
-  background: #fe8800;
 }
 #importer .loading {
   display: none;
