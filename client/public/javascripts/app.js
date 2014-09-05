@@ -1452,6 +1452,7 @@ module.exports = {
   "importing this file": "We are importing this file",
   "may take a while": "It may take a while",
   "progress": "Progress",
+  "loading import preview": "loading import preview...",
   "click left to display": "Browse: Click on a contact in the left panel to display it.",
   "import export": "Import / Export",
   "call log info": "Click here to import your mobile's call log:",
@@ -1560,6 +1561,7 @@ module.exports = {
   "importing this file": "Nous importons ce fichier",
   "may take a while": "Cela peut prendre quelques minutes",
   "progress": "Progression",
+  "loading import preview": "chargement de d'apperçu de l'import...",
   "click left to display": "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher",
   "import export": "Import / Export",
   "call log info": "Cliquez ici pour importer votre historique mobile :",
@@ -2441,7 +2443,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
+buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div><div class=\"infos\"><span class=\"loading\">" + (jade.escape(null == (jade_interp = t("loading import preview")) ? "" : jade_interp)) + "</span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -4015,6 +4017,7 @@ module.exports = ImporterView = (function(_super) {
 
   ImporterView.prototype.onupload = function() {
     var file, reader, validMimeTypes, _ref;
+    $(".loading").show();
     file = this.upload.files[0];
     validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory', 'text/directory;profile=vcard'];
     if (_ref = file.type.toLowerCase(), __indexOf.call(validMimeTypes, _ref) < 0) {
@@ -4035,6 +4038,12 @@ module.exports = ImporterView = (function(_super) {
         _this.toImport.each(function(contact) {
           var name;
           name = contact.get('fn') || contact.getComputedFN();
+          if ((name == null) || name.trim() === '') {
+            name = contact.getBest('email');
+          }
+          if ((name == null) || name.trim() === '') {
+            name = contact.getBest('tel');
+          }
           return txt += "<li>" + name + "</li>";
         });
         txt += '</ul>';

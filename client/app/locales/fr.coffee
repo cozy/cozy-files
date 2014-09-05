@@ -100,6 +100,7 @@ module.exports =
   "importing this file"  : "Nous importons ce fichier"
   "may take a while"     : "Cela peut prendre quelques minutes"
   "progress"             : "Progression"
+  "loading import preview": "chargement de d'apperçu de l'import..."
 
 # doc
   "click left to display" : "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher"

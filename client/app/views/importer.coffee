@@ -21,6 +21,8 @@ module.exports = class ImporterView extends BaseView
         @confirmBtn = @$('#confirm-btn')
 
     onupload: ->
+        $(".loading").show()
+
         file = @upload.files[0]
         validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory',
                           'text/directory;profile=vcard']
@@ -38,6 +40,10 @@ module.exports = class ImporterView extends BaseView
             txt = "<p>#{txt} :</p><ul>"
             @toImport.each (contact) ->
                 name = contact.get('fn') or contact.getComputedFN()
+                if not name? or name.trim() is ''
+                    name = contact.getBest 'email'
+                if not name? or name.trim() is ''
+                    name = contact.getBest 'tel'
                 txt += "<li>#{name}</li>"
             txt += '</ul>'
             @content. html txt
