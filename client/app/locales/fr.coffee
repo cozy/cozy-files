@@ -101,6 +101,8 @@ module.exports =
   "may take a while"     : "Cela peut prendre quelques minutes"
   "progress"             : "Progression"
   "loading import preview": "chargement de d'apperçu de l'import..."
+  "import succeeded": "Votre import de contact a réussi."
+  "import progress": "Progression de l'import: "
 
 # doc
   "click left to display" : "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher"

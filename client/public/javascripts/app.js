@@ -1453,6 +1453,8 @@ module.exports = {
   "may take a while": "It may take a while",
   "progress": "Progress",
   "loading import preview": "loading import preview...",
+  "import succeeded": "Your contact import succeeded.",
+  "import progress": "Import progress",
   "click left to display": "Browse: Click on a contact in the left panel to display it.",
   "import export": "Import / Export",
   "call log info": "Click here to import your mobile's call log:",
@@ -1562,6 +1564,8 @@ module.exports = {
   "may take a while": "Cela peut prendre quelques minutes",
   "progress": "Progression",
   "loading import preview": "chargement de d'apperçu de l'import...",
+  "import succeeded": "Votre import de contact a réussi.",
+  "import progress": "Progression de l'import: ",
   "click left to display": "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher",
   "import export": "Import / Export",
   "call log info": "Cliquez ici pour importer votre historique mobile :",
@@ -2443,7 +2447,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div><div class=\"infos\"><span class=\"loading\">" + (jade.escape(null == (jade_interp = t("loading import preview")) ? "" : jade_interp)) + "</span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
+buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div><div class=\"infos\"><span class=\"loading\">" + (jade.escape(null == (jade_interp = t("loading import preview")) ? "" : jade_interp)) + "</span><span class=\"progress\"></span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -4053,23 +4057,45 @@ module.exports = ImporterView = (function(_super) {
     })(this);
   };
 
+  ImporterView.prototype.updateProgress = function(number, total) {
+    return this.$(".import-progress").html(" " + number + " / " + total);
+  };
+
   ImporterView.prototype.addcontacts = function() {
+    var importContact, total;
     if (!this.toImport) {
       return true;
     }
-    this.toImport.each(function(contact) {
-      return contact.save(null, {
-        success: function() {
-          return app.contacts.add(contact);
+    this.content.html("<p>Do not close the navigator while importing contacts.</p>\n<p>\n    " + (t('import progress')) + ":&nbsp;<span class=\"import-progress\"></span>\n</p>");
+    total = this.toImport.length;
+    this.importing = true;
+    this.updateProgress(0, total);
+    return (importContact = (function(_this) {
+      return function() {
+        var contact;
+        if (_this.toImport.length === 0) {
+          alert(t('import succeeded'));
+          _this.importing = false;
+          return _this.close();
+        } else {
+          contact = _this.toImport.pop();
+          return contact.save(null, {
+            success: function() {
+              _this.updateProgress(total - _this.toImport.size(), total);
+              app.contacts.add(contact);
+              return importContact();
+            }
+          });
         }
-      });
-    });
-    return this.close();
+      };
+    })(this))();
   };
 
   ImporterView.prototype.close = function() {
-    this.$el.modal('hide');
-    return this.remove();
+    if (!this.importing) {
+      this.$el.modal('hide');
+      return this.remove();
+    }
   };
 
   return ImporterView;

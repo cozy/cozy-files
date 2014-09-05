@@ -49,16 +49,37 @@ module.exports = class ImporterView extends BaseView
             @content. html txt
             @confirmBtn.removeClass 'disabled'
 
+    updateProgress: (number, total) ->
+        @$(".import-progress").html " #{number} / #{total}"
+
     addcontacts: ->
         return true unless @toImport
+        @content.html """
+        <p>Do not close the navigator while importing contacts.</p>
+        <p>
+            #{t('import progress')}:&nbsp;<span class="import-progress"></span>
+        </p>
+        """
+        total = @toImport.length
+        @importing = true
+        @updateProgress 0, total
 
-        @toImport.each (contact) ->
-            contact.save null,
-                success: ->
-                    app.contacts.add contact
+        (importContact = =>
+            if @toImport.length is 0
+                alert t 'import succeeded'
+                @importing = false
+                @close()
+            else
+                contact = @toImport.pop()
 
-        @close()
+                contact.save null,
+                    success: =>
+                        @updateProgress (total - @toImport.size()), total
+                        app.contacts.add contact
+                        importContact()
+        )()
 
     close: ->
-        @$el.modal 'hide'
-        @remove()
+        unless @importing
+            @$el.modal 'hide'
+            @remove()
