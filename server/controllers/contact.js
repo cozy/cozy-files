@@ -35,33 +35,65 @@ module.exports = {
     });
   },
   create: function(req, res) {
-    var model, toCreate;
+    var create, model, toCreate;
     model = req.body.contact ? JSON.parse(req.body.contact) : req.body;
     toCreate = new Contact(model);
-    return Contact.create(toCreate, function(err, contact) {
-      var data, file, _ref;
-      if (err) {
-        return res.error(500, "Creation failed.", err);
-      }
-      if (file = (_ref = req.files) != null ? _ref['picture'] : void 0) {
-        data = {
-          name: 'picture'
-        };
-        return contact.attachFile(file.path, data, function(err) {
-          if (err) {
-            return res.error(500, "Creation failed.", err);
-          }
-          return fs.unlink(file.path, function(err) {
+    create = function() {
+      return Contact.create(toCreate, function(err, contact) {
+        var data, file, _ref;
+        if (err) {
+          return res.error(500, "Creation failed.", err);
+        }
+        if (file = (_ref = req.files) != null ? _ref['picture'] : void 0) {
+          data = {
+            name: 'picture'
+          };
+          return contact.attachFile(file.path, data, function(err) {
             if (err) {
               return res.error(500, "Creation failed.", err);
             }
-            return res.send(contact, 201);
+            return fs.unlink(file.path, function(err) {
+              if (err) {
+                return res.error(500, "Creation failed.", err);
+              }
+              return res.send(contact, 201);
+            });
           });
+        } else {
+          return res.send(contact, 201);
+        }
+      });
+    };
+    if (model["import"]) {
+      return Config.getInstance(function(err, config) {
+        var dp, name, _i, _len, _ref;
+        name = '';
+        if ((toCreate.fn != null) && toCreate.fn.length > 0) {
+          name = toCreate.fn;
+        } else if (toCreate.n && toCreate.n.length > 0) {
+          name = toCreate.n.split(';').join(' ').trim();
+        } else {
+          _ref = toCreate.datapoints;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            dp = _ref[_i];
+            if (dp.name === 'email') {
+              name = dp.value;
+            }
+          }
+        }
+        return Contact.request('byName', {
+          key: name
+        }, function(err, contacts) {
+          if (contacts.length === 0) {
+            return create();
+          } else {
+            return res.send(contacts[0], 201);
+          }
         });
-      } else {
-        return res.send(contact, 201);
-      }
-    });
+      });
+    } else {
+      return create();
+    }
   },
   read: function(req, res) {
     return res.send(req.contact);

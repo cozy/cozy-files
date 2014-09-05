@@ -38,6 +38,12 @@ Contact.prototype.remoteKeys = function() {
 Contact.prototype.getComputedFN = function(config) {
   var familly, given, middle, prefix, suffix, _ref;
   _ref = this.n.split(';'), familly = _ref[0], given = _ref[1], middle = _ref[2], prefix = _ref[3], suffix = _ref[4];
+  if (config == null) {
+    config = {};
+  }
+  if (config.nameOrder == null) {
+    config.nameOrder = 'given-familly';
+  }
   switch (config.nameOrder) {
     case 'given-familly':
       return "" + given + " " + middle + " " + familly;

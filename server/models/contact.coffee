@@ -23,6 +23,8 @@ Contact::remoteKeys = ->
 
 Contact::getComputedFN = (config) ->
     [familly, given, middle, prefix, suffix] = @n.split ';'
+    config ?= {}
+    config.nameOrder ?= 'given-familly'
     switch config.nameOrder
         when 'given-familly' then "#{given} #{middle} #{familly}"
         when 'familly-given' then "#{familly}, #{given} #{middle}"

@@ -28,21 +28,45 @@ module.exports =
         else req.body
 
         toCreate = new Contact model
-        Contact.create toCreate, (err, contact) ->
-            return res.error 500, "Creation failed.", err if err
 
-            if file = req.files?['picture']
-                data = name: 'picture'
-                contact.attachFile file.path, data, (err) ->
-                    return res.error 500, "Creation failed.", err if err
+        create = ->
+            Contact.create toCreate, (err, contact) ->
+                return res.error 500, "Creation failed.", err if err
 
-                    fs.unlink file.path, (err) ->
+                if file = req.files?['picture']
+                    data = name: 'picture'
+                    contact.attachFile file.path, data, (err) ->
                         return res.error 500, "Creation failed.", err if err
 
-                        res.send contact, 201
-            else
-                res.send contact, 201
+                        fs.unlink file.path, (err) ->
+                            return res.error 500, "Creation failed.", err if err
 
+                            res.send contact, 201
+                else
+                    res.send contact, 201
+
+        if model.import
+            # If creation is related to an import, it checks first if the
+            # contact doesn't exist already by comparing the names
+            # or emails if name is not specified.
+            Config.getInstance (err, config) ->
+                name = ''
+                if toCreate.fn? and toCreate.fn.length > 0
+                    name = toCreate.fn
+                else if toCreate.n and toCreate.n.length > 0
+                    name = toCreate.n.split(';').join(' ').trim()
+                else
+                    for dp in toCreate.datapoints
+                        if dp.name is 'email'
+                            name = dp.value
+
+                Contact.request 'byName', key: name, (err, contacts) ->
+                    if contacts.length is 0
+                        create()
+                    else
+                        res.send contacts[0], 201
+        else
+            create()
 
     read: (req, res) ->
         res.send req.contact
