@@ -362,11 +362,10 @@ textarea
     line-height 1em
     box-sizing border-box
     width 100%
-    padding-left 0px
     font-family main
     font-size 30px
     margin-bottom 0px
-    border-bottom 1px solid grey
+    padding-top: 0
 
 
     &:hover
@@ -576,7 +575,7 @@ textarea
             font-family: styled
 
     #name
-        padding: 5px 10px 0px 3px
+        padding: 0px 10px 0px 3px
         font-size: 26px
 
 #more-options
@@ -696,8 +695,12 @@ textarea
             width: 100%
 
 // overrides tagit styles
+#contact
+    ul.tagit input[type="text"]
+        padding-left: 5px
+
 .tagit-autocomplete.ui-widget-content
-  padding 0
+  padding 0 0 0 0
   border 1px solid orange
 
   .ui-state-focus

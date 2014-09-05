@@ -462,11 +462,10 @@ textarea {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
-  padding-left: 0px;
   font-family: main;
   font-size: 30px;
   margin-bottom: 0px;
-  border-bottom: 1px solid #ccc;
+  padding-top: 0;
 }
 #contact #name:hover {
   border-bottom: 1px solid #fe8800;
@@ -696,7 +695,7 @@ textarea {
   font-family: styled;
 }
 #contact #name {
-  padding: 5px 10px 0px 3px;
+  padding: 0px 10px 0px 3px;
   font-size: 26px;
 }
 #more-options,
@@ -814,8 +813,11 @@ textarea {
 #contacts-list.contact-widget #toolbar input#filterfield {
   width: 100%;
 }
+#contact ul.tagit input[type="text"] {
+  padding-left: 5px;
+}
 .tagit-autocomplete.ui-widget-content {
-  padding: 0;
+  padding: 0 0 0 0;
   border: 1px solid #fe8800;
 }
 .tagit-autocomplete.ui-widget-content .ui-state-focus {
