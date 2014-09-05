@@ -1977,6 +1977,9 @@ Contact.fromVCF = function(vcf) {
           currentdp.set(pname.toLowerCase(), pvalue.toLowerCase());
         }
         if (key === 'adr') {
+          if (value == null) {
+            value = [];
+          }
           value = value.join("\n").replace(/\n+/g, "\n");
         }
         if (key === 'x-abdate') {
@@ -2002,7 +2005,13 @@ Contact.fromVCF = function(vcf) {
       if (key === 'email' || key === 'tel' || key === 'adr' || key === 'url') {
         currentdp.set('name', key);
         if (key === 'adr') {
-          value = value.join("\n").replace(/\n+/g, "\n");
+          if (value == null) {
+            value = [];
+          }
+          if (typeof value !== 'string') {
+            value = value.join('\n');
+          }
+          value = value.replace(/\n+/g, "\n");
         }
       } else {
         currentdp = null;

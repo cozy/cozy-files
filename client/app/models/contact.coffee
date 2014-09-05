@@ -284,6 +284,7 @@ Contact.fromVCF = (vcf) ->
                     currentdp.set pname.toLowerCase(), pvalue.toLowerCase()
 
                 if key is 'adr'
+                    value ?= []
                     value = value.join("\n").replace /\n+/g, "\n"
 
                 if key is 'x-abdate'
@@ -311,7 +312,10 @@ Contact.fromVCF = (vcf) ->
             if key in ['email', 'tel', 'adr', 'url']
                 currentdp.set 'name', key
                 if key is 'adr'
-                    value = value.join("\n").replace /\n+/g, "\n"
+                    value ?= []
+                    if typeof value isnt 'string'
+                        value = value.join '\n'
+                    value = value.replace /\n+/g, "\n"
             else
                 currentdp = null
                 continue
