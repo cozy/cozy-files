@@ -4,7 +4,7 @@
 }
 @font-face {
   font-family: main;
-  src: url("/fonts/signika-regular.ttf");
+  src: url("/fonts/source-sans-pro.ttf");
 }
 a {
   color: #34a6ff;
@@ -100,12 +100,14 @@ body {
 h1,
 h2,
 h3,
-h4,
-#name {
+h4 {
   font-family: styled;
 }
 a {
   cursor: pointer;
+}
+textarea {
+  ont-family: main;
 }
 #contacts-list {
   width: 450px;
@@ -217,6 +219,7 @@ a {
   overflow: hidden;
   margin-top: 1px;
   font-weight: normal;
+  font-family: main;
 }
 #contacts-list #contacts .contact-thumb span {
   display: block;
@@ -298,6 +301,9 @@ a {
   color: #f00;
   font-size: 2em;
 }
+#contact h2 {
+  font-family: styled;
+}
 #contact #picture {
   display: block;
   position: absolute;
@@ -373,7 +379,7 @@ a {
 #contact #wrap-name-notes {
   position: absolute;
   top: 30px;
-  left: 114px;
+  left: 120px;
   right: 3%;
 }
 #contact #wrap-name-notes #name-edit {
@@ -435,8 +441,8 @@ a {
   box-sizing: border-box;
   width: 100%;
   padding-left: 0px;
+  font-family: main;
   font-size: 30px;
-  font-weight: bold;
   margin-bottom: 0px;
   border-bottom: 1px solid #ccc;
 }
@@ -469,7 +475,7 @@ a {
 #left h2,
 #right .nav-tabs li a,
 #left .nav-tabs li a {
-  font-family: styled;
+  font-family: main;
   color: inherit;
   font-size: 24px;
   line-height: 40px;
@@ -661,8 +667,14 @@ a {
 #contact #adder h2 {
   display: none;
 }
+#contact h2 {
+  font-family: styled;
+}
+#contact #right .nav-tabs li a {
+  font-family: styled;
+}
 #contact #name {
-  padding: 5px 10px 0px 10px;
+  padding: 5px 10px 0px 0px;
   font-size: 26px;
 }
 #more-options,

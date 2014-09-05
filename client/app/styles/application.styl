@@ -39,11 +39,14 @@ body
   background-color bgcolor
   font-family main
 
-h1, h2, h3, h4, #name
+h1, h2, h3, h4
   font-family styled
 
 a
     cursor: pointer
+
+textarea
+  ont-family main
 
 // CONTACT LIST
 
@@ -148,6 +151,7 @@ a
         overflow hidden
         margin-top: 1px
         font-weight: normal
+        font-family main
 
       span
         display block
@@ -224,6 +228,9 @@ a
 
 #contact
 
+  h2
+    font-family styled
+
   #picture
     display block
     position absolute
@@ -298,7 +305,7 @@ a
   #wrap-name-notes
     position absolute
     top 30px
-    left 114px
+    left 120px
     right 3%
 
     #name-edit
@@ -359,10 +366,11 @@ a
     box-sizing border-box
     width 100%
     padding-left 0px
+    font-family main
     font-size 30px
-    font-weight bold
     margin-bottom 0px
     border-bottom 1px solid grey
+
 
     &:hover
         border-bottom 1px solid orange
@@ -389,7 +397,7 @@ a
   width 47%
 
   h2, .nav-tabs li a
-    font-family styled
+    font-family main
     color inherit
     font-size 24px
     line-height 40px
@@ -563,8 +571,15 @@ a
         h2
             display: none
 
+    h2
+        font-family: styled
+
+    #right
+        .nav-tabs li a
+            font-family: styled
+
     #name
-        padding: 5px 10px 0px 10px
+        padding: 5px 10px 0px 0px
         font-size: 26px
 
 #more-options
