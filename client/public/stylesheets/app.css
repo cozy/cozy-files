@@ -1,10 +1,10 @@
 @font-face {
   font-family: styled;
-  src: url("/fonts/maven-pro-light-300.otf");
+  src: url("fonts/maven-pro-light-300.otf");
 }
 @font-face {
   font-family: main;
-  src: url("/fonts/source-sans-pro.ttf");
+  src: url("fonts/source-sans-pro.ttf");
 }
 a {
   color: #34a6ff;
