@@ -103,6 +103,7 @@ module.exports =
   "loading import preview": "loading import preview..."
   "import succeeded": "Your contact import succeeded."
   "import progress": "Import progress"
+  "fail to import": "Fail to import"
 
 # doc
   "click left to display" : "Browse: Click on a contact in the left panel to display it."
@@ -138,3 +139,6 @@ module.exports =
     display a new contact page. Fill the name field and your contact will
     be created.
   """
+  "export": "Export"
+  "export contact": "Export contact"
+

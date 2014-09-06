@@ -1456,6 +1456,7 @@ module.exports = {
   "loading import preview": "loading import preview...",
   "import succeeded": "Your contact import succeeded.",
   "import progress": "Import progress",
+  "fail to import": "Fail to import",
   "click left to display": "Browse: Click on a contact in the left panel to display it.",
   "import export": "Import / Export",
   "call log info": "Click here to import your mobile's call log:",
@@ -1474,7 +1475,9 @@ module.exports = {
   "vcard export info": "Click here to export all your contacts as a vCard file:",
   "carddav info": "Synchronization: To sync your contacts with your mobile, install the Webdav\napplication from the market place.",
   "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
-  "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created."
+  "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created.",
+  "export": "Export",
+  "export contact": "Export contact"
 };
 });
 
@@ -1567,6 +1570,7 @@ module.exports = {
   "loading import preview": "chargement de d'apperçu de l'import...",
   "import succeeded": "Votre import de contact a réussi.",
   "import progress": "Progression de l'import: ",
+  "fail to import": "Echec de l'import ",
   "click left to display": "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher",
   "import export": "Import / Export",
   "call log info": "Cliquez ici pour importer votre historique mobile :",
@@ -1585,7 +1589,9 @@ module.exports = {
   "vcard export info": "Cliquez ici pour exporter tous vos contacts dans un fichier vCard :",
   "carddav info": "Synchronization : Pour synchroniser vos contacts sur votre mobile,\ninstallez l'application Webdav depuis le market place.",
   "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
-  "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé."
+  "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé.",
+  "export": "Export",
+  "export contact": "Exporter contact"
 };
 });
 
