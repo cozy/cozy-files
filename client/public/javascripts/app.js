@@ -155,10 +155,11 @@ module.exports = ContactCollection = (function(_super) {
   ContactCollection.prototype.url = 'contacts';
 
   ContactCollection.prototype.comparator = function(a, b) {
-    var nameA, nameB, out;
+    var compare, nameA, nameB, out;
     nameA = a.getFN().toLowerCase();
     nameB = b.getFN().toLowerCase();
-    return out = nameA > nameB ? 1 : nameA < nameB ? -1 : 0;
+    compare = nameA.localeCompare(nameB);
+    return out = compare > 0 ? 1 : compare < 0 ? -1 : 0;
   };
 
   ContactCollection.prototype.initialize = function() {
@@ -1673,34 +1674,38 @@ module.exports = Contact = (function(_super) {
   };
 
   Contact.prototype.parse = function(attrs) {
-    var _ref;
+    var _ref, _ref1, _ref2;
     if (_.where(attrs != null ? attrs.datapoints : void 0, {
       name: 'tel'
     }).length === 0) {
       if (attrs != null) {
-        attrs.datapoints.push({
-          name: 'tel',
-          type: 'main',
-          value: ''
-        });
+        if ((_ref = attrs.datapoints) != null) {
+          _ref.push({
+            name: 'tel',
+            type: 'main',
+            value: ''
+          });
+        }
       }
     }
     if (_.where(attrs != null ? attrs.datapoints : void 0, {
       name: 'email'
     }).length === 0) {
       if (attrs != null) {
-        attrs.datapoints.push({
-          name: 'email',
-          type: 'main',
-          value: ''
-        });
+        if ((_ref1 = attrs.datapoints) != null) {
+          _ref1.push({
+            name: 'email',
+            type: 'main',
+            value: ''
+          });
+        }
       }
     }
     if (attrs.datapoints) {
       this.dataPoints.reset(attrs.datapoints);
       delete attrs.datapoints;
     }
-    if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {
+    if ((_ref2 = attrs._attachments) != null ? _ref2.picture : void 0) {
       this.hasPicture = true;
       delete attrs._attachments;
     }

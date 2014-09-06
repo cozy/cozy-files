@@ -38,13 +38,13 @@ module.exports = class Contact extends Backbone.Model
     parse: (attrs) ->
 
         if _.where(attrs?.datapoints, name: 'tel').length is 0
-            attrs?.datapoints.push
+            attrs?.datapoints?.push
                 name: 'tel'
                 type: 'main'
                 value: ''
 
         if _.where(attrs?.datapoints, name: 'email').length is 0
-            attrs?.datapoints.push
+            attrs?.datapoints?.push
                 name: 'email'
                 type: 'main'
                 value: ''
