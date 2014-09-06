@@ -165,6 +165,30 @@ module.exports = {
       });
     });
   },
+  vCardContact: function(req, res, next) {
+    return Config.getInstance(function(err, config) {
+      console.log(req.params.contactid);
+      console.log(req.params.fn);
+      return Contact.request('all', {
+        key: req.params.contactid
+      }, function(err, contacts) {
+        var contact, date, out, _i, _len;
+        if (err) {
+          next(err);
+        }
+        out = "";
+        for (_i = 0, _len = contacts.length; _i < _len; _i++) {
+          contact = contacts[_i];
+          out += contact.toVCF(config);
+        }
+        date = new Date();
+        date = "" + (date.getYear()) + "-" + (date.getMonth()) + "-" + (date.getDate());
+        res.attachment("" + req.params.fn + ".vcf");
+        res.set('Content-Type', 'text/x-vcard');
+        return res.send(out);
+      });
+    });
+  },
   createTask: function(req, res, next) {
     var contact, text;
     contact = req.contact;

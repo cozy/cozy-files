@@ -59,6 +59,8 @@ module.exports = class ImporterView extends BaseView
         <p>
             #{t('import progress')}:&nbsp;<span class="import-progress"></span>
         </p>
+        <p class="errors">
+        </p>
         """
         total = @toImport.length
         @importing = true
@@ -72,10 +74,16 @@ module.exports = class ImporterView extends BaseView
             else
                 contact = @toImport.pop()
 
+                contact.set 'import', true
                 contact.save null,
                     success: =>
                         @updateProgress (total - @toImport.size()), total
                         app.contacts.add contact
+                        importContact()
+                    error: =>
+                        $(".errors").append """
+                        <p>#{t 'fail to import'}: #{contact.getComputedFN()}</p>
+                        """
                         importContact()
         )()
 

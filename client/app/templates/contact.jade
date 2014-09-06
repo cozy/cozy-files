@@ -86,5 +86,7 @@
         a.button.addurl=      t("url") + ' '
         a.button.addskype=    t("skype") + ' '
         a.button.addother=    t("other")
+        h3= t("export")
+        a.button#export(href='contacts/#{id}/#{fn}.vcf' title= t("export contact"))= t('export contact')
         h3= t("delete")
         a.button#delete(title= t("delete contact"))= t('delete contact')

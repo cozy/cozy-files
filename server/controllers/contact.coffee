@@ -107,6 +107,7 @@ module.exports =
         else
             res.sendfile path.resolve __dirname, '../assets/defaultpicture.png'
 
+    # Export contacts to a vcard file.
     vCard: (req, res, next) ->
         Config.getInstance (err, config) ->
             Contact.request 'all', (err, contacts) ->
@@ -121,6 +122,22 @@ module.exports =
                 res.set 'Content-Type', 'text/x-vcard'
                 res.send out
 
+    # Export a single contact to a VCard file.
+    vCardContact: (req, res, next) ->
+        Config.getInstance (err, config) ->
+            console.log req.params.contactid
+            console.log req.params.fn
+            Contact.request 'all', key: req.params.contactid, (err, contacts) ->
+                next err if err
+
+                out = ""
+                out += contact.toVCF(config) for contact in contacts
+
+                date = new Date()
+                date = "#{date.getYear()}-#{date.getMonth()}-#{date.getDate()}"
+                res.attachment "#{req.params.fn}.vcf"
+                res.set 'Content-Type', 'text/x-vcard'
+                res.send out
 
     # Create a new task in the Inbox todo-list (the one that get task from
     # other apps than Todo-List). This tasks says to call back current contact.
