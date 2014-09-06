@@ -60,6 +60,26 @@ describe 'Contacts', ->
             expect(@body.id).to.exist
             @id = @body.id
 
+        it 'When you create the same contact with import flag', (done) ->
+            contact =
+                fn: 'Jane Smith'
+                import: true
+
+            @client.post 'contacts', contact, done
+
+        it 'And you get all contacts', ->
+            @client.get 'contacts', (err, res, contacts) =>
+                console.log res.statusCode
+                console.log contacts
+                @contacts = contacts
+
+        it 'Then there should be only one contact with that name', ->
+            nb = 0
+            for contact in @contacts
+                nb++ if contact.getComputedFN() is 'Jane Smith'
+            expect(nb).to.equal 1
+
+
     describe 'Update - PUT /contacts/:id', ->
 
         update =
@@ -71,7 +91,7 @@ describe 'Contacts', ->
         it 'should reply with the updated album', ->
             expect(@body.note).to.equal update.note
 
-        it 'when I GET the album', (done) ->
+        it 'when I GET the contact', (done) ->
             @client.get "contacts/#{@id}", done
 
         it 'then it is changed', ->
