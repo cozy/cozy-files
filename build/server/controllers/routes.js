@@ -104,7 +104,7 @@ module.exports = {
     get: folders.publicList
   },
   'public/files': {
-    post: [public_auth.checkClearance('w', 'file'), files.create]
+    post: files.publicCreate
   },
   'public/files/:fileid/attach/:name': {
     get: [public_auth.checkClearance('r', 'file'), files.getAttachment]

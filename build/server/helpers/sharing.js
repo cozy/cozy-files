@@ -53,7 +53,7 @@ module.exports.limitedTree = function(folder, req, perm, callback) {
   return folder.getParents(function(err, parents) {
     var scan;
     if (err) {
-      return callback(err);
+      return callback([]);
     }
     scan = function() {
       var tested;
