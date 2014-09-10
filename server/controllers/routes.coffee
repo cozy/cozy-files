@@ -79,7 +79,7 @@ module.exports =
         get: folders.publicList
 
     'public/files':
-        post: [public_auth.checkClearance('w', 'file'), files.create]
+        post: files.publicCreate # clearanche is checked in the upload process
     'public/files/:fileid/attach/:name':
         get: [public_auth.checkClearance('r', 'file'), files.getAttachment]
     'public/files/:fileid/download/:name':

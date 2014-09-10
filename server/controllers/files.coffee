@@ -93,152 +93,16 @@ module.exports.all = (req, res, next) ->
 # parent folder is tagged.
 folderParent = {}
 timeout = null
-module.exports.create = (req, res, next) ->
-    clearTimeout(timeout) if timeout?
 
-    fields = {}
+# Helpers functions of upload process
+# Index file name to Cozy indexer to allow quick search on it.
+# errors are logged but not blocking
+index = (newFile, next) ->
 
-    # Parse given form to extract image blobs.
-    form = new multiparty.Form()
 
-    form.on 'part', (part) ->
-        # Get field, form is processed one way, be sure that fields are sent
-        # before the file.
-        # Parts are porcessed sequentially, so the data event shoudl be
-        # processed before reaching the file part.
-        unless part.filename?
-            fields[part.name] = ''
-            part.on 'data', (buffer) ->
-                fields[part.name] = buffer.toString()
-
-        # We assume that only one file is sent.
-        else
-
-            # we do not write a subfunction because it seems to load the whole
-            # stream in memory.
-            name = fields.name
-            path = fields.path
-
-            if not name or name is ""
-                err = new Error "Invalid arguments: no name given"
-                err.status = 400
-                next err
-            else
-                # Check that the file doesn't exist yet.
-                path = normalizePath path
-                fullPath = "#{path}/#{name}"
-                File.byFullPath key: fullPath, (err, sameFiles) =>
-                    return next err if err
-                    if sameFiles.length > 0
-                        res.send
-                            error: true
-                            code: 'EEXISTS'
-                            msg: "This file already exists"
-                        , 400
-                    else
-                        now = moment().toISOString()
-                        fileClass = getFileClass part
-
-                        # Generate file metadata.
-                        data =
-                            name: name
-                            path: normalizePath path
-                            creationDate: now
-                            lastModification: now
-                            mime: mime.lookup name
-                            size: part.byteCount
-                            tags: []
-                            class: fileClass
-
-                        upload = true
-
-                        # Create a file object and link to it a binary object.
-                        # Then it uploads the stream as an attachment of the
-                        # binary.
-                        createFile = =>
-
-                            # This action is required to ensure that the
-                            # application is not stopped by the "autostop"
-                            # feature of the controller. It could occurs if the
-                            # file is too long to upload. The controller could
-                            # think that the application is
-                            # unactive.
-                            keepAlive = ->
-                                if upload
-                                    feed.publish 'usage.application', 'files'
-                                    setTimeout ->
-                                        keepAlive()
-                                    , 60*1000
-
-                                    # Defers parent's lastModification date
-                                    # update
-                                    resetTimeout()
-
-                            # Here file is a stream. For some weird reason,
-                            # request-json requires that a path field to be set
-                            # before uploading.
-                            attachBinary = (newFile) ->
-
-                                isStorageError = (err) ->
-                                    stringErr = err.toString()
-                                    return stringErr.indexOf('enough storage')
-
-                                part.path = data.name
-                                data = {"name": "file"}
-                                newFile.attachBinary part, data, (err) ->
-                                    upload = false
-                                    if err
-                                        newFile.destroy (error) ->
-                                            if isStorageError(error) isnt -1
-                                                res.send
-                                                    error: true
-                                                    code: 'ESTORAGE'
-                                                    msg: "modal error size"
-                                                , 400
-                                            else
-                                                next err
-                                    else
-                                        index newFile
-
-                            # Index file name to Cozy indexer to allow quick
-                            # search on it.
-                            index = (newFile) ->
-                                newFile.index ["name"], (err) ->
-                                    log.debug err if err
-                                    who = req.guestEmail or 'owner'
-                                    sharing.notifyChanges who, newFile, (err) ->
-                                        log.debug err if err
-                                        res.send newFile, 200
-
-                            # Create file document then attach file stream as
-                            # binary to that file document.
-                            File.create data, (err, newFile) =>
-                                if err
-                                    next err
-                                else
-                                    attachBinary newFile
-                                    keepAlive()
-
-                        # find parent folder for updating its last modification
-                        # date and applying tags to uploaded file.
-                        Folder.byFullPath key: data.path, (err, parents) =>
-                            return next err if err
-                            if parents.length > 0
-                                # inherit parent folder tags and update its
-                                # last modification date
-                                parent = parents[0]
-                                data.tags = parent.tags
-                                parent.lastModification = now
-                                folderParent[parent.name] = parent
-                                createFile()
-                            else
-                                createFile()
-
-    form.on 'error', (err) ->
-        log.error err
-
-    form.parse req
-
+# check if an error is storage related
+isStorageError = (err) ->
+    return err.toString().indexOf('enough storage') isnt -1
 
 # After 1 minute of inactivity, update parents
 resetTimeout = () =>
@@ -258,6 +122,157 @@ updateParents = () ->
             errors[folder.name] = err if err?
     folderParent = {}
 
+
+confirmCanUpload = (data, req, next) ->
+
+    # owner can upload.
+    return next null unless req.public
+    element = new File data
+    sharing.checkClearance element, req, 'w', (authorized, rule) ->
+        if authorized
+            if rule?
+                req.guestEmail = rule.email
+                req.guestId = rule.contactid
+            next()
+        else
+            err = new Error 'You cannot access this resource'
+            err.status = 401
+            next err
+
+
+module.exports.create = (req, res, next) ->
+    clearTimeout(timeout) if timeout?
+
+    fields = {}
+
+    # Parse given form to extract image blobs.
+    form = new multiparty.Form()
+
+    form.on 'part', (part) ->
+        # Get field, form is processed one way, be sure that fields are sent
+        # before the file.
+        # Parts are processed sequentially, so the data event should be
+        # processed before reaching the file part.
+        unless part.filename?
+            fields[part.name] = ''
+            part.on 'data', (buffer) ->
+                fields[part.name] = buffer.toString()
+
+            return
+
+        # We assume that only one file is sent.
+        # we do not write a subfunction because it seems to load the whole
+        # stream in memory.
+        name = fields.name
+        path = fields.path
+
+        # we have no name for this file, give up
+        if not name or name is ""
+            err = new Error "Invalid arguments: no name given"
+            err.status = 400
+            return next err
+
+        # Check that the file doesn't exist yet.
+        path = normalizePath path
+        fullPath = "#{path}/#{name}"
+        File.byFullPath key: fullPath, (err, sameFiles) =>
+            return next err if err
+
+            # there is already a file with the same name, give up
+            if sameFiles.length > 0
+                return res.send
+                    error: true
+                    code: 'EEXISTS'
+                    msg: "This file already exists"
+                , 400
+
+
+            now = moment().toISOString()
+            # Generate file metadata.
+            data =
+                name: name
+                path: normalizePath path
+                creationDate: now
+                lastModification: now
+                mime: mime.lookup name
+                size: part.byteCount
+                tags: []
+                class: getFileClass part
+
+            upload = true
+            # while this upload is processing
+            # we send usage.application to prevent auto-stop
+            # and we defer parents lastModification update
+            keepAlive = ->
+                if upload
+                    feed.publish 'usage.application', 'files'
+                    setTimeout keepAlive, 60*1000
+                    resetTimeout()
+
+            # check if the request is allowed
+            confirmCanUpload data, req, (err) ->
+                return next err if err
+
+                # find parent folder for updating its last modification
+                # date and applying tags to uploaded file.
+                Folder.byFullPath key: data.path, (err, parents) =>
+                    return next err if err
+
+                    # inherit parent folder tags and update its
+                    # last modification date
+                    if parents.length > 0
+                        parent = parents[0]
+                        data.tags = parent.tags
+                        parent.lastModification = now
+                        folderParent[parent.name] = parent
+
+                    File.create data, (err, newFile) =>
+                        return next err if err
+
+                        keepAlive()
+                        # if anything happens after the file is created
+                        # we need to destroy it
+                        rollback = (err) ->
+                            newFile.destroy (delerr) ->
+                                # nothing more we can do with delerr
+                                log.error delerr if delerr
+                                if isStorageError err
+                                    res.send
+                                        error: true
+                                        code: 'ESTORAGE'
+                                        msg: "modal error size"
+                                    , 400
+                                else
+                                    next err
+
+                        # request-json requires a path field to be set
+                        # before uploading
+                        part.path = data.name
+                        metadata = name: "file"
+                        newFile.attachBinary part, metadata, (err) ->
+                            upload = false
+                            return rollback err if err
+
+                            # index the file in cozy-indexer for fast search
+                            newFile.index ["name"], (err) ->
+                                # we ignore indexing errors
+                                log.debug err if err
+                                # send email or notification of file changed
+                                who = req.guestEmail or 'owner'
+                                sharing.notifyChanges who, newFile, (err) ->
+                                    # we ignore notification errors
+                                    log.debug err if err
+                                    res.send newFile, 200
+
+
+    form.on 'error', (err) ->
+        log.error err
+
+    form.parse req
+
+module.exports.publicCreate = (req, res, next) ->
+    req.public = true
+    module.exports.create req, res, next
 
 # There is two ways to modify a file:
 # * change its tags: simple modification
