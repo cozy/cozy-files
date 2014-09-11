@@ -72,7 +72,7 @@ describe "Folders management", ->
                 @id = body.id
                 done()
 
-           it "And I send a request to get a folder", (done) ->
+        it "And I send a request to get a folder", (done) ->
             client.get "folders/#{@id}", (err, res, body) =>
                 @err = err
                 @res = res

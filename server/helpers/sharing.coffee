@@ -33,7 +33,7 @@ module.exports.limitedTree = (folder, req, perm, callback) ->
         perm = 'r'
 
     folder.getParents (err, parents) ->
-        return callback err if err
+        return callback [] if err
 
         # remove start of path until first visible
         scan = ->

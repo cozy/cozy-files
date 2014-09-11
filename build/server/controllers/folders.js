@@ -656,8 +656,7 @@ module.exports.changeNotificationsState = function(req, res, next) {
 module.exports.publicList = function(req, res, next) {
   var errortemplate, folder;
   folder = req.folder;
-  console.log(req.accepts('html, json'));
-  if (~req.accepts('html, json').indexOf('html')) {
+  if (~req.accepts(['html', 'json']).indexOf('html')) {
     errortemplate = function(err) {
       err = new Error('File not found');
       err.status = 404;

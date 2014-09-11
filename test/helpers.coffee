@@ -27,6 +27,18 @@ helpers.getClient = (url = null) ->
         return client
 
 initializeApplication = require "#{helpers.prefix}server"
+CozyInstance = require "#{helpers.prefix}/server/models/cozy_instance"
+
+helpers.ensureCozyInstance = (done) ->
+    all = (doc) -> emit doc._id, doc; return
+    CozyInstance.defineRequest 'all', all, (err) ->
+        return done err if err
+        CozyInstance.first (err, instance) ->
+            return done null if instance
+            CozyInstance.create
+                domain: 'domain.not.set',
+                locale: 'en'
+            , done
 
 helpers.startApp = (done) ->
     @timeout 15000
