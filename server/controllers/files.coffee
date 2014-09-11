@@ -95,26 +95,22 @@ folderParent = {}
 timeout = null
 
 # Helpers functions of upload process
-# Index file name to Cozy indexer to allow quick search on it.
-# errors are logged but not blocking
-index = (newFile, next) ->
-
 
 # check if an error is storage related
 isStorageError = (err) ->
     return err.toString().indexOf('enough storage') isnt -1
 
 # After 1 minute of inactivity, update parents
-resetTimeout = () =>
+resetTimeout = ->
     clearTimeout(timeout) if timeout?
-    timeout = setTimeout () =>
+    timeout = setTimeout () ->
         updateParents()
     , 60 * 1000
 
 
 # Save in RAM lastModification date for parents
 # Update folder parent once all files are uploaded
-updateParents = () ->
+updateParents = ->
     errors = {}
     for name in Object.keys(folderParent)
         folder = folderParent[name]
