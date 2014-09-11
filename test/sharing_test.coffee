@@ -11,6 +11,7 @@ describe "Sharing management", ->
 
     before helpers.startApp
     before helpers.cleanDB
+    before helpers.ensureCozyInstance
     after helpers.stopApp
     after helpers.cleanDB
 
