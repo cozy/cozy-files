@@ -21,6 +21,11 @@
     },
     {
         "docType": "Folder",
+        "name": "Many files",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
         "name": "Chats mignons",
         "path": "/Mes images"
     }

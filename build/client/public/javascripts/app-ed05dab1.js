@@ -1229,6 +1229,8 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "move all": "Move the selection",
+  "remove all": "Remove the selection",
   "drop message": "Drop your files here to automatically add them",
   "upload folder msg": "Upload a folder",
   "upload folder separator": "or",
@@ -1356,6 +1358,8 @@ module.exports = {
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
+  "move all": "Déplacer la sélection",
+  "remove all": "Supprimer la sélection",
   "drop message": "Lâchez ici vos fichiers pour les ajouter",
   "upload folder msg": "Mettre en ligne un dossier",
   "upload folder separator": "ou",
@@ -2757,8 +2761,7 @@ module.exports = FolderView = (function(_super) {
       element.isSelected = isChecked;
       return element.trigger('toggle-select');
     });
-    this.$('tr.folder-row').toggleClass('selected', isChecked);
-    return this.toggleFolderActions();
+    return this.toggleFolderActions(isChecked);
   };
 
   FolderView.prototype.onSelectChanged = function() {
@@ -2767,12 +2770,15 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.getSelectedElements = function() {
     return this.collection.filter(function(element) {
-      return (element.isSelected != null) && element.isSelected;
+      return element.isSelected;
     });
   };
 
-  FolderView.prototype.toggleFolderActions = function() {
-    var selectedElements;
+  FolderView.prototype.toggleFolderActions = function(force) {
+    var selectedElements, shouldChecked;
+    if (force == null) {
+      force = false;
+    }
     selectedElements = this.getSelectedElements();
     if (selectedElements.length > 0) {
       this.$('#share-state').hide();
@@ -2785,7 +2791,8 @@ module.exports = FolderView = (function(_super) {
       this.$('#button-new-folder').show();
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    return this.$('input#select-all').prop('checked', selectedElements.length >= 3);
+    shouldChecked = selectedElements.length >= 3 || force;
+    return this.$('input#select-all').prop('checked', shouldChecked);
   };
 
 
@@ -3682,7 +3689,7 @@ if ( supportsDirectoryUpload)
 {
 buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>Upload a folder</span></a></li></ul>");
 }
-buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\"><a id=\"button-bulk-move\" class=\"btn btn-cozy btn-cozy\">Move all&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span></a><a id=\"button-bulk-remove\" class=\"btn btn-cozy btn-cozy\">Remove all&nbsp;<span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></div>");
+buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\"><a id=\"button-bulk-move\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('move all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span></a><a id=\"button-bulk-remove\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('remove all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></div>");
 if ( isPublic && hasPublicKey)
 {
 if ( areNotificationsEnabled)

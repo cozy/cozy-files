@@ -237,20 +237,18 @@ module.exports = class FolderView extends BaseView
             element.isSelected = isChecked
             element.trigger 'toggle-select'
 
-        @$('tr.folder-row').toggleClass 'selected', isChecked
-
-        @toggleFolderActions()
+        @toggleFolderActions isChecked
 
     onSelectChanged: -> @toggleFolderActions()
 
-    # Gets the number of selected elements from DOM
+    # Gets the number of selected elements from the collection
     getSelectedElements: ->
-        return @collection.filter (element) ->
-            return element.isSelected? and element.isSelected
+        return @collection.filter (element) -> return element.isSelected
 
     # we don't show the same actions wether there are selected elements or not
-    toggleFolderActions: ->
+    toggleFolderActions: (force = false) ->
         selectedElements = @getSelectedElements()
+
         if selectedElements.length > 0
             @$('#share-state').hide()
             @$('#upload-btngroup').hide()
@@ -263,7 +261,9 @@ module.exports = class FolderView extends BaseView
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
         # we check the "select-all" checkbox if there are few elements selected
-        @$('input#select-all').prop 'checked', selectedElements.length >= 3
+        # or if it has been clicked directly
+        shouldChecked = selectedElements.length >= 3 or force
+        @$('input#select-all').prop 'checked', shouldChecked
 
 
     ###
