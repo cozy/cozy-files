@@ -92,7 +92,7 @@ casper.test.begin 'Batch actions - selecting 3 items checks the "select-all" che
     casper.run -> test.done()
 
 
-casper.test.begin 'Batch actions - selecting all items when there are lest than 3 items check the "select all" checkbox (non regression)', (test) ->
+casper.test.begin 'Batch actions - selecting all items when there are least than 3 items, should check the "select all" checkbox (non regression)', (test) ->
 
     casper.start 'http://localhost:9121', ->
 
