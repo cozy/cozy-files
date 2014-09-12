@@ -79,6 +79,9 @@ module.exports =
     "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
+    "move all"                  : "Move the selection"
+    "remove all"                : "Remove the selection"
+
     "drop message"              : "Drop your files here to automatically add them"
 
     "upload folder msg"         : "Upload a folder"
