@@ -1,29 +1,929 @@
 [
-    {
-        "docType": "File",
-        "_attachments": "test/fixtures/files/chat-mignon1.jpg",
-        "class": "image",
-        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
-        "name": "chat-mignon1.jpg",
-        "path": "/Mes images/Chats mignons",
-        "size": 2413
-    },
-    {
-        "docType": "File",
-        "_attachments": "test/fixtures/files/chat-mignon2.jpg",
-        "class": "image",
-        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
-        "name": "chat-mignon2.jpg",
-        "path": "/Mes images/Chats mignons",
-        "size": 2413
-    },
-    {
-        "docType": "File",
-        "_attachments": "test/fixtures/files/chaton-innocent.jpg",
-        "class": "image",
-        "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
-        "name": "chaton-innocent.jpg",
-        "path": "/Mes images",
-        "size": 2413
-    }
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chat-mignon1.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chat-mignon1.jpg",
+    "path": "/Mes images/Chats mignons",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chat-mignon2.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chat-mignon2.jpg",
+    "path": "/Mes images/Chats mignons",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent.jpg",
+    "path": "/Mes images",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent1.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent2.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent3.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent4.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent5.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent6.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent7.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent8.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent9.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent10.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent11.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent12.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent13.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent14.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent15.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent16.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent17.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent18.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent19.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent20.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent21.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent22.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent23.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent24.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent25.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent26.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent27.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent28.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent29.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent30.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent31.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent32.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent33.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent34.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent35.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent36.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent37.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent38.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent39.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent40.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent41.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent42.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent43.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent44.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent45.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent46.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent47.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent48.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent49.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent50.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent51.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent52.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent53.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent54.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent55.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent56.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent57.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent58.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent59.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent60.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent61.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent62.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent63.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent64.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent65.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent66.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent67.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent68.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent69.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent70.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent71.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent72.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent73.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent74.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent75.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent76.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent77.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent78.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent79.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent80.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent81.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent82.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent83.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent84.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent85.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent86.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent87.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent88.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent89.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent90.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent91.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent92.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent93.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent94.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent95.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent96.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent97.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent98.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent99.jpg",
+    "path": "/Many files",
+    "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "chaton-innocent100.jpg",
+    "path": "/Many files",
+    "size": 2413
+  }
 ]

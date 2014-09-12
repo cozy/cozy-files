@@ -1,5 +1,7 @@
 {exec} = require 'child_process'
 fs     = require 'fs'
+path = require 'path'
+fixtures = require 'cozy-fixtures'
 logger = require('printit')
             date: false
             prefix: 'cake'
@@ -7,7 +9,8 @@ logger = require('printit')
 option '-f', '--file [FILE*]' , 'List of test files to run'
 option '-d', '--dir [DIR*]' , 'Directory of test files to run'
 option '-e' , '--env [ENV]', 'Run tests with NODE_ENV=ENV. Default is test'
-option '' , '--use-js', 'If enabled, tests will run with the built files'
+option '-j' , '--use-js', 'If enabled, tests will run with the built files'
+option '-s' , '--use-server', 'If enabled, starts a server'
 
 options =  # defaults, will be overwritten by command line options
     file        : no
@@ -30,7 +33,7 @@ walk = (dir, excludeElements = []) ->
     return fileList
 
 taskDetails = '(default: ./tests, use -f or -d to specify files and directory)'
-task 'tests', "Run tests #{taskDetails}", (opts) ->
+task 'tests', "Run tests #{taskDetails}", testsServer = (opts, callback) ->
     logger.options.prefix = 'cake:tests'
     files = []
     options = opts
@@ -58,7 +61,42 @@ task 'tests', "Run tests #{taskDetails}", (opts) ->
             process.exit 1
         else
             console.log "Tests succeeded!"
-            process.exit 0
+            if callback?
+                callback()
+            else
+                process.exit 0
+
+task 'tests:client', 'Run tests for the client', testsClient = (opts, callback) ->
+    logger.options.prefix = 'cake:tests:client'
+    logger.info "Running client's tests..."
+
+    if opts['use-server']? and opts['use-server']
+        initializeServer = require path.join __dirname, './build/server'
+    else
+        initializeServer = (callback) -> callback()
+
+    app = null
+    fixtures.load dirPath: './test/fixtures', callback: -> initializeServer (app) ->
+        app = app
+        command = "casperjs test client/tests/e2e"
+        exec command, (err, stdout, stderr) ->
+            console.log stdout if stdout? and stdout.length > 0
+            #console.log stderr if stderr? and stderr.length > 0
+            app.server.close() if app?
+            if err?
+                err = err
+                console.log "Running casperjs caught exception:\n" + err
+                process.exit 1
+            else
+                console.log "Tests succeeded!"
+                if callback?
+                    callback()
+                else
+                    process.exit 0
+
+task 'tests:all', 'Run tests for client and server', (opts) ->
+    testsServer opts, -> testsClient opts, -> process.exit 0
+
 
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
