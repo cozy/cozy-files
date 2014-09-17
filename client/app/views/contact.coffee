@@ -25,7 +25,6 @@ module.exports = class ContactView extends ViewCollection
         'click .addurl'     : @addClicked 'url'
         'click .addskype'   : @addClicked 'other', 'skype'
         'click #more-options': 'onMoreOptionsClicked'
-        'click #create-task': 'onCreateTaskClicked'
         'click #name-edit'  : 'showNameModal'
         'click #undo'       : 'undo'
         'click #delete'     : 'delete'
@@ -100,9 +99,6 @@ module.exports = class ContactView extends ViewCollection
         @$('a#infotab').on 'shown', =>
             @$('#left').show()
             @resizeNiceScroll()
-
-        @createTaskButton = @$("#create-task")
-        @createTaskButton.hide() unless @model.get('id')?
 
     remove: ->
         @$el.getNiceScroll().remove()
@@ -193,18 +189,6 @@ module.exports = class ContactView extends ViewCollection
             @$("#adder h2").show()
             @$("#adder").fadeIn()
             @resizeNiceScroll()
-
-    # Ask to server to create a new task that says to call back current
-    # contact. An alert gives the request result to the user.
-    onCreateTaskClicked: =>
-        value = @createTaskButton.html()
-        @createTaskButton.html t 'creating...'
-        @model.createTask (err) =>
-            @createTaskButton.html value
-            if err
-                alert "An error occured while creating task"
-            else
-                alert "Task created"
 
     undo: =>
         return unless @lastState
