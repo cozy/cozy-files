@@ -1445,6 +1445,7 @@ module.exports = {
   "import.ready-msg": "Ready to import %{smart_count} contact ||||\nReady to import %{smart_count} contacts",
   "import android calls": "If you use an android phone, use the following application to import your calls: ",
   "import android sms": "If you use an android phone, use the following application to import your sms: ",
+  "dont close navigator import": "Do not close the navigator while importing contacts.",
   "choose phone country": "Choose the country of the phone",
   "ready to import": "Ready to import",
   "log direction": "Direction",
@@ -1477,7 +1478,8 @@ module.exports = {
   "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
   "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created.",
   "export": "Export",
-  "export contact": "Export contact"
+  "export contact": "Export contact",
+  "are you sure": "Are you sure?"
 };
 });
 
@@ -1559,6 +1561,7 @@ module.exports = {
   "import.ready-msg": "Prêt à importer %{smart_count} contact ||||\nPrêt à importer %{smart_count} contacts",
   "import android calls": "Si vous utilisez un téléphone Android, utilisez cette application pour importer vos appels : ",
   "import android sms": "Si vous utilisez un téléphone Android, utilisez cette application pour importer vos sms : ",
+  "dont close navigator import": "Ne fermez pas le navigateur durant l'impor des contacts.",
   "choose phone country": "Choisissez le pays de ce téléphone",
   "ready to import": "Prêt à l'import",
   "log direction": "Direction",
@@ -1591,7 +1594,8 @@ module.exports = {
   "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
   "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé.",
   "export": "Export",
-  "export contact": "Exporter contact"
+  "export contact": "Exporter contact",
+  "are you sure": "Etes vous sûr?"
 };
 });
 
@@ -2700,7 +2704,6 @@ module.exports = ContactView = (function(_super) {
       'click .addurl': this.addClicked('url'),
       'click .addskype': this.addClicked('other', 'skype'),
       'click #more-options': 'onMoreOptionsClicked',
-      'click #create-task': 'onCreateTaskClicked',
       'click #name-edit': 'showNameModal',
       'click #undo': 'undo',
       'click #delete': 'delete',
@@ -2723,7 +2726,6 @@ module.exports = ContactView = (function(_super) {
     this.resizeNiceScroll = __bind(this.resizeNiceScroll, this);
     this.modelChanged = __bind(this.modelChanged, this);
     this.undo = __bind(this.undo, this);
-    this.onCreateTaskClicked = __bind(this.onCreateTaskClicked, this);
     this.onMoreOptionsClicked = __bind(this.onMoreOptionsClicked, this);
     this.showNameModal = __bind(this.showNameModal, this);
     this.save = __bind(this.save, this);
@@ -2803,16 +2805,12 @@ module.exports = ContactView = (function(_super) {
         return _this.resizeNiceScroll();
       };
     })(this));
-    this.$('a#infotab').on('shown', (function(_this) {
+    return this.$('a#infotab').on('shown', (function(_this) {
       return function() {
         _this.$('#left').show();
         return _this.resizeNiceScroll();
       };
     })(this));
-    this.createTaskButton = this.$("#create-task");
-    if (this.model.get('id') == null) {
-      return this.createTaskButton.hide();
-    }
   };
 
   ContactView.prototype.remove = function() {
@@ -2901,7 +2899,7 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype["delete"] = function() {
-    if (this.model.isNew() || confirm(t('Are you sure ?'))) {
+    if (this.model.isNew() || confirm(t('are you sure'))) {
       return this.model.destroy();
     }
   };
@@ -2942,22 +2940,6 @@ module.exports = ContactView = (function(_super) {
         _this.$("#adder h2").show();
         _this.$("#adder").fadeIn();
         return _this.resizeNiceScroll();
-      };
-    })(this));
-  };
-
-  ContactView.prototype.onCreateTaskClicked = function() {
-    var value;
-    value = this.createTaskButton.html();
-    this.createTaskButton.html(t('creating...'));
-    return this.model.createTask((function(_this) {
-      return function(err) {
-        _this.createTaskButton.html(value);
-        if (err) {
-          return alert("An error occured while creating task");
-        } else {
-          return alert("Task created");
-        }
       };
     })(this));
   };
@@ -4077,7 +4059,7 @@ module.exports = ImporterView = (function(_super) {
     if (!this.toImport) {
       return true;
     }
-    this.content.html("<p>Do not close the navigator while importing contacts.</p>\n<p>\n    " + (t('import progress')) + ":&nbsp;<span class=\"import-progress\"></span>\n</p>\n<p class=\"errors\">\n</p>");
+    this.content.html("<p>" + (t('dont close navigator import')) + "</p>\n<p>\n    " + (t('import progress')) + ":&nbsp;<span class=\"import-progress\"></span>\n</p>\n<p class=\"errors\">\n</p>");
     total = this.toImport.length;
     this.importing = true;
     this.updateProgress(0, total);

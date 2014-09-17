@@ -94,6 +94,9 @@ select:hover {
   border: 1px solid #ccc;
   box-shadow: none;
 }
+.modal-footer {
+  padding-right: 5px;
+}
 .icon-sms,
 .icon-voice,
 .icon-mail {
@@ -708,8 +711,7 @@ textarea {
 #contact #notes-zone textarea {
   margin-top: 10px;
 }
-#more-options,
-#create-task {
+#more-options {
   width: 100%;
   padding: 5px;
   margin-right: 10px;
@@ -717,7 +719,6 @@ textarea {
   color: #777;
   font-weight: normal;
 }
-#create-task:hover,
 #more-options:hover {
   text-decoration: none;
   color: #fff;
@@ -729,6 +730,8 @@ textarea {
   font-weight: normal;
   line-height: 30px;
   color: #fff;
+  margin-top: 10px;
+  display: block;
 }
 #adder .button:hover {
   text-decoration: none;
@@ -736,6 +739,9 @@ textarea {
 }
 #importer .loading {
   display: none;
+}
+.modal-footer #confirm-btn {
+  border-radius: 3px;
 }
 @media (max-width: 900px) {
   body {
