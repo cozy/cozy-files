@@ -142,3 +142,4 @@ module.exports =
   """
   "export": "Export"
   "export contact": "Exporter contact"
+  "are you sure": "Etes vous sûr?"

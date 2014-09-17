@@ -163,7 +163,7 @@ module.exports = class ContactView extends ViewCollection
 
 
     delete: ->
-        @model.destroy() if @model.isNew() or confirm t 'Are you sure ?'
+        @model.destroy() if @model.isNew() or confirm t 'are you sure'
 
     save: =>
         return unless @needSaving
