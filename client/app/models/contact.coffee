@@ -35,6 +35,10 @@ module.exports = class Contact extends Backbone.Model
         note: ''
         tags: []
 
+    # Analyze given attribute list and transform them in datapoints,
+    # Datapoint is structure that describes an object (fields: name, type, value)
+    # as an attribute. For each attribute, you can have several values of
+    # different type. That's why this structure is required.
     parse: (attrs) ->
 
         if _.where(attrs?.datapoints, name: 'tel').length is 0
