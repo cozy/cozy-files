@@ -4,11 +4,11 @@ bluegreen = #34A6BB
 
 @font-face
     font-family: styled
-    src: url('/fonts/maven-pro-light-300.otf');
+    src: url('../fonts/maven-pro-light-300.otf');
 
 @font-face
     font-family: main
-    src: url('/fonts/signika-regular.ttf');
+    src: url('../fonts/source-sans-pro.ttf');
 
 a
     color: blue
@@ -65,11 +65,34 @@ select:hover
 .minor-button
     padding: 10px
 
+
 .modal-header
-    background-color: bluegreen
-    color: white
     font-family: styled
     font-size: 26px
     padding: 20px
     border-top-left-radius: 5px
     border-top-right-radius: 5px
+
+.modal-body
+    font-family: main
+
+    input
+    select
+    textarea
+        border: 1px solid #CCC
+        border-radius: 0
+        font-family: styled
+
+        &:hover
+            border: 1px solid orange
+
+        &:focus
+            border: 1px solid blue
+            box-shadow: none
+
+        &:active
+            border: 1px solid #CCC
+            box-shadow: none
+
+.modal-footer
+    padding-right: 5px

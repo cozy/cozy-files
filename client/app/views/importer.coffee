@@ -21,6 +21,8 @@ module.exports = class ImporterView extends BaseView
         @confirmBtn = @$('#confirm-btn')
 
     onupload: ->
+        $(".loading").show()
+
         file = @upload.files[0]
         validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory',
                           'text/directory;profile=vcard']
@@ -38,21 +40,54 @@ module.exports = class ImporterView extends BaseView
             txt = "<p>#{txt} :</p><ul>"
             @toImport.each (contact) ->
                 name = contact.get('fn') or contact.getComputedFN()
+                if not name? or name.trim() is ''
+                    name = contact.getBest 'email'
+                if not name? or name.trim() is ''
+                    name = contact.getBest 'tel'
                 txt += "<li>#{name}</li>"
             txt += '</ul>'
             @content. html txt
             @confirmBtn.removeClass 'disabled'
 
+    updateProgress: (number, total) ->
+        @$(".import-progress").html " #{number} / #{total}"
+
     addcontacts: ->
         return true unless @toImport
+        @content.html """
+        <p>#{t('dont close navigator import')}</p>
+        <p>
+            #{t('import progress')}:&nbsp;<span class="import-progress"></span>
+        </p>
+        <p class="errors">
+        </p>
+        """
+        total = @toImport.length
+        @importing = true
+        @updateProgress 0, total
 
-        @toImport.each (contact) ->
-            contact.save null,
-                success: ->
-                    app.contacts.add contact
+        (importContact = =>
+            if @toImport.length is 0
+                alert t 'import succeeded'
+                @importing = false
+                @close()
+            else
+                contact = @toImport.pop()
 
-        @close()
+                contact.set 'import', true
+                contact.save null,
+                    success: =>
+                        @updateProgress (total - @toImport.size()), total
+                        app.contacts.add contact
+                        importContact()
+                    error: =>
+                        $(".errors").append """
+                        <p>#{t 'fail to import'}: #{contact.getComputedFN()}</p>
+                        """
+                        importContact()
+        )()
 
     close: ->
-        @$el.modal 'hide'
-        @remove()
+        unless @importing
+            @$el.modal 'hide'
+            @remove()

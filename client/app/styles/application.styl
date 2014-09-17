@@ -18,7 +18,7 @@ box-sizing(n)
   box-sizing n
 
 
-bgcolor = #fcfcfc
+bgcolor = white
 shadowcolor = #444
 basecolor = lightgrey + 40%
 highlightcolor = #FFC47F
@@ -39,11 +39,14 @@ body
   background-color bgcolor
   font-family main
 
-h1, h2, h3, h4, #name
+h1, h2, h3, h4
   font-family styled
 
 a
     cursor: pointer
+
+textarea
+  ont-family main
 
 // CONTACT LIST
 
@@ -131,28 +134,27 @@ a
       box-sizing border-box
       background-color basecolor + 50%
       color almostblack
-      padding 3px
 
       img
         float left
         line-height 100%
-        height 48px
-        width 48px
+        height 60px
+        width 60px
 
       h2
-        padding 0px
+        padding 5px 0 0 0
         margin 0px
-        margin-left 54px
+        margin-left 70px
         font-size 20px
+        font-family main
         line-height: 28px
         overflow hidden
-        margin-top: 1px
         font-weight: normal
 
       span
         display block
         float left
-        margin-left 6px
+        margin-left 12px
         font-size: 13px
 
     .contact-thumb:active
@@ -179,8 +181,7 @@ a
   right 0px
   top 0px
   bottom 0px
-  background-color basecolor
-  background-image url('../img/background-right.jpg')
+  background-color: #FCFCFC
   box-shadow: 6px 0px 3px -2px basecolor inset
 
   h3
@@ -223,6 +224,9 @@ a
     font-size 2em
 
 #contact
+
+  h2
+    font-family styled
 
   #picture
     display block
@@ -298,7 +302,7 @@ a
   #wrap-name-notes
     position absolute
     top 30px
-    left 114px
+    left 120px
     right 3%
 
     #name-edit
@@ -322,11 +326,13 @@ a
       box-shadow: none
       text-shadow: none
       border-radius: 0
-      font-family: main
-      background: #ECECEC
+      font-family: styled
+      background: #ebf6ff
+      color: #0067b8
 
       .tagit-label, .tagit-close .text-icon
-          color: #888
+          color: #0067b8
+          font-size: 12px
 
     .tagit-choice:hover
         background: orange
@@ -358,11 +364,11 @@ a
     line-height 1em
     box-sizing border-box
     width 100%
-    padding-left 0px
+    font-family main
     font-size 30px
-    font-weight bold
-    margin-bottom 0px
-    border-bottom 1px solid grey
+    margin-bottom 2px
+    padding-top: 0
+
 
     &:hover
         border-bottom 1px solid orange
@@ -389,7 +395,7 @@ a
   width 47%
 
   h2, .nav-tabs li a
-    font-family styled
+    font-family main
     color inherit
     font-size 24px
     line-height 40px
@@ -522,6 +528,9 @@ a
       opacity 0
       text-shadow: none
       width auto
+      background: #EEE
+      font-weight: normal
+      color:  #777
 
       &:hover
         background-color orange
@@ -538,10 +547,13 @@ a
         .type
           width 25%
           font-family styled
+          font-size: 17px
 
         .value
           width 55%
           font-family main
+          font-size: 17px
+
 
         .dpremove, .dpaction
           width 5%
@@ -563,19 +575,30 @@ a
         h2
             display: none
 
+    h2
+        font-family: styled
+
+    #right
+        .nav-tabs li a
+            font-family: styled
+
     #name
-        padding: 5px 10px 0px 10px
+        padding: 0px 10px 0px 3px
         font-size: 26px
 
+    #notes-zone
+        textarea
+            margin-top: 10px
+
 #more-options
-#create-task
     width: 100%
-    color: #999
-    background: #ECECEC
     padding: 5px
     margin-right: 10px
+    background: #EEE
+    color: #777
+    font-weight: normal
 
-#create-task:hover
+
 #more-options:hover
     text-decoration: none
     color: white
@@ -583,17 +606,26 @@ a
 
 #adder
     .button
-        padding: 3px
+        padding: 6px
         margin-right: 10px
-        color: #999
-        background: #ECECEC
         font-weight: normal
         line-height: 30px
+        color: white
+        margin-top: 10px
+        display: block
 
     .button:hover
         text-decoration: none
         color: white
-        background: orange
+
+#importer
+    .loading
+        display: none
+
+
+.modal-footer
+    #confirm-btn
+        border-radius: 3px
 
 @media (max-width: 900px)
     body
@@ -684,8 +716,12 @@ a
             width: 100%
 
 // overrides tagit styles
+#contact
+    ul.tagit input[type="text"]
+        padding-left: 5px
+
 .tagit-autocomplete.ui-widget-content
-  padding 0
+  padding 0 0 0 0
   border 1px solid orange
 
   .ui-state-focus

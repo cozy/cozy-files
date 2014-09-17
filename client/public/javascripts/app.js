@@ -155,10 +155,11 @@ module.exports = ContactCollection = (function(_super) {
   ContactCollection.prototype.url = 'contacts';
 
   ContactCollection.prototype.comparator = function(a, b) {
-    var nameA, nameB, out;
+    var compare, nameA, nameB, out;
     nameA = a.getFN().toLowerCase();
     nameB = b.getFN().toLowerCase();
-    return out = nameA > nameB ? 1 : nameA < nameB ? -1 : 0;
+    compare = nameA.localeCompare(nameB);
+    return out = compare > 0 ? 1 : compare < 0 ? -1 : 0;
   };
 
   ContactCollection.prototype.initialize = function() {
@@ -1444,6 +1445,7 @@ module.exports = {
   "import.ready-msg": "Ready to import %{smart_count} contact ||||\nReady to import %{smart_count} contacts",
   "import android calls": "If you use an android phone, use the following application to import your calls: ",
   "import android sms": "If you use an android phone, use the following application to import your sms: ",
+  "dont close navigator import": "Do not close the navigator while importing contacts.",
   "choose phone country": "Choose the country of the phone",
   "ready to import": "Ready to import",
   "log direction": "Direction",
@@ -1452,6 +1454,10 @@ module.exports = {
   "importing this file": "We are importing this file",
   "may take a while": "It may take a while",
   "progress": "Progress",
+  "loading import preview": "loading import preview...",
+  "import succeeded": "Your contact import succeeded.",
+  "import progress": "Import progress",
+  "fail to import": "Fail to import",
   "click left to display": "Browse: Click on a contact in the left panel to display it.",
   "import export": "Import / Export",
   "call log info": "Click here to import your mobile's call log:",
@@ -1470,7 +1476,10 @@ module.exports = {
   "vcard export info": "Click here to export all your contacts as a vCard file:",
   "carddav info": "Synchronization: To sync your contacts with your mobile, install the Webdav\napplication from the market place.",
   "search info": "Search: Use the search field located on the top left\ncorner to perform a search on all the fields of your contacts. If you\ntype a tag name, results will contain all people tagged with it.",
-  "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created."
+  "creation info": "Creation: Click on the plus button located aside the search field to\ndisplay a new contact page. Fill the name field and your contact will\nbe created.",
+  "export": "Export",
+  "export contact": "Export contact",
+  "are you sure": "Are you sure?"
 };
 });
 
@@ -1552,6 +1561,7 @@ module.exports = {
   "import.ready-msg": "Prêt à importer %{smart_count} contact ||||\nPrêt à importer %{smart_count} contacts",
   "import android calls": "Si vous utilisez un téléphone Android, utilisez cette application pour importer vos appels : ",
   "import android sms": "Si vous utilisez un téléphone Android, utilisez cette application pour importer vos sms : ",
+  "dont close navigator import": "Ne fermez pas le navigateur durant l'impor des contacts.",
   "choose phone country": "Choisissez le pays de ce téléphone",
   "ready to import": "Prêt à l'import",
   "log direction": "Direction",
@@ -1560,6 +1570,10 @@ module.exports = {
   "importing this file": "Nous importons ce fichier",
   "may take a while": "Cela peut prendre quelques minutes",
   "progress": "Progression",
+  "loading import preview": "chargement de d'apperçu de l'import...",
+  "import succeeded": "Votre import de contact a réussi.",
+  "import progress": "Progression de l'import: ",
+  "fail to import": "Echec de l'import ",
   "click left to display": "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher",
   "import export": "Import / Export",
   "call log info": "Cliquez ici pour importer votre historique mobile :",
@@ -1578,7 +1592,10 @@ module.exports = {
   "vcard export info": "Cliquez ici pour exporter tous vos contacts dans un fichier vCard :",
   "carddav info": "Synchronization : Pour synchroniser vos contacts sur votre mobile,\ninstallez l'application Webdav depuis le market place.",
   "search info": "Recherche : utilisez le champ situé en haut à gauche pour effectuer\nune recherche sur tous les champs de contacts. Si vous tapez un nom de tag,\nil affichera tous les contacts taggés avec celui ci.",
-  "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé."
+  "creation info": "Création : Cliquez sur le bouton plus situé à côté du champ de recherche\npour afficher une nouvelle page de contact. Donnez un nom au contact pour\nqu'il soit sauvegardé.",
+  "export": "Export",
+  "export contact": "Exporter contact",
+  "are you sure": "Etes vous sûr?"
 };
 });
 
@@ -1667,34 +1684,38 @@ module.exports = Contact = (function(_super) {
   };
 
   Contact.prototype.parse = function(attrs) {
-    var _ref;
+    var _ref, _ref1, _ref2;
     if (_.where(attrs != null ? attrs.datapoints : void 0, {
       name: 'tel'
     }).length === 0) {
       if (attrs != null) {
-        attrs.datapoints.push({
-          name: 'tel',
-          type: 'main',
-          value: ''
-        });
+        if ((_ref = attrs.datapoints) != null) {
+          _ref.push({
+            name: 'tel',
+            type: 'main',
+            value: ''
+          });
+        }
       }
     }
     if (_.where(attrs != null ? attrs.datapoints : void 0, {
       name: 'email'
     }).length === 0) {
       if (attrs != null) {
-        attrs.datapoints.push({
-          name: 'email',
-          type: 'main',
-          value: ''
-        });
+        if ((_ref1 = attrs.datapoints) != null) {
+          _ref1.push({
+            name: 'email',
+            type: 'main',
+            value: ''
+          });
+        }
       }
     }
     if (attrs.datapoints) {
       this.dataPoints.reset(attrs.datapoints);
       delete attrs.datapoints;
     }
-    if ((_ref = attrs._attachments) != null ? _ref.picture : void 0) {
+    if ((_ref2 = attrs._attachments) != null ? _ref2.picture : void 0) {
       this.hasPicture = true;
       delete attrs._attachments;
     }
@@ -1977,6 +1998,9 @@ Contact.fromVCF = function(vcf) {
           currentdp.set(pname.toLowerCase(), pvalue.toLowerCase());
         }
         if (key === 'adr') {
+          if (value == null) {
+            value = [];
+          }
           value = value.join("\n").replace(/\n+/g, "\n");
         }
         if (key === 'x-abdate') {
@@ -2002,7 +2026,13 @@ Contact.fromVCF = function(vcf) {
       if (key === 'email' || key === 'tel' || key === 'adr' || key === 'url') {
         currentdp.set('name', key);
         if (key === 'adr') {
-          value = value.join("\n").replace(/\n+/g, "\n");
+          if (value == null) {
+            value = [];
+          }
+          if (typeof value !== 'string') {
+            value = value.join('\n');
+          }
+          value = value.replace(/\n+/g, "\n");
         }
       } else {
         currentdp = null;
@@ -2301,7 +2331,7 @@ else
 {
 buf.push("<img src=\"img/defaultpicture.png\" class=\"picture\"/>");
 }
-buf.push("<div id=\"uploadnotice\">" + (jade.escape(null == (jade_interp = t("change")) ? "" : jade_interp)) + "</div><input id=\"uploader\" type=\"file\"/></div><div id=\"wrap-name-notes\"><input id=\"name\"" + (jade.attr("placeholder", t("name"), true, false)) + (jade.attr("value", "" + (fn) + "", true, false)) + "/><a id=\"name-edit\">" + (jade.escape(null == (jade_interp = t('edit name')) ? "" : jade_interp)) + "</a><input id=\"tags\"" + (jade.attr("value", tags.join(','), true, false)) + " class=\"tagit\"/></div><span id=\"save-info\">" + (jade.escape(null == (jade_interp = t('changes saved') + ' ') ? "" : jade_interp)) + "<a id=\"undo\">" + (jade.escape(null == (jade_interp = t('undo')) ? "" : jade_interp)) + "</a></span><div id=\"right\"><ul class=\"nav nav-tabs\"><li><a id=\"infotab\" href=\"#info\" data-toggle=\"tab\">" + (jade.escape(null == (jade_interp = t('info')) ? "" : jade_interp)) + "</a></li><li class=\"active\"><a href=\"#notes-zone\" data-toggle=\"tab\">" + (jade.escape(null == (jade_interp = t('notes')) ? "" : jade_interp)) + "</a></li><li><a href=\"#history\" data-toggle=\"tab\" class=\"tab\">" + (jade.escape(null == (jade_interp = t('history')) ? "" : jade_interp)) + "</a></li></ul><div class=\"tab-content\"><div id=\"notes-zone\" class=\"tab-pane active\"><textarea rows=\"3\"" + (jade.attr("placeholder", t('notes placeholder'), true, false)) + " id=\"notes\">" + (jade.escape((jade_interp = note) == null ? '' : jade_interp)) + "</textarea></div><div id=\"history\" class=\"tab-pane\"></div><div id=\"info\" class=\"tab-pane\"></div></div></div><div id=\"left\"><div id=\"abouts\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("about")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addabout\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"tels\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("phones")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addtel\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"emails\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("emails")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addemail\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"adrs\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("postal")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addadr\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"urls\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("links")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addurl\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"others\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("others")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addother\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div class=\"zone clearfix\">&nbsp;</div><div class=\"zone\"><a id=\"more-options\" class=\"button\">" + (jade.escape(null == (jade_interp = t('more options')) ? "" : jade_interp)) + "</a><a id=\"create-task\" class=\"button\">" + (jade.escape(null == (jade_interp = t('create call task')) ? "" : jade_interp)) + "</a></div><div id=\"adder\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("actions")) ? "" : jade_interp)) + "</h2><h3>" + (jade.escape(null == (jade_interp = t("add fields")) ? "" : jade_interp)) + "</h3><a class=\"button addbirthday\">" + (jade.escape(null == (jade_interp = t("birthday") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addorg\">" + (jade.escape(null == (jade_interp = t("company") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtitle\">" + (jade.escape(null == (jade_interp = t("title") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addcozy\">" + (jade.escape(null == (jade_interp = t("cozy url") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtwitter\">" + (jade.escape(null == (jade_interp = t("twitter") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtel\">" + (jade.escape(null == (jade_interp = t("phone") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addemail\">" + (jade.escape(null == (jade_interp = t("email") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addadr\">" + (jade.escape(null == (jade_interp = t("postal") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addurl\">" + (jade.escape(null == (jade_interp = t("url") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addskype\">" + (jade.escape(null == (jade_interp = t("skype") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addother\">" + (jade.escape(null == (jade_interp = t("other")) ? "" : jade_interp)) + "</a><h3>" + (jade.escape(null == (jade_interp = t("delete")) ? "" : jade_interp)) + "</h3><a id=\"delete\"" + (jade.attr("title", t("delete contact"), true, false)) + " class=\"button\">" + (jade.escape(null == (jade_interp = t('delete contact')) ? "" : jade_interp)) + "</a></div></div></div>");;return buf.join("");
+buf.push("<div id=\"uploadnotice\">" + (jade.escape(null == (jade_interp = t("change")) ? "" : jade_interp)) + "</div><input id=\"uploader\" type=\"file\"/></div><div id=\"wrap-name-notes\"><input id=\"name\"" + (jade.attr("placeholder", t("name"), true, false)) + (jade.attr("value", "" + (fn) + "", true, false)) + "/><a id=\"name-edit\">" + (jade.escape(null == (jade_interp = t('edit name')) ? "" : jade_interp)) + "</a><input id=\"tags\"" + (jade.attr("value", tags.join(','), true, false)) + " class=\"tagit\"/></div><span id=\"save-info\">" + (jade.escape(null == (jade_interp = t('changes saved') + ' ') ? "" : jade_interp)) + "<a id=\"undo\">" + (jade.escape(null == (jade_interp = t('undo')) ? "" : jade_interp)) + "</a></span><div id=\"right\"><ul class=\"nav nav-tabs\"><li><a id=\"infotab\" href=\"#info\" data-toggle=\"tab\">" + (jade.escape(null == (jade_interp = t('info')) ? "" : jade_interp)) + "</a></li><li class=\"active\"><a href=\"#notes-zone\" data-toggle=\"tab\">" + (jade.escape(null == (jade_interp = t('notes')) ? "" : jade_interp)) + "</a></li><li><a href=\"#history\" data-toggle=\"tab\" class=\"tab\">" + (jade.escape(null == (jade_interp = t('history')) ? "" : jade_interp)) + "</a></li></ul><div class=\"tab-content\"><div id=\"notes-zone\" class=\"tab-pane active\"><textarea rows=\"3\"" + (jade.attr("placeholder", t('notes placeholder'), true, false)) + " id=\"notes\">" + (jade.escape((jade_interp = note) == null ? '' : jade_interp)) + "</textarea></div><div id=\"history\" class=\"tab-pane\"></div><div id=\"info\" class=\"tab-pane\"></div></div></div><div id=\"left\"><div id=\"abouts\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("about")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addabout\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"tels\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("phones")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addtel\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"emails\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("emails")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addemail\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"adrs\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("postal")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addadr\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"urls\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("links")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addurl\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div id=\"others\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("others")) ? "" : jade_interp)) + "</h2><ul></ul><a class=\"btn add addother\">" + (jade.escape(null == (jade_interp = t('add')) ? "" : jade_interp)) + "</a></div><div class=\"zone clearfix\">&nbsp;</div><div class=\"zone\"><a id=\"more-options\" class=\"button\">" + (jade.escape(null == (jade_interp = t('more options')) ? "" : jade_interp)) + "</a></div><div id=\"adder\" class=\"zone\"><h2>" + (jade.escape(null == (jade_interp = t("actions")) ? "" : jade_interp)) + "</h2><h3>" + (jade.escape(null == (jade_interp = t("add fields")) ? "" : jade_interp)) + "</h3><a class=\"button addbirthday\">" + (jade.escape(null == (jade_interp = t("birthday") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addorg\">" + (jade.escape(null == (jade_interp = t("company") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtitle\">" + (jade.escape(null == (jade_interp = t("title") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addcozy\">" + (jade.escape(null == (jade_interp = t("cozy url") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtwitter\">" + (jade.escape(null == (jade_interp = t("twitter") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addtel\">" + (jade.escape(null == (jade_interp = t("phone") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addemail\">" + (jade.escape(null == (jade_interp = t("email") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addadr\">" + (jade.escape(null == (jade_interp = t("postal") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addurl\">" + (jade.escape(null == (jade_interp = t("url") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addskype\">" + (jade.escape(null == (jade_interp = t("skype") + ' ') ? "" : jade_interp)) + "</a><a class=\"button addother\">" + (jade.escape(null == (jade_interp = t("other")) ? "" : jade_interp)) + "</a><h3>" + (jade.escape(null == (jade_interp = t("export")) ? "" : jade_interp)) + "</h3><a id=\"export\"" + (jade.attr("href", 'contacts/' + (id) + '/' + (fn) + '.vcf', true, false)) + (jade.attr("title", t("export contact"), true, false)) + " class=\"button\">" + (jade.escape(null == (jade_interp = t('export contact')) ? "" : jade_interp)) + "</a><h3>" + (jade.escape(null == (jade_interp = t("delete")) ? "" : jade_interp)) + "</h3><a id=\"delete\"" + (jade.attr("title", t("delete contact"), true, false)) + " class=\"button\">" + (jade.escape(null == (jade_interp = t('delete contact')) ? "" : jade_interp)) + "</a></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -2432,7 +2462,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 
-buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
+buf.push("<div class=\"modal-header\">" + (jade.escape(null == (jade_interp = t("import vcard")) ? "" : jade_interp)) + "</div><div class=\"modal-body\"><div class=\"control-group\"><label for=\"vcfupload\" class=\"control-label\">" + (jade.escape(null == (jade_interp = t("choose vcard file")) ? "" : jade_interp)) + "</label><div class=\"controls\"><input id=\"vcfupload\" type=\"file\"/><span class=\"help-inline\"></span></div><div class=\"infos\"><span class=\"loading\">" + (jade.escape(null == (jade_interp = t("loading import preview")) ? "" : jade_interp)) + "</span><span class=\"progress\"></span></div></div></div><div class=\"modal-footer\"><a id=\"cancel-btn\" href=\"#\" class=\"minor-button\">" + (jade.escape(null == (jade_interp = t("cancel")) ? "" : jade_interp)) + "</a><a id=\"confirm-btn\" class=\"button disabled\">" + (jade.escape(null == (jade_interp = t("import")) ? "" : jade_interp)) + "</a></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -2674,7 +2704,6 @@ module.exports = ContactView = (function(_super) {
       'click .addurl': this.addClicked('url'),
       'click .addskype': this.addClicked('other', 'skype'),
       'click #more-options': 'onMoreOptionsClicked',
-      'click #create-task': 'onCreateTaskClicked',
       'click #name-edit': 'showNameModal',
       'click #undo': 'undo',
       'click #delete': 'delete',
@@ -2697,7 +2726,6 @@ module.exports = ContactView = (function(_super) {
     this.resizeNiceScroll = __bind(this.resizeNiceScroll, this);
     this.modelChanged = __bind(this.modelChanged, this);
     this.undo = __bind(this.undo, this);
-    this.onCreateTaskClicked = __bind(this.onCreateTaskClicked, this);
     this.onMoreOptionsClicked = __bind(this.onMoreOptionsClicked, this);
     this.showNameModal = __bind(this.showNameModal, this);
     this.save = __bind(this.save, this);
@@ -2777,16 +2805,12 @@ module.exports = ContactView = (function(_super) {
         return _this.resizeNiceScroll();
       };
     })(this));
-    this.$('a#infotab').on('shown', (function(_this) {
+    return this.$('a#infotab').on('shown', (function(_this) {
       return function() {
         _this.$('#left').show();
         return _this.resizeNiceScroll();
       };
     })(this));
-    this.createTaskButton = this.$("#create-task");
-    if (this.model.get('id') == null) {
-      return this.createTaskButton.hide();
-    }
   };
 
   ContactView.prototype.remove = function() {
@@ -2875,7 +2899,7 @@ module.exports = ContactView = (function(_super) {
   };
 
   ContactView.prototype["delete"] = function() {
-    if (this.model.isNew() || confirm(t('Are you sure ?'))) {
+    if (this.model.isNew() || confirm(t('are you sure'))) {
       return this.model.destroy();
     }
   };
@@ -2916,22 +2940,6 @@ module.exports = ContactView = (function(_super) {
         _this.$("#adder h2").show();
         _this.$("#adder").fadeIn();
         return _this.resizeNiceScroll();
-      };
-    })(this));
-  };
-
-  ContactView.prototype.onCreateTaskClicked = function() {
-    var value;
-    value = this.createTaskButton.html();
-    this.createTaskButton.html(t('creating...'));
-    return this.model.createTask((function(_this) {
-      return function(err) {
-        _this.createTaskButton.html(value);
-        if (err) {
-          return alert("An error occured while creating task");
-        } else {
-          return alert("Task created");
-        }
       };
     })(this));
   };
@@ -4006,6 +4014,7 @@ module.exports = ImporterView = (function(_super) {
 
   ImporterView.prototype.onupload = function() {
     var file, reader, validMimeTypes, _ref;
+    $(".loading").show();
     file = this.upload.files[0];
     validMimeTypes = ['text/vcard', 'text/x-vcard', 'text/directory', 'text/directory;profile=vcard'];
     if (_ref = file.type.toLowerCase(), __indexOf.call(validMimeTypes, _ref) < 0) {
@@ -4026,6 +4035,12 @@ module.exports = ImporterView = (function(_super) {
         _this.toImport.each(function(contact) {
           var name;
           name = contact.get('fn') || contact.getComputedFN();
+          if ((name == null) || name.trim() === '') {
+            name = contact.getBest('email');
+          }
+          if ((name == null) || name.trim() === '') {
+            name = contact.getBest('tel');
+          }
           return txt += "<li>" + name + "</li>";
         });
         txt += '</ul>';
@@ -4035,23 +4050,50 @@ module.exports = ImporterView = (function(_super) {
     })(this);
   };
 
+  ImporterView.prototype.updateProgress = function(number, total) {
+    return this.$(".import-progress").html(" " + number + " / " + total);
+  };
+
   ImporterView.prototype.addcontacts = function() {
+    var importContact, total;
     if (!this.toImport) {
       return true;
     }
-    this.toImport.each(function(contact) {
-      return contact.save(null, {
-        success: function() {
-          return app.contacts.add(contact);
+    this.content.html("<p>" + (t('dont close navigator import')) + "</p>\n<p>\n    " + (t('import progress')) + ":&nbsp;<span class=\"import-progress\"></span>\n</p>\n<p class=\"errors\">\n</p>");
+    total = this.toImport.length;
+    this.importing = true;
+    this.updateProgress(0, total);
+    return (importContact = (function(_this) {
+      return function() {
+        var contact;
+        if (_this.toImport.length === 0) {
+          alert(t('import succeeded'));
+          _this.importing = false;
+          return _this.close();
+        } else {
+          contact = _this.toImport.pop();
+          contact.set('import', true);
+          return contact.save(null, {
+            success: function() {
+              _this.updateProgress(total - _this.toImport.size(), total);
+              app.contacts.add(contact);
+              return importContact();
+            },
+            error: function() {
+              $(".errors").append("<p>" + (t('fail to import')) + ": " + (contact.getComputedFN()) + "</p>");
+              return importContact();
+            }
+          });
         }
-      });
-    });
-    return this.close();
+      };
+    })(this))();
   };
 
   ImporterView.prototype.close = function() {
-    this.$el.modal('hide');
-    return this.remove();
+    if (!this.importing) {
+      this.$el.modal('hide');
+      return this.remove();
+    }
   };
 
   return ImporterView;

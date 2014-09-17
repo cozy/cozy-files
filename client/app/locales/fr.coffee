@@ -91,6 +91,7 @@ module.exports =
     Si vous utilisez un téléphone Android, utilisez cette application pour importer vos appels : """
   "import android sms"  : """
     Si vous utilisez un téléphone Android, utilisez cette application pour importer vos sms : """
+  "dont close navigator import": "Ne fermez pas le navigateur durant l'impor des contacts."
 
   "choose phone country" : "Choisissez le pays de ce téléphone"
   "ready to import"      : "Prêt à l'import"
@@ -100,6 +101,10 @@ module.exports =
   "importing this file"  : "Nous importons ce fichier"
   "may take a while"     : "Cela peut prendre quelques minutes"
   "progress"             : "Progression"
+  "loading import preview": "chargement de d'apperçu de l'import..."
+  "import succeeded": "Votre import de contact a réussi."
+  "import progress": "Progression de l'import: "
+  "fail to import": "Echec de l'import "
 
 # doc
   "click left to display" : "Navigation: cliquez sur un contact dans le panneau de gauche pour l'afficher"
@@ -135,3 +140,6 @@ module.exports =
     pour afficher une nouvelle page de contact. Donnez un nom au contact pour
     qu'il soit sauvegardé.
   """
+  "export": "Export"
+  "export contact": "Exporter contact"
+  "are you sure": "Etes vous sûr?"

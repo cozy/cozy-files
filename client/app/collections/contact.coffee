@@ -11,8 +11,9 @@ module.exports = class ContactCollection extends Backbone.Collection
     comparator: (a,b) ->
         nameA = a.getFN().toLowerCase()
         nameB = b.getFN().toLowerCase()
-        out = if nameA > nameB then 1
-        else if nameA < nameB then -1
+        compare = nameA.localeCompare nameB
+        out = if compare > 0 then 1
+        else if compare < 0 then -1
         else 0
 
     # auto resort when contact name change

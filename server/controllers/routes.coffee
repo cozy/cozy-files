@@ -21,6 +21,8 @@ module.exports =
 
     'contacts.vcf':
         get: contact.vCard
+    'contacts/:contactid/:fn.vcf':
+        get: contact.vCardContact
 
     'contacts':
         get: contact.list

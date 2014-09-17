@@ -1,10 +1,10 @@
 @font-face {
   font-family: styled;
-  src: url("/fonts/maven-pro-light-300.otf");
+  src: url("../fonts/maven-pro-light-300.otf");
 }
 @font-face {
   font-family: main;
-  src: url("/fonts/signika-regular.ttf");
+  src: url("../fonts/source-sans-pro.ttf");
 }
 a {
   color: #34a6ff;
@@ -61,13 +61,41 @@ select:hover {
   padding: 10px;
 }
 .modal-header {
-  background-color: #34a6bb;
-  color: #fff;
   font-family: styled;
   font-size: 26px;
   padding: 20px;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+}
+.modal-body {
+  font-family: main;
+}
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  border: 1px solid #ccc;
+  border-radius: 0;
+  font-family: styled;
+}
+.modal-body input:hover,
+.modal-body select:hover,
+.modal-body textarea:hover {
+  border: 1px solid #fe8800;
+}
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+  border: 1px solid #34a6ff;
+  box-shadow: none;
+}
+.modal-body input:active,
+.modal-body select:active,
+.modal-body textarea:active {
+  border: 1px solid #ccc;
+  box-shadow: none;
+}
+.modal-footer {
+  padding-right: 5px;
 }
 .icon-sms,
 .icon-voice,
@@ -94,18 +122,20 @@ html {
 }
 body {
   height: 100%;
-  background-color: #fcfcfc;
+  background-color: #fff;
   font-family: main;
 }
 h1,
 h2,
 h3,
-h4,
-#name {
+h4 {
   font-family: styled;
 }
 a {
   cursor: pointer;
+}
+textarea {
+  ont-family: main;
 }
 #contacts-list {
   width: 450px;
@@ -200,28 +230,27 @@ a {
   box-sizing: border-box;
   background-color: #f2f2f2;
   color: #555;
-  padding: 3px;
 }
 #contacts-list #contacts .contact-thumb img {
   float: left;
   line-height: 100%;
-  height: 48px;
-  width: 48px;
+  height: 60px;
+  width: 60px;
 }
 #contacts-list #contacts .contact-thumb h2 {
-  padding: 0px;
+  padding: 5px 0 0 0;
   margin: 0px;
-  margin-left: 54px;
+  margin-left: 70px;
   font-size: 20px;
+  font-family: main;
   line-height: 28px;
   overflow: hidden;
-  margin-top: 1px;
   font-weight: normal;
 }
 #contacts-list #contacts .contact-thumb span {
   display: block;
   float: left;
-  margin-left: 6px;
+  margin-left: 12px;
   font-size: 13px;
 }
 #contacts-list #contacts .contact-thumb:active,
@@ -249,8 +278,7 @@ a {
   right: 0px;
   top: 0px;
   bottom: 0px;
-  background-color: #e5e5e5;
-  background-image: url("../img/background-right.jpg");
+  background-color: #fcfcfc;
   box-shadow: 6px 0px 3px -2px #e5e5e5 inset;
 }
 #contact h3,
@@ -297,6 +325,9 @@ a {
 #doc .important {
   color: #f00;
   font-size: 2em;
+}
+#contact h2 {
+  font-family: styled;
 }
 #contact #picture {
   display: block;
@@ -373,7 +404,7 @@ a {
 #contact #wrap-name-notes {
   position: absolute;
   top: 30px;
-  left: 114px;
+  left: 120px;
   right: 3%;
 }
 #contact #wrap-name-notes #name-edit {
@@ -395,12 +426,14 @@ a {
   box-shadow: none;
   text-shadow: none;
   border-radius: 0;
-  font-family: main;
-  background: #ececec;
+  font-family: styled;
+  background: #ebf6ff;
+  color: #0067b8;
 }
 #contact ul.tagit .tagit-choice .tagit-label,
 #contact ul.tagit .tagit-choice .tagit-close .text-icon {
-  color: #888;
+  color: #0067b8;
+  font-size: 12px;
 }
 #contact ul.tagit .tagit-choice:hover {
   background: #fe8800;
@@ -434,11 +467,10 @@ a {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
-  padding-left: 0px;
+  font-family: main;
   font-size: 30px;
-  font-weight: bold;
-  margin-bottom: 0px;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 2px;
+  padding-top: 0;
 }
 #contact #name:hover {
   border-bottom: 1px solid #fe8800;
@@ -469,7 +501,7 @@ a {
 #left h2,
 #right .nav-tabs li a,
 #left .nav-tabs li a {
-  font-family: styled;
+  font-family: main;
   color: inherit;
   font-size: 24px;
   line-height: 40px;
@@ -619,6 +651,9 @@ a {
   opacity: 0;
   text-shadow: none;
   width: auto;
+  background: #eee;
+  font-weight: normal;
+  color: #777;
 }
 #left .zone a.btn.add:hover {
   background-color: #fe8800;
@@ -636,10 +671,12 @@ a {
 #left .zone ul li .type {
   width: 25%;
   font-family: styled;
+  font-size: 17px;
 }
 #left .zone ul li .value {
   width: 55%;
   font-family: main;
+  font-size: 17px;
 }
 #left .zone ul li .dpremove,
 #left .zone ul li .dpaction {
@@ -661,36 +698,50 @@ a {
 #contact #adder h2 {
   display: none;
 }
+#contact h2 {
+  font-family: styled;
+}
+#contact #right .nav-tabs li a {
+  font-family: styled;
+}
 #contact #name {
-  padding: 5px 10px 0px 10px;
+  padding: 0px 10px 0px 3px;
   font-size: 26px;
 }
-#more-options,
-#create-task {
+#contact #notes-zone textarea {
+  margin-top: 10px;
+}
+#more-options {
   width: 100%;
-  color: #999;
-  background: #ececec;
   padding: 5px;
   margin-right: 10px;
+  background: #eee;
+  color: #777;
+  font-weight: normal;
 }
-#create-task:hover,
 #more-options:hover {
   text-decoration: none;
   color: #fff;
   background: #fe8800;
 }
 #adder .button {
-  padding: 3px;
+  padding: 6px;
   margin-right: 10px;
-  color: #999;
-  background: #ececec;
   font-weight: normal;
   line-height: 30px;
+  color: #fff;
+  margin-top: 10px;
+  display: block;
 }
 #adder .button:hover {
   text-decoration: none;
   color: #fff;
-  background: #fe8800;
+}
+#importer .loading {
+  display: none;
+}
+.modal-footer #confirm-btn {
+  border-radius: 3px;
 }
 @media (max-width: 900px) {
   body {
@@ -780,8 +831,11 @@ a {
 #contacts-list.contact-widget #toolbar input#filterfield {
   width: 100%;
 }
+#contact ul.tagit input[type="text"] {
+  padding-left: 5px;
+}
 .tagit-autocomplete.ui-widget-content {
-  padding: 0;
+  padding: 0 0 0 0;
   border: 1px solid #fe8800;
 }
 .tagit-autocomplete.ui-widget-content .ui-state-focus {

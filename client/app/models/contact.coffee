@@ -35,16 +35,20 @@ module.exports = class Contact extends Backbone.Model
         note: ''
         tags: []
 
+    # Analyze given attribute list and transform them in datapoints,
+    # Datapoint is structure that describes an object (fields: name, type, value)
+    # as an attribute. For each attribute, you can have several values of
+    # different type. That's why this structure is required.
     parse: (attrs) ->
 
         if _.where(attrs?.datapoints, name: 'tel').length is 0
-            attrs?.datapoints.push
+            attrs?.datapoints?.push
                 name: 'tel'
                 type: 'main'
                 value: ''
 
         if _.where(attrs?.datapoints, name: 'email').length is 0
-            attrs?.datapoints.push
+            attrs?.datapoints?.push
                 name: 'email'
                 type: 'main'
                 value: ''
@@ -284,6 +288,7 @@ Contact.fromVCF = (vcf) ->
                     currentdp.set pname.toLowerCase(), pvalue.toLowerCase()
 
                 if key is 'adr'
+                    value ?= []
                     value = value.join("\n").replace /\n+/g, "\n"
 
                 if key is 'x-abdate'
@@ -311,7 +316,10 @@ Contact.fromVCF = (vcf) ->
             if key in ['email', 'tel', 'adr', 'url']
                 currentdp.set 'name', key
                 if key is 'adr'
-                    value = value.join("\n").replace /\n+/g, "\n"
+                    value ?= []
+                    if typeof value isnt 'string'
+                        value = value.join '\n'
+                    value = value.replace /\n+/g, "\n"
             else
                 currentdp = null
                 continue
