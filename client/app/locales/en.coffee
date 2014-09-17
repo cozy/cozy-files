@@ -91,7 +91,7 @@ module.exports =
     If you use an android phone, use the following application to import your calls: """
   "import android sms"  : """
     If you use an android phone, use the following application to import your sms: """
-
+  "dont close navigator import": "Do not close the navigator while importing contacts."
   "choose phone country" : "Choose the country of the phone"
   "ready to import"      : "Ready to import"
   "log direction"        : "Direction"

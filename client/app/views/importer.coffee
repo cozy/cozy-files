@@ -55,7 +55,7 @@ module.exports = class ImporterView extends BaseView
     addcontacts: ->
         return true unless @toImport
         @content.html """
-        <p>Do not close the navigator while importing contacts.</p>
+        <p>#{t('dont close navigator import')}</p>
         <p>
             #{t('import progress')}:&nbsp;<span class="import-progress"></span>
         </p>
