@@ -1,3 +1,4 @@
+
 __utils__ = require('clientutils').create()
 
 helpers = require('../helpers')(casper, __utils__)
@@ -35,6 +36,8 @@ casper.test.begin 'Batch actions - select all', (test) ->
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
 
     casper.run  -> test.done()
+
+
 casper.test.begin 'Batch actions - checkbox toggle display on mouseover/out', (test) ->
 
     casper.start 'http://localhost:9121', ->
@@ -116,12 +119,10 @@ casper.test.begin 'Batch actions - selecting all items when there are least than
 
     casper.then ->
         test.assertEvaluate ->
-            __utils__.echo __utils__.findOne('#select-all').checked
             return __utils__.findOne('#select-all').checked
         , "The select-all checkbox should be checked"
 
     casper.run -> test.done()
-
 
 casper.test.begin 'Batch actions - move all files to a folder', (test) ->
 
@@ -170,12 +171,15 @@ casper.test.begin 'Batch actions - move all files to a folder', (test) ->
 
         test.assertVisible '#moved-infos button.cancel-move-btn', 'The button to cancel the action should be visible'
 
+        test.assertEvaluate ->
+            return not __utils__.findOne('#select-all').checked
+        , "The select-all checkbox should not be checked (non regression #178)"
+
     casper.thenClick '#moved-infos button.cancel-move-btn'
 
     casper.waitWhileVisible '.modal-dialog, .modal-backdrop', ->
 
         elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
         test.assert movedElementsNum is elementsNum, "The elements should be back"
-
 
     casper.run -> test.done()

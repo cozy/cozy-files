@@ -58,6 +58,7 @@ module.exports = class FolderView extends BaseView
         # refresh folder action buttons after bulk actions
         @listenTo @baseCollection, 'toggle-select', @toggleFolderActions
         @listenTo @baseCollection, 'remove', @toggleFolderActions
+        @listenTo @collection, 'remove', @toggleFolderActions
 
         return this
 
@@ -262,7 +263,9 @@ module.exports = class FolderView extends BaseView
 
         # we check the "select-all" checkbox if there are few elements selected
         # or if it has been clicked directly
-        shouldChecked = selectedElements.length >= 3 or force
+        # strict equality check for force since it can be something that is not
+        # a boolean
+        shouldChecked = selectedElements.length >= 3 or force is true
         @$('input#select-all').prop 'checked', shouldChecked
 
 
