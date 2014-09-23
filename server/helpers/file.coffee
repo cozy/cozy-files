@@ -18,10 +18,13 @@ module.exports =
         file = req.file
 
         # Configure headers
+        encodedFileName = encodeURIComponent file.name
         if download
-            contentHeader = "attachment; filename=#{file.name}"
+            contentHeader = "attachment; filename=\"#{file.name}\"; " + \
+                            "filename*=UTF8''#{encodedFileName}"
         else
-            contentHeader = "inline; filename=#{file.name}"
+            contentHeader = "inline; filename=\"#{file.name}\"; " + \
+                            "filename*=UTF8''\"#{encodedFileName}\""
         res.setHeader 'content-disposition', contentHeader
 
         # Perform download with the lowel level node js api to avoid too much
@@ -40,16 +43,17 @@ module.exports =
                 stream.pipe res
 
             else if stream.statusCode is 404
-                err = new Error 'An error occured while downloading the file: ' + \
-                                'file not found.'
+                message = 'An error occured while downloading the file: ' + \
+                          'file not found.'
+                err = new Error message
                 err.status = 404
                 next err
 
             else
                 next new Error 'An error occured while downloading the file.'
 
-    # Returns a file calss depending of the mime type. It's useful to render icons
-    # properly.
+    # Returns a file calss depending of the mime type. It's useful to render
+    # icons properly.
     getFileClass: (file) ->
         type = file.headers['content-type']
         switch type.split('/')[0]

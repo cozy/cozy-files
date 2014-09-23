@@ -925,5 +925,14 @@
     "name": "chaton-innocent100.jpg",
     "path": "/Many files",
     "size": 2413
+  },
+  {
+    "docType": "File",
+    "_attachments": "test/fixtures/files/chaton-innocent.jpg",
+    "class": "image",
+    "lastModification": "Thu Oct 17 2013 08:29:21 GMT+0200 (CEST)",
+    "name": "space in name.jpg",
+    "path": "",
+    "size": 2413
   }
 ]
