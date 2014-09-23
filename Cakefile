@@ -77,7 +77,6 @@ task 'tests:client', 'Run tests for the client', testsClient = (opts, callback) 
 
     app = null
     fixtures.load dirPath: './test/fixtures', callback: -> initializeServer (app) ->
-        app = app
         command = "casperjs test client/tests/e2e"
         exec command, (err, stdout, stderr) ->
             console.log stdout if stdout? and stdout.length > 0
