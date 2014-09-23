@@ -183,3 +183,43 @@ casper.test.begin 'Batch actions - move all files to a folder', (test) ->
         test.assert movedElementsNum is elementsNum, "The elements should be back"
 
     casper.run -> test.done()
+
+casper.test.begin 'Batch actions - remove all files of a folder', (test) ->
+
+    casper.start 'http://localhost:9121', ->
+
+        manyFileFolderSelector = helpers.getElementSelectorByName 'Many files'
+        test.assertEval ->
+            return __utils__.findAll("tr.folder-row .fa-folder").length > 0
+        , "There should must be at least one folder"
+
+        test.assertExist manyFileFolderSelector
+        test.assertVisible manyFileFolderSelector
+
+        helpers.navigateToFolder 'Many files'
+
+    casper.then ->
+        movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
+        test.assert movedElementsNum > 0, "There should must be at least one item"
+
+        @click "input#select-all"
+
+    casper.thenClick '#button-bulk-remove'
+
+    casper.waitUntilVisible '.modal-dialog'
+    # the modal has an animation
+    casper.wait 500
+
+    casper.thenClick 'button#modal-dialog-yes'
+
+    # waits for all items to be deleted (it can be long)
+    casper.waitWhileVisible 'tr.folder-row', null, null, 70000
+
+    # waits for all the requests to be effectively processed
+    casper.wait 5000, ->
+        elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
+        test.assert elementsNum is 0, "There shouldn't be any element left"
+        @capture 'debug.png'
+
+    casper.run ->
+        test.done()
