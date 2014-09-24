@@ -43,6 +43,7 @@ module.exports = class UploadQueue extends Backbone.Collection
         # when the queue is totally completed
         @asyncQueue.drain = =>
             @completed = true
+            @loaded = 0
             @trigger 'upload-complete'
 
     add: ->
@@ -50,6 +51,14 @@ module.exports = class UploadQueue extends Backbone.Collection
         super
 
     reset: (models, options) ->
+        # sets the progress to 0% so next upload initial progress is 0% instead
+        # of 100%
+        @progress =
+            loadedFiles: 0
+            totalFiles: @length
+            loadedBytes: 0
+            totalBytes: @sumProp 'total'
+
         @loaded = 0
         @completed = false
         @uploadingPaths = {}
