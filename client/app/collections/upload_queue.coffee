@@ -123,7 +123,14 @@ module.exports = class UploadQueue extends Backbone.Collection
                 path: path
                 lastModification: blob.lastModifiedDate
 
-            if model.getRepository() in existingPaths
+            # mark as errored if it's a folder
+            if blob.size is 0 and blob.type.length is 0
+                model.error = 'Cannot upload a folder with Firefox'
+                # since there is an error, the progressbar cannot compute
+                # the progress if those properties are not set
+                model.loaded = 0
+                model.total = 0
+            else if model.getRepository() in existingPaths
                 model.existing = true
                 # if a file is reuploaded while being uploaded, the progressbar
                 # cannot compute the progress if those properties are not set
