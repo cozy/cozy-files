@@ -36,7 +36,7 @@
                     ul.dropdown-menu
                       li: a#button-upload-folder
                         input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory)
-                        span Upload a folder
+                        span= t('upload folder msg')
                 | &nbsp;
                 a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
                   img(src="images/add-folder.png")
