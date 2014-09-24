@@ -280,8 +280,9 @@ module.exports = class FolderView extends BaseView
                         success: -> cb()
                         error: -> cb()
                 , (err) ->
-                    Modal.error t("modal delete error")
-                    console.log err
+                    if err?
+                        Modal.error t("modal delete error")
+                        console.log err
 
     bulkMove: ->
         new ModalBulkMove
