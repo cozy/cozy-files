@@ -14,16 +14,17 @@ module.exports = {
     return path;
   },
   processAttachment: function(req, res, next, download) {
-    var contentHeader, file;
+    var contentHeader, encodedFileName, file;
     file = req.file;
+    encodedFileName = encodeURIComponent(file.name);
     if (download) {
-      contentHeader = "attachment; filename=" + file.name;
+      contentHeader = ("attachment; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''" + encodedFileName);
     } else {
-      contentHeader = "inline; filename=" + file.name;
+      contentHeader = ("inline; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''\"" + encodedFileName + "\"");
     }
     res.setHeader('content-disposition', contentHeader);
     return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
-      var err;
+      var err, message;
       if (stream.statusCode === 200) {
         stream.pipefilter = function(source, dest) {
           var XSSmimeTypes, _ref;
@@ -36,7 +37,8 @@ module.exports = {
         res.setHeader('content-type', stream.headers['content-type']);
         return stream.pipe(res);
       } else if (stream.statusCode === 404) {
-        err = new Error('An error occured while downloading the file: ' + 'file not found.');
+        message = 'An error occured while downloading the file: ' + 'file not found.';
+        err = new Error(message);
         err.status = 404;
         return next(err);
       } else {

@@ -10,12 +10,13 @@ staticMiddleware = americano["static"](path.resolve(__dirname, '../client/public
 });
 
 publicStatic = function(req, res, next) {
-  var url;
-  url = req.url;
-  req.url = req.url.replace('/public/assets', '');
-  req.url = req.url.replace('/public/folders', '');
+  var assetsMatched, detectAssets;
+  detectAssets = /\/(stylesheets|javascripts|images|fonts)+\/(.+)$/;
+  assetsMatched = detectAssets.exec(req.url);
+  if (assetsMatched != null) {
+    req.url = assetsMatched[0];
+  }
   return staticMiddleware(req, res, function(err) {
-    req.url = url;
     return next(err);
   });
 };

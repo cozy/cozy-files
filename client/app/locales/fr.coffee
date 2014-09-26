@@ -11,6 +11,8 @@ module.exports =
 
     "root folder name"          : "racine"
 
+    "confirmation reload"      : "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?"
+
     # breadcrumbs
     "breadcrumbs search title"  : "Recherche"
 
@@ -52,7 +54,7 @@ module.exports =
        et %{smart_count} autres fichiers
     """
     "already exists"      : "existent déjà."
-    "failed to upload"    : "n'ont pas pu être envoyés au serveur"
+    "failed to upload"    : "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur"
     "upload complete"     : """
         Le fichier a été transféré. ||||
         %{smart_count} fichiers ont été transférés.

@@ -93,12 +93,12 @@ module.exports = class File extends Backbone.Model
         if @isBeingUploaded()
             "#"
         else if @isFile()
-            toAppend = "/attach/#{@get 'name'}"
+            toAppend = "/attach/#{encodeURIComponent @get 'name'}"
             @url toAppend
 
     getDownloadUrl: ->
         if @isFile()
-            toAppend = "/download/#{@get 'name'}"
+            toAppend = "/download/#{encodeURIComponent @get 'name'}"
             @url toAppend
         else if @isFolder()
             @getZipURL()

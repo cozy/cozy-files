@@ -155,9 +155,12 @@ module.exports = class FileView extends BaseView
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
+                window.pendingOperations.deletion++
                 @model.destroy
+                    success: -> window.pendingOperations.deletion--
                     error: ->
-                        ModalView.error t("modal delete error")
+                        window.pendingOperations.deletion--
+                        ModalView.error t "modal delete error"
 
     onEditClicked: ->
         width = @$(".caption").width() + 10

@@ -58,6 +58,7 @@ module.exports = class FolderView extends BaseView
         # refresh folder action buttons after bulk actions
         @listenTo @baseCollection, 'toggle-select', @toggleFolderActions
         @listenTo @baseCollection, 'remove', @toggleFolderActions
+        @listenTo @collection, 'remove', @toggleFolderActions
 
         return this
 
@@ -173,7 +174,13 @@ module.exports = class FolderView extends BaseView
         e.preventDefault()
         e.stopPropagation()
         return false if @isPublic and not @canUpload
-        @onFilesSelected e
+
+        # folder drag and drop is only supported in Chrome
+        if e.dataTransfer.items?
+            @onFilesSelectedInChrome e
+        else
+            @onFilesSelected e
+
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
 
@@ -188,11 +195,62 @@ module.exports = class FolderView extends BaseView
     onFilesSelected: (e) =>
         files = e.dataTransfer?.files or e.target.files
         return unless files.length
+
         @uploadQueue.addBlobs files, @model
+
         if e.target?
             target = $ e.target
             # reset the input
             target.replaceWith target.clone true
+
+    onFilesSelectedInChrome: (e) ->
+        items = e.dataTransfer.items
+        return unless items.length
+
+        # Due to the asynchronous nature of the API, we use a pending system
+        # where we increment and decrement it for each operations, only calling
+        # the callback when there are no operation pending
+        pending = 0
+        files = []
+        callback = =>
+            @uploadQueue.addFolderBlobs files, @model
+
+            if e.target?
+                target = $ e.target
+                # reset the input
+                target.replaceWith target.clone true
+
+        # An entry can be a folder or a file
+        parseEntriesRecursively = (entry, path) =>
+            pending = pending + 1
+            path = path or ""
+            path = "#{path}/" if path.length > 0
+
+            # if it's a file we add it to the file list with a proper
+            # relative path
+            if entry.isFile
+                entry.file (file) =>
+                    file.relativePath = "#{path}#{file.name}"
+                    files.push file
+                    pending = pending - 1
+
+                    # if there are no operation left, the upload starts
+                    callback() if pending is 0
+
+            # if it's a directory, recursively call the function to reach
+            # the leaves of the file tree
+            else if entry.isDirectory
+                reader = entry.createReader()
+                reader.readEntries (entries) ->
+                    for subEntry in entries
+                        parseEntriesRecursively subEntry, "#{path}#{entry.name}"
+                    pending = pending - 1
+
+        # starts the parsing process
+        for item in items
+            entry = item.webkitGetAsEntry()
+            parseEntriesRecursively entry
+
 
     ###
         Search
@@ -262,7 +320,9 @@ module.exports = class FolderView extends BaseView
 
         # we check the "select-all" checkbox if there are few elements selected
         # or if it has been clicked directly
-        shouldChecked = selectedElements.length >= 3 or force
+        # strict equality check for force since it can be something that is not
+        # a boolean
+        shouldChecked = selectedElements.length >= 3 or force is true
         @$('input#select-all').prop 'checked', shouldChecked
 
 
@@ -272,10 +332,16 @@ module.exports = class FolderView extends BaseView
     bulkRemove: ->
         new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
+                window.pendingOperations.deletion++
                 async.eachLimit @getSelectedElements(), 10, (element, cb) ->
-                    element.destroy error: -> cb()
+                    element.destroy
+                        success: -> cb()
+                        error: -> cb()
                 , (err) ->
-                    Modal.error t("modal delete error")
+                    window.pendingOperations.deletion--
+                    if err?
+                        Modal.error t("modal delete error")
+                        console.log err
 
     bulkMove: ->
         new ModalBulkMove

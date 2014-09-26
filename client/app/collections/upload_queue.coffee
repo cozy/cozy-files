@@ -42,14 +42,29 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         # when the queue is totally completed
         @asyncQueue.drain = =>
+            window.pendingOperations.upload = 0
             @completed = true
+            @loaded = 0
             @trigger 'upload-complete'
 
-    add: ->
+    add: (models, options) ->
+        # if model doesn't exist, it's a reset so we don't increment
+        window.pendingOperations.upload++ if models?
+
         @reset() if @completed
-        super
+        super models, options
 
     reset: (models, options) ->
+        # sets the progress to 0% so next upload initial progress is 0% instead
+        # of 100%
+        @progress =
+            loadedFiles: 0
+            totalFiles: @length
+            loadedBytes: 0
+            totalBytes: @sumProp 'total'
+
+        window.pendingOperations.upload = 0
+
         @loaded = 0
         @completed = false
         @uploadingPaths = {}
@@ -69,34 +84,34 @@ module.exports = class UploadQueue extends Backbone.Collection
     uploadWorker: (model, cb) =>
         if model.existing or model.error or model.isUploaded
             setTimeout cb, 10
+        else
+            model.save null,
+                success: ->
+                    model.file = null
+                    model.isUploaded = true
+                    model.loaded = model.total
+                    unless app.baseCollection.get model.id
+                        app.baseCollection.add model
+                    cb null
+                error: (_, err) =>
+                    body = try JSON.parse(err.responseText)
+                    catch e then msg: null
 
-        model.save null,
-            success: ->
-                model.file = null
-                model.isUploaded = true
-                model.loaded = model.total
-                unless app.baseCollection.get model.id
-                    app.baseCollection.add model
-                cb null
-            error: (_, err) =>
-                body = try JSON.parse(err.responseText)
-                catch e then msg: null
+                    if err.status is 400 and body.code is 'EEXISTS'
+                        model.existing = true
+                        return cb new Error body.msg
 
-                if err.status is 400 and body.code is 'EEXISTS'
-                    model.existing = true
-                    return cb new Error body.msg
+                    if err.status is 400 and body.code is 'ESTORAGE'
+                        model.error = new Error body.msg
+                        return cb model.error
 
-                if err.status is 400 and body.code is 'ESTORAGE'
-                    model.error = new Error body.msg
-                    return cb model.error
-
-                model.tries = 1 + (model.tries or 0)
-                if model.tries > 3
-                    model.error = t err.msg or "modal error file upload"
-                else
-                    # let's try again
-                    @asyncQueue.push model
-                cb err
+                    model.tries = 1 + (model.tries or 0)
+                    if model.tries > 3
+                        model.error = t err.msg or "modal error file upload"
+                    else
+                        # let's try again
+                        @asyncQueue.push model
+                    cb err
 
     addBlobs: (blobs, folder) ->
 
@@ -123,8 +138,19 @@ module.exports = class UploadQueue extends Backbone.Collection
                 path: path
                 lastModification: blob.lastModifiedDate
 
-            if model.getRepository() in existingPaths
+            # mark as errored if it's a folder
+            if blob.size is 0 and blob.type.length is 0
+                model.error = 'Cannot upload a folder with Firefox'
+                # since there is an error, the progressbar cannot compute
+                # the progress if those properties are not set
+                model.loaded = 0
+                model.total = 0
+            else if model.getRepository() in existingPaths
                 model.existing = true
+                # if a file is reuploaded while being uploaded, the progressbar
+                # cannot compute the progress if those properties are not set
+                model.loaded = 0
+                model.total = 0
             else
                 model.file = blob
                 model.loaded = 0
@@ -139,7 +165,6 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         dirs = Helpers.nestedDirs blobs
         i = 0
-        #console.log dirs
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop

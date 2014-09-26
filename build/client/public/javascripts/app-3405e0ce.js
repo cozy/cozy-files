@@ -411,20 +411,32 @@ module.exports = UploadQueue = (function(_super) {
     })(this), 100));
     return this.asyncQueue.drain = (function(_this) {
       return function() {
+        window.pendingOperations.upload = 0;
         _this.completed = true;
+        _this.loaded = 0;
         return _this.trigger('upload-complete');
       };
     })(this);
   };
 
-  UploadQueue.prototype.add = function() {
+  UploadQueue.prototype.add = function(models, options) {
+    if (models != null) {
+      window.pendingOperations.upload++;
+    }
     if (this.completed) {
       this.reset();
     }
-    return UploadQueue.__super__.add.apply(this, arguments);
+    return UploadQueue.__super__.add.call(this, models, options);
   };
 
   UploadQueue.prototype.reset = function(models, options) {
+    this.progress = {
+      loadedFiles: 0,
+      totalFiles: this.length,
+      loadedBytes: 0,
+      totalBytes: this.sumProp('total')
+    };
+    window.pendingOperations.upload = 0;
     this.loaded = 0;
     this.completed = false;
     this.uploadingPaths = {};
@@ -450,49 +462,50 @@ module.exports = UploadQueue = (function(_super) {
 
   UploadQueue.prototype.uploadWorker = function(model, cb) {
     if (model.existing || model.error || model.isUploaded) {
-      setTimeout(cb, 10);
-    }
-    return model.save(null, {
-      success: function() {
-        model.file = null;
-        model.isUploaded = true;
-        model.loaded = model.total;
-        if (!app.baseCollection.get(model.id)) {
-          app.baseCollection.add(model);
-        }
-        return cb(null);
-      },
-      error: (function(_this) {
-        return function(_, err) {
-          var body, e;
-          body = (function() {
-            try {
-              return JSON.parse(err.responseText);
-            } catch (_error) {
-              e = _error;
-              return {
-                msg: null
-              };
+      return setTimeout(cb, 10);
+    } else {
+      return model.save(null, {
+        success: function() {
+          model.file = null;
+          model.isUploaded = true;
+          model.loaded = model.total;
+          if (!app.baseCollection.get(model.id)) {
+            app.baseCollection.add(model);
+          }
+          return cb(null);
+        },
+        error: (function(_this) {
+          return function(_, err) {
+            var body, e;
+            body = (function() {
+              try {
+                return JSON.parse(err.responseText);
+              } catch (_error) {
+                e = _error;
+                return {
+                  msg: null
+                };
+              }
+            })();
+            if (err.status === 400 && body.code === 'EEXISTS') {
+              model.existing = true;
+              return cb(new Error(body.msg));
             }
-          })();
-          if (err.status === 400 && body.code === 'EEXISTS') {
-            model.existing = true;
-            return cb(new Error(body.msg));
-          }
-          if (err.status === 400 && body.code === 'ESTORAGE') {
-            model.error = new Error(body.msg);
-            return cb(model.error);
-          }
-          model.tries = 1 + (model.tries || 0);
-          if (model.tries > 3) {
-            model.error = t(err.msg || "modal error file upload");
-          } else {
-            _this.asyncQueue.push(model);
-          }
-          return cb(err);
-        };
-      })(this)
-    });
+            if (err.status === 400 && body.code === 'ESTORAGE') {
+              model.error = new Error(body.msg);
+              return cb(model.error);
+            }
+            model.tries = 1 + (model.tries || 0);
+            if (model.tries > 3) {
+              model.error = t(err.msg || "modal error file upload");
+            } else {
+              _this.asyncQueue.push(model);
+            }
+            return cb(err);
+          };
+        })(this)
+      });
+    }
   };
 
   UploadQueue.prototype.addBlobs = function(blobs, folder) {
@@ -518,8 +531,14 @@ module.exports = UploadQueue = (function(_super) {
           path: path,
           lastModification: blob.lastModifiedDate
         });
-        if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
+        if (blob.size === 0 && blob.type.length === 0) {
+          model.error = 'Cannot upload a folder with Firefox';
+          model.loaded = 0;
+          model.total = 0;
+        } else if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
           model.existing = true;
+          model.loaded = 0;
+          model.total = 0;
         } else {
           model.file = blob;
           model.loaded = 0;
@@ -646,8 +665,25 @@ $(function() {
   polyglot = new Polyglot();
   polyglot.extend(locales);
   window.t = polyglot.t.bind(polyglot);
+  window.pendingOperations = {
+    upload: 0,
+    move: 0,
+    deletion: 0
+  };
   return app.initialize();
 });
+
+window.onbeforeunload = function() {
+  var pendingOperationsNum, sum, values;
+  values = _.values(window.pendingOperations);
+  sum = function(a, b) {
+    return a + b;
+  };
+  pendingOperationsNum = _.reduce(values, sum, 0);
+  if (pendingOperationsNum > 0) {
+    return t('confirmation reload');
+  }
+};
 });
 
 ;require.register("lib/app_helpers", function(exports, require, module) {
@@ -1187,6 +1223,7 @@ module.exports = {
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
   "root folder name": "root",
+  "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Search",
   "modal error file exists": "Sorry, a file or folder having this name already exists",
   "modal error size": "Sorry, you haven't enough storage space",
@@ -1317,6 +1354,7 @@ module.exports = {
   "modal error empty name": "Le nom ne peut pas être vide",
   "modal error file invalid": "Le fichier ne parait pas être valide",
   "root folder name": "racine",
+  "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
   "breadcrumbs search title": "Recherche",
   "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
   "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
@@ -1342,7 +1380,7 @@ module.exports = {
   "file edit cancel": "Annuler",
   'and x files': "et un autre fichier ||||\net %{smart_count} autres fichiers",
   "already exists": "existent déjà.",
-  "failed to upload": "n'ont pas pu être envoyés au serveur",
+  "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
   "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
   "upload caption": "Ajouter des fichiers",
   "upload msg": "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
@@ -1445,6 +1483,7 @@ module.exports = {
   "modal error empty name": "Numele nu poate fi vid",
   "modal error file invalid": "Fișierul nu pare a fi valid",
   "root folder name": "root",
+  "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Căutare",
   "modal error file exists": "Ne pare rău, există deja un document cu acest nume",
   "modal error file upload": "Fișierul nu a putut fi trimis server-ului",
@@ -1658,7 +1697,7 @@ module.exports = File = (function(_super) {
     if (this.isBeingUploaded()) {
       return "#";
     } else if (this.isFile()) {
-      toAppend = "/attach/" + (this.get('name'));
+      toAppend = "/attach/" + (encodeURIComponent(this.get('name')));
       return this.url(toAppend);
     }
   };
@@ -1666,7 +1705,7 @@ module.exports = File = (function(_super) {
   File.prototype.getDownloadUrl = function() {
     var toAppend;
     if (this.isFile()) {
-      toAppend = "/download/" + (this.get('name'));
+      toAppend = "/download/" + (encodeURIComponent(this.get('name')));
       return this.url(toAppend);
     } else if (this.isFolder()) {
       return this.getZipURL();
@@ -2136,8 +2175,13 @@ module.exports = FileView = (function(_super) {
     return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
       return function(confirm) {
         if (confirm) {
+          window.pendingOperations.deletion++;
           return _this.model.destroy({
+            success: function() {
+              return window.pendingOperations.deletion--;
+            },
             error: function() {
+              window.pendingOperations.deletion--;
               return ModalView.error(t("modal delete error"));
             }
           });
@@ -2548,6 +2592,7 @@ module.exports = FolderView = (function(_super) {
     }
     this.listenTo(this.baseCollection, 'toggle-select', this.toggleFolderActions);
     this.listenTo(this.baseCollection, 'remove', this.toggleFolderActions);
+    this.listenTo(this.collection, 'remove', this.toggleFolderActions);
     return this;
   };
 
@@ -2689,7 +2734,11 @@ module.exports = FolderView = (function(_super) {
     if (this.isPublic && !this.canUpload) {
       return false;
     }
-    this.onFilesSelected(e);
+    if (e.dataTransfer.items != null) {
+      this.onFilesSelectedInChrome(e);
+    } else {
+      this.onFilesSelected(e);
+    }
     this.uploadButton.removeClass('btn-cozy-contrast');
     return this.$('#files-drop-zone').hide();
   };
@@ -2716,6 +2765,63 @@ module.exports = FolderView = (function(_super) {
       target = $(e.target);
       return target.replaceWith(target.clone(true));
     }
+  };
+
+  FolderView.prototype.onFilesSelectedInChrome = function(e) {
+    var callback, entry, files, item, items, parseEntriesRecursively, pending, _i, _len, _results;
+    items = e.dataTransfer.items;
+    if (!items.length) {
+      return;
+    }
+    pending = 0;
+    files = [];
+    callback = (function(_this) {
+      return function() {
+        var target;
+        _this.uploadQueue.addFolderBlobs(files, _this.model);
+        if (e.target != null) {
+          target = $(e.target);
+          return target.replaceWith(target.clone(true));
+        }
+      };
+    })(this);
+    parseEntriesRecursively = (function(_this) {
+      return function(entry, path) {
+        var reader;
+        pending = pending + 1;
+        path = path || "";
+        if (path.length > 0) {
+          path = "" + path + "/";
+        }
+        if (entry.isFile) {
+          return entry.file(function(file) {
+            file.relativePath = "" + path + file.name;
+            files.push(file);
+            pending = pending - 1;
+            if (pending === 0) {
+              return callback();
+            }
+          });
+        } else if (entry.isDirectory) {
+          reader = entry.createReader();
+          return reader.readEntries(function(entries) {
+            var subEntry, _i, _len;
+            for (_i = 0, _len = entries.length; _i < _len; _i++) {
+              subEntry = entries[_i];
+              parseEntriesRecursively(subEntry, "" + path + entry.name);
+            }
+            return pending = pending - 1;
+          });
+        }
+      };
+    })(this);
+    _results = [];
+    for (_i = 0, _len = items.length; _i < _len; _i++) {
+      item = items[_i];
+      entry = item.webkitGetAsEntry();
+      _results.push(parseEntriesRecursively(entry));
+    }
+    return _results;
   };
 
 
@@ -2791,7 +2897,7 @@ module.exports = FolderView = (function(_super) {
       this.$('#button-new-folder').show();
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    shouldChecked = selectedElements.length >= 3 || force;
+    shouldChecked = selectedElements.length >= 3 || force === true;
     return this.$('input#select-all').prop('checked', shouldChecked);
   };
 
@@ -2804,14 +2910,22 @@ module.exports = FolderView = (function(_super) {
     return new Modal(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
       return function(confirm) {
         if (confirm) {
+          window.pendingOperations.deletion++;
           return async.eachLimit(_this.getSelectedElements(), 10, function(element, cb) {
             return element.destroy({
+              success: function() {
+                return cb();
+              },
               error: function() {
                 return cb();
               }
             });
           }, function(err) {
-            return Modal.error(t("modal delete error"));
+            window.pendingOperations.deletion--;
+            if (err != null) {
+              Modal.error(t("modal delete error"));
+              return console.log(err);
+            }
           });
         }
       };
@@ -3067,6 +3181,7 @@ module.exports = ModalBulkMoveView = (function(_super) {
   };
 
   ModalBulkMoveView.prototype.bulkUpdate = function(newPath, callback) {
+    window.pendingOperations.move++;
     return async.eachLimit(this.collection, 10, function(model, cb) {
       var id, type;
       id = model.get('id');
@@ -3074,7 +3189,10 @@ module.exports = ModalBulkMoveView = (function(_super) {
       return client.put("" + type + "s/" + id, {
         path: newPath
       }, cb);
-    }, callback);
+    }, function() {
+      window.pendingOperations.move--;
+      return callback();
+    });
   };
 
   return ModalBulkMoveView;
@@ -3684,10 +3802,10 @@ buf.push("" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_inte
 }
 buf.push("</a>&nbsp;");
 }
-buf.push("<div id=\"upload-btngroup\" class=\"btn-group\"><a id=\"button-upload-new-file\"" + (jade.attr("title", t('upload button'), true, false)) + " class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"/><img src=\"images/add-file.png\"/></a>");
+buf.push("<div id=\"upload-btngroup\" class=\"btn-group\"><a id=\"button-upload-new-file\" class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"" + (jade.attr("title", t('upload button'), true, false)) + "/><img src=\"images/add-file.png\"/></a>");
 if ( supportsDirectoryUpload)
 {
-buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>Upload a folder</span></a></li></ul>");
+buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>" + (jade.escape(null == (jade_interp = t('upload folder msg')) ? "" : jade_interp)) + "</span></a></li></ul>");
 }
 buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\"><a id=\"button-bulk-move\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('move all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span></a><a id=\"button-bulk-remove\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('remove all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></div>");
 if ( isPublic && hasPublicKey)
@@ -3886,13 +4004,17 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.makeErrorSentence = function(errors) {
     var error, parts, _i, _len;
-    console.log(errors);
     parts = [];
+    parts.push("" + (errors.pop().get('name')));
     if (errors.length > 1) {
       parts.push(t('and x files', {
         smart_count: errors.length - 1
       }));
-      parts.push(t('failed to upload'));
+    }
+    parts.push(t('failed to upload', {
+      smart_count: errors.length - 1
+    }));
+    if (errors.length > 1) {
       parts.push(': ');
       parts.push("" + (errors.pop().get('name')));
       for (_i = 0, _len = errors.length; _i < _len; _i++) {

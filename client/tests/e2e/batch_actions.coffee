@@ -1,3 +1,4 @@
+
 __utils__ = require('clientutils').create()
 
 helpers = require('../helpers')(casper, __utils__)
@@ -35,6 +36,8 @@ casper.test.begin 'Batch actions - select all', (test) ->
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
 
     casper.run  -> test.done()
+
+
 casper.test.begin 'Batch actions - checkbox toggle display on mouseover/out', (test) ->
 
     casper.start 'http://localhost:9121', ->
@@ -92,7 +95,7 @@ casper.test.begin 'Batch actions - selecting 3 items checks the "select-all" che
     casper.run -> test.done()
 
 
-casper.test.begin 'Batch actions - selecting all items when there are lest than 3 items check the "select all" checkbox (non regression)', (test) ->
+casper.test.begin 'Batch actions - selecting all items when there are least than 3 items, should check the "select all" checkbox (non regression)', (test) ->
 
     casper.start 'http://localhost:9121', ->
 
@@ -116,12 +119,10 @@ casper.test.begin 'Batch actions - selecting all items when there are lest than 
 
     casper.then ->
         test.assertEvaluate ->
-            __utils__.echo __utils__.findOne('#select-all').checked
             return __utils__.findOne('#select-all').checked
         , "The select-all checkbox should be checked"
 
     casper.run -> test.done()
-
 
 casper.test.begin 'Batch actions - move all files to a folder', (test) ->
 
@@ -170,6 +171,10 @@ casper.test.begin 'Batch actions - move all files to a folder', (test) ->
 
         test.assertVisible '#moved-infos button.cancel-move-btn', 'The button to cancel the action should be visible'
 
+        test.assertEvaluate ->
+            return not __utils__.findOne('#select-all').checked
+        , "The select-all checkbox should not be checked (non regression #178)"
+
     casper.thenClick '#moved-infos button.cancel-move-btn'
 
     casper.waitWhileVisible '.modal-dialog, .modal-backdrop', ->
@@ -177,5 +182,49 @@ casper.test.begin 'Batch actions - move all files to a folder', (test) ->
         elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
         test.assert movedElementsNum is elementsNum, "The elements should be back"
 
-
     casper.run -> test.done()
+
+casper.test.begin 'Batch actions - remove all files of a folder', (test) ->
+
+    casper.start 'http://localhost:9121', ->
+
+        manyFileFolderSelector = helpers.getElementSelectorByName 'Many files'
+        test.assertEval ->
+            return __utils__.findAll("tr.folder-row .fa-folder").length > 0
+        , "There should must be at least one folder"
+
+        test.assertExist manyFileFolderSelector
+        test.assertVisible manyFileFolderSelector
+
+        helpers.navigateToFolder 'Files to remove files'
+
+    casper.then ->
+        movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
+        test.assert movedElementsNum > 0, "There should must be at least one item"
+
+        @click "input#select-all"
+
+    casper.thenClick '#button-bulk-remove'
+
+    casper.waitUntilVisible '.modal-dialog'
+    # the modal has an animation
+    casper.wait 500
+
+    casper.thenClick 'button#modal-dialog-yes'
+
+    # waits for all items to be deleted (it can be long)
+    casper.waitWhileVisible 'tr.folder-row', null, null, 30000
+
+    # waits for all the requests to be effectively processed
+    casper.wait 5000, ->
+        elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
+        test.assert elementsNum is 0, "There shouldn't be any element left"
+
+    casper.run ->
+        test.done()
+
+# To be implemented
+casper.test.begin 'Batch actions - move some files of a folder', (test) ->
+    test.done()
+casper.test.begin 'Batch actions - remove some files of a folder', (test) ->
+    test.done()

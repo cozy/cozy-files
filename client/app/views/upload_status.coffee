@@ -62,11 +62,12 @@ module.exports = class UploadStatusView extends BaseView
 
     # generate a sentence explaining error files
     makeErrorSentence: (errors) ->
-        console.log errors
-        parts = [] #[errors[0].get('name')]
+        parts = []
+        parts.push "#{errors.pop().get 'name'}"
         if errors.length > 1
-            parts.push t('and x files', smart_count: errors.length - 1)
-            parts.push t 'failed to upload'
+            parts.push t 'and x files', smart_count: errors.length - 1
+        parts.push t 'failed to upload', smart_count: errors.length - 1
+        if errors.length > 1
             parts.push ': '
             parts.push "#{errors.pop().get 'name'}"
             parts.push ", #{error.get 'name'}" for error in errors

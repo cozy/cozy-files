@@ -8,6 +8,7 @@ module.exports = {
   "modal error empty name": "Numele nu poate fi vid",
   "modal error file invalid": "Fișierul nu pare a fi valid",
   "root folder name": "root",
+  "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Căutare",
   "modal error file exists": "Ne pare rău, există deja un document cu acest nume",
   "modal error file upload": "Fișierul nu a putut fi trimis server-ului",

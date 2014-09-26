@@ -33,7 +33,7 @@ walk = (dir, excludeElements = []) ->
     return fileList
 
 taskDetails = '(default: ./tests, use -f or -d to specify files and directory)'
-task 'tests', "Run tests #{taskDetails}", testsServer = (opts, callback) ->
+task 'tests:server', "Run tests #{taskDetails}", testsServer = (opts, callback) ->
     logger.options.prefix = 'cake:tests'
     files = []
     options = opts
@@ -77,7 +77,6 @@ task 'tests:client', 'Run tests for the client', testsClient = (opts, callback) 
 
     app = null
     fixtures.load dirPath: './test/fixtures', callback: -> initializeServer (app) ->
-        app = app
         command = "casperjs test client/tests/e2e"
         exec command, (err, stdout, stderr) ->
             console.log stdout if stdout? and stdout.length > 0
@@ -94,7 +93,7 @@ task 'tests:client', 'Run tests for the client', testsClient = (opts, callback) 
                 else
                     process.exit 0
 
-task 'tests:all', 'Run tests for client and server', (opts) ->
+task 'tests', 'Run tests for client and server', (opts) ->
     testsServer opts, -> testsClient opts, -> process.exit 0
 
 

@@ -27,8 +27,8 @@
 
                 //- file & folder uploaders
                 .btn-group#upload-btngroup
-                  a#button-upload-new-file.btn.btn-cozy.btn-cozy(title=t('upload button'))
-                    input#uploader(type="file", multiple)
+                  a#button-upload-new-file.btn.btn-cozy.btn-cozy
+                    input#uploader(type="file", multiple, title=t('upload button'))
                     img(src="images/add-file.png")
                   if supportsDirectoryUpload
                     a.btn.btn-cozy.dropdown-toggle(data-toggle="dropdown")
@@ -36,7 +36,7 @@
                     ul.dropdown-menu
                       li: a#button-upload-folder
                         input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory)
-                        span Upload a folder
+                        span= t('upload folder msg')
                 | &nbsp;
                 a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
                   img(src="images/add-folder.png")
