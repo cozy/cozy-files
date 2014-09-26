@@ -3,18 +3,18 @@
 
 Cozy Files makes your file management easy. Main features are:
 
-* File Tree
-* File and Folder upload.
-* File and Folder sharing (via URLs)
-* File search
-* File and Folder tagging (and search by tag)
+* File tree
+* Files and folders upload.
+* Files and folders sharing (via URLs)
+* Files and folders search
+* Files and folders tagging (and search by tag)
 
 ## Install
 
 We assume here that the Cozy platform is correctly [installed](http://cozy.io/host/install.html)
  on your server.
 
-You can simply install the Files application via the app registry. Click on ythe *Chose Your Apps* button located on the right of your Cozy Home.
+You can simply install the Files application via the app registry. Click on the *Chose Your Apps* button located on the right of your Cozy Home.
 
 From the command line you can type this command:
 
@@ -40,8 +40,7 @@ Run it with:
 
     node build/server.js
 
-Each modification of the server requires a new build, here is how to run a
-build:
+Each modification of the server requires a new build, here is how to run a build:
 
     cake build
 
