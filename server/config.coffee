@@ -7,7 +7,7 @@ staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
 publicStatic = (req, res, next) ->
 
     # Allows assets to be loaded from any route
-    detectAssets = /\/(stylesheets|javascripts)+\/(.+)$/
+    detectAssets = /\/(stylesheets|javascripts|images|fonts)+\/(.+)$/
     assetsMatched = detectAssets.exec req.url
 
     if assetsMatched?
