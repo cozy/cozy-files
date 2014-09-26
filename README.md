@@ -1,7 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/cozy/cozy-files.png?label=ready&title=Ready)](https://waffle.io/cozy/cozy-files)
 # [Cozy](http://cozy.io) Files
 
-Cozy Files makes your file management easy. Main features are: 
+Cozy Files makes your file management easy. Main features are:
 
 * File Tree
 * File and Folder upload.
@@ -57,11 +57,32 @@ Cozy Files manages files in your Cozy platform.
 ![Build
 Status](https://travis-ci.org/mycozycloud/cozy-files.png?branch=master)
 
-To run tests type the following command into the Cozy Files folder:
+To run tests, use the following command into the Cozy Files folder:
+
+    npm test
+
+That's how Travis run the tests and it's what should be working when pushing code. It will run the tests against the `build/` version of the code.
+
+During development, you can use:
 
     cake tests
 
-In order to run the tests, you must only have the Data System started.
+That will also run the tests on both the server and the client but you don't have to build your code each time since it will run them against `server/` and `client/` rather than `build/`.
+
+If you only want to run the tests for the server, use
+
+    cake tests:server
+
+If you only want to run the tests for the client, use
+
+    cake tests:client
+
+In order to run the tests, you must have the Data System started. Also, for client tests, you need to install [CasperJS](http://casperjs.org/)
+
+There are two options that can be used:
+
+* `--use-js` will run the tests based on the `build/` folder
+* `--use-server` will start a server during client tests
 
 ## Icons
 
