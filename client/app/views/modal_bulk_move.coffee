@@ -109,10 +109,12 @@ module.exports = class ModalBulkMoveView extends Modal
 
     # Process the update for all the selected elements
     bulkUpdate: (newPath, callback) ->
-
+        window.pendingOperations.move++
         # Process the update 10 by 10
         async.eachLimit @collection, 10, (model, cb) ->
             id = model.get 'id'
             type = model.get 'type'
             client.put "#{type}s/#{id}", path: newPath, cb
-        , callback
+        , ->
+            window.pendingOperations.move--
+            callback()

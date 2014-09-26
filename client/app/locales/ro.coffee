@@ -11,6 +11,8 @@ module.exports =
 
     "root folder name"          : "root"
 
+    "confirmation reload"      : "An operation is in progress, are you sure you want to reload the page?"
+
     # breadcrumbs
     "breadcrumbs search title"  : "Căutare"
 

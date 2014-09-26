@@ -42,13 +42,17 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         # when the queue is totally completed
         @asyncQueue.drain = =>
+            window.pendingOperations.upload = 0
             @completed = true
             @loaded = 0
             @trigger 'upload-complete'
 
-    add: ->
+    add: (models, options) ->
+        # if model doesn't exist, it's a reset so we don't increment
+        window.pendingOperations.upload++ if models?
+
         @reset() if @completed
-        super
+        super models, options
 
     reset: (models, options) ->
         # sets the progress to 0% so next upload initial progress is 0% instead
@@ -58,6 +62,8 @@ module.exports = class UploadQueue extends Backbone.Collection
             totalFiles: @length
             loadedBytes: 0
             totalBytes: @sumProp 'total'
+
+        window.pendingOperations.upload = 0
 
         @loaded = 0
         @completed = false

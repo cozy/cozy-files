@@ -332,11 +332,13 @@ module.exports = class FolderView extends BaseView
     bulkRemove: ->
         new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
+                window.pendingOperations.deletion++
                 async.eachLimit @getSelectedElements(), 10, (element, cb) ->
                     element.destroy
                         success: -> cb()
                         error: -> cb()
                 , (err) ->
+                    window.pendingOperations.deletion--
                     if err?
                         Modal.error t("modal delete error")
                         console.log err

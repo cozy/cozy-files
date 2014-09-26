@@ -20,5 +20,20 @@ $ ->
     # handy shortcut
     window.t = polyglot.t.bind polyglot
 
+    # keeps count of operations in progress
+    window.pendingOperations =
+        upload: 0
+        move: 0
+        deletion: 0
+
     # launch the app
     app.initialize()
+
+# Asks the user if he tries to reload the page while an operation is in progress
+window.onbeforeunload = ->
+
+    values = _.values window.pendingOperations
+    sum = (a, b) -> a + b
+    pendingOperationsNum = _.reduce values, sum, 0
+    if pendingOperationsNum > 0
+        return t 'confirmation reload'
