@@ -514,14 +514,14 @@ module.exports = UploadQueue = (function(_super) {
     existingPaths = app.baseCollection.existingPaths();
     return (nonBlockingLoop = (function(_this) {
       return function() {
-        var blob, model, path, relPath, _ref;
+        var blob, model, path, relPath, subDir, _ref;
         if (!(blob = blobs[i++])) {
           return;
         }
         path = folder.getRepository() || '';
         relPath = blob.relativePath || blob.mozRelativePath || blob.webkitRelativePath || blob.msRelativePath;
-        if (relPath) {
-          path += '/' + Helpers.dirName(relPath);
+        if (relPath && (subDir = Helpers.dirName(relPath)).length > 0) {
+          path += "/" + subDir;
         }
         model = new File({
           type: 'file',
@@ -2458,10 +2458,11 @@ module.exports = FilesView = (function(_super) {
         uploadQueue: options.uploadQueue
       };
     };
-    return this.chevron = {
+    this.chevron = {
       order: this.collection.order,
       type: this.collection.type
     };
+    return this.listenTo(this.collection, 'add remove', this.updateNbFiles);
   };
 
   FilesView.prototype.afterRender = function() {
@@ -2510,6 +2511,11 @@ module.exports = FilesView = (function(_super) {
     this.collection.order = order;
     this.collection.type = type;
     return this.collection.sort();
+  };
+
+  FilesView.prototype.destroy = function() {
+    this.stopListening(this.collection);
+    return FilesView.__super__.destroy.call(this);
   };
 
   return FilesView;
