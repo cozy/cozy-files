@@ -128,7 +128,9 @@ module.exports = class UploadQueue extends Backbone.Collection
                 blob.webkitRelativePath or
                 blob.msRelativePath
 
-            if relPath then path += '/' + Helpers.dirName relPath
+            # Adds sub folder in the path if it's uploaded by a parent folder
+            if relPath and (subDir = Helpers.dirName relPath).length > 0
+                path += "/#{subDir}"
 
             model = new File
                 type: 'file'
