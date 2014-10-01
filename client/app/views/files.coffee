@@ -27,6 +27,8 @@ module.exports = class FilesView extends ViewCollection
 
         @chevron = order: @collection.order, type: @collection.type
 
+        @listenTo @collection, 'add remove', @updateNbFiles
+
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
@@ -69,3 +71,7 @@ module.exports = class FilesView extends ViewCollection
         @collection.order = order
         @collection.type = type
         @collection.sort()
+
+    destroy: ->
+        @stopListening @collection
+        super()
