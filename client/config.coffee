@@ -1,4 +1,6 @@
 path = require 'path'
+glob = require 'glob'
+
 exports.config =
 
     files:
@@ -14,13 +16,14 @@ exports.config =
                     'vendor/scripts/underscore-1.4.4.js'
                     'vendor/scripts/backbone-1.0.0.js'
                     'vendor/scripts/spin.js'
-                ]
+                ].concat(glob.sync 'vendor/plugins/**/*.js')
 
         stylesheets:
             joinTo: 'stylesheets/app.css'
             order:
                 before: ['vendor/styles/normalize.css']
                 after: ['vendor/styles/helpers.css']
+                    .concat(glob.sync 'vendor/plugins/**/*.css')
 
         templates:
             defaultExtension: 'jade'
