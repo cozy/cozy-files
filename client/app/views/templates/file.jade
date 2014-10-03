@@ -10,7 +10,7 @@ td
             span
               | #{model.name}
       else if model.type == 'file'
-        .caption.btn.btn-link
+        .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
           input.selector(type="checkbox")
           if model.mime && this.mimeClasses[model.mime]
             i(class="fa #{this.mimeClasses[model.mime]}")

@@ -20,6 +20,9 @@ $ ->
     # handy shortcut
     window.t = polyglot.t.bind polyglot
 
+    # init plugins
+    require("./utils/plugin_utils").init()
+
     # keeps count of operations in progress
     window.pendingOperations =
         upload: 0
@@ -37,3 +40,4 @@ window.onbeforeunload = ->
     pendingOperationsNum = _.reduce values, sum, 0
     if pendingOperationsNum > 0
         return t 'confirmation reload'
+
