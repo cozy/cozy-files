@@ -11,7 +11,7 @@ module.exports =
 
     "root folder name"          : "racine"
 
-    "confirmation reload"      : "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?"
+    "confirmation reload"      : "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?"
 
     # breadcrumbs
     "breadcrumbs search title"  : "Recherche"
@@ -26,7 +26,7 @@ module.exports =
     "upload running": "Upload en cours. Ne quittez pas votre navigateur."
 
     # file view
-    "modal are you sure"        : "Etes-vous sûr ?"
+    "modal are you sure"        : "Etes-vous sûr ?"
     "modal delete msg"          : "La suppression ne pourra pas être annulée"
     "modal delete ok"           : "Supprimer"
     "modal cancel"              : "Annuler"
@@ -68,12 +68,12 @@ module.exports =
     "upload close"              : "Annuler"
     "upload send"               : "Ajouter"
     "upload button"             : "Ajouter un fichier"
-    "upload success"            : "Ajouté avec succès !"
+    "upload success"            : "Ajouté avec succès !"
     "upload end button"         : "Fermer"
     "total progress"            : "Progression totale"
 
     "new folder caption"        : "Créer un nouveau dossier"
-    "new folder msg"            : "Entrer le nom du dossier :"
+    "new folder msg"            : "Entrer le nom du dossier :"
     "new folder close"          : "Annuler"
     "new folder send"           : "Créer"
     "new folder button"         : "Créer un nouveau dossier"
@@ -117,18 +117,18 @@ module.exports =
     "download file": "Consulter le fichier"
 
      # clearance modal
-    "also have access"                : "Ces personnes ont également accès, car ils ont accès à un dossier parent"
+    "also have access"                : "Ces personnes ont également accès, car elles ont accès à un dossier parent"
     "cancel"                          : "Annuler"
-    "copy paste link"                 : "Pour donner accès à votre contact envoyez lui ce lien : "
+    "copy paste link"                 : "Pour donner accès à votre contact envoyez-lui ce lien : "
     "details"                         : "Details"
     "inherited from"                  : "hérité de"
     "modal question folder shareable" : "Choisissez le mode de partage pour ce dossier"
-    "modal shared folder custom msg"  : "Entrez un email et appuyez sur enter"
-    "modal shared folder link msg"    : "Envoyez ce lien pour qu'ils puissent accéder à ce dossier"
+    "modal shared folder custom msg"  : "Entrez un email et appuyez sur Entrée"
+    "modal shared folder link msg"    : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
     "modal question file shareable"   : "Choisissez le mode de partage pour ce fichier"
-    "modal shared file custom msg"    : "Entrez un email et appuyez sur enter"
-    "modal shared file link msg"      : "Envoyez ce lien pour qu'ils puissent accéder à ce dossier"
-    "only you can see"                : "Seul vous et les personnes ci-dessous peuvent accéder à cette ressource."
+    "modal shared file custom msg"    : "Entrez un email et appuyez sur Entrée"
+    "modal shared file link msg"      : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
+    "only you can see"                : "Seuls vous et les personnes ci-dessous pouvez accéder à cette ressource."
     "public"                          : "Public"
     "private"                         : "Privé"
     "shared"                          : "Partagé"
@@ -136,15 +136,15 @@ module.exports =
     "see link"                        : "Voir le lien"
     "sharing"                         : "Partage"
     "revoke"                          : "Révoquer la permission"
-    "send mails question"             : "Envoyer un email de notification à : "
+    "send mails question"             : "Envoyer un email de notification à : "
     "modal send mails"                : "Envoyer une notification"
-    "forced public"                   : "Ce dossier est public car un parent est public : "
+    "forced public"                   : "Ce dossier est public car un parent est public : "
     "confirm"                         : "Confirmer"
     "share forgot add"                : """
-        Il semble que vous ayez oublié d'appuyer sur le boutton Add
+        Il semble que vous ayez oublié d'appuyer sur le bouton Add
     """
     "share confirm save"              : """
-        Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes vous sûr ?
+        Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr ?
     """
     "yes forgot"                      : "Retour"
     "no forgot"                       : "Ok"
@@ -159,7 +159,7 @@ module.exports =
 
     "move": "Déplacer"
     'tooltip move': "Déplacer l'élément dans un autre dossier."
-    "moving...": "Déplacement en cours..."
+    "moving...": "Déplacement en cours…"
     "move element to": "Déplacer l'élément vers "
     "error occured canceling move": "Une erreur est survenue en annulant le déplacement."
     "error occured while moving element": "Une erreur est survenue en déplaçant l'élément."
