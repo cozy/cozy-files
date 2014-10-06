@@ -32,6 +32,7 @@ module.exports = class FolderView extends BaseView
         'change #select-all': 'onSelectAllChanged'
         'change input.selector': 'onSelectChanged'
 
+        'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
         'click #button-bulk-move'  : 'bulkMove'
 
@@ -347,6 +348,32 @@ module.exports = class FolderView extends BaseView
         new ModalBulkMove
             collection: @getSelectedElements()
             parentPath: @model.getRepository()
+
+    bulkDownload: ->
+        selectedElements = @getSelectedElements()
+        selectedPaths = selectedElements.map (element) ->
+            if element.isFolder()
+                return "#{element.getRepository()}/"
+            else
+                return "#{element.getRepository()}"
+        url = @model.getZipURL()
+
+        serializedSelection = selectedPaths.join ';'
+
+        # To trigger a download from a POST request, we must create an hidden
+        # form and submit it.
+        inputValue = """
+        value="#{serializedSelection}"
+        """
+        form = """
+        <form id="temp-zip-download" action="#{url}" method="post">
+            <input type="hidden" name="selectedPaths" #{inputValue}/>
+        </form>
+        """
+        $('body').append form
+        $('#temp-zip-download').submit()
+        $('#temp-zip-download').remove()
+
 
     ###
         Misc

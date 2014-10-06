@@ -84,7 +84,7 @@ module.exports = class File extends Backbone.Model
     # Only relevant if model is a folder
     getZipURL: ->
         if @isFolder()
-            toAppend = "/zip/#{@get 'name'}"
+            toAppend = "/zip/#{encodeURIComponent @get 'name'}"
             @url toAppend
 
     # Only relevant if model is a file

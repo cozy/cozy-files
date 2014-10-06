@@ -405,6 +405,12 @@ module.exports.zip = (req, res, next) ->
 
     key = "#{folder.path}/#{folder.name}"
 
+    # Request can limit the ZIP content to some elements only
+    if req.body?.selectedPaths?
+        selectedPaths = req.body.selectedPaths.split ';'
+    else
+        selectedPaths = []
+
     # Download file with custom low level downloader and pipe the result in the
     # archiver.
     addToArchive = (file, cb) ->
@@ -438,6 +444,19 @@ module.exports.zip = (req, res, next) ->
     File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
         if err then next err
         else
+            # Only keeps files that have been selected
+            files = files.filter (file) ->
+                fullPath = "#{file.path}/#{file.name}"
+                path = "#{file.path}/"
+
+                fileMatch = selectedPaths.indexOf(fullPath) isnt -1
+                subFolderMatch = selectedPaths.indexOf(path) isnt -1
+
+                # Selects the file if it has been selected OR its parent has
+                # been selected (or parent of its parent...) OR if no file has
+                # been selected
+                return selectedPaths.length is 0 or fileMatch or subFolderMatch
+
             # Build zip file.
             zipName = folder.name?.replace /\W/g, ''
             makeZip zipName, files

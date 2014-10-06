@@ -81,6 +81,7 @@ module.exports =
     "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
+    "download all"              : "Download the selection"
     "move all"                  : "Move the selection"
     "remove all"                : "Remove the selection"
 
