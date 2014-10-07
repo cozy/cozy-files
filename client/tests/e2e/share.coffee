@@ -9,44 +9,30 @@ sc = (fileName) ->
 
 casper.options.viewportSize = width: 1280, height: 800
 casper.test.begin 'Share - share an element in public', (test) ->
+    helpers._test = test
     link = null
+    selector = null
     casper.start 'http://localhost:9121', ->
         test.assertTitle 'Cozy - Files', 'Checks that application is properly started'
+        selector = helpers.getElementSelectorByName 'Mes images'
+        helpers.assertHasClass "#{selector} .file-share span", 'fa-lock'
 
-        test.assertExist '.file-share:first-of-type'
-        elem = @evaluate ->
-            return __utils__.findOne '.file-share:first-of-type span'
+    casper.then -> helpers.makeAccessPublic selector
 
-        test.assert elem.className.indexOf('fa-lock') isnt -1
-
-    casper.thenClick '.file-share:first-of-type'
-
-    casper.waitUntilVisible '#cozy-clearance-modal'
-    # the modal has an animation
-    casper.wait 500
-
-    casper.thenClick '#share-public'
-    casper.waitUntilVisible '#public-url'
     casper.then ->
-        link = @evaluate ->
-            return __utils__.findOne('#public-url').value
+        link = @evaluate -> __utils__.findOne('#public-url').value
+        # the app name of the URL is removed because tests are not run in a Cozy
         link = link.replace 'public/files/', 'public/'
         casper.open(link).then (response) ->
             test.assertEqual response.status, 404, "The element shouldn't be publicly accessible"
 
     casper.then -> @back()
 
-    casper.thenClick '.file-share:first-of-type'
-    casper.waitUntilVisible '#cozy-clearance-modal'
-    # the modal has an animation
-    casper.wait 500
+    casper.then ->
+        helpers.makeAccessPublic selector
+        helpers.saveAndCloseModal()
 
-    casper.thenClick '#share-public'
-    casper.waitUntilVisible '#public-url'
-
-    casper.thenClick '#modal-dialog-yes'
-    casper.waitWhileVisible '#cozy-clearance-modal'
-    casper.wait 500, ->
+    casper.then ->
         elem = @evaluate ->
             return __utils__.findOne '.file-share:first-of-type span'
         test.assert elem.className.indexOf('fa-lock') is -1
@@ -69,6 +55,7 @@ casper.test.begin 'Share - share an element in public', (test) ->
 
     casper.run -> test.done()
 
+###
 casper.test.begin 'Share - share an element in private', (test) ->
     publicLink = null
     limitedLink = null
@@ -186,3 +173,4 @@ casper.test.begin 'Share - share an element in private', (test) ->
             test.assertEqual response.status, 404, "The element shouldn't be accessible anymore"
 
     casper.run -> test.done()
+###
