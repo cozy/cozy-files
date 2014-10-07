@@ -1266,6 +1266,7 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "download all": "Download the selection",
   "move all": "Move the selection",
   "remove all": "Remove the selection",
   "drop message": "Drop your files here to automatically add them",
@@ -1396,6 +1397,7 @@ module.exports = {
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
+  "download all": "Télécharger la sélection",
   "move all": "Déplacer la sélection",
   "remove all": "Supprimer la sélection",
   "drop message": "Lâchez ici vos fichiers pour les ajouter",
@@ -1687,7 +1689,7 @@ module.exports = File = (function(_super) {
   File.prototype.getZipURL = function() {
     var toAppend;
     if (this.isFolder()) {
-      toAppend = "/zip/" + (this.get('name'));
+      toAppend = "/zip/" + (encodeURIComponent(this.get('name')));
       return this.url(toAppend);
     }
   };
@@ -2575,6 +2577,7 @@ module.exports = FolderView = (function(_super) {
       'change #folder-uploader': 'onDirectorySelected',
       'change #select-all': 'onSelectAllChanged',
       'change input.selector': 'onSelectChanged',
+      'click #button-bulk-download': 'bulkDownload',
       'click #button-bulk-remove': 'bulkRemove',
       'click #button-bulk-move': 'bulkMove',
       'dragstart #files': 'onDragStart',
@@ -2943,6 +2946,25 @@ module.exports = FolderView = (function(_super) {
       collection: this.getSelectedElements(),
       parentPath: this.model.getRepository()
     });
+  };
+
+  FolderView.prototype.bulkDownload = function() {
+    var form, inputValue, selectedElements, selectedPaths, serializedSelection, url;
+    selectedElements = this.getSelectedElements();
+    selectedPaths = selectedElements.map(function(element) {
+      if (element.isFolder()) {
+        return "" + (element.getRepository()) + "/";
+      } else {
+        return "" + (element.getRepository());
+      }
+    });
+    url = this.model.getZipURL();
+    serializedSelection = selectedPaths.join(';');
+    inputValue = "value=\"" + serializedSelection + "\"";
+    form = "<form id=\"temp-zip-download\" action=\"" + url + "\" method=\"post\">\n    <input type=\"hidden\" name=\"selectedPaths\" " + inputValue + "/>\n</form>";
+    $('body').append(form);
+    $('#temp-zip-download').submit();
+    return $('#temp-zip-download').remove();
   };
 
 
@@ -3813,7 +3835,7 @@ if ( supportsDirectoryUpload)
 {
 buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>" + (jade.escape(null == (jade_interp = t('upload folder msg')) ? "" : jade_interp)) + "</span></a></li></ul>");
 }
-buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\"><a id=\"button-bulk-move\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('move all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span></a><a id=\"button-bulk-remove\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('remove all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></div>");
+buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\"><a id=\"button-bulk-download\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('download all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"icon-arrow-down icon-white\"></span></a><a id=\"button-bulk-move\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('move all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-arrow-right\"></span></a><a id=\"button-bulk-remove\" class=\"btn btn-cozy btn-cozy\">" + (jade.escape((jade_interp = t('remove all')) == null ? '' : jade_interp)) + "&nbsp;<span class=\"glyphicon glyphicon-remove-circle\"></span></a></div></div>");
 if ( isPublic && hasPublicKey)
 {
 if ( areNotificationsEnabled)

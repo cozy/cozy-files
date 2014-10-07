@@ -570,10 +570,15 @@ module.exports.searchContent = function(req, res, next) {
 };
 
 module.exports.zip = function(req, res, next) {
-  var addToArchive, archive, folder, key, makeZip;
+  var addToArchive, archive, folder, key, makeZip, selectedPaths, _ref;
   folder = req.folder;
   archive = archiver('zip');
   key = "" + folder.path + "/" + folder.name;
+  if (((_ref = req.body) != null ? _ref.selectedPaths : void 0) != null) {
+    selectedPaths = req.body.selectedPaths.split(';');
+  } else {
+    selectedPaths = [];
+  }
   addToArchive = function(file, cb) {
     return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
       var name;
@@ -610,11 +615,19 @@ module.exports.zip = function(req, res, next) {
     startkey: "" + key + "/",
     endkey: "" + key + "/\ufff0"
   }, function(err, files) {
-    var zipName, _ref;
+    var zipName, _ref1;
     if (err) {
       return next(err);
     } else {
-      zipName = (_ref = folder.name) != null ? _ref.replace(/\W/g, '') : void 0;
+      files = files.filter(function(file) {
+        var fileMatch, fullPath, path, subFolderMatch;
+        fullPath = "" + file.path + "/" + file.name;
+        path = "" + file.path + "/";
+        fileMatch = selectedPaths.indexOf(fullPath) !== -1;
+        subFolderMatch = selectedPaths.indexOf(path) !== -1;
+        return selectedPaths.length === 0 || fileMatch || subFolderMatch;
+      });
+      zipName = (_ref1 = folder.name) != null ? _ref1.replace(/\W/g, '') : void 0;
       return makeZip(zipName, files);
     }
   });

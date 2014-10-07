@@ -61,7 +61,8 @@ module.exports = {
     "delete": folders.destroy
   },
   'folders/:folderid/zip/:name': {
-    get: folders.zip
+    get: folders.zip,
+    post: folders.zip
   },
   'search/folders': {
     post: folders.search
