@@ -11,6 +11,8 @@ allCheckedInList = "tr.folder-row input.selector:checked"
 
 casper.test.begin 'Bulk actions - select all', (test) ->
 
+    helpers._test = test
+
     casper.start 'http://localhost:9121', ->
 
         test.assertTitle 'Cozy - Files', 'Checks that application is properly started'
