@@ -59,6 +59,18 @@ module.exports =
         Le fichier a été transféré. ||||
         %{smart_count} fichiers ont été transférés.
     """
+
+    "chrome error dragdrop title": "Des fichiers vont être ignorés"
+    "chrome error dragdrop content": """
+        A cause d'un bug de Chrome, les fichiers suivants : %{files} seront
+        ignorés car leur nom contient un accent. Ajoutez les en cliquant depuis
+        le bouton en haut à droite de votre écran. ||||
+        A cause d'un bug de Chrome, le fichier suivant : %{files} sera
+        ignoré car son nom contient un accent. Ajoutez le en cliquant depuis
+        le bouton en haut à droite de votre écran.
+    """
+    "chrome error submit": "Ok"
+
     "upload caption"            : "Ajouter des fichiers"
     "upload msg"                : "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne."
     "upload msg selected"       : """

@@ -213,13 +213,32 @@ module.exports = class FolderView extends BaseView
         # the callback when there are no operation pending
         pending = 0
         files = []
+        errors = []
         callback = =>
-            @uploadQueue.addFolderBlobs files, @model
 
-            if e.target?
-                target = $ e.target
-                # reset the input
-                target.replaceWith target.clone true
+            processUpload = =>
+                @uploadQueue.addFolderBlobs files, @model
+
+                if e.target?
+                    target = $ e.target
+                    # reset the input
+                    target.replaceWith target.clone true
+
+            if errors.length > 0
+                formattedErrors = errors
+                    .map (name) -> "\"#{name}\""
+                    .join ', '
+                localeOptions =
+                    files: formattedErrors
+                    smart_count: errors.length
+
+                new Modal t('chrome error dragdrop title'), \
+                    t('chrome error dragdrop content', localeOptions), \
+                    t('chrome error submit'), null, (confirm) =>
+                        processUpload()
+            else
+                processUpload()
+
 
         # An entry can be a folder or a file
         parseEntriesRecursively = (entry, path) =>
@@ -230,11 +249,15 @@ module.exports = class FolderView extends BaseView
             # if it's a file we add it to the file list with a proper
             # relative path
             if entry.isFile
-                entry.file (file) =>
+                entry.file (file) ->
                     file.relativePath = "#{path}#{file.name}"
                     files.push file
                     pending = pending - 1
-
+                    # if there are no operation left, the upload starts
+                    callback() if pending is 0
+                , (error) ->
+                    errors.push entry.name
+                    pending = pending - 1
                     # if there are no operation left, the upload starts
                     callback() if pending is 0
 
