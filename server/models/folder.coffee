@@ -47,10 +47,13 @@ Folder::getFullPath = ->
 Folder::getParents = (callback) ->
     foldersOfPath = @getFullPath().split '/'
     parentFoldersPath = []
+
     # extract all parent's full path
     while foldersOfPath.length > 0
         parent = foldersOfPath.join '/'
-        parentFoldersPath.push parent if parent isnt ""
+
+        # Root and current folder aren't in the parents
+        parentFoldersPath.push parent if parent not in ['', @getFullPath()]
         foldersOfPath.pop()
 
     Folder.byFullPath keys: parentFoldersPath.reverse(), callback

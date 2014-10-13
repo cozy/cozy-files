@@ -51,8 +51,8 @@ module.exports.details = (req, res, next) ->
     element.getParents (err, parents) ->
         return next err if err?
 
-        # if we check a folder, we must excluse the folder itself from the parent's tree
-        # otherwise we can't change its clearance afterwards
+        # if we check a folder, we must exclude the folder itself from
+        #the parent's tree otherwise we can't change its clearance afterwards
         parents.shift() if parents.length > 0 and parents[0].id is element.id
 
         # keep only element of path that alter the clearance
