@@ -35,17 +35,21 @@ module.exports.limitedTree = (folder, req, perm, callback) ->
     folder.getParents (err, parents) ->
         return callback [] if err
 
+        # adds the current folder to its parent list so its clearance can be
+        # checked
+        parents.push folder
+
         # remove start of path until first visible
         scan = ->
             tested = parents[0]
-            return callback [] unless tested
-            clearance.check tested, perm, req, (err, authorized) ->
+            return callback [] unless tested?
+            clearance.check tested, perm, req, (err, rule) ->
                 return callback [] if err
-                if not authorized
+                if not rule
                     parents.shift()
                     scan()
                 else
-                    callback parents, authorized
+                    callback parents, rule
         scan()
 
 # check that doc is viewable by req

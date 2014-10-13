@@ -312,7 +312,12 @@ module.exports.findContent = (req, res, next) ->
                     else
                         # if it's a request from a guest, we need to limit the result
                         if req.url.indexOf('/public/') isnt -1
-                            sharing.limitedTree folder, req, (parents, authorized) -> cb null, parents
+                            onResult = (parents, rule) ->
+                                # limitedTree adds the current folder as parent
+                                # so we need to remove it
+                                parents.pop()
+                                cb null, parents
+                            sharing.limitedTree folder, req, onResult
                         else
                             folder.getParents cb
             ], (err, results) ->
