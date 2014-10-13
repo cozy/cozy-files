@@ -163,4 +163,6 @@ module.exports = class File extends Backbone.Model
             @breadcrumb = [window.app.root.toJSON(), @toJSON()]
         else
             parents.unshift window.app.root.toJSON()
+            # adds the current folder to the parent's list unless it's the root
+            parents.push @toJSON() unless @isRoot()
             @breadcrumb = parents
