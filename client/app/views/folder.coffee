@@ -61,6 +61,9 @@ module.exports = class FolderView extends BaseView
         @listenTo @baseCollection, 'remove', @toggleFolderActions
         @listenTo @collection, 'remove', @toggleFolderActions
 
+        # when clearance is saved, we update the share button's icon
+        @listenTo @model, 'sync', @onFolderSync
+
         return this
 
     destroy: ->
@@ -414,3 +417,25 @@ module.exports = class FolderView extends BaseView
         if @collection.length is 0
             event.preventDefault()
             Modal.error t 'modal error zip empty folder'
+
+    # Updates the share button's icon and content
+    onFolderSync: ->
+        clearance = @model.get 'clearance'
+        if clearance is 'public'
+            shareStateContent = """
+                #{t 'public'}
+                <span class="fa fa-globe"></span>
+            """
+        else if clearance? and clearance.length > 0
+            shareStateContent = """
+                #{t 'shared'}
+                <span class="fa fa-users"></span>
+                <span>#{clearance.length}</span>
+            """
+        else
+            shareStateContent = """
+                #{t 'private'}
+                <span class="fa fa-lock"></span>
+            """
+
+        @$('#share-state').html shareStateContent
