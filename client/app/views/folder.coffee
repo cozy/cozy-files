@@ -81,6 +81,7 @@ module.exports = class FolderView extends BaseView
     getRenderData: ->
         supportsDirectoryUpload: @testEnableDirectoryUpload()
         model: @model.toJSON()
+        clearance: @model.getClearance()
         query: @query
         zipUrl: @model.getZipURL()
 
@@ -102,7 +103,9 @@ module.exports = class FolderView extends BaseView
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
-        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb, model: @model
+        @breadcrumbsView = new BreadcrumbsView
+            collection: @model.breadcrumb
+            model: @model
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
@@ -126,7 +129,12 @@ module.exports = class FolderView extends BaseView
     # Refresh folder's content and manage spinner
     refreshData: ->
         @spin()
-        @baseCollection.getFolderContent @model, => @spin false
+        @baseCollection.getFolderContent @model, =>
+            @spin false
+
+            # if the inherited clearance has changed, we need to refresh
+            # the share button's icon
+            @onFolderSync()
 
     ###
         Button handlers
@@ -147,9 +155,7 @@ module.exports = class FolderView extends BaseView
             view = @filesList.views[@newFolder.cid]
             view.onEditClicked()
 
-            @newFolder.once 'sync destroy', =>
-                @newFolder = null
-
+            @newFolder.once 'sync destroy', => @newFolder = null
 
     onShareClicked: -> new ModalShareView model: @model
 
@@ -420,7 +426,7 @@ module.exports = class FolderView extends BaseView
 
     # Updates the share button's icon and content
     onFolderSync: ->
-        clearance = @model.get 'clearance'
+        clearance = @model.getClearance()
         if clearance is 'public'
             shareStateContent = """
                 #{t 'public'}

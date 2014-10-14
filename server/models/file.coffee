@@ -1,6 +1,7 @@
 fs = require 'fs'
 americano = require 'americano-cozy'
 moment = require 'moment'
+async = require 'async'
 feed = require '../lib/feed'
 log = require('printit')
     prefix: 'file-model'
@@ -32,6 +33,15 @@ File.byFolder = (params, callback) ->
 
 File.byFullPath = (params, callback) ->
     File.request "byFullPath", params, callback
+
+# Careful, it turns files jugglingdb object into regular JS objects
+File.injectInheritedClearance = (files, callback) ->
+    async.map files, (file, cb) ->
+        regularFile = file.toObject()
+        file.getInheritedClearance (err, inheritedClearance) ->
+            regularFile.inheritedClearance = inheritedClearance
+            cb err, regularFile
+    , callback
 
 
 # Perform all operation required to create a new file:
@@ -103,6 +113,23 @@ File::getParents = (callback) ->
             a.getFullPath().length - b.getFullPath().length
 
         callback null, parents
+
+File::getInheritedClearance = (callback) ->
+
+    @getParents (erer, parents) ->
+        return callback err if err?
+
+        # keep only element of path that alter the clearance
+        isPublic = false
+        inherited = parents?.filter (parent) ->
+            parent.clearance = [] unless parent.clearance?
+
+            if isPublic then return false
+
+            isPublic = true if parent.clearance is 'public'
+            return parent.clearance.length isnt 0
+
+        callback null, inherited
 
 File::updateParentModifDate = (callback) ->
     Folder.byFullPath key: @path, (err, parents) =>

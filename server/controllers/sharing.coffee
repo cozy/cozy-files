@@ -47,25 +47,10 @@ module.exports.fetch = (req, res, next, id) ->
 
 # retrieve inherited sharing info
 module.exports.details = (req, res, next) ->
-    element = req.doc
-    element.getParents (err, parents) ->
-        return next err if err?
-
-        # if we check a folder, we must exclude the folder itself from
-        #the parent's tree otherwise we can't change its clearance afterwards
-        parents.shift() if parents.length > 0 and parents[0].id is element.id
-
-        # keep only element of path that alter the clearance
-        isPublic = false
-        inherited = parents?.filter (parent) ->
-            parent.clearance = [] unless parent.clearance?
-
-            if isPublic then return false
-
-            isPublic = true if parent.clearance is 'public'
-            return parent.clearance.length isnt 0
-
-        res.send inherited: inherited
+    req.doc.getInheritedClearance (err, inherited) ->
+        if err? then next err
+        else
+            res.send inherited: inherited
 
 # do not use clearanceCtl, because we handle notifications
 module.exports.change = (req, res, next) ->

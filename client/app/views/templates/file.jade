@@ -31,10 +31,10 @@ td
       if !isBeingUploaded
         .operations
           a.file-share(title="#{t('tooltip share')}")
-            if model.clearance == 'public'
+            if clearance == 'public'
               span.fa.fa-globe
-            else if model.clearance && model.clearance.length > 0
-              span.fa.fa-users #{model.clearance.length}
+            else if clearance && clearance.length > 0
+              span.fa.fa-users #{clearance.length}
             else
               span.fa.fa-lock
           a.file-edit(title="#{t('tooltip edit')}")

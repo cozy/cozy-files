@@ -300,18 +300,35 @@ module.exports.allFolders = (req, res, next) ->
         else res.send folders
 
 module.exports.findContent = (req, res, next) ->
+
+    isPublic = req.url.indexOf('/public/') isnt -1
+
     getFolderPath req.body.id, (err, key, folder) ->
         if err? then next err
         else
             async.parallel [
-                (cb) -> Folder.byFolder key: key, cb
-                (cb) -> File.byFolder key: key, cb
+
+                # Retrieves the folders and inject the inherited clearance
+                (cb) -> Folder.byFolder key: key, (err, folders) ->
+                    # if it's a request from a guest, we limit the results
+                    unless isPublic
+                        Folder.injectInheritedClearance folders, cb
+                    else
+                        cb null, folders
+
+                # Retrieves the files and inject the inherited clearance
+                (cb) -> File.byFolder key: key, (err, files) ->
+                    # if it's a request from a guest, we limit the results
+                    unless isPublic
+                        File.injectInheritedClearance files, cb
+                    else
+                        cb null, files
                 (cb) ->
                     if req.body.id is "root"
                         cb null, []
                     else
-                        # if it's a request from a guest, we need to limit the result
-                        if req.url.indexOf('/public/') isnt -1
+                        # if it's a request from a guest, we limit the results
+                        if isPublic
                             onResult = (parents, rule) ->
                                 # limitedTree adds the current folder as parent
                                 # so we need to remove it
@@ -373,8 +390,13 @@ module.exports.searchContent = (req, res, next) ->
             parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
             tag = parts[0].split('tag:')[1]
             requests = [
-                (cb) -> Folder.request 'byTag', key: tag, cb
-                (cb) -> File.request 'byTag', key: tag, cb
+                # Retrieves the folders and inject the inherited clearance
+                (cb) -> Folder.request 'byTag', key: tag, (err, folders) ->
+                    Folder.injectInheritedClearance folders, cb
+
+                # Retrieves the files and inject the inherited clearance
+                (cb) -> File.request 'byTag', key: tag, (err, files) ->
+                    File.injectInheritedClearance files, cb
             ]
         else
             requests = [

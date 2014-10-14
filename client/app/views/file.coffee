@@ -98,6 +98,7 @@ module.exports = class FileView extends BaseView
             isBeingUploaded: @model.isBeingUploaded()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
+            clearance: @model.getClearance()
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
