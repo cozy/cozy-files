@@ -1,17 +1,16 @@
 fs     = require 'fs'
 {exec} = require 'child_process'
+logger = require('printit')
+            date: false
+            prefix: 'cake'
 
 option '-f' , '--file [FILE*]' , 'test file to run'
 option ''   , '--dir [DIR*]'   , 'directory where to grab test files'
-option '-d' , '--debug'        , 'run node in debug mode'
-option '-b' , '--debug-brk'    , 'run node in --debug-brk mode (stops on first line)'
+option '-j' , '--use-js', 'If enabled, tests will run with the built files'
 
 options =  # defaults, will be overwritten by command line options
     file        : no
     dir         : no
-    debug       : no
-    'debug-brk' : no
-
 
 # Grab test files of a directory
 walk = (dir, fileList) ->
@@ -47,11 +46,9 @@ task 'tests:client', 'run client tests through mocha', (opts) ->
 
 
 runTests = (fileList) ->
-    command = "mocha " + fileList.join(" ") + " "
-    if options['debug-brk']
-        command += "--debug-brk --forward-io --profile "
-    if options.debug
-        command += "--debug --forward-io --profile "
+    env = " USE_JS=true" if options['use-js']? and options['use-js']
+
+    command = "#{env} mocha " + fileList.join(" ") + " "
     command += " --globals setImmediate,clearImmediate"
     command += " --reporter spec --compilers coffee:coffee-script/register --colors"
     exec command, (err, stdout, stderr) ->
@@ -60,15 +57,21 @@ runTests = (fileList) ->
         console.log stdout
         process.exit if err then 1 else 0
 
-task 'convert', 'convert from coffee to JS', ->
-    files = walk "server", []
-    console.log "Convert to JS..."
-    command = "coffee -cb server.coffee #{files.join ' '} "
+task 'build', 'Build CoffeeScript to Javascript', ->
+    logger.options.prefix = 'cake:build'
+    logger.info "Start compilation..."
+    command = "coffee -cb --output build/server server && " + \
+              "coffee -cb --output build/ server.coffee && " + \
+              "rm -rf build/client && mkdir build/client && " + \
+              # prepare the client build
+              "cp ./client/index.jade ./build/client/index.jade && " + \
+              "cp ./client/widget.jade ./build/client/widget.jade && " + \
+              "cd client/ && brunch build --production && cd .."
+
     exec command, (err, stdout, stderr) ->
-        console.log stdout
         if err
-            console.log "Running convertion caught exception: \n" + err
+            logger.error "An error has occurred while compiling:\n" + err
             process.exit 1
         else
-            console.log "Convertion succeeded."
+            logger.info "Compilation succeeded."
             process.exit 0

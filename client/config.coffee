@@ -1,7 +1,5 @@
+path = require 'path'
 exports.config =
-
-    paths:
-        public: 'public'
 
     plugins:
         coffeelint:
@@ -47,4 +45,13 @@ exports.config =
     plugins:
         jade:
             globals: ['t', 'moment']
-    framework: 'backbone'
+
+    overrides:
+        production:
+            # re-enable when uglifyjs will handle properly in source maps
+            # with sourcesContent attribute
+            #optimize: true
+            sourceMaps: true
+            paths:
+                public: path.resolve __dirname, '../build/client/public'
+

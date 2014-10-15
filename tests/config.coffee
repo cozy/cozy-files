@@ -1,5 +1,5 @@
 helpers = require './helpers'
-Config = require '../server/models/config'
+Config = require "#{helpers.prefix}server/models/config"
 expect = require('chai').expect
 
 describe 'Config', ->

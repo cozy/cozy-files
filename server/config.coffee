@@ -1,10 +1,12 @@
 americano = require 'americano'
+path = require 'path'
 
 module.exports =
 
     common:
         use: [
-            americano.static __dirname + '/../client/public', maxAge: 86400000
+            americano.static path.resolve(__dirname, '../client/public'),
+                maxAge: 86400000
             americano.bodyParser keepExtensions: true
             require('./helpers/shortcut')
             americano.errorHandler

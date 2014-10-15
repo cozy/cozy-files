@@ -1939,8 +1939,14 @@ Contact.fromVCF = function(vcf) {
         current.dataPoints.add(currentdp);
       }
       imported.add(current);
-      if (current.has('n')) {
-        current.unset('fn');
+      if (current.has('n') && current.has('fn')) {
+        if (_.compact(current.get('n')).length === 0) {
+          current.unset('n');
+        } else {
+          current.unset('fn');
+        }
+      } else if (!current.has('n') && !current.has('fn')) {
+        console.error('There should be at least a N field or a FN field');
       }
       currentdp = null;
       current = null;

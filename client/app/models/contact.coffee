@@ -233,7 +233,21 @@ Contact.fromVCF = (vcf) ->
         else if regexps.end.test line
             current.dataPoints.add currentdp if currentdp
             imported.add current
-            current.unset 'fn' if current.has 'n'
+
+            # There is two fields N and FN that does the same thing but the
+            # same way. Some vCard have one or ther other, or both.
+            # If both are present, we use the following order:
+            # N (if it exists and is valid) > FN
+            if current.has('n') and current.has('fn')
+                if _.compact(current.get 'n').length is 0
+                    current.unset 'n'
+                else
+                    current.unset 'fn'
+
+            else if not current.has('n') and not current.has('fn')
+                console.error 'There should be at least a N field or a FN field'
+            # else already well formatted
+
             currentdp = null
             current = null
             currentidx = null
@@ -326,8 +340,6 @@ Contact.fromVCF = (vcf) ->
 
             properties = properties.split ';'
 
-            # console.log "properties=", properties
-
             for property in properties
                 match = property.match regexps.property
                 if match then [all, pname, pvalue] = match
@@ -341,6 +353,5 @@ Contact.fromVCF = (vcf) ->
                     currentdp.set pname.toLowerCase(), pvalue.toLowerCase()
 
             currentdp.set 'value', value
-
 
     return imported

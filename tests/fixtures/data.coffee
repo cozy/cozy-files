@@ -1,4 +1,4 @@
-sampleaddress = 'Box3;Suite215;14 Avenue de la République;Compiègne;Picardie;60200;France'
+sampleaddress = '14 Avenue de la République, 60200 Compiègne, Picardie, France'
 
 
 makeLog = (tsp, dir, nb, dur) ->
