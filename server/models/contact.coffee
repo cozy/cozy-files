@@ -43,7 +43,11 @@ Contact::toVCF = (config) ->
         out += "N:#{model.n}\n"
         out += "FN:#{@getComputedFN(config)}\n"
     else if model.fn
+        out += "N:;;;;\n"
         out += "FN:#{model.fn}\n"
+    else
+        out += "N:;;;;\n"
+        out += "FN:\n"
 
     for i, dp of model.datapoints
 
