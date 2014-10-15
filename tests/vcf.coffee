@@ -27,11 +27,12 @@ describe 'VCF Import/Export', ->
 BEGIN:VCARD
 VERSION:3.0
 NOTE:notes
+N:;;;;
 FN:John Smith
 TEL;TYPE=HOME:+331234567
 TEL;TYPE=WORK:12584367
 EMAIL;TYPE=HOME:jsmith@test.com
-ADR;TYPE=HOME:Box3;Suite215;14 Avenue de la République;Compiègne;Picardie;60200;France
+ADR;TYPE=home,postal:;;14 Avenue de la République, 60200 Compiègne, Picardie, France;;;;
 END:VCARD
 
 """
