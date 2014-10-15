@@ -6,6 +6,7 @@ start = (port, callback) ->
     americano.start
         name: 'Contacts'
         port: port
+        root: __dirname
     , (app, server) ->
 
         # start contact watch to upadte UI when new contact are added

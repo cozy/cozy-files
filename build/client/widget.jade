@@ -1,0 +1,36 @@
+!!!
+html
+  head
+    title Cozy - Contacts
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible",content="IE=edge,chrome=1")
+    meta(name="viewport", content="width=device-width,initial-scale=1")
+    link(rel="stylesheet", href="stylesheets/vendor.css")
+    link(rel="stylesheet", href="stylesheets/app.css")
+    style(type="text/css").
+      #contacts-list{ top: 0px; }
+      #contacts-list #contacts .contact-thumb img{
+        margin-top: 4px;
+        height: 32px;
+        width: 32px;
+      }
+      #contacts-list #contacts .contact-thumb h2{
+        margin-left: 10px;
+        float: left;
+      }
+      #contacts-list #contacts .contact-thumb .infos{
+        float: right;
+      }
+      #contacts-list #contacts .contact-thumb .infos span{
+        text-align: right;
+        float: none;
+      }
+
+  body
+    script(src="javascripts/vendor.js")
+    script(src="javascripts/app.js")
+    script!= imports
+    script.
+      require('initializewidget');
+
+
