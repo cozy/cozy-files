@@ -53,20 +53,25 @@ Contact::toVCF = (config) ->
 
         value = dp.value
 
-        switch dp.name
+        key = dp.name.toUpperCase()
+        switch key
 
-            when 'about'
+            when 'ABOUT'
                 if dp.type is 'org' or dp.type is 'title'
                     out += "#{dp.type.toUpperCase()}:#{value}\n"
                 else
                     out += "X-#{dp.type.toUpperCase()}:#{value}\n"
 
-            when 'other'
+            when 'OTHER'
                 out += "X-#{dp.type.toUpperCase()}:#{value}\n"
 
+            when 'ADR'
+                # since a proper address management would be very complicated
+                # we trick it a bit so it matched the standard
+                value = value.replace /(\r\n|\n\r|\r|\n)/g, ";"
+                content = "TYPE=home,postal:;;#{value};;;;"
+                out += "ADR;#{content}\n"
             else
-                key = dp.name.toUpperCase()
-                value = value.replace(/(\r\n|\n\r|\r|\n)/g, ";") if key is 'ADR'
                 type = "TYPE=#{dp.type.toUpperCase()}"
                 out += "#{key};#{type}:#{value}\n"
 
