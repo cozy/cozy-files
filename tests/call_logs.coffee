@@ -3,7 +3,7 @@ fs = require 'fs'
 helpers = require './helpers'
 expect = require('chai').expect
 async  = require 'async'
-PhoneCommunicationLog = require '../server/models/phone_communication_log'
+PhoneCommunicationLog = require "#{helpers.prefix}server/models/phone_communication_log"
 
 describe 'Call Logs', ->
 

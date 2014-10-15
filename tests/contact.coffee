@@ -1,11 +1,12 @@
 fs = require 'fs'
 expect = require('chai').expect
 
-Task = require '../server/models/task'
-Contact = require '../server/models/contact'
-
 fixtures = require './fixtures/data'
 helpers = require './helpers'
+
+Task = require "#{helpers.prefix}server/models/task"
+Contact = require "#{helpers.prefix}server/models/contact"
+
 
 describe 'Contacts', ->
 

@@ -6,6 +6,7 @@ logger = require('printit')
 
 option '-f' , '--file [FILE*]' , 'test file to run'
 option ''   , '--dir [DIR*]'   , 'directory where to grab test files'
+option '-j' , '--use-js', 'If enabled, tests will run with the built files'
 
 options =  # defaults, will be overwritten by command line options
     file        : no
@@ -45,11 +46,9 @@ task 'tests:client', 'run client tests through mocha', (opts) ->
 
 
 runTests = (fileList) ->
-    command = "mocha " + fileList.join(" ") + " "
-    if options['debug-brk']
-        command += "--debug-brk --forward-io --profile "
-    if options.debug
-        command += "--debug --forward-io --profile "
+    env = " USE_JS=true" if options['use-js']? and options['use-js']
+
+    command = "#{env} mocha " + fileList.join(" ") + " "
     command += " --globals setImmediate,clearImmediate"
     command += " --reporter spec --compilers coffee:coffee-script/register --colors"
     exec command, (err, stdout, stderr) ->
