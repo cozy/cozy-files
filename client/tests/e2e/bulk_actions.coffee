@@ -9,6 +9,7 @@ elementIcon = "#{firstElement} .fa.fa-folder"
 elementCheckbox = "#{firstElement} input.selector"
 allCheckedInList = "tr.folder-row input.selector:checked"
 
+###
 casper.test.begin 'Bulk actions - select all', (test) ->
 
     helpers._test = test
@@ -184,12 +185,14 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
         test.assert movedElementsNum is elementsNum, "The elements should be back"
 
     casper.run -> test.done()
-
+###
 casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
+
+    helpers._test = test
 
     casper.start 'http://localhost:9121', ->
 
-        manyFileFolderSelector = helpers.getElementSelectorByName 'Many files'
+        manyFileFolderSelector = helpers.getElementSelectorByName 'Files to remove'
         test.assertEval ->
             return __utils__.findAll("tr.folder-row .fa-folder").length > 0
         , "There should must be at least one folder"
@@ -197,7 +200,7 @@ casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
         test.assertExist manyFileFolderSelector
         test.assertVisible manyFileFolderSelector
 
-        helpers.navigateToFolder 'Files to remove files'
+        helpers.navigateToFolder 'Files to remove'
 
     casper.then ->
         movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
