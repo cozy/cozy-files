@@ -419,6 +419,8 @@ module.exports.allFolders = function(req, res, next) {
 };
 
 module.exports.findContent = function(req, res, next) {
+  var isPublic;
+  isPublic = req.url.indexOf('/public/') !== -1;
   return getFolderPath(req.body.id, function(err, key, folder) {
     if (err != null) {
       return next(err);
@@ -427,19 +429,34 @@ module.exports.findContent = function(req, res, next) {
         function(cb) {
           return Folder.byFolder({
             key: key
-          }, cb);
+          }, function(err, folders) {
+            if (!isPublic) {
+              return Folder.injectInheritedClearance(folders, cb);
+            } else {
+              return cb(null, folders);
+            }
+          });
         }, function(cb) {
           return File.byFolder({
             key: key
-          }, cb);
+          }, function(err, files) {
+            if (!isPublic) {
+              return File.injectInheritedClearance(files, cb);
+            } else {
+              return cb(null, files);
+            }
+          });
         }, function(cb) {
+          var onResult;
           if (req.body.id === "root") {
             return cb(null, []);
           } else {
-            if (req.url.indexOf('/public/') !== -1) {
-              return sharing.limitedTree(folder, req, function(parents, authorized) {
+            if (isPublic) {
+              onResult = function(parents, rule) {
+                parents.pop();
                 return cb(null, parents);
-              });
+              };
+              return sharing.limitedTree(folder, req, onResult);
             } else {
               return folder.getParents(cb);
             }
@@ -526,11 +543,15 @@ module.exports.searchContent = function(req, res, next) {
         function(cb) {
           return Folder.request('byTag', {
             key: tag
-          }, cb);
+          }, function(err, folders) {
+            return Folder.injectInheritedClearance(folders, cb);
+          });
         }, function(cb) {
           return File.request('byTag', {
             key: tag
-          }, cb);
+          }, function(err, files) {
+            return File.injectInheritedClearance(files, cb);
+          });
         }
       ];
     } else {

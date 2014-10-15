@@ -1252,6 +1252,9 @@ module.exports = {
   "already exists": "already exists.",
   "failed to upload": "could not be sent to server.",
   "upload complete": "One file successfully uploaded. ||||\n%{smart_count} files successfully uploaded.",
+  "chrome error dragdrop title": "Files are going to be ignored",
+  "chrome error dragdrop content": "Due to a bug in Chrome, the following file: %{files} is going to be\nignored because it has an accent in its name. You can still add\nit by using the button on the top right of your screen. ||||\nDue to a bug in Chrome, the following files: %{files} are going to be\nignored because they have an accent in their name. You can still add\nthem by using the button on the top right of your screen.",
+  "chrome error submit": "Ok",
   "upload caption": "Upload a new file",
   "upload msg": "Drag files or click here to choose files.",
   "upload msg selected": "You have selected %{smart_count} file, click Add to upload it. ||||\nYou have selected %{smart_count} files, click Add to upload them.",
@@ -1383,6 +1386,9 @@ module.exports = {
   "already exists": "existent déjà.",
   "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
   "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
+  "chrome error dragdrop title": "Des fichiers vont être ignorés",
+  "chrome error dragdrop content": "A cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez les en cliquant depuis\nle bouton en haut à droite de votre écran. ||||\nA cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez le en cliquant depuis\nle bouton en haut à droite de votre écran.",
+  "chrome error submit": "Ok",
   "upload caption": "Ajouter des fichiers",
   "upload msg": "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
   "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
@@ -1512,6 +1518,9 @@ module.exports = {
   "already exists": "există deja.",
   "failed to upload": "nu au putut fi trimise la server.",
   "upload complete": "dosarul a fost trimis cu succes la server ||||\n%{smart_count} dosare au fost trimise cu succes la server.",
+  "chrome error dragdrop title": "Files are going to be ignored",
+  "chrome error dragdrop content": "Due to a bug in Chrome, the following file: %{files} is going to be\nignored because it has an accent in its name. You can still add\nit by using the button on the top right of your screen. ||||\nDue to a bug in Chrome, the following files: %{files} are going to be\nignored because they have an accent in their name. You can still add\nthem by using the button on the top right of your screen.",
+  "chrome error submit": "Ok",
   "upload caption": "Încărcare fișier",
   "upload msg": "Alegeți fișierul de încărcat:",
   "upload close": "Anulare",
@@ -1807,7 +1816,20 @@ module.exports = File = (function(_super) {
       return this.breadcrumb = [window.app.root.toJSON(), this.toJSON()];
     } else {
       parents.unshift(window.app.root.toJSON());
+      if (!this.isRoot()) {
+        parents.push(this.toJSON());
+      }
       return this.breadcrumb = parents;
+    }
+  };
+
+  File.prototype.getClearance = function() {
+    var inheritedClearance;
+    inheritedClearance = this.get('inheritedClearance');
+    if (!inheritedClearance || inheritedClearance.length === 0) {
+      return this.get('clearance');
+    } else {
+      return inheritedClearance[0].clearance;
     }
   };
 
@@ -2101,7 +2123,8 @@ module.exports = FileView = (function(_super) {
     return _.extend(FileView.__super__.getRenderData.call(this), {
       isBeingUploaded: this.model.isBeingUploaded(),
       attachmentUrl: this.model.getAttachmentUrl(),
-      downloadUrl: this.model.getDownloadUrl()
+      downloadUrl: this.model.getDownloadUrl(),
+      clearance: this.model.getClearance()
     });
   };
 
@@ -2602,6 +2625,7 @@ module.exports = FolderView = (function(_super) {
     this.listenTo(this.baseCollection, 'toggle-select', this.toggleFolderActions);
     this.listenTo(this.baseCollection, 'remove', this.toggleFolderActions);
     this.listenTo(this.collection, 'remove', this.toggleFolderActions);
+    this.listenTo(this.model, 'sync', this.onFolderSync);
     return this;
   };
 
@@ -2620,6 +2644,7 @@ module.exports = FolderView = (function(_super) {
     return {
       supportsDirectoryUpload: this.testEnableDirectoryUpload(),
       model: this.model.toJSON(),
+      clearance: this.model.getClearance(),
       query: this.query,
       zipUrl: this.model.getZipURL()
     };
@@ -2670,7 +2695,8 @@ module.exports = FolderView = (function(_super) {
     this.spin();
     return this.baseCollection.getFolderContent(this.model, (function(_this) {
       return function() {
-        return _this.spin(false);
+        _this.spin(false);
+        return _this.onFolderSync();
       };
     })(this));
   };
@@ -2777,20 +2803,38 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onFilesSelectedInChrome = function(e) {
-    var callback, entry, files, item, items, parseEntriesRecursively, pending, _i, _len, _results;
+    var callback, entry, errors, files, item, items, parseEntriesRecursively, pending, _i, _len, _results;
     items = e.dataTransfer.items;
     if (!items.length) {
       return;
     }
     pending = 0;
     files = [];
+    errors = [];
     callback = (function(_this) {
       return function() {
-        var target;
-        _this.uploadQueue.addFolderBlobs(files, _this.model);
-        if (e.target != null) {
-          target = $(e.target);
-          return target.replaceWith(target.clone(true));
+        var formattedErrors, localeOptions, processUpload;
+        processUpload = function() {
+          var target;
+          _this.uploadQueue.addFolderBlobs(files, _this.model);
+          if (e.target != null) {
+            target = $(e.target);
+            return target.replaceWith(target.clone(true));
+          }
+        };
+        if (errors.length > 0) {
+          formattedErrors = errors.map(function(name) {
+            return "\"" + name + "\"";
+          }).join(', ');
+          localeOptions = {
+            files: formattedErrors,
+            smart_count: errors.length
+          };
+          return new Modal(t('chrome error dragdrop title'), t('chrome error dragdrop content', localeOptions), t('chrome error submit'), null, function(confirm) {
+            return processUpload();
+          });
+        } else {
+          return processUpload();
         }
       };
     })(this);
@@ -2806,6 +2850,12 @@ module.exports = FolderView = (function(_super) {
           return entry.file(function(file) {
             file.relativePath = "" + path + file.name;
             files.push(file);
+            pending = pending - 1;
+            if (pending === 0) {
+              return callback();
+            }
+          }, function(error) {
+            errors.push(entry.name);
             pending = pending - 1;
             if (pending === 0) {
               return callback();
@@ -2984,6 +3034,19 @@ module.exports = FolderView = (function(_super) {
       event.preventDefault();
       return Modal.error(t('modal error zip empty folder'));
     }
+  };
+
+  FolderView.prototype.onFolderSync = function() {
+    var clearance, shareStateContent;
+    clearance = this.model.getClearance();
+    if (clearance === 'public') {
+      shareStateContent = "" + (t('public')) + "\n<span class=\"fa fa-globe\"></span>";
+    } else if ((clearance != null) && clearance.length > 0) {
+      shareStateContent = "" + (t('shared')) + "\n<span class=\"fa fa-users\"></span>\n<span>" + clearance.length + "</span>";
+    } else {
+      shareStateContent = "" + (t('private')) + "\n<span class=\"fa fa-lock\"></span>";
+    }
+    return this.$('#share-state').html(shareStateContent);
   };
 
   return FolderView;
@@ -3509,7 +3572,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploaded = locals_.isBeingUploaded,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploaded = locals_.isBeingUploaded,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><div class=\"spinholder\">&nbsp;</div><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -3555,13 +3618,13 @@ buf.push("</ul>");
 if ( !isBeingUploaded)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
-if ( model.clearance == 'public')
+if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-else if ( model.clearance && model.clearance.length > 0)
+else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
@@ -3678,7 +3741,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploaded = locals_.isBeingUploaded,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploaded = locals_.isBeingUploaded,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><div class=\"spinholder\">&nbsp;</div><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -3724,13 +3787,13 @@ buf.push("</ul>");
 if ( !isBeingUploaded)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
-if ( model.clearance == 'public')
+if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-else if ( model.clearance && model.clearance.length > 0)
+else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = model.clearance.length) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
@@ -3804,7 +3867,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,supportsDirectoryUpload = locals_.supportsDirectoryUpload,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
+var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,clearance = locals_.clearance,supportsDirectoryUpload = locals_.supportsDirectoryUpload,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
 buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><div class=\"pull-right\">");
 if ( !isPublic || hasPublicKey)
 {
@@ -3816,13 +3879,13 @@ buf.push("<div id=\"upload-buttons\" class=\"pull-right\">");
 if ( model.id != 'root')
 {
 buf.push("<a id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\">");
-if ( model.clearance == 'public')
+if ( clearance == 'public')
 {
 buf.push("" + (jade.escape((jade_interp = t('public')) == null ? '' : jade_interp)) + "<span class=\"fa fa-globe\"></span>");
 }
-else if ( model.clearance && model.clearance.length > 0)
+else if ( clearance && clearance.length > 0)
 {
-buf.push("" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "<span class=\"fa fa-users\"></span><span>" + (jade.escape(null == (jade_interp = model.clearance.length) ? "" : jade_interp)) + "</span>");
+buf.push("" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "<span class=\"fa fa-users\"></span><span>" + (jade.escape(null == (jade_interp = clearance.length) ? "" : jade_interp)) + "</span>");
 }
 else
 {
