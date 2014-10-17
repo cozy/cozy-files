@@ -32,6 +32,7 @@ module.exports = class FolderView extends BaseView
         'change #select-all': 'onSelectAllChanged'
         'change input.selector': 'onSelectChanged'
 
+        'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
         'click #button-bulk-move'  : 'bulkMove'
 
@@ -60,6 +61,9 @@ module.exports = class FolderView extends BaseView
         @listenTo @baseCollection, 'remove', @toggleFolderActions
         @listenTo @collection, 'remove', @toggleFolderActions
 
+        # when clearance is saved, we update the share button's icon
+        @listenTo @model, 'sync', @onFolderSync
+
         return this
 
     destroy: ->
@@ -77,6 +81,7 @@ module.exports = class FolderView extends BaseView
     getRenderData: ->
         supportsDirectoryUpload: @testEnableDirectoryUpload()
         model: @model.toJSON()
+        clearance: @model.getClearance()
         query: @query
         zipUrl: @model.getZipURL()
 
@@ -98,7 +103,9 @@ module.exports = class FolderView extends BaseView
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
-        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb, model: @model
+        @breadcrumbsView = new BreadcrumbsView
+            collection: @model.breadcrumb
+            model: @model
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
@@ -122,7 +129,12 @@ module.exports = class FolderView extends BaseView
     # Refresh folder's content and manage spinner
     refreshData: ->
         @spin()
-        @baseCollection.getFolderContent @model, => @spin false
+        @baseCollection.getFolderContent @model, =>
+            @spin false
+
+            # if the inherited clearance has changed, we need to refresh
+            # the share button's icon
+            @onFolderSync()
 
     ###
         Button handlers
@@ -143,9 +155,7 @@ module.exports = class FolderView extends BaseView
             view = @filesList.views[@newFolder.cid]
             view.onEditClicked()
 
-            @newFolder.once 'sync destroy', =>
-                @newFolder = null
-
+            @newFolder.once 'sync destroy', => @newFolder = null
 
     onShareClicked: -> new ModalShareView model: @model
 
@@ -212,13 +222,32 @@ module.exports = class FolderView extends BaseView
         # the callback when there are no operation pending
         pending = 0
         files = []
+        errors = []
         callback = =>
-            @uploadQueue.addFolderBlobs files, @model
 
-            if e.target?
-                target = $ e.target
-                # reset the input
-                target.replaceWith target.clone true
+            processUpload = =>
+                @uploadQueue.addFolderBlobs files, @model
+
+                if e.target?
+                    target = $ e.target
+                    # reset the input
+                    target.replaceWith target.clone true
+
+            if errors.length > 0
+                formattedErrors = errors
+                    .map (name) -> "\"#{name}\""
+                    .join ', '
+                localeOptions =
+                    files: formattedErrors
+                    smart_count: errors.length
+
+                new Modal t('chrome error dragdrop title'), \
+                    t('chrome error dragdrop content', localeOptions), \
+                    t('chrome error submit'), null, (confirm) =>
+                        processUpload()
+            else
+                processUpload()
+
 
         # An entry can be a folder or a file
         parseEntriesRecursively = (entry, path) =>
@@ -229,11 +258,15 @@ module.exports = class FolderView extends BaseView
             # if it's a file we add it to the file list with a proper
             # relative path
             if entry.isFile
-                entry.file (file) =>
+                entry.file (file) ->
                     file.relativePath = "#{path}#{file.name}"
                     files.push file
                     pending = pending - 1
-
+                    # if there are no operation left, the upload starts
+                    callback() if pending is 0
+                , (error) ->
+                    errors.push entry.name
+                    pending = pending - 1
                     # if there are no operation left, the upload starts
                     callback() if pending is 0
 
@@ -348,6 +381,32 @@ module.exports = class FolderView extends BaseView
             collection: @getSelectedElements()
             parentPath: @model.getRepository()
 
+    bulkDownload: ->
+        selectedElements = @getSelectedElements()
+        selectedPaths = selectedElements.map (element) ->
+            if element.isFolder()
+                return "#{element.getRepository()}/"
+            else
+                return "#{element.getRepository()}"
+        url = @model.getZipURL()
+
+        serializedSelection = selectedPaths.join ';'
+
+        # To trigger a download from a POST request, we must create an hidden
+        # form and submit it.
+        inputValue = """
+        value="#{serializedSelection}"
+        """
+        form = """
+        <form id="temp-zip-download" action="#{url}" method="post">
+            <input type="hidden" name="selectedPaths" #{inputValue}/>
+        </form>
+        """
+        $('body').append form
+        $('#temp-zip-download').submit()
+        $('#temp-zip-download').remove()
+
+
     ###
         Misc
     ###
@@ -364,3 +423,25 @@ module.exports = class FolderView extends BaseView
         if @collection.length is 0
             event.preventDefault()
             Modal.error t 'modal error zip empty folder'
+
+    # Updates the share button's icon and content
+    onFolderSync: ->
+        clearance = @model.getClearance()
+        if clearance is 'public'
+            shareStateContent = """
+                #{t 'public'}
+                <span class="fa fa-globe"></span>
+            """
+        else if clearance? and clearance.length > 0
+            shareStateContent = """
+                #{t 'shared'}
+                <span class="fa fa-users"></span>
+                <span>#{clearance.length}</span>
+            """
+        else
+            shareStateContent = """
+                #{t 'private'}
+                <span class="fa fa-lock"></span>
+            """
+
+        @$('#share-state').html shareStateContent

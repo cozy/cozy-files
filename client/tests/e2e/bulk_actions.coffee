@@ -1,4 +1,3 @@
-
 __utils__ = require('clientutils').create()
 
 helpers = require('../helpers')(casper, __utils__)
@@ -10,7 +9,10 @@ elementIcon = "#{firstElement} .fa.fa-folder"
 elementCheckbox = "#{firstElement} input.selector"
 allCheckedInList = "tr.folder-row input.selector:checked"
 
-casper.test.begin 'Batch actions - select all', (test) ->
+###
+casper.test.begin 'Bulk actions - select all', (test) ->
+
+    helpers._test = test
 
     casper.start 'http://localhost:9121', ->
 
@@ -35,10 +37,10 @@ casper.test.begin 'Batch actions - select all', (test) ->
         test.assertNotVisible '#button-bulk-move', "'Move all' button shouldn't be visible"
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
 
-    casper.run  -> test.done()
+    casper.run -> test.done()
 
 
-casper.test.begin 'Batch actions - checkbox toggle display on mouseover/out', (test) ->
+casper.test.begin 'Bulk actions - checkbox toggle display on mouseover/out', (test) ->
 
     casper.start 'http://localhost:9121', ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
@@ -57,7 +59,7 @@ casper.test.begin 'Batch actions - checkbox toggle display on mouseover/out', (t
     casper.run  -> test.done()
 
 
-casper.test.begin 'Batch actions - select one item', (test) ->
+casper.test.begin 'Bulk actions - select one item', (test) ->
 
     casper.start 'http://localhost:9121', ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
@@ -75,7 +77,7 @@ casper.test.begin 'Batch actions - select one item', (test) ->
     casper.run  -> test.done()
 
 
-casper.test.begin 'Batch actions - selecting 3 items checks the "select-all" checkbox', (test) ->
+casper.test.begin 'Bulk actions - selecting 3 items checks the "select-all" checkbox', (test) ->
 
     casper.start 'http://localhost:9121', ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
@@ -95,7 +97,7 @@ casper.test.begin 'Batch actions - selecting 3 items checks the "select-all" che
     casper.run -> test.done()
 
 
-casper.test.begin 'Batch actions - selecting all items when there are least than 3 items, should check the "select all" checkbox (non regression)', (test) ->
+casper.test.begin 'Bulk actions - selecting all items when there are least than 3 items, should check the "select all" checkbox (non regression)', (test) ->
 
     casper.start 'http://localhost:9121', ->
 
@@ -124,7 +126,7 @@ casper.test.begin 'Batch actions - selecting all items when there are least than
 
     casper.run -> test.done()
 
-casper.test.begin 'Batch actions - move all files to a folder', (test) ->
+casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
 
     movedElementsNum = null
     casper.start 'http://localhost:9121', ->
@@ -183,12 +185,14 @@ casper.test.begin 'Batch actions - move all files to a folder', (test) ->
         test.assert movedElementsNum is elementsNum, "The elements should be back"
 
     casper.run -> test.done()
+###
+casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
 
-casper.test.begin 'Batch actions - remove all files of a folder', (test) ->
+    helpers._test = test
 
     casper.start 'http://localhost:9121', ->
 
-        manyFileFolderSelector = helpers.getElementSelectorByName 'Many files'
+        manyFileFolderSelector = helpers.getElementSelectorByName 'Files to remove'
         test.assertEval ->
             return __utils__.findAll("tr.folder-row .fa-folder").length > 0
         , "There should must be at least one folder"
@@ -196,7 +200,7 @@ casper.test.begin 'Batch actions - remove all files of a folder', (test) ->
         test.assertExist manyFileFolderSelector
         test.assertVisible manyFileFolderSelector
 
-        helpers.navigateToFolder 'Files to remove files'
+        helpers.navigateToFolder 'Files to remove'
 
     casper.then ->
         movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
@@ -220,11 +224,12 @@ casper.test.begin 'Batch actions - remove all files of a folder', (test) ->
         elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
         test.assert elementsNum is 0, "There shouldn't be any element left"
 
-    casper.run ->
-        test.done()
+    casper.run -> test.done()
 
 # To be implemented
-casper.test.begin 'Batch actions - move some files of a folder', (test) ->
+casper.test.begin 'Bulk actions - move some files of a folder', (test) ->
     test.done()
-casper.test.begin 'Batch actions - remove some files of a folder', (test) ->
+casper.test.begin 'Bulk actions - remove some files of a folder', (test) ->
+    test.done()
+casper.test.begin 'Bulk actions - download selected files as ZIP', (test) ->
     test.done()

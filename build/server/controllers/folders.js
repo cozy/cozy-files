@@ -419,6 +419,8 @@ module.exports.allFolders = function(req, res, next) {
 };
 
 module.exports.findContent = function(req, res, next) {
+  var isPublic;
+  isPublic = req.url.indexOf('/public/') !== -1;
   return getFolderPath(req.body.id, function(err, key, folder) {
     if (err != null) {
       return next(err);
@@ -427,19 +429,34 @@ module.exports.findContent = function(req, res, next) {
         function(cb) {
           return Folder.byFolder({
             key: key
-          }, cb);
+          }, function(err, folders) {
+            if (!isPublic) {
+              return Folder.injectInheritedClearance(folders, cb);
+            } else {
+              return cb(null, folders);
+            }
+          });
         }, function(cb) {
           return File.byFolder({
             key: key
-          }, cb);
+          }, function(err, files) {
+            if (!isPublic) {
+              return File.injectInheritedClearance(files, cb);
+            } else {
+              return cb(null, files);
+            }
+          });
         }, function(cb) {
+          var onResult;
           if (req.body.id === "root") {
             return cb(null, []);
           } else {
-            if (req.url.indexOf('/public/') !== -1) {
-              return sharing.limitedTree(folder, req, function(parents, authorized) {
+            if (isPublic) {
+              onResult = function(parents, rule) {
+                parents.pop();
                 return cb(null, parents);
-              });
+              };
+              return sharing.limitedTree(folder, req, onResult);
             } else {
               return folder.getParents(cb);
             }
@@ -526,11 +543,15 @@ module.exports.searchContent = function(req, res, next) {
         function(cb) {
           return Folder.request('byTag', {
             key: tag
-          }, cb);
+          }, function(err, folders) {
+            return Folder.injectInheritedClearance(folders, cb);
+          });
         }, function(cb) {
           return File.request('byTag', {
             key: tag
-          }, cb);
+          }, function(err, files) {
+            return File.injectInheritedClearance(files, cb);
+          });
         }
       ];
     } else {
@@ -570,10 +591,15 @@ module.exports.searchContent = function(req, res, next) {
 };
 
 module.exports.zip = function(req, res, next) {
-  var addToArchive, archive, folder, key, makeZip;
+  var addToArchive, archive, folder, key, makeZip, selectedPaths, _ref;
   folder = req.folder;
   archive = archiver('zip');
   key = "" + folder.path + "/" + folder.name;
+  if (((_ref = req.body) != null ? _ref.selectedPaths : void 0) != null) {
+    selectedPaths = req.body.selectedPaths.split(';');
+  } else {
+    selectedPaths = [];
+  }
   addToArchive = function(file, cb) {
     return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
       var name;
@@ -610,11 +636,19 @@ module.exports.zip = function(req, res, next) {
     startkey: "" + key + "/",
     endkey: "" + key + "/\ufff0"
   }, function(err, files) {
-    var zipName, _ref;
+    var zipName, _ref1;
     if (err) {
       return next(err);
     } else {
-      zipName = (_ref = folder.name) != null ? _ref.replace(/\W/g, '') : void 0;
+      files = files.filter(function(file) {
+        var fileMatch, fullPath, path, subFolderMatch;
+        fullPath = "" + file.path + "/" + file.name;
+        path = "" + file.path + "/";
+        fileMatch = selectedPaths.indexOf(fullPath) !== -1;
+        subFolderMatch = selectedPaths.indexOf(path) !== -1;
+        return selectedPaths.length === 0 || fileMatch || subFolderMatch;
+      });
+      zipName = (_ref1 = folder.name) != null ? _ref1.replace(/\W/g, '') : void 0;
       return makeZip(zipName, files);
     }
   });

@@ -61,6 +61,18 @@ module.exports =
         %{smart_count} files successfully uploaded.
     """
 
+    "chrome error dragdrop title": "Files are going to be ignored"
+    "chrome error dragdrop content": """
+        Due to a bug in Chrome, the following file: %{files} is going to be
+        ignored because it has an accent in its name. You can still add
+        it by using the button on the top right of your screen. ||||
+        Due to a bug in Chrome, the following files: %{files} are going to be
+        ignored because they have an accent in their name. You can still add
+        them by using the button on the top right of your screen.
+    """
+    "chrome error submit": "Ok"
+
+
     "upload caption"            : "Upload a new file"
     "upload msg"                : "Drag files or click here to choose files."
     "upload msg selected"       : """
@@ -81,6 +93,7 @@ module.exports =
     "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
+    "download all"              : "Download the selection"
     "move all"                  : "Move the selection"
     "remove all"                : "Remove the selection"
 

@@ -300,19 +300,41 @@ module.exports.allFolders = (req, res, next) ->
         else res.send folders
 
 module.exports.findContent = (req, res, next) ->
+
+    isPublic = req.url.indexOf('/public/') isnt -1
+
     getFolderPath req.body.id, (err, key, folder) ->
         if err? then next err
         else
             async.parallel [
-                (cb) -> Folder.byFolder key: key, cb
-                (cb) -> File.byFolder key: key, cb
+
+                # Retrieves the folders and inject the inherited clearance
+                (cb) -> Folder.byFolder key: key, (err, folders) ->
+                    # if it's a request from a guest, we limit the results
+                    unless isPublic
+                        Folder.injectInheritedClearance folders, cb
+                    else
+                        cb null, folders
+
+                # Retrieves the files and inject the inherited clearance
+                (cb) -> File.byFolder key: key, (err, files) ->
+                    # if it's a request from a guest, we limit the results
+                    unless isPublic
+                        File.injectInheritedClearance files, cb
+                    else
+                        cb null, files
                 (cb) ->
                     if req.body.id is "root"
                         cb null, []
                     else
-                        # if it's a request from a guest, we need to limit the result
-                        if req.url.indexOf('/public/') isnt -1
-                            sharing.limitedTree folder, req, (parents, authorized) -> cb null, parents
+                        # if it's a request from a guest, we limit the results
+                        if isPublic
+                            onResult = (parents, rule) ->
+                                # limitedTree adds the current folder as parent
+                                # so we need to remove it
+                                parents.pop()
+                                cb null, parents
+                            sharing.limitedTree folder, req, onResult
                         else
                             folder.getParents cb
             ], (err, results) ->
@@ -368,8 +390,13 @@ module.exports.searchContent = (req, res, next) ->
             parts = parts.filter (part) -> part.indexOf 'tag:' isnt -1
             tag = parts[0].split('tag:')[1]
             requests = [
-                (cb) -> Folder.request 'byTag', key: tag, cb
-                (cb) -> File.request 'byTag', key: tag, cb
+                # Retrieves the folders and inject the inherited clearance
+                (cb) -> Folder.request 'byTag', key: tag, (err, folders) ->
+                    Folder.injectInheritedClearance folders, cb
+
+                # Retrieves the files and inject the inherited clearance
+                (cb) -> File.request 'byTag', key: tag, (err, files) ->
+                    File.injectInheritedClearance files, cb
             ]
         else
             requests = [
@@ -405,6 +432,12 @@ module.exports.zip = (req, res, next) ->
 
     key = "#{folder.path}/#{folder.name}"
 
+    # Request can limit the ZIP content to some elements only
+    if req.body?.selectedPaths?
+        selectedPaths = req.body.selectedPaths.split ';'
+    else
+        selectedPaths = []
+
     # Download file with custom low level downloader and pipe the result in the
     # archiver.
     addToArchive = (file, cb) ->
@@ -438,6 +471,19 @@ module.exports.zip = (req, res, next) ->
     File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
         if err then next err
         else
+            # Only keeps files that have been selected
+            files = files.filter (file) ->
+                fullPath = "#{file.path}/#{file.name}"
+                path = "#{file.path}/"
+
+                fileMatch = selectedPaths.indexOf(fullPath) isnt -1
+                subFolderMatch = selectedPaths.indexOf(path) isnt -1
+
+                # Selects the file if it has been selected OR its parent has
+                # been selected (or parent of its parent...) OR if no file has
+                # been selected
+                return selectedPaths.length is 0 or fileMatch or subFolderMatch
+
             # Build zip file.
             zipName = folder.name?.replace /\W/g, ''
             makeZip zipName, files

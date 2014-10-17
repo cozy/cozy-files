@@ -84,7 +84,7 @@ module.exports = class File extends Backbone.Model
     # Only relevant if model is a folder
     getZipURL: ->
         if @isFolder()
-            toAppend = "/zip/#{@get 'name'}"
+            toAppend = "/zip/#{encodeURIComponent @get 'name'}"
             @url toAppend
 
     # Only relevant if model is a file
@@ -153,6 +153,7 @@ module.exports = class File extends Backbone.Model
                     # during search or for root, there is not parents
                     content = body
                     parents = []
+
                 @setBreadcrumb parents or []
                 callbacks null, content, parents
 
@@ -163,4 +164,13 @@ module.exports = class File extends Backbone.Model
             @breadcrumb = [window.app.root.toJSON(), @toJSON()]
         else
             parents.unshift window.app.root.toJSON()
+            # adds the current folder to the parent's list unless it's the root
+            parents.push @toJSON() unless @isRoot()
             @breadcrumb = parents
+
+    getClearance: ->
+        inheritedClearance = @get 'inheritedClearance'
+        if not inheritedClearance or inheritedClearance.length is 0
+            return @get 'clearance'
+        else
+            return inheritedClearance[0].clearance

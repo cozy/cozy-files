@@ -1,5 +1,6 @@
 americano = require 'americano-cozy'
 moment = require 'moment'
+async = require 'async'
 CozyInstance = require './cozy_instance'
 
 module.exports = Folder = americano.getModel 'Folder',
@@ -22,6 +23,16 @@ Folder.byFolder = (params, callback) ->
 
 Folder.byFullPath = (params, callback) ->
     Folder.request "byFullPath", params, callback
+
+
+Folder.injectInheritedClearance = (folders, callback) ->
+    async.map folders, (folder, cb) ->
+        regularFolder = folder.toObject()
+        folder.getInheritedClearance (err, inheritedClearance) ->
+            regularFolder.inheritedClearance = inheritedClearance
+            cb err, regularFolder
+    , callback
+
 
 # New folder Creation process:
 # * Create new folder.
@@ -47,10 +58,13 @@ Folder::getFullPath = ->
 Folder::getParents = (callback) ->
     foldersOfPath = @getFullPath().split '/'
     parentFoldersPath = []
+
     # extract all parent's full path
     while foldersOfPath.length > 0
         parent = foldersOfPath.join '/'
-        parentFoldersPath.push parent if parent isnt ""
+
+        # Root and current folder aren't in the parents
+        parentFoldersPath.push parent if parent not in ['', @getFullPath()]
         foldersOfPath.pop()
 
     Folder.byFullPath keys: parentFoldersPath.reverse(), callback
@@ -60,6 +74,27 @@ Folder::getPublicURL = (cb) ->
         return cb err if err
         url = "#{domain}public/files/folders/#{@id}"
         cb null, url
+
+Folder::getInheritedClearance = (callback) ->
+
+    @getParents (err, parents) ->
+        return callback err if err?
+
+        # if we check a folder, we must exclude the folder itself from
+        #the parent's tree otherwise we can't change its clearance afterwards
+        parents.shift() if parents.length > 0 and parents[0].id is @id
+
+        # keep only element of path that alter the clearance
+        isPublic = false
+        inherited = parents?.filter (parent) ->
+            parent.clearance = [] unless parent.clearance?
+
+            if isPublic then return false
+
+            isPublic = true if parent.clearance is 'public'
+            return parent.clearance.length isnt 0
+
+        callback null, inherited
 
 Folder::updateParentModifDate = (callback) ->
     Folder.byFullPath key: @path, (err, parents) =>

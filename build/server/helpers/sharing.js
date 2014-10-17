@@ -55,21 +55,22 @@ module.exports.limitedTree = function(folder, req, perm, callback) {
     if (err) {
       return callback([]);
     }
+    parents.push(folder);
     scan = function() {
       var tested;
       tested = parents[0];
-      if (!tested) {
+      if (tested == null) {
         return callback([]);
       }
-      return clearance.check(tested, perm, req, function(err, authorized) {
+      return clearance.check(tested, perm, req, function(err, rule) {
         if (err) {
           return callback([]);
         }
-        if (!authorized) {
+        if (!rule) {
           parents.shift();
           return scan();
         } else {
-          return callback(parents, authorized);
+          return callback(parents, rule);
         }
       });
     };
