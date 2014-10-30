@@ -1230,13 +1230,21 @@ db['Reserved for future global service'] = '999';
 });
 
 ;require.register("lib/request", function(exports, require, module) {
-exports.request = function(type, url, data, callback) {
-  return $.ajax({
+exports.request = function(type, url, data, callback, json) {
+  var options;
+  if (json == null) {
+    json = true;
+  }
+  if ((data != null) && json) {
+    data = JSON.stringify(data);
+  }
+  options = {
     type: type,
     url: url,
-    data: data != null ? JSON.stringify(data) : null,
-    contentType: "application/json",
-    dataType: "json",
+    data: data != null ? data : null,
+    contentType: json ? "application/json" : false,
+    dataType: json ? "json" : null,
+    processData: json,
     success: function(data) {
       if (callback != null) {
         return callback(null, data);
@@ -1249,23 +1257,25 @@ exports.request = function(type, url, data, callback) {
         return callback(new Error("Server error occured"));
       }
     }
-  });
+  };
+  return $.ajax(options);
 };
 
-exports.get = function(url, callback) {
-  return exports.request("GET", url, null, callback);
+exports.get = function(url, callback, json) {
+  return exports.request("GET", url, null, callback, json);
 };
 
-exports.post = function(url, data, callback) {
-  return exports.request("POST", url, data, callback);
+exports.post = function(url, data, callback, json) {
+  return exports.request("POST", url, data, callback, json);
 };
 
-exports.put = function(url, data, callback) {
-  return exports.request("PUT", url, data, callback);
+exports.put = function(url, data, callback, json) {
+  console.log(data);
+  return exports.request("PUT", url, data, callback, json);
 };
 
-exports.del = function(url, callback) {
-  return exports.request("DELETE", url, null, callback);
+exports.del = function(url, callback, json) {
+  return exports.request("DELETE", url, null, callback, json);
 };
 });
 
@@ -1760,24 +1770,35 @@ module.exports = Contact = (function(_super) {
     return attrs;
   };
 
-  Contact.prototype.sync = function(method, model, options) {
-    var success;
-    if (this.picture) {
-      options.contentType = false;
-      options.data = new FormData();
-      options.data.append('picture', this.picture);
-      options.data.append('contact', JSON.stringify(this.toJSON()));
-      success = options.success;
-      options.success = (function(_this) {
-        return function(resp) {
-          success(resp);
-          _this.hasPicture = true;
-          _this.trigger('change', _this, {});
-          return delete _this.picture;
+  Contact.prototype.savePicture = function(callback) {
+    var data, markChanged, path;
+    console.log(this.get('id'));
+    if (this.get('id') == null) {
+      return this.save({
+        success: (function(_this) {
+          return function() {
+            return _this.savePicture();
+          };
+        })(this)
+      });
+    } else {
+      data = new FormData();
+      data.append('picture', this.picture);
+      data.append('contact', JSON.stringify(this.toJSON()));
+      markChanged = (function(_this) {
+        return function(err, body) {
+          if (err) {
+            return console.log(err);
+          } else {
+            _this.hasPicture = true;
+            _this.trigger('change', _this, {});
+            return delete _this.picture;
+          }
         };
       })(this);
+      path = "contacts/" + (this.get('id')) + "/picture";
+      return request.put(path, data, markChanged, false);
     }
-    return Contact.__super__.sync.call(this, method, model, options);
   };
 
   Contact.prototype.getBest = function(name) {
@@ -2671,7 +2692,7 @@ module.exports = CallImporterView = (function(_super) {
 });
 
 ;require.register("views/contact", function(exports, require, module) {
-var ContactView, Datapoint, HistoryView, NameModal, TagsView, ViewCollection,
+var ContactView, Datapoint, HistoryView, NameModal, TagsView, ViewCollection, request,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2685,6 +2706,8 @@ TagsView = require('views/contact_tags');
 NameModal = require('views/contact_name_modal');
 
 Datapoint = require('models/datapoint');
+
+request = require('../lib/request');
 
 module.exports = ContactView = (function(_super) {
   __extends(ContactView, _super);
@@ -3055,9 +3078,7 @@ module.exports = ContactView = (function(_super) {
             type: 'image/jpeg'
           });
           _this.model.picture = blob;
-          return _this.model.save(null, {
-            undo: true
-          });
+          return _this.model.savePicture();
         };
       };
     })(this);
@@ -3100,7 +3121,7 @@ module.exports = ContactView = (function(_super) {
       } else {
         this.$('#name').focus();
       }
-      event.preventDefault();
+      Event.preventDefault();
       return false;
     }
   };

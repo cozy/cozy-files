@@ -94,20 +94,26 @@ module.exports = class Contact extends Backbone.Model
 
         return attrs
 
-    sync: (method, model, options) ->
-        if @picture
-            options.contentType = false
-            options.data = new FormData()
-            options.data.append 'picture', @picture
-            options.data.append 'contact', JSON.stringify @toJSON()
-            success = options.success
-            options.success = (resp) =>
-                success resp
-                @hasPicture = true
-                @trigger 'change', this, {}
-                delete @picture
+    savePicture: (callback) ->
+        unless @get('id')?
+            @save {},
+                success: =>
+                    @savePicture()
+        else
+            data = new FormData()
+            data.append 'picture', @picture
+            data.append 'contact', JSON.stringify @toJSON()
 
-        super(method, model, options)
+            markChanged = (err, body) =>
+                if err
+                    console.log err
+                else
+                    @hasPicture = true
+                    @trigger 'change', this, {}
+                    delete @picture
+
+            path = "contacts/#{@get 'id'}/picture"
+            request.put path, data, markChanged, false
 
     getBest: (name) ->
         result = null
@@ -197,10 +203,8 @@ AndroidToDP = (contact, raw) ->
             else 'birthday'
             contact.addDP 'about', type, value
         when 'relation'
-            # console.log parts
             value = parts[1]
             type = ANDROID_RELATION_TYPES[+parts[2]]
-            # console.log type
             type = parts[3] if type is 'custom'
             contact.addDP 'other', type, value
 
@@ -271,7 +275,6 @@ Contact.fromVCF = (vcf) ->
 
         else if regexps.android.test line
                 [all, value] = line.match regexps.android
-                # console.log 'androd', value
                 AndroidToDP current, value
 
         else if regexps.composedkey.test line
@@ -319,8 +322,6 @@ Contact.fromVCF = (vcf) ->
 
             current.dataPoints.add currentdp if currentdp
             currentdp = new DataPoint()
-
-            # console.log all, '-->', key, properties, value
 
             value = value.split(';')
             value = value[0] if value.length is 1

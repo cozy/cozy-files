@@ -33,6 +33,9 @@ module.exports =
         put: contact.update
         delete: contact.delete
 
+    'contacts/:contactid/picture':
+        put: contact.updatePicture
+
     'contacts/:contactid/picture.png':
         get: contact.picture
 

@@ -3,7 +3,7 @@ Config = require '../models/config'
 Todolist = require '../models/todolist'
 Task = require '../models/task'
 path    = require 'path'
-fs      = require 'fs'
+multiparty = require 'multiparty'
 
 module.exports =
 
@@ -31,17 +31,8 @@ module.exports =
 
         create = ->
             Contact.create toCreate, (err, contact) ->
-                return res.error 500, "Creation failed.", err if err
-
-                if file = req.files?['picture']
-                    data = name: 'picture'
-                    contact.attachFile file.path, data, (err) ->
-                        return res.error 500, "Creation failed.", err if err
-
-                        fs.unlink file.path, (err) ->
-                            return res.error 500, "Creation failed.", err if err
-
-                            res.send contact, 201
+                if err
+                    next err
                 else
                     res.send contact, 201
 
@@ -72,25 +63,31 @@ module.exports =
         res.send req.contact
 
     update: (req, res) ->
-
-        # support both JSON and multipart for upload
         model = if req.body.contact then JSON.parse req.body.contact
         else req.body
 
         req.contact.updateAttributes model, (err) ->
-            return res.error 500, "Update failed.", err if err
-
-            if file = req.files?['picture']
-                data = name: 'picture'
-                req.contact.attachFile file.path, data, (err) ->
-                    return res.error 500, "Update failed.", err if err
-
-                    fs.unlink file.path, (err) ->
-                        console.log "failed to purge #{file.path}"
-
-                        res.send req.contact, 201
+            if err
+                return res.error 500, "Update failed.", err
             else
                 res.send req.contact, 201
+
+    # Extract and save picture in a temporary folder, then save it to data
+    # system and delete it from disk.
+    updatePicture: (req, res, next) ->
+        form = new multiparty.Form()
+        form.parse req, (err, fields, files) ->
+            if err
+                next err
+            else if files? and files.picture? and files.picture.length > 0
+                file = files.picture[0]
+                req.contact.savePicture file.path, (err) ->
+                    if err
+                        next err
+                    else
+                        res.send req.contact, 201
+            else
+                next new Error 'Can\'t change picture, no file is attached.'
 
     delete: (req, res) ->
         req.contact.destroy (err) ->
@@ -98,10 +95,10 @@ module.exports =
 
             res.send "Deletion succeded.", 204
 
-    picture: (req, res) ->
+    picture: (req, res, next) ->
         if req.contact._attachments?.picture
             stream = req.contact.getFile 'picture', (err) ->
-                return res.error 500, "File fetching failed.", err if err
+                next err if err
 
             stream.pipe res
         else
@@ -125,8 +122,6 @@ module.exports =
     # Export a single contact to a VCard file.
     vCardContact: (req, res, next) ->
         Config.getInstance (err, config) ->
-            console.log req.params.contactid
-            console.log req.params.fn
             Contact.request 'all', key: req.params.contactid, (err, contacts) ->
                 next err if err
 

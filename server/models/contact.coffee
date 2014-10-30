@@ -1,5 +1,8 @@
 americano = require 'americano-cozy'
 ContactLog = require './contact_log'
+fs = require 'fs'
+log = require('printit')
+    prefix: 'Contact Model'
 
 module.exports = Contact = americano.getModel 'Contact',
     id            : String
@@ -20,6 +23,18 @@ Contact::remoteKeys = ->
         else if dp.name is 'email'
             out.push dp.value.toLowerCase()
     return out
+
+# Save given file as contact picture then delete given file from disk.
+Contact::savePicture = (path, callback) ->
+    data = name: 'picture'
+    log.debug path
+    @attachFile path, data, (err) ->
+        if err
+            callback err
+        else
+            fs.unlink path, (err) ->
+                log.error "failed to purge #{file.path}" if err
+                callback()
 
 Contact::getComputedFN = (config) ->
     [familly, given, middle, prefix, suffix] = @n.split ';'

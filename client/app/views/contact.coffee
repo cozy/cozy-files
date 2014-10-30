@@ -3,6 +3,7 @@ HistoryView = require 'views/history'
 TagsView = require 'views/contact_tags'
 NameModal = require 'views/contact_name_modal'
 Datapoint = require 'models/datapoint'
+request = require '../lib/request'
 
 
 module.exports = class ContactView extends ViewCollection
@@ -241,8 +242,7 @@ module.exports = class ContactView extends ViewCollection
     resizeNiceScroll: (event) =>
         @$el.getNiceScroll().resize()
 
-    photoChanged: () =>
-
+    photoChanged: =>
         file = @uploader.files[0]
 
         unless file.type.match /image\/.*/
@@ -275,7 +275,7 @@ module.exports = class ContactView extends ViewCollection
                 blob = new Blob [new Uint8Array(array)], type: 'image/jpeg'
 
                 @model.picture = blob
-                @model.save null, undo: true # hacky, prevent undoing
+                @model.savePicture()
 
     onTagInputKeyPress: (event) ->
         keyCode = event.keyCode || event.which
@@ -304,6 +304,5 @@ module.exports = class ContactView extends ViewCollection
                 @$('.value:visible').last().focus()
             else
                 @$('#name').focus()
-
-            event.preventDefault()
+            Event.preventDefault()
             false

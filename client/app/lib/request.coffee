@@ -1,12 +1,16 @@
 # Make ajax request more easy to do.
 # Expected callbacks: success and error
-exports.request = (type, url, data, callback) ->
-    $.ajax
+exports.request = (type, url, data, callback, json=true) ->
+    if data? and json
+        data = JSON.stringify data
+
+    options =
         type: type
         url: url
-        data: if data? then JSON.stringify data else null
-        contentType: "application/json"
-        dataType: "json"
+        data: if data? then data else null
+        contentType: if json then "application/json" else false
+        dataType: if json then "json" else null
+        processData: json
         success: (data) ->
             callback null, data if callback?
         error: (data) ->
@@ -15,22 +19,24 @@ exports.request = (type, url, data, callback) ->
             else if callback?
                 callback new Error "Server error occured"
 
+    $.ajax options
+
 # Sends a get request with data as body
 # Expected callbacks: success and error
-exports.get = (url, callback) ->
-    exports.request "GET", url, null, callback
+exports.get = (url, callback, json) ->
+    exports.request "GET", url, null, callback, json
 
 # Sends a post request with data as body
 # Expected callbacks: success and error
-exports.post = (url, data, callback) ->
-    exports.request "POST", url, data, callback
+exports.post = (url, data, callback, json) ->
+    exports.request "POST", url, data, callback, json
 
 # Sends a put request with data as body
 # Expected callbacks: success and error
-exports.put = (url, data, callback) ->
-    exports.request "PUT", url, data, callback
+exports.put = (url, data, callback, json) ->
+    exports.request "PUT", url, data, callback, json
 
 # Sends a delete request with data as body
 # Expected callbacks: success and error
-exports.del = (url, callback) ->
-    exports.request "DELETE", url, null, callback
+exports.del = (url, callback, json) ->
+    exports.request "DELETE", url, null, callback, json
