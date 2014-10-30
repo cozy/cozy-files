@@ -138,23 +138,3 @@ module.exports =
                 res.attachment "#{req.params.fn}.vcf"
                 res.set 'Content-Type', 'text/x-vcard'
                 res.send out
-
-    # Create a new task in the Inbox todo-list (the one that get task from
-    # other apps than Todo-List). This tasks says to call back current contact.
-    createTask: (req, res, next) ->
-        contact = req.contact
-        text = "Contact #{contact.fn} #followup"
-
-        Todolist.getOrCreateInbox (err, inbox) ->
-            if err then next err
-            else
-                data =
-                    list: inbox
-                    done: false
-                    description: text
-                    tags: ["followup"]
-
-                Task.create data, (err, task) ->
-                    if err then next err
-                    else
-                        res.send success: true, task: task, 201
