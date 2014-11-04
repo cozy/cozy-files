@@ -43,14 +43,11 @@
 
                 //- bulk actions: move and remove
                 .btn-group#bulk-actions-btngroup
-                  a#button-bulk-download.btn.btn-cozy.btn-cozy
-                    | #{t('download all')}&nbsp;
+                  a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy.btn-cozy
                     span.icon-arrow-down.icon-white
-                  a#button-bulk-move.btn.btn-cozy.btn-cozy
-                    | #{t('move all')}&nbsp;
+                  a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
                     span.glyphicon.glyphicon-arrow-right
-                  a#button-bulk-remove.btn.btn-cozy.btn-cozy
-                    | #{t('remove all')}&nbsp;
+                  a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy
                     span.glyphicon.glyphicon-remove-circle
 
               //- notification toggle button

@@ -113,5 +113,12 @@ module.exports = class TagsView extends BaseView
             """ for tag in @tags or []).join ''
         @$el.prepend html
 
+    toggleInput: =>
+        @$('input').toggle()
+        @$('input').focus() if @$('input').is(':visible')
+
+    hideInput: =>
+        @$('input').hide()
+
 TagsView.autocomplete = new Autocomplete(id: 'tagsAutocomplete')
 TagsView.autocomplete.render()

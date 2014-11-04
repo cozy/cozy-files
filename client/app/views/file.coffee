@@ -15,8 +15,9 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
+        'click a.file-tags'        : 'onTagClicked'
         'click a.file-delete'      : 'onDeleteClicked'
-        'click a.file-share'       : 'onShare'
+        'click a.file-share'       : 'onShareClicked'
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'onCancelClicked'
@@ -153,6 +154,9 @@ module.exports = class FileView extends BaseView
         if msg is false then @errorField.hide()
         else @errorField.text msg
 
+    onTagClicked: ->
+        @tags.toggleInput()
+
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
@@ -172,6 +176,7 @@ module.exports = class FileView extends BaseView
             el: @$ '.tags'
             model: @model
         @tags.render()
+
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
 
@@ -193,7 +198,8 @@ module.exports = class FileView extends BaseView
 
         @$el.addClass 'edit-mode'
 
-    onShare: -> new ModalShareView model: @model
+    onShareClicked: ->
+        new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
@@ -366,6 +372,7 @@ module.exports = class FileView extends BaseView
                 el: @$('.tags')
                 model: @model
             @tags.render()
+            @tags.hideInput()
 
         # hides the file move and remove buttons if they are in a bulk selection
         if @model.isSelected

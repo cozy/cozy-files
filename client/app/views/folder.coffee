@@ -20,7 +20,6 @@ module.exports = class FolderView extends BaseView
 
     events: ->
         'click #button-new-folder'     : 'onNewFolderClicked'
-        # 'click #button-upload-new-file': 'onUploadNewFileClicked'
         'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #cancel-new-file'       : 'onCancelFile'
@@ -111,10 +110,10 @@ module.exports = class FolderView extends BaseView
     renderFileList: ->
 
         @filesList = new FilesView
-                model: @model
-                collection: @collection
-                uploadQueue: @uploadQueue
-                isSearchMode: @model.get('type') is "search"
+            model: @model
+            collection: @collection
+            uploadQueue: @uploadQueue
+            isSearchMode: @model.get('type') is "search"
 
         @filesList.render()
 
