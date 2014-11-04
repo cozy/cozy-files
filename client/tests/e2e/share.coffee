@@ -34,16 +34,19 @@ casper.test.begin 'Share - share an element in public', (test) ->
 
     casper.then ->
         elem = @evaluate ->
-            return __utils__.findOne '.file-share:first-of-type span'
+            return __utils__.findOne '.file-share:nth-of-type(2) span'
         test.assert elem.className.indexOf('fa-lock') is -1
         test.assert elem.className.indexOf('fa-globe') isnt -1
 
         casper.open(link).then (response) ->
-            test.assertEqual response.status, 200, "The element should be publicly accessible"
+            test.assertEqual(
+                response.status, 200,
+                "The element should be publicly accessible"
+            )
 
     # restores initial state
     casper.then -> @back()
-    casper.thenClick '.file-share:first-of-type'
+    casper.thenClick '.file-share:nth-of-type(2)'
 
     casper.waitUntilVisible '#cozy-clearance-modal'
     # the modal has an animation

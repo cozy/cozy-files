@@ -4,11 +4,17 @@ module.exports = (casper, utils) -> helpers =
 
     assertHasClass: (selector, className) ->
         classNames = helpers.getClassNames selector
-        helpers._test.assert className in classNames, "#{selector} has class #{className}"
+        helpers._test.assert(
+            className in classNames,
+            "#{selector} has class #{className}"
+        )
 
     assertHasntClass: (selector, className) ->
         classNames = casper.getElementAttribute selector, 'className'
-        helpers._test.assert className not in classNames,  "#{selector} hasn't class #{className}"
+        helpers._test.assert(
+            className not in classNames,
+            "#{selector} hasn't class #{className}"
+        )
 
     getClassNames: (selector) ->
         classNames = casper.getElementInfo(selector).attributes.class
@@ -68,10 +74,3 @@ module.exports = (casper, utils) -> helpers =
 
         casper.thenClick '#share-public'
         casper.waitUntilVisible '#public-url'
-
-
-
-
-
-
-
