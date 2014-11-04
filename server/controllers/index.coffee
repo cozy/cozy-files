@@ -18,5 +18,5 @@ module.exports.main = (req, res, next) ->
             [locale, tags] = results
             res.render 'index.jade', imports: """
                 window.locale = "#{locale}";
-                window.tags = "#{tags}".split(',');
+                window.tags = "#{tags.join(',').replace('\"', '')}".split(',');
             """
