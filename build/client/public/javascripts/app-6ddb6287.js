@@ -2443,6 +2443,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onToggleSelect = function() {
+    this.$el.toggleClass('selected', this.model.isSelected);
     if (this.model.isSelected) {
       return this.$('.file-move, .file-delete').addClass('hidden');
     } else {
