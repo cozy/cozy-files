@@ -410,7 +410,7 @@ describe "Folders management", ->
                 done()
 
         it "Then root folder lastModification should be updated", (done) ->
-            @timeout(2 * 60 * 1000)
+            @timeout 2 * 60 * 1000
             setTimeout () =>
                 client.get "folders/folders", (err, res, folders) =>
                     folder = folders.pop()

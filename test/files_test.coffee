@@ -60,6 +60,22 @@ describe "Files management", ->
             it "Then 400 should be returned as response code", ->
                 @res.statusCode.should.be.equal 400
 
+        describe "Try to create the same file with overwrite option", ->
+            it "When I send a request to create a file", (done) ->
+                file =
+                    name: "test"
+                    path: ""
+                    overwrite: "true"
+                path = './test/test.txt'
+                client.sendFile 'files/', path, file, (err, res, body) =>
+                    @err = err
+                    @res = res
+                    @body = body
+                    done()
+
+            it "Then 200 should be returned as response code", ->
+                @res.statusCode.should.be.equal 200
+
 
     describe "Get file", =>
 

@@ -21,7 +21,15 @@ module.exports = class UploadQueue extends Backbone.Collection
         @listenTo this, 'add', (model) =>
             @completed = false
             # Files at the bottom, Folder at the top
-            if model.get('type') is 'file' then @asyncQueue.push model
+            if model.get('type') is 'file'
+
+                # we add the conflictual models at the end so the upload
+                # can start without waiting for user input
+                if model.conflict
+                    @asyncQueue.push model
+                else
+                    @asyncQueue.unshift model
+
             else if model.get('type') is 'folder' then @asyncQueue.unshift model
             else throw new Error('adding wrong typed model to upload queue')
 
@@ -85,33 +93,50 @@ module.exports = class UploadQueue extends Backbone.Collection
         if model.existing or model.error or model.isUploaded
             setTimeout cb, 10
         else
-            model.save null,
-                success: ->
-                    model.file = null
-                    model.isUploaded = true
-                    model.loaded = model.total
-                    unless app.baseCollection.get model.id
-                        app.baseCollection.add model
-                    cb null
-                error: (_, err) =>
-                    body = try JSON.parse(err.responseText)
-                    catch e then msg: null
+            processSave = (model) ->
+                if not model.conflict or model.conflict and model.overwrite
+                    model.save null,
+                        success: ->
+                            model.file = null
+                            model.isUploaded = true
+                            model.loaded = model.total
+                            unless app.baseCollection.get model.id
+                                app.baseCollection.add model
+                            cb null
+                        error: (_, err) =>
+                            body = try JSON.parse(err.responseText)
+                            catch e then msg: null
 
-                    if err.status is 400 and body.code is 'EEXISTS'
-                        model.existing = true
-                        return cb new Error body.msg
+                            # This case may occur when two clients upload a file
+                            # with the same name at the same time in the same
+                            # folder. Thus we just show a warning
+                            if err.status is 400 and body.code is 'EEXISTS'
+                                model.existing = true
+                                return cb new Error body.msg
 
-                    if err.status is 400 and body.code is 'ESTORAGE'
-                        model.error = new Error body.msg
-                        return cb model.error
+                            if err.status is 400 and body.code is 'ESTORAGE'
+                                model.error = new Error body.msg
+                                return cb model.error
 
-                    model.tries = 1 + (model.tries or 0)
-                    if model.tries > 3
-                        model.error = t err.msg or "modal error file upload"
-                    else
-                        # let's try again
-                        @asyncQueue.push model
-                    cb err
+                            model.tries = 1 + (model.tries or 0)
+                            if model.tries > 3
+                                defaultMessage = "modal error file upload"
+                                model.error = t err.msg or defaultMessage
+                            else
+                                # let's try again
+                                @asyncQueue.push model
+                            cb err
+                else
+                    cb()
+
+            # If there is a conflict, the queue waits for the user to
+            # make a decision.
+            if model.conflict and not model.overwrite?
+                model.processSave = processSave.bind @
+
+            # Otherwise, the upload starts directly
+            else
+                processSave.call @, model
 
     addBlobs: (blobs, folder) ->
 
@@ -148,11 +173,12 @@ module.exports = class UploadQueue extends Backbone.Collection
                 model.loaded = 0
                 model.total = 0
             else if model.getRepository() in existingPaths
-                model.existing = true
-                # if a file is reuploaded while being uploaded, the progressbar
-                # cannot compute the progress if those properties are not set
+
+                model.conflict = true
+                @trigger 'conflict', model
+                model.file = blob
                 model.loaded = 0
-                model.total = 0
+                model.total = blob.size
             else
                 model.file = blob
                 model.loaded = 0
@@ -209,19 +235,23 @@ module.exports = class UploadQueue extends Backbone.Collection
         error = []
         existing = []
         success = 0
+        skipped = 0
 
         @each (model) ->
             if model.error
                 console.log "Upload Error", model.getRepository(), model.error
                 error.push model
             else if model.existing then existing.push model
+
+            # file that were conflict and not overwritten are marked as skipped
+            else if model.conflict and not model.overwrite then skipped++
             else success++
 
         status = if error.length then 'error'
         else if existing.length then 'warning'
         else 'success'
 
-        return {status, error, existing, success}
+        return {status, error, existing, success, skipped}
 
     # we keep track of models being uploaded by path
     markAsBeingUploaded: (model) ->

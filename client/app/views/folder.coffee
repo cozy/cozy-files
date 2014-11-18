@@ -4,6 +4,7 @@ BreadcrumbsView = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
 Modal = require './modal'
 ModalBulkMove = require './modal_bulk_move'
+ModalConflict = require './modal_conflict'
 ModalShareView = null
 
 File = require '../models/file'
@@ -63,7 +64,41 @@ module.exports = class FolderView extends BaseView
         # when clearance is saved, we update the share button's icon
         @listenTo @model, 'sync', @onFolderSync
 
+        # We create a queue to manage conflict, that process one item at a time
+        # so we can use a remembered choice
+        @conflictQueue = async.queue @resolveConflict.bind(@), 1
+        @conflictRememberedChoice = null
+
+        # reset remembered choice when all conflicts have been resolved
+        @conflictQueue.drain = => @conflictRememberedChoice = null
+
+        # adding the model to the queue when a conflict is detected by the
+        # upload queue
+        @listenTo @uploadQueue, 'conflict', @conflictQueue.push
+
         return this
+
+    resolveConflict: (model, done) ->
+
+        # if the user has selected the remember choice option
+        # it is not asked again
+        if @conflictRememberedChoice?
+            model.overwrite = @conflictRememberedChoice
+            model.processSave model
+            done()
+        else
+            # Ask the user his choice about overwriting the file
+            new ModalConflict model, (choice, rememberChoice) =>
+
+                # save the remembered choice if the user has set it
+                if rememberChoice?
+                    @conflictRememberedChoice = rememberChoice
+
+                model.overwrite = choice
+                # starts the upload (and therefore unlocks the upload queue)
+                model.processSave model
+
+                done()
 
     destroy: ->
         # reset selection for each models
@@ -74,6 +109,10 @@ module.exports = class FolderView extends BaseView
         @breadcrumbsView = null
         @filesList.destroy()
         @filesList = null
+
+        # terminates conflict queue
+        @conflictQueue.kill()
+        @conflictQueue = null
 
         super()
 

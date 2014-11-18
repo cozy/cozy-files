@@ -99,6 +99,12 @@ module.exports =
     "upload folder msg"         : "Mettre en ligne un dossier"
     "upload folder separator"   : "ou"
 
+    "overwrite modal title"     : "Un fichier existe déjà"
+    "overwrite modal content"   : "Voulez-vous écraser \"%{fileName}\" ?"
+    "overwrite modal remember label" : "Appliquer cette décision à tous les conflits"
+    "overwrite modal yes button": "Ecraser"
+    "overwrite modal no button" : "Ignorer"
+
     "folder"                    : "Dossier"
     "image"                     : "Image"
     "document"                  : "Document"
