@@ -351,6 +351,7 @@ module.exports = class FileView extends BaseView
         return true
 
     onToggleSelect: ->
+        @$el.toggleClass 'selected', @model.isSelected
         if @model.isSelected
             @$('.file-move, .file-delete').addClass 'hidden'
         else
