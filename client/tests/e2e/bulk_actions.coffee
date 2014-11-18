@@ -9,7 +9,6 @@ elementIcon = "#{firstElement} .fa.fa-folder"
 elementCheckbox = "#{firstElement} input.selector"
 allCheckedInList = "tr.folder-row input.selector:checked"
 
-###
 casper.test.begin 'Bulk actions - select all', (test) ->
 
     helpers._test = test
@@ -185,7 +184,7 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
         test.assert movedElementsNum is elementsNum, "The elements should be back"
 
     casper.run -> test.done()
-###
+
 casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
 
     helpers._test = test
