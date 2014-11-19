@@ -264,7 +264,7 @@ describe "Folders management", ->
             file =
                 name: "file1"
                 path: "/folder1"
-            client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
+            client.sendFile "files/", './test/fixtures/files/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @id = body.id
                 done()
@@ -335,7 +335,7 @@ describe "Folders management", ->
             file =
                 name: "file"
                 path: "/root2"
-            client.sendFile "files/", './test/test.txt', file, (err, res, body) =>
+            client.sendFile "files/", './test/fixtures/files/test.txt', file, (err, res, body) =>
                 body = JSON.parse(body)
                 @fileId = body.id
                 done()
@@ -405,7 +405,7 @@ describe "Folders management", ->
                 name: "test"
                 path: "/rootfile"
             @now = moment()
-            client.sendFile 'files/', './test/test.txt', file, (err, res, body) =>
+            client.sendFile 'files/', './test/fixtures/files/test.txt', file, (err, res, body) =>
                 @id = (JSON.parse body).id
                 done()
 
