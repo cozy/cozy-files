@@ -61,9 +61,7 @@ module.exports = class FilesView extends ViewCollection
 
     # Changer sorting depending on the clicked chevron.
     onChangeOrder: (event) ->
-        infos = event.target.id.split '-'
-        order = infos[0]
-        type = infos[1]
+        [order, type] = event.target.id.split '-'
 
         order = if order is 'up' then 'desc' else 'asc'
 

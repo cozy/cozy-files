@@ -60,7 +60,7 @@ module.exports = class Router extends Backbone.Router
 
         # we generate a mixed collection with content & uploads
         filteredUploads = app.uploadQueue.filteredByFolder folder, collection.comparator
-        mergedCollection = MergedCollection(collection, filteredUploads, 'name')
+        mergedCollection = MergedCollection collection, filteredUploads, 'name'
 
         @folderView = @_getFolderView
             model: folder

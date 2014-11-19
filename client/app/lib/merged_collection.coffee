@@ -11,7 +11,7 @@ module.exports = MergedCollection = (a, b, uniqAttr='id') ->
     mixed.A = a
     mixed.B = b
 
-    do reset = () ->
+    do reset = ->
         models = []
         ids = []
         a.forEach (model) ->
@@ -25,12 +25,10 @@ module.exports = MergedCollection = (a, b, uniqAttr='id') ->
     sameAs = (model, collection) ->
         search = {}
         search[uniqAttr] = model.get uniqAttr
-        collection.findWhere(search)
-
-
+        collection.findWhere search
 
     events =
-        reset: => reset()
+        reset: reset
 
         remove: (model, collection) =>
             other = if collection is a then b else a
