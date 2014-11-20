@@ -709,23 +709,6 @@ window.onbeforeunload = function() {
 };
 });
 
-;require.register("lib/app_helpers", function(exports, require, module) {
-(function() {
-  return (function() {
-    var console, dummy, method, methods, _results;
-    console = window.console = window.console || {};
-    method = void 0;
-    dummy = function() {};
-    methods = 'assert,count,debug,dir,dirxml,error,exception, group,groupCollapsed,groupEnd,info,log,markTimeline, profile,profileEnd,time,timeEnd,trace,warn'.split(',');
-    _results = [];
-    while (method = methods.pop()) {
-      _results.push(console[method] = console[method] || dummy);
-    }
-    return _results;
-  })();
-})();
-});
-
 ;require.register("lib/base_view", function(exports, require, module) {
 var BaseView,
   __hasProp = {}.hasOwnProperty,
@@ -870,25 +853,25 @@ module.exports = {
 var MergedCollection,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-module.exports = MergedCollection = function(a, b, uniqAttr) {
+module.exports = MergedCollection = function(primary, secondary, uniqAttr) {
   var events, mixed, reset, sameAs;
   if (uniqAttr == null) {
     uniqAttr = 'id';
   }
   mixed = new Backbone.Collection([], {
-    comparator: a.comparator
+    comparator: primary.comparator
   });
-  mixed.A = a;
-  mixed.B = b;
+  mixed.Primary = primary;
+  mixed.Secondary = secondary;
   (reset = function() {
     var ids, models;
     models = [];
     ids = [];
-    a.forEach(function(model) {
+    primary.forEach(function(model) {
       models.push(model);
       return ids.push(model.id);
     });
-    b.forEach(function(model) {
+    secondary.forEach(function(model) {
       var _ref;
       if (_ref = model.id, __indexOf.call(ids, _ref) < 0) {
         return models.push(model);
@@ -903,15 +886,11 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
     return collection.findWhere(search);
   };
   events = {
-    reset: (function(_this) {
-      return function() {
-        return reset();
-      };
-    })(this),
+    reset: reset,
     remove: (function(_this) {
       return function(model, collection) {
         var existingOther, other;
-        other = collection === a ? b : a;
+        other = collection === primary ? secondary : primary;
         mixed.remove(model);
         if (model.id && (existingOther = sameAs(model, other))) {
           return mixed.add(existingOther);
@@ -921,11 +900,9 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
     add: function(model, collection) {
       var existing;
       if (existing = sameAs(model, mixed)) {
-        if (collection === a) {
+        if (collection === primary || model.conflict) {
           mixed.remove(existing);
           return mixed.add(model);
-        } else {
-
         }
       } else {
         return mixed.add(model);
@@ -937,7 +914,7 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
         id: model.id
       });
       if (dups.length === 2) {
-        toRemove = dups[0].collection === b ? 0 : 1;
+        toRemove = dups[0].collection === secondary ? 0 : 1;
         return mixed.remove(dups[toRemove]);
       }
     },
@@ -945,8 +922,8 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
       return mixed.sort();
     }
   };
-  a.bind(events);
-  b.bind(events);
+  primary.bind(events);
+  secondary.bind(events);
   return mixed;
 };
 });
@@ -1171,13 +1148,7 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.afterRender = function() {
-    var id, view, _ref;
     this.$collectionEl = $(this.collectionEl);
-    _ref = this.views;
-    for (id in _ref) {
-      view = _ref[id];
-      this.appendView(view);
-    }
     this.onReset(this.collection);
     return this.onChange(this.views);
   };
@@ -1192,7 +1163,7 @@ module.exports = ViewCollection = (function(_super) {
     _ref = this.views;
     for (id in _ref) {
       view = _ref[id];
-      view.remove();
+      this.removeItem(view.model);
     }
     return newcollection.forEach(this.addItem);
   };
@@ -2181,6 +2152,9 @@ module.exports = FileView = (function(_super) {
     })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
+        if (_this.model.conflict) {
+          _this.render();
+        }
         return _this.$('.spinholder').spin(false);
       };
     })(this));
@@ -2572,10 +2546,8 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.onChangeOrder = function(event) {
-    var infos, order, type;
-    infos = event.target.id.split('-');
-    order = infos[0];
-    type = infos[1];
+    var order, type, _ref;
+    _ref = event.target.id.split('-'), order = _ref[0], type = _ref[1];
     order = order === 'up' ? 'desc' : 'asc';
     this.chevron = {
       order: order,
