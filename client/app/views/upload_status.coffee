@@ -78,8 +78,7 @@ module.exports = class UploadStatusView extends BaseView
 
         return parts.join ' '
 
-    resetCollection: ->
-        @collection.reset()
+    resetCollection: -> @collection.reset()
 
     uploadCount: (e) ->
         if @collection.length

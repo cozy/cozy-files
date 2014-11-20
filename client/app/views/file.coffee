@@ -107,6 +107,10 @@ module.exports = class FileView extends BaseView
         @listenTo @model, 'request', =>
             @$('.spinholder').spin 'small'
         @listenTo @model, 'sync error', =>
+            # for overwritten files, render entirely to show
+            #  modification date and type
+            @render() if @model.conflict
+
             @$('.spinholder').spin false
 
         @listenTo @model, 'toggle-select', @onToggleSelect
@@ -132,7 +136,6 @@ module.exports = class FileView extends BaseView
                 @$('.fa-folder').removeClass 'spin'
 
     refresh: ->
-
         changes = Object.keys @model.changed
 
         if changes.length is 1
@@ -362,15 +365,15 @@ module.exports = class FileView extends BaseView
         if @model.isBeingUploaded()
             @$('.type-column-cell').remove()
             @$('.date-column-cell').remove()
-            @progressbar = new ProgressBar(model: @model)
-            cell = $('<td colspan="2"></td>')
+            @progressbar = new ProgressBar model: @model
+            cell = $ '<td colspan="2"></td>'
             cell.append @progressbar.render().$el
             @$('.size-column-cell').after cell
             # we don't want the file link to react
             @$('a.caption.btn').click (event) -> event.preventDefault()
         else
             @tags = new TagsView
-                el: @$('.tags')
+                el: @$ '.tags'
                 model: @model
             @tags.render()
             @tags.hideInput()

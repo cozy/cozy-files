@@ -100,7 +100,7 @@ module.exports = class UploadQueue extends Backbone.Collection
                             model.file = null
                             model.isUploaded = true
                             model.loaded = model.total
-                            unless app.baseCollection.get model.id
+                            unless app.baseCollection.get(model.id)
                                 app.baseCollection.add model
                             cb null
                         error: (_, err) =>
