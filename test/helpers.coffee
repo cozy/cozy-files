@@ -59,7 +59,7 @@ Folder = require "#{helpers.prefix}server/models/folder"
 
 # This function remove everythin from the db
 helpers.cleanDB = (callback) ->
-    @timeout 10000
+    @timeout 15000
     Folder.destroyAll (err) ->
         if err then callback err
         else File.destroyAll callback

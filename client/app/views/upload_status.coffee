@@ -37,19 +37,23 @@ module.exports = class UploadStatusView extends BaseView
 
     complete: ->
         @$('.progress').remove()
-        @dismiss.show()
-
         result = @collection.getResults()
-        @$el.addClass result.status
-        @$('span').text [
-            if result.success
-                t 'upload complete', smart_count: result.success
-            if result.existing.length
-                @makeExistingSentence result.existing
+        if result.success > 0 or result.error > 0 or result.existing > 0
+            @dismiss.show()
 
-            if result.error.length
-                @makeErrorSentence result.error
-        ].join ' '
+            @$el.addClass result.status
+
+            @$('span').text [
+                if result.success
+                    t 'upload complete', smart_count: result.success
+                if result.existing.length
+                    @makeExistingSentence result.existing
+
+                if result.error.length
+                    @makeErrorSentence result.error
+            ].join ' '
+        else
+            @resetCollection()
 
     # generate a sentence explaining existing files
     makeExistingSentence: (existing) ->
@@ -74,8 +78,7 @@ module.exports = class UploadStatusView extends BaseView
 
         return parts.join ' '
 
-    resetCollection: ->
-        @collection.reset()
+    resetCollection: -> @collection.reset()
 
     uploadCount: (e) ->
         if @collection.length

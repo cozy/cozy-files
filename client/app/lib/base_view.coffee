@@ -17,8 +17,4 @@ module.exports = class BaseView extends Backbone.View
 
     afterRender: ->
 
-    destroy: ->
-        #@undelegateEvents()
-        #@$el.removeData().unbind()
-        @remove()
-        #Backbone.View::remove.call @
+    destroy: -> @remove()

@@ -39,13 +39,13 @@ module.exports = class File extends Backbone.Model
             formdata.append 'name', model.get 'name'
             formdata.append 'path', model.get 'path'
             formdata.append 'lastModification', model.get 'lastModification'
+            formdata.append 'overwrite', true if @overwrite
             formdata.append 'file', model.file
 
             # trigger upload progress on the model
             progress = (e) ->
                 model.loaded = e.loaded
                 model.trigger 'progress', e
-
             _.extend options,
                 contentType: false
                 data: formdata

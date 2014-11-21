@@ -383,7 +383,11 @@ module.exports = UploadQueue = (function(_super) {
       return function(model) {
         _this.completed = false;
         if (model.get('type') === 'file') {
-          return _this.asyncQueue.push(model);
+          if (model.conflict) {
+            return _this.asyncQueue.push(model);
+          } else {
+            return _this.asyncQueue.unshift(model);
+          }
         } else if (model.get('type') === 'folder') {
           return _this.asyncQueue.unshift(model);
         } else {
@@ -461,50 +465,63 @@ module.exports = UploadQueue = (function(_super) {
   };
 
   UploadQueue.prototype.uploadWorker = function(model, cb) {
+    var processSave;
     if (model.existing || model.error || model.isUploaded) {
       return setTimeout(cb, 10);
     } else {
-      return model.save(null, {
-        success: function() {
-          model.file = null;
-          model.isUploaded = true;
-          model.loaded = model.total;
-          if (!app.baseCollection.get(model.id)) {
-            app.baseCollection.add(model);
-          }
-          return cb(null);
-        },
-        error: (function(_this) {
-          return function(_, err) {
-            var body, e;
-            body = (function() {
-              try {
-                return JSON.parse(err.responseText);
-              } catch (_error) {
-                e = _error;
-                return {
-                  msg: null
-                };
+      processSave = function(model) {
+        if (!model.conflict || model.conflict && model.overwrite) {
+          return model.save(null, {
+            success: function() {
+              model.file = null;
+              model.isUploaded = true;
+              model.loaded = model.total;
+              if (!app.baseCollection.get(model.id)) {
+                app.baseCollection.add(model);
               }
-            })();
-            if (err.status === 400 && body.code === 'EEXISTS') {
-              model.existing = true;
-              return cb(new Error(body.msg));
-            }
-            if (err.status === 400 && body.code === 'ESTORAGE') {
-              model.error = new Error(body.msg);
-              return cb(model.error);
-            }
-            model.tries = 1 + (model.tries || 0);
-            if (model.tries > 3) {
-              model.error = t(err.msg || "modal error file upload");
-            } else {
-              _this.asyncQueue.push(model);
-            }
-            return cb(err);
-          };
-        })(this)
-      });
+              return cb(null);
+            },
+            error: (function(_this) {
+              return function(_, err) {
+                var body, defaultMessage, e;
+                body = (function() {
+                  try {
+                    return JSON.parse(err.responseText);
+                  } catch (_error) {
+                    e = _error;
+                    return {
+                      msg: null
+                    };
+                  }
+                })();
+                if (err.status === 400 && body.code === 'EEXISTS') {
+                  model.existing = true;
+                  return cb(new Error(body.msg));
+                }
+                if (err.status === 400 && body.code === 'ESTORAGE') {
+                  model.error = new Error(body.msg);
+                  return cb(model.error);
+                }
+                model.tries = 1 + (model.tries || 0);
+                if (model.tries > 3) {
+                  defaultMessage = "modal error file upload";
+                  model.error = t(err.msg || defaultMessage);
+                } else {
+                  _this.asyncQueue.push(model);
+                }
+                return cb(err);
+              };
+            })(this)
+          });
+        } else {
+          return cb();
+        }
+      };
+      if (model.conflict && (model.overwrite == null)) {
+        return model.processSave = processSave.bind(this);
+      } else {
+        return processSave.call(this, model);
+      }
     }
   };
 
@@ -536,9 +553,11 @@ module.exports = UploadQueue = (function(_super) {
           model.loaded = 0;
           model.total = 0;
         } else if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
-          model.existing = true;
+          model.conflict = true;
+          _this.trigger('conflict', model);
+          model.file = blob;
           model.loaded = 0;
-          model.total = 0;
+          model.total = blob.size;
         } else {
           model.file = blob;
           model.loaded = 0;
@@ -597,16 +616,19 @@ module.exports = UploadQueue = (function(_super) {
   };
 
   UploadQueue.prototype.getResults = function() {
-    var error, existing, status, success;
+    var error, existing, skipped, status, success;
     error = [];
     existing = [];
     success = 0;
+    skipped = 0;
     this.each(function(model) {
       if (model.error) {
         console.log("Upload Error", model.getRepository(), model.error);
         return error.push(model);
       } else if (model.existing) {
         return existing.push(model);
+      } else if (model.conflict && !model.overwrite) {
+        return skipped++;
       } else {
         return success++;
       }
@@ -616,7 +638,8 @@ module.exports = UploadQueue = (function(_super) {
       status: status,
       error: error,
       existing: existing,
-      success: success
+      success: success,
+      skipped: skipped
     };
   };
 
@@ -684,23 +707,6 @@ window.onbeforeunload = function() {
     return t('confirmation reload');
   }
 };
-});
-
-;require.register("lib/app_helpers", function(exports, require, module) {
-(function() {
-  return (function() {
-    var console, dummy, method, methods, _results;
-    console = window.console = window.console || {};
-    method = void 0;
-    dummy = function() {};
-    methods = 'assert,count,debug,dir,dirxml,error,exception, group,groupCollapsed,groupEnd,info,log,markTimeline, profile,profileEnd,time,timeEnd,trace,warn'.split(',');
-    _results = [];
-    while (method = methods.pop()) {
-      _results.push(console[method] = console[method] || dummy);
-    }
-    return _results;
-  })();
-})();
 });
 
 ;require.register("lib/base_view", function(exports, require, module) {
@@ -847,25 +853,25 @@ module.exports = {
 var MergedCollection,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-module.exports = MergedCollection = function(a, b, uniqAttr) {
+module.exports = MergedCollection = function(primary, secondary, uniqAttr) {
   var events, mixed, reset, sameAs;
   if (uniqAttr == null) {
     uniqAttr = 'id';
   }
   mixed = new Backbone.Collection([], {
-    comparator: a.comparator
+    comparator: primary.comparator
   });
-  mixed.A = a;
-  mixed.B = b;
+  mixed.Primary = primary;
+  mixed.Secondary = secondary;
   (reset = function() {
     var ids, models;
     models = [];
     ids = [];
-    a.forEach(function(model) {
+    primary.forEach(function(model) {
       models.push(model);
       return ids.push(model.id);
     });
-    b.forEach(function(model) {
+    secondary.forEach(function(model) {
       var _ref;
       if (_ref = model.id, __indexOf.call(ids, _ref) < 0) {
         return models.push(model);
@@ -880,15 +886,11 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
     return collection.findWhere(search);
   };
   events = {
-    reset: (function(_this) {
-      return function() {
-        return reset();
-      };
-    })(this),
+    reset: reset,
     remove: (function(_this) {
       return function(model, collection) {
         var existingOther, other;
-        other = collection === a ? b : a;
+        other = collection === primary ? secondary : primary;
         mixed.remove(model);
         if (model.id && (existingOther = sameAs(model, other))) {
           return mixed.add(existingOther);
@@ -898,11 +900,9 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
     add: function(model, collection) {
       var existing;
       if (existing = sameAs(model, mixed)) {
-        if (collection === a) {
+        if (collection === primary || model.conflict) {
           mixed.remove(existing);
           return mixed.add(model);
-        } else {
-
         }
       } else {
         return mixed.add(model);
@@ -914,7 +914,7 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
         id: model.id
       });
       if (dups.length === 2) {
-        toRemove = dups[0].collection === b ? 0 : 1;
+        toRemove = dups[0].collection === secondary ? 0 : 1;
         return mixed.remove(dups[toRemove]);
       }
     },
@@ -922,8 +922,8 @@ module.exports = MergedCollection = function(a, b, uniqAttr) {
       return mixed.sort();
     }
   };
-  a.bind(events);
-  b.bind(events);
+  primary.bind(events);
+  secondary.bind(events);
   return mixed;
 };
 });
@@ -1148,13 +1148,7 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.afterRender = function() {
-    var id, view, _ref;
     this.$collectionEl = $(this.collectionEl);
-    _ref = this.views;
-    for (id in _ref) {
-      view = _ref[id];
-      this.appendView(view);
-    }
     this.onReset(this.collection);
     return this.onChange(this.views);
   };
@@ -1169,7 +1163,7 @@ module.exports = ViewCollection = (function(_super) {
     _ref = this.views;
     for (id in _ref) {
       view = _ref[id];
-      view.remove();
+      this.removeItem(view.model);
     }
     return newcollection.forEach(this.addItem);
   };
@@ -1275,6 +1269,11 @@ module.exports = {
   "drop message": "Drop your files here to automatically add them",
   "upload folder msg": "Upload a folder",
   "upload folder separator": "or",
+  "overwrite modal title": "A file already exist",
+  "overwrite modal content": "Do you want to overwrite \"%{fileName}\"?",
+  "overwrite modal remember label": "Apply this decision to all conflicts",
+  "overwrite modal yes button": "Overwrite",
+  "overwrite modal no button": "Skip",
   "folder": "Folder",
   "image": "Image",
   "document": "Document",
@@ -1409,6 +1408,11 @@ module.exports = {
   "drop message": "Lâchez ici vos fichiers pour les ajouter",
   "upload folder msg": "Mettre en ligne un dossier",
   "upload folder separator": "ou",
+  "overwrite modal title": "Un fichier existe déjà",
+  "overwrite modal content": "Voulez-vous écraser \"%{fileName}\" ?",
+  "overwrite modal remember label": "Appliquer cette décision à tous les conflits",
+  "overwrite modal yes button": "Ecraser",
+  "overwrite modal no button": "Ignorer",
   "folder": "Dossier",
   "image": "Image",
   "document": "Document",
@@ -1532,6 +1536,11 @@ module.exports = {
   "new folder send": "OK",
   "new folder button": "Creare director",
   "upload folder msg": "Încărcați un director",
+  "overwrite modal title": "A file already exist",
+  "overwrite modal content": "Do you want to overwrite \"%{fileName}\"?",
+  "overwrite modal remember label": "Apply this decision to all conflicts",
+  "overwrite modal yes button": "Overwrite",
+  "overwrite modal no button": "Skip",
   "folder": "Director",
   "image": "Imagine",
   "document": "Document",
@@ -1644,6 +1653,9 @@ module.exports = File = (function(_super) {
       formdata.append('name', model.get('name'));
       formdata.append('path', model.get('path'));
       formdata.append('lastModification', model.get('lastModification'));
+      if (this.overwrite) {
+        formdata.append('overwrite', true);
+      }
       formdata.append('file', model.file);
       progress = function(e) {
         model.loaded = e.loaded;
@@ -2140,6 +2152,9 @@ module.exports = FileView = (function(_super) {
     })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
+        if (_this.model.conflict) {
+          _this.render();
+        }
         return _this.$('.spinholder').spin(false);
       };
     })(this));
@@ -2402,6 +2417,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onToggleSelect = function() {
+    this.$el.toggleClass('selected', this.model.isSelected);
     if (this.model.isSelected) {
       return this.$('.file-move, .file-delete').addClass('hidden');
     } else {
@@ -2530,10 +2546,8 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.onChangeOrder = function(event) {
-    var infos, order, type;
-    infos = event.target.id.split('-');
-    order = infos[0];
-    type = infos[1];
+    var order, type, _ref;
+    _ref = event.target.id.split('-'), order = _ref[0], type = _ref[1];
     order = order === 'up' ? 'desc' : 'asc';
     this.chevron = {
       order: order,
@@ -2555,7 +2569,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalShareView, UploadStatusView,
+var BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalConflict, ModalShareView, UploadStatusView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2571,6 +2585,8 @@ UploadStatusView = require('./upload_status');
 Modal = require('./modal');
 
 ModalBulkMove = require('./modal_bulk_move');
+
+ModalConflict = require('./modal_conflict');
 
 ModalShareView = null;
 
@@ -2632,7 +2648,34 @@ module.exports = FolderView = (function(_super) {
     this.listenTo(this.baseCollection, 'remove', this.toggleFolderActions);
     this.listenTo(this.collection, 'remove', this.toggleFolderActions);
     this.listenTo(this.model, 'sync', this.onFolderSync);
+    this.conflictQueue = async.queue(this.resolveConflict.bind(this), 1);
+    this.conflictRememberedChoice = null;
+    this.conflictQueue.drain = (function(_this) {
+      return function() {
+        return _this.conflictRememberedChoice = null;
+      };
+    })(this);
+    this.listenTo(this.uploadQueue, 'conflict', this.conflictQueue.push);
     return this;
+  };
+
+  FolderView.prototype.resolveConflict = function(model, done) {
+    if (this.conflictRememberedChoice != null) {
+      model.overwrite = this.conflictRememberedChoice;
+      model.processSave(model);
+      return done();
+    } else {
+      return new ModalConflict(model, (function(_this) {
+        return function(choice, rememberChoice) {
+          if (rememberChoice != null) {
+            _this.conflictRememberedChoice = rememberChoice;
+          }
+          model.overwrite = choice;
+          model.processSave(model);
+          return done();
+        };
+      })(this));
+    }
   };
 
   FolderView.prototype.destroy = function() {
@@ -2643,6 +2686,8 @@ module.exports = FolderView = (function(_super) {
     this.breadcrumbsView = null;
     this.filesList.destroy();
     this.filesList = null;
+    this.conflictQueue.kill();
+    this.conflictQueue = null;
     return FolderView.__super__.destroy.call(this);
   };
 
@@ -3103,11 +3148,7 @@ module.exports = ModalView = (function(_super) {
   }
 
   ModalView.prototype.initialize = function() {
-    this.$el.on('hidden.bs.modal', (function(_this) {
-      return function() {
-        return _this.close();
-      };
-    })(this));
+    this.$el.on('hidden.bs.modal', this.close.bind(this));
     this.render();
     return this.show();
   };
@@ -3131,11 +3172,7 @@ module.exports = ModalView = (function(_super) {
   ModalView.prototype.onShow = function() {};
 
   ModalView.prototype.close = function() {
-    return setTimeout(((function(_this) {
-      return function() {
-        return _this.destroy();
-      };
-    })(this)), 500);
+    return setTimeout(this.destroy.bind(this), 500);
   };
 
   ModalView.prototype.show = function() {
@@ -3293,6 +3330,51 @@ module.exports = ModalBulkMoveView = (function(_super) {
   };
 
   return ModalBulkMoveView;
+
+})(Modal);
+});
+
+;require.register("views/modal_conflict", function(exports, require, module) {
+var Modal, ModalConflictView, client,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Modal = require("./modal");
+
+client = require("../lib/client");
+
+module.exports = ModalConflictView = (function(_super) {
+  __extends(ModalConflictView, _super);
+
+  ModalConflictView.prototype.conflictTemplate = function() {
+    var rememberLabel;
+    rememberLabel = t('overwrite modal remember label');
+    return "<div class=\"move-widget\">\n<p>" + (t('overwrite modal content', {
+      fileName: this.model.get('name')
+    })) + "</p>\n<p>\n    <label for=\"rememberChoice\">" + rememberLabel + "</label>\n    <input id=\"rememberChoice\" type=\"checkbox\"/>\n</p>\n</div>";
+  };
+
+  function ModalConflictView(model, callback) {
+    this.model = model;
+    this.callback = callback;
+    ModalConflictView.__super__.constructor.call(this, t('overwrite modal title'), '', t('overwrite modal yes button'), t('overwrite modal no button'), this.confirmCallback);
+  }
+
+  ModalConflictView.prototype.confirmCallback = function(confirm) {
+    var rememberChoice, rememberedChoice;
+    rememberChoice = this.$('#rememberChoice').prop('checked');
+    if (rememberChoice) {
+      rememberedChoice = confirm;
+    }
+    return this.callback(confirm, rememberedChoice);
+  };
+
+  ModalConflictView.prototype.afterRender = function() {
+    this.conflictForm = $(this.conflictTemplate());
+    return this.$el.find('.modal-body').append(this.conflictForm);
+  };
+
+  return ModalConflictView;
 
 })(Modal);
 });
@@ -4077,14 +4159,18 @@ module.exports = UploadStatusView = (function(_super) {
   UploadStatusView.prototype.complete = function() {
     var result;
     this.$('.progress').remove();
-    this.dismiss.show();
     result = this.collection.getResults();
-    this.$el.addClass(result.status);
-    return this.$('span').text([
-      result.success ? t('upload complete', {
-        smart_count: result.success
-      }) : void 0, result.existing.length ? this.makeExistingSentence(result.existing) : void 0, result.error.length ? this.makeErrorSentence(result.error) : void 0
-    ].join(' '));
+    if (result.success > 0 || result.error > 0 || result.existing > 0) {
+      this.dismiss.show();
+      this.$el.addClass(result.status);
+      return this.$('span').text([
+        result.success ? t('upload complete', {
+          smart_count: result.success
+        }) : void 0, result.existing.length ? this.makeExistingSentence(result.existing) : void 0, result.error.length ? this.makeErrorSentence(result.error) : void 0
+      ].join(' '));
+    } else {
+      return this.resetCollection();
+    }
   };
 
   UploadStatusView.prototype.makeExistingSentence = function(existing) {

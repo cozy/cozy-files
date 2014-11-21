@@ -102,6 +102,12 @@ module.exports =
     "upload folder msg"         : "Upload a folder"
     "upload folder separator"   : "or"
 
+    "overwrite modal title"     : "A file already exist"
+    "overwrite modal content"   : "Do you want to overwrite \"%{fileName}\"?"
+    "overwrite modal remember label" : "Apply this decision to all conflicts"
+    "overwrite modal yes button": "Overwrite"
+    "overwrite modal no button" : "Skip"
+
     "folder"                    : "Folder"
     "image"                     : "Image"
     "document"                  : "Document"

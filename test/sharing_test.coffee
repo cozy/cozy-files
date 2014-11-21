@@ -72,7 +72,7 @@ describe "Sharing management", ->
             file =
                 name: "test"
                 path: "/readonly"
-            client.sendFile 'public/files/?key=secret', './test/test.txt', file, (err, res, body) =>
+            client.sendFile 'public/files/?key=secret', './test/fixtures/files/test.txt', file, (err, res, body) =>
                 should.not.exist err
                 res.statusCode.should.equal 401
                 done()
@@ -110,7 +110,7 @@ describe "Sharing management", ->
             file =
                 name: "test"
                 path: "/root/writable"
-            client.sendFile 'public/files/?key=secret2', './test/test.txt', file, (err, res, body) =>
+            client.sendFile 'public/files/?key=secret2', './test/fixtures/files/test.txt', file, (err, res, body) =>
                 should.not.exist err
                 res.statusCode.should.equal 200
                 done()
