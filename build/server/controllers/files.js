@@ -158,7 +158,7 @@ module.exports.create = function(req, res, next) {
   fields = {};
   form = new multiparty.Form();
   form.on('part', function(part) {
-    var attachBinary, err, fullPath, keepAlive, name, overwrite, path, rollback, upload;
+    var attachBinary, err, fullPath, keepAlive, name, now, overwrite, path, rollback, upload;
     if (part.filename == null) {
       fields[part.name] = '';
       part.on('data', function(buffer) {
@@ -224,21 +224,26 @@ module.exports.create = function(req, res, next) {
         });
       });
     };
+    now = moment().toISOString();
     path = normalizePath(path);
     fullPath = "" + path + "/" + name;
     return File.byFullPath({
       key: fullPath
     }, (function(_this) {
       return function(err, sameFiles) {
-        var data, file, now;
+        var data, file;
         if (err) {
           return next(err);
         }
         if (sameFiles.length > 0) {
           if (overwrite) {
             file = sameFiles[0];
-            keepAlive();
-            return attachBinary(file);
+            return file.updateAttributes({
+              lastModification: now
+            }, function() {
+              keepAlive();
+              return attachBinary(file);
+            });
           } else {
             upload = false;
             return res.send({
@@ -248,7 +253,6 @@ module.exports.create = function(req, res, next) {
             }, 400);
           }
         }
-        now = moment().toISOString();
         data = {
           name: name,
           path: normalizePath(path),
