@@ -181,7 +181,7 @@ module.exports.modify = (req, res, next) ->
 
     updateIfIsSubFolder = (file, cb) ->
 
-        if file.path.indexOf(oldRealPath) is 0
+        if file.path?.indexOf(oldRealPath) is 0
             modifiedPath = file.path.replace oldRealPath, newRealPath
 
             # add new tags from parent, keeping the old ones
