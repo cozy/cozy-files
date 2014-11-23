@@ -213,6 +213,8 @@ module.exports.create = (req, res, next) ->
                         log.debug err if err
                         res.send file, 200
 
+        now = moment().toISOString()
+
         # Check that the file doesn't exist yet.
         path = normalizePath path
         fullPath = "#{path}/#{name}"
@@ -223,8 +225,9 @@ module.exports.create = (req, res, next) ->
             if sameFiles.length > 0
                 if overwrite
                     file = sameFiles[0]
-                    keepAlive()
-                    return attachBinary file
+                    return file.updateAttributes lastModification: now, ->
+                        keepAlive()
+                        attachBinary file
                 else
                     upload = false
                     return res.send
@@ -233,8 +236,6 @@ module.exports.create = (req, res, next) ->
                         msg: "This file already exists"
                     , 400
 
-
-            now = moment().toISOString()
             # Generate file metadata.
             data =
                 name: name
