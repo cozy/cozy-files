@@ -62,17 +62,17 @@ module.exports =
 
     "chrome error dragdrop title": "Des fichiers vont être ignorés"
     "chrome error dragdrop content": """
-        A cause d'un bug de Chrome, les fichiers suivants : %{files} seront
-        ignorés car leur nom contient un accent. Ajoutez les en cliquant depuis
+        À cause d'un bug de Chrome, les fichiers suivants : %{files} seront
+        ignorés car leur nom contient un accent. Ajoutez-les en cliquant sur
         le bouton en haut à droite de votre écran. ||||
-        A cause d'un bug de Chrome, le fichier suivant : %{files} sera
-        ignoré car son nom contient un accent. Ajoutez le en cliquant depuis
+        À cause d'un bug de Chrome, le fichier suivant : %{files} sera
+        ignoré car son nom contient un accent. Ajoutez-le en cliquant sur
         le bouton en haut à droite de votre écran.
     """
     "chrome error submit": "Ok"
 
     "upload caption"            : "Ajouter des fichiers"
-    "upload msg"                : "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne."
+    "upload msg"                : "Faites glisser des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne."
     "upload msg selected"       : """
         Vous avez sélectionné %{smart_count} fichier, cliquez sur "Ajouter" pour les mettre en ligne. ||||
         Vous avez sélectionné %{smart_count} fichiers, cliquez sur "Ajouter" pour les mettre en ligne.
@@ -94,7 +94,7 @@ module.exports =
     "move all"                  : "Déplacer la sélection"
     "remove all"                : "Supprimer la sélection"
 
-    "drop message"              : "Lâchez ici vos fichiers pour les ajouter"
+    "drop message"              : "Déposez ici vos fichiers pour les ajouter"
 
     "upload folder msg"         : "Mettre en ligne un dossier"
     "upload folder separator"   : "ou"
@@ -102,7 +102,7 @@ module.exports =
     "overwrite modal title"     : "Un fichier existe déjà"
     "overwrite modal content"   : "Voulez-vous écraser \"%{fileName}\" ?"
     "overwrite modal remember label" : "Appliquer cette décision à tous les conflits"
-    "overwrite modal yes button": "Ecraser"
+    "overwrite modal yes button": "Écraser"
     "overwrite modal no button" : "Ignorer"
 
     "folder"                    : "Dossier"
