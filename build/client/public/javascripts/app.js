@@ -514,6 +514,7 @@ module.exports = UploadQueue = (function(_super) {
             })(this)
           });
         } else {
+          model.file = null;
           return cb();
         }
       };
@@ -889,12 +890,9 @@ module.exports = MergedCollection = function(primary, secondary, uniqAttr) {
     reset: reset,
     remove: (function(_this) {
       return function(model, collection) {
-        var existingOther, other;
+        var other;
         other = collection === primary ? secondary : primary;
-        mixed.remove(model);
-        if (model.id && (existingOther = sameAs(model, other))) {
-          return mixed.add(existingOther);
-        }
+        return mixed.remove(model);
       };
     })(this),
     add: function(model, collection) {
@@ -1386,10 +1384,10 @@ module.exports = {
   "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
   "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
   "chrome error dragdrop title": "Des fichiers vont être ignorés",
-  "chrome error dragdrop content": "A cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez les en cliquant depuis\nle bouton en haut à droite de votre écran. ||||\nA cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez le en cliquant depuis\nle bouton en haut à droite de votre écran.",
+  "chrome error dragdrop content": "À cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez-les en cliquant sur\nle bouton en haut à droite de votre écran. ||||\nÀ cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez-le en cliquant sur\nle bouton en haut à droite de votre écran.",
   "chrome error submit": "Ok",
   "upload caption": "Ajouter des fichiers",
-  "upload msg": "Glissez des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
+  "upload msg": "Faites glisser des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
   "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
   "upload close": "Annuler",
   "upload send": "Ajouter",
@@ -1405,13 +1403,13 @@ module.exports = {
   "download all": "Télécharger la sélection",
   "move all": "Déplacer la sélection",
   "remove all": "Supprimer la sélection",
-  "drop message": "Lâchez ici vos fichiers pour les ajouter",
+  "drop message": "Déposez ici vos fichiers pour les ajouter",
   "upload folder msg": "Mettre en ligne un dossier",
   "upload folder separator": "ou",
   "overwrite modal title": "Un fichier existe déjà",
   "overwrite modal content": "Voulez-vous écraser \"%{fileName}\" ?",
   "overwrite modal remember label": "Appliquer cette décision à tous les conflits",
-  "overwrite modal yes button": "Ecraser",
+  "overwrite modal yes button": "Écraser",
   "overwrite modal no button": "Ignorer",
   "folder": "Dossier",
   "image": "Image",
