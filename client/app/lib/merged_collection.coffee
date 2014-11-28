@@ -33,8 +33,6 @@ module.exports = MergedCollection = (primary, secondary, uniqAttr='id') ->
         remove: (model, collection) =>
             other = if collection is primary then secondary else primary
             mixed.remove model
-            if model.id and existingOther = sameAs model, other
-                mixed.add existingOther
 
         add: (model, collection) ->
             if existing = sameAs model, mixed
