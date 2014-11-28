@@ -3661,7 +3661,7 @@ var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attac
 buf.push("<td><div class=\"spinholder\">&nbsp;</div><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><input type=\"checkbox\" class=\"selector\"/><i class=\"fa fa-folder\"></i><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><input type=\"checkbox\" class=\"selector\"/><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
@@ -3830,7 +3830,7 @@ var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attac
 buf.push("<td><div class=\"spinholder\">&nbsp;</div><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><input type=\"checkbox\" class=\"selector\"/><i class=\"fa fa-folder\"></i><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><input type=\"checkbox\" class=\"selector\"/><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
