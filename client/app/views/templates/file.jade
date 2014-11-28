@@ -11,11 +11,12 @@ td
               | #{model.name}
       else if model.type == 'file'
         .caption.btn.btn-link
-          input.selector(type="checkbox")
-          if model.mime && this.mimeClasses[model.mime]
-            i(class="fa #{this.mimeClasses[model.mime]}")
-          else
-            i.fa.fa-file-o
+          span.icon-zone
+              input.selector(type="checkbox")
+              if model.mime && this.mimeClasses[model.mime]
+                i(class="fa #{this.mimeClasses[model.mime]}")
+              else
+                i.fa.fa-file-o
           a.btn-link(
             href="#{attachmentUrl}",
             title="#{t('download file')}", target="_blank")

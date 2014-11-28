@@ -251,7 +251,7 @@ tr.folder-row
 
   // mandatory to override bootstrap
   &.selected > td
-    background green + 95% !important
+    background lightblue + 70% !important
 
   td
     vertical-align: middle
@@ -281,12 +281,13 @@ tr.folder-row
       display none
       width 20px
       margin 0 15px 0 0
+      cursor pointer
       &:checked
         display inline-block
       &:checked + .fa
           display none
 
-    &:hover
+    .icon-zone:hover
       .fa
         display none
       input[type=checkbox]
@@ -867,3 +868,13 @@ body.error-404 .error-frame
 
     &.selected, &:hover
       background-color orange + 40%
+
+.btn-link
+    color basecolor - 30%
+    border-bottom: 1px solid transparent
+
+.btn-link:hover
+    color actioncolor - 10%
+    text-decoration: none
+    border-bottom: 1px solid actioncolor - 10%
+
