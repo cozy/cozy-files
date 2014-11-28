@@ -237,8 +237,8 @@ module.exports.modify = function(req, res, next) {
   });
   isPublic = req.body["public"];
   updateIfIsSubFolder = function(file, cb) {
-    var data, modifiedPath, oldTags, tag, tags, _i, _len;
-    if (file.path.indexOf(oldRealPath) === 0) {
+    var data, modifiedPath, oldTags, tag, tags, _i, _len, _ref;
+    if (((_ref = file.path) != null ? _ref.indexOf(oldRealPath) : void 0) === 0) {
       modifiedPath = file.path.replace(oldRealPath, newRealPath);
       oldTags = file.tags;
       tags = [].concat(oldTags);
