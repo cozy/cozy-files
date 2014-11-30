@@ -404,10 +404,10 @@ module.exports = class FolderView extends BaseView
         new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
                 window.pendingOperations.deletion++
-                async.eachLimit @getSelectedElements(), 10, (element, cb) ->
+                async.eachSeries @getSelectedElements(), (element, cb) ->
                     element.destroy
-                        success: -> cb()
-                        error: -> cb()
+                        success: -> setTimeout cb, 200
+                        error: -> setTimeout cb, 200
                 , (err) ->
                     window.pendingOperations.deletion--
                     if err?
