@@ -382,11 +382,15 @@ module.exports = class FolderView extends BaseView
             @$('#share-state').hide()
             @$('#upload-btngroup').hide()
             @$('#button-new-folder').hide()
+            @$('#download-link').hide() # in public area
             @$('#bulk-actions-btngroup').addClass 'enabled'
         else
-            @$('#share-state').show()
-            @$('#upload-btngroup').show()
-            @$('#button-new-folder').show()
+            if app.isPublic
+                @$('#download-link').show() # in public area
+            else
+                @$('#share-state').show()
+                @$('#upload-btngroup').show()
+                @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
         # we check the "select-all" checkbox if there are few elements selected
