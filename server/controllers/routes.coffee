@@ -43,6 +43,11 @@ module.exports =
         get: folders.find
         put: folders.modify
         delete: folders.destroy
+
+    # Skips the folder retrieval for root actions
+    'folders/root/zip/:name':
+        get: folders.zip
+        post: folders.zip
     'folders/:folderid/zip/:name':
         get: folders.zip
         post: folders.zip
