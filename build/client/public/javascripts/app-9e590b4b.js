@@ -2997,11 +2997,16 @@ module.exports = FolderView = (function(_super) {
       this.$('#share-state').hide();
       this.$('#upload-btngroup').hide();
       this.$('#button-new-folder').hide();
+      this.$('#download-link').hide();
       this.$('#bulk-actions-btngroup').addClass('enabled');
     } else {
-      this.$('#share-state').show();
-      this.$('#upload-btngroup').show();
-      this.$('#button-new-folder').show();
+      if (app.isPublic) {
+        this.$('#download-link').show();
+      } else {
+        this.$('#share-state').show();
+        this.$('#upload-btngroup').show();
+        this.$('#button-new-folder').show();
+      }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
     shouldChecked = selectedElements.length >= 3 || force === true;

@@ -591,11 +591,17 @@ module.exports.searchContent = function(req, res, next) {
 };
 
 module.exports.zip = function(req, res, next) {
-  var addToArchive, archive, folder, key, makeZip, selectedPaths, _ref;
+  var addToArchive, archive, folder, key, makeZip, selectedPaths, zipName, _ref, _ref1;
   folder = req.folder;
   archive = archiver('zip');
-  key = "" + folder.path + "/" + folder.name;
-  if (((_ref = req.body) != null ? _ref.selectedPaths : void 0) != null) {
+  if (folder != null) {
+    key = "" + folder.path + "/" + folder.name;
+    zipName = (_ref = folder.name) != null ? _ref.replace(/\W/g, '') : void 0;
+  } else {
+    key = "";
+    zipName = 'cozy-files';
+  }
+  if (((_ref1 = req.body) != null ? _ref1.selectedPaths : void 0) != null) {
     selectedPaths = req.body.selectedPaths.split(';');
   } else {
     selectedPaths = [];
@@ -636,7 +642,6 @@ module.exports.zip = function(req, res, next) {
     startkey: "" + key + "/",
     endkey: "" + key + "/\ufff0"
   }, function(err, files) {
-    var zipName, _ref1;
     if (err) {
       return next(err);
     } else {
@@ -648,7 +653,6 @@ module.exports.zip = function(req, res, next) {
         subFolderMatch = selectedPaths.indexOf(path) !== -1;
         return selectedPaths.length === 0 || fileMatch || subFolderMatch;
       });
-      zipName = (_ref1 = folder.name) != null ? _ref1.replace(/\W/g, '') : void 0;
       return makeZip(zipName, files);
     }
   });
