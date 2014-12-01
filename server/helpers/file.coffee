@@ -29,7 +29,8 @@ module.exports =
 
         # Perform download with the lowel level node js api to avoid too much
         # memory consumption.
-        downloader.download "/data/#{file.id}/binaries/file", (stream) ->
+        url = "/data/#{file.id}/binaries/file"
+        requester = downloader.download url, (stream) ->
             if stream.statusCode is 200
                 stream.pipefilter = (source, dest) ->
                     XSSmimeTypes = ['text/html', 'image/svg+xml']
@@ -39,6 +40,11 @@ module.exports =
                 # Set headers from data system response data.
                 res.setHeader 'content-length', stream.headers['content-length']
                 res.setHeader 'content-type', stream.headers['content-type']
+
+                # when the client closes the connection before the stream ends,
+                # closes the connection to the data system to prevent it from
+                # crashing due to many connections opened
+                req.on 'close', -> requester.abort()
 
                 stream.pipe res
 
