@@ -2,11 +2,12 @@ contactwatch = require './server/initializers/contactwatch'
 americano = require('americano')
 
 
-start = (port, callback) ->
+start = (host, port, callback) ->
     americano.start
         name: 'Contacts'
         port: port
         root: __dirname
+        host: host
     , (app, server) ->
 
         # start contact watch to upadte UI when new contact are added
@@ -15,8 +16,9 @@ start = (port, callback) ->
             callback? null, app, server
 
 if not module.parent
+    host = process.env.HOST or '127.0.0.1'
     port = process.env.PORT or 9114
-    start port, (err) ->
+    start host, port, (err) ->
         if err
             console.log "Initialization failed, not starting"
             console.log err.stack

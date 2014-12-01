@@ -20,7 +20,7 @@ module.exports =
     startServer: (done) ->
         @timeout 6000
         start = require "#{prefix}server"
-        start TESTPORT, (err, app, server) =>
+        start 'localhost', TESTPORT, (err, app, server) =>
             @server = server
             done err
 

@@ -60,6 +60,10 @@ module.exports = class ContactView extends ViewCollection
             @needSaving = true
             @changeOccured()
 
+        # if the contact is open when it's removed, we redirect the user to
+        # the main page
+        @listenTo @model, 'remove', -> window.app.router.navigate '', true
+
     getRenderData: ->
         _.extend {}, @model.toJSON(),
             hasPicture: @model.hasPicture or false
