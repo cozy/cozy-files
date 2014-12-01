@@ -2417,6 +2417,7 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.onToggleSelect = function() {
     this.$el.toggleClass('selected', this.model.isSelected);
+    this.$('input.selector').prop('checked', this.model.isSelected);
     if (this.model.isSelected) {
       return this.$('.file-move, .file-delete').addClass('hidden');
     } else {
@@ -3304,18 +3305,6 @@ module.exports = ModalBulkMoveView = (function(_super) {
         }
       };
     })(this));
-  };
-
-  ModalBulkMoveView.prototype.onNo = function() {
-    this.clearSelection();
-    return ModalBulkMoveView.__super__.onNo.call(this);
-  };
-
-  ModalBulkMoveView.prototype.clearSelection = function() {
-    return this.collection.forEach(function(element) {
-      element.isSelected = false;
-      return element.trigger('toggle-select');
-    });
   };
 
   ModalBulkMoveView.prototype.bulkUpdate = function(newPath, callback) {
