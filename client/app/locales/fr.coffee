@@ -42,11 +42,12 @@ module.exports =
     "tooltip delete"          : "Supprimer"
     "tooltip edit"            : "Renommer"
     "tooltip download"        : "Télécharger"
-    "tooltip share"            : "Partager"
+    "tooltip share"           : "Partager"
+    "tooltip tag"             : "Etiquette"
 
     # file_edit template
-    "file edit save"            : "Sauvegarder"
-    "file edit cancel"          : "Annuler"
+    "file edit save"          : "Sauvegarder"
+    "file edit cancel"        : "Annuler"
 
     # folder template
     'and x files'         : """

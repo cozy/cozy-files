@@ -47,7 +47,8 @@ module.exports =
     "tooltip delete"          : "Delete"
     "tooltip edit"            : "Rename"
     "tooltip download"        : "Download"
-    "tooltip share"            : "Share"
+    "tooltip share"           : "Share"
+    "tooltip tag"             : "Tag"
 
     # folder template
     'and x files'         : """

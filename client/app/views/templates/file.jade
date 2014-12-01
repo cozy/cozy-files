@@ -30,9 +30,9 @@ td
             span.deleter &times;
 
     block actions
-      if !isBeingUploaded
+      if !isBeingUploadetag
         .operations
-          a.file-tags
+          a.file-tags(title="#{t('tooltip tag')}")
             span.fa.fa-tag
           a.file-share(title="#{t('tooltip share')}")
             if clearance == 'public'
