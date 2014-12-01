@@ -14,7 +14,7 @@ module.exports = {
     return path;
   },
   processAttachment: function(req, res, next, download) {
-    var contentHeader, encodedFileName, file;
+    var contentHeader, encodedFileName, file, requester, url;
     file = req.file;
     encodedFileName = encodeURIComponent(file.name);
     if (download) {
@@ -23,7 +23,8 @@ module.exports = {
       contentHeader = ("inline; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''\"" + encodedFileName + "\"");
     }
     res.setHeader('content-disposition', contentHeader);
-    return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
+    url = "/data/" + file.id + "/binaries/file";
+    return requester = downloader.download(url, function(stream) {
       var err, message;
       if (stream.statusCode === 200) {
         stream.pipefilter = function(source, dest) {
@@ -35,6 +36,9 @@ module.exports = {
         };
         res.setHeader('content-length', stream.headers['content-length']);
         res.setHeader('content-type', stream.headers['content-type']);
+        req.on('close', function() {
+          return requester.abort();
+        });
         return stream.pipe(res);
       } else if (stream.statusCode === 404) {
         message = 'An error occured while downloading the file: ' + 'file not found.';
