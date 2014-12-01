@@ -1270,7 +1270,6 @@ exports.post = function(url, data, callback, json) {
 };
 
 exports.put = function(url, data, callback, json) {
-  console.log(data);
   return exports.request("PUT", url, data, callback, json);
 };
 
@@ -1772,9 +1771,8 @@ module.exports = Contact = (function(_super) {
 
   Contact.prototype.savePicture = function(callback) {
     var data, markChanged, path;
-    console.log(this.get('id'));
     if (this.get('id') == null) {
-      return this.save({
+      return this.save({}, {
         success: (function(_this) {
           return function() {
             return _this.savePicture();
@@ -2775,12 +2773,15 @@ module.exports = ContactView = (function(_super) {
         return _this.changeOccured();
       };
     })(this));
-    return this.listenTo(this.collection, 'remove', (function(_this) {
+    this.listenTo(this.collection, 'remove', (function(_this) {
       return function() {
         _this.needSaving = true;
         return _this.changeOccured();
       };
     })(this));
+    return this.listenTo(this.model, 'remove', function() {
+      return window.app.router.navigate('', true);
+    });
   };
 
   ContactView.prototype.getRenderData = function() {
