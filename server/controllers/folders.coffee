@@ -430,7 +430,14 @@ module.exports.zip = (req, res, next) ->
     folder = req.folder
     archive = archiver 'zip'
 
-    key = "#{folder.path}/#{folder.name}"
+    if folder?
+        key = "#{folder.path}/#{folder.name}"
+        zipName = folder.name?.replace /\W/g, ''
+
+    # if there is no folder, the target is root
+    else
+        key = ""
+        zipName = 'cozy-files'
 
     # Request can limit the ZIP content to some elements only
     if req.body?.selectedPaths?
@@ -485,7 +492,6 @@ module.exports.zip = (req, res, next) ->
                 return selectedPaths.length is 0 or fileMatch or subFolderMatch
 
             # Build zip file.
-            zipName = folder.name?.replace /\W/g, ''
             makeZip zipName, files
 
 
