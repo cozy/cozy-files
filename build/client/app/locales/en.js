@@ -33,6 +33,7 @@ module.exports = {
   "tooltip edit": "Rename",
   "tooltip download": "Download",
   "tooltip share": "Share",
+  "tooltip tag": "Tag",
   'and x files': "and %{smart_count} other file ||||\nand %{smart_count} other files",
   "already exists": "already exists.",
   "failed to upload": "could not be sent to server.",
