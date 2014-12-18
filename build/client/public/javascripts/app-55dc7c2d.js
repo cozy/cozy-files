@@ -1699,11 +1699,13 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.getPublicURL = function(key) {
+    var link, name;
+    link = "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
     if (this.isFile()) {
-      return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id + "/attach/" + (this.get('name'));
-    } else {
-      return "" + window.location.origin + "/public/files/" + (this.urlRoot()) + this.id;
+      name = encodeURIComponent(this.get('name'));
+      link = "" + link + "/attach/" + name;
     }
+    return link;
   };
 
   File.prototype.getZipURL = function() {

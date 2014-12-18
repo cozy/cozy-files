@@ -76,10 +76,12 @@ module.exports = class File extends Backbone.Model
         return url + toAppend + key
 
     getPublicURL: (key) ->
+        link = "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
         if @isFile()
-            "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}/attach/#{@get 'name'}"
-        else
-            "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+            name = encodeURIComponent @get 'name'
+            link = "#{link}/attach/#{name}"
+
+        return link
 
     # Only relevant if model is a folder
     getZipURL: ->
