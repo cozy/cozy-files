@@ -840,6 +840,10 @@ body.error-404 .error-frame
   We hide some part of the UI that are not relevant in the public part
 */
 .public
+
+  #loading-indicator
+    margin-top: 10px
+
   #affixbar
     #share-state
     #upload-btngroup
@@ -850,10 +854,20 @@ body.error-404 .error-frame
     #download-link
       display inline-block
 
+    #bulk-actions-btngroup
+      #button-bulk-move
+      #button-bulk-remove
+        display: none
+
+    #search-box
+      display: none
+
   &.can-upload #affixbar
     #upload-btngroup
     #button-new-folder
       display inline-block
+
+
 
   #files
     .tagit-new
