@@ -30,12 +30,14 @@ module.exports = class Router extends Backbone.Router
                 type: "search"
                 name: "#{t('breadcrumbs search title')} '#{query}'"
 
+        @folderView.spin() if @folderView?
         folder.fetchContent (err, content) =>
             collection = new FileCollection content
 
             # we don't re-render the view to prevent the search field
             # from being reset
             if @folderView?
+                @folderView.spin false
                 @folderView.updateSearch folder, collection
             else
                 @_renderFolderView folder, collection, query
