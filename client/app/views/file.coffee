@@ -22,7 +22,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'onCancelClicked'
         'click a.file-move'        : 'onMoveClicked'
-        'keydown input.file-edit-name'  : 'onKeyPress'
+        'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
 
     mimeClasses:
@@ -153,9 +153,8 @@ module.exports = class FileView extends BaseView
         # more complex change = rerender
         @render()
 
-
     displayError: (msg) ->
-        @errorField ?= $('<span class="error">').insertAfter @$('.tags')
+        @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
         if msg is false then @errorField.hide()
         else @errorField.text msg
 
@@ -177,10 +176,6 @@ module.exports = class FileView extends BaseView
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
         @$el.html @templateEdit model: model
-        @tags = new TagsView
-            el: @$ '.tags'
-            model: @model
-        @tags.render()
 
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
@@ -211,11 +206,18 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
+            @$('.spinholder').show()
+            @$('.fa-folder').hide()
+
             @model.save name: name,
                 wait: true,
                 success: (data) =>
+                    @$('.spinholder').hide()
+                    @$('.fa-folder').show()
                     @render()
                 error: (model, err) =>
+                    @$('.spinholder').hide()
+                    @$('.fa-folder').show()
                     @$('.file-edit-name').focus()
                     @displayError if err.status is 400 then t 'modal error in use'
                     else t 'modal error rename'

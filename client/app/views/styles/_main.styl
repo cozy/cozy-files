@@ -19,6 +19,9 @@ h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
 label
     font-weight: normal
 
+.mt108
+    margin-top: 108px
+
 .modal-content
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2)
 
@@ -46,6 +49,8 @@ a:focus,
 .btn[disabled=disabled], .btn:disabled
   opacity: 0.2
 
+.error
+    color: red
 
 /*      COZY BUTTONS    */
 .btn
@@ -244,10 +249,15 @@ tr.folder-row
 
   &:hover, &.pseudohover
     .tags input
-      visibility visible
+      visibility: visible
 
-  &.edit-mode .tags input
-      visibility hidden
+  &.edit-mode 
+    .tags
+        display: none
+
+    .spinholder
+        display: none
+
 
   // mandatory to override bootstrap
   &.selected > td
@@ -673,10 +683,28 @@ tr.folder-row
 .file-edit-name
   min-width: 150px
 
-.caption-edit
+tr.folder-row td span.caption.caption-edit
+  margin: 0
+  padding: 0
+  float: left
+
+  input.file-edit-name
+    border: 1px solid blue
+
+    &:hover
+      border 1px solid orange
+
+    &:active
+    &:focus
+      border 1px solid blue
+   
+tr.folder-row td input.caption
+  margin-left: 5px
+  margin-top: 2px
+     
 .file-edit-save
 .file-edit-cancel
-  margin-top: 5px
+  margin-top: 0px
 
 tr.folder-row
   .caption-edit
@@ -732,6 +760,10 @@ tr.folder-row
 #content
   background: white
   padding-bottom: 10px
+  margin-top: 56px
+
+#content.mt108
+  margin-top: 108px
 
 #files
   // margin-top 60px
