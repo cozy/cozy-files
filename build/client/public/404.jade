@@ -2,7 +2,7 @@ doctype
 html
   head
     title 404 - File not found
-    link(rel="stylesheet", type="text/css", href="stylesheets/app.css", media="all")
+    link(rel="stylesheet", type="text/css", href="DIGEST(stylesheets/app.css)", media="all")
     link(rel="stylesheet", type="text/css", href="stylesheets/clippy.css", media="all")
 
   body.error-404
@@ -14,7 +14,7 @@ html
           p= localization.t('404 option separator')
           p= localization.t('404 option b')
 
-    script(src="javascripts/vendor.js")
+    script(src="DIGEST(javascripts/vendor.js)")
     script(src="javascripts/clippy.min.js")
     script.
       clippy.load('Clippy', function(agent) {
