@@ -85,15 +85,24 @@
             a
                 display: none
 
+@media (max-width: 900px)
+    tr.folder-row
+        ul.tags
+            display: block
+            margin-top: 5px
 
-@media (max-width: 992px)
+@media (max-width: 1000px)
+    .size-column-cell
+        display: none
+
+@media (max-width: 1200px)
     // Portrait tablet to landscape and desktop
+
+    .type-column-cell
+        display: none
 
     .application
         .container
             margin: 0
             width: 100%
             max-width: 100%
-
-@media (min-width: 992px)
-    // Desktop
