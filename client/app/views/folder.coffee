@@ -398,11 +398,11 @@ module.exports = class FolderView extends BaseView
                 @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
-        # we check the "select-all" checkbox if there are few elements selected
-        # or if it has been clicked directly
-        # strict equality check for force since it can be something that is not
-        # a boolean
-        shouldChecked = selectedElements.length >= 3 or force is true
+        # Check if all checkbox should be selected. It is selected
+        # when it's forced or when collection length == amount of selected
+        # files
+        shouldChecked = \
+            selectedElements.length is @collection.size() or force is true
         @$('input#select-all').prop 'checked', shouldChecked
 
 
