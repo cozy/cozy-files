@@ -120,7 +120,7 @@ module.exports =
     "type"                      : "Type"
     "size"                      : "Taille"
     "date"                      : "Dernière modification"
-    "download"                  : "Télécharger"
+    "download"                  : "Télécharger tous les fichiers"
     "MB"                        : "Mo"
     "KB"                        : "Ko"
     "B"                         : "o"

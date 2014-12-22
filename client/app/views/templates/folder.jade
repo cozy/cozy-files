@@ -43,8 +43,13 @@
 
                 //- bulk actions: move and remove
                 .btn-group#bulk-actions-btngroup
-                  a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy.btn-cozy
-                    span.icon-arrow-down.icon-white
+                  if isPublic
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy-contrast
+                        span.label #{t("download all")}&nbsp;
+                        span.icon-arrow-down.icon-white
+                  else
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy
+                        span.icon-arrow-down.icon-white
                   a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
                     span.glyphicon.glyphicon-arrow-right
                   a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy

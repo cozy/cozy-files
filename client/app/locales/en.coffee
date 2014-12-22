@@ -123,7 +123,7 @@ module.exports =
     "type"                      : "Type"
     "size"                      : "Size"
     "date"                      : "Last update"
-    "download"                  : "Download"
+    "download"                  : "Download all"
     "MB"                        : "MB"
     "KB"                        : "KB"
     "B"                         : "B"
