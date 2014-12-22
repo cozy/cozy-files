@@ -1,11 +1,14 @@
 td
-  div.spinholder &nbsp;
   div.caption-wrapper
+
     block title
       if model.type == 'folder'
         .caption.btn.btn-link
           span.icon-zone
-            input.selector(type="checkbox")
+            div.spinholder 
+              img(src="images/spinner.svg")
+            div.selector-wrapper
+                input.selector(type="checkbox")
             i.fa.fa-folder
           a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
             span
@@ -13,7 +16,8 @@ td
       else if model.type == 'file'
         .caption.btn.btn-link
           span.icon-zone
-            input.selector(type="checkbox")
+            div.selector-wrapper
+                input.selector(type="checkbox")
             if model.mime && this.mimeClasses[model.mime]
               i(class="fa #{this.mimeClasses[model.mime]}")
             else
@@ -23,6 +27,7 @@ td
             title="#{t('download file')}", target="_blank")
               span
                 | #{model.name}
+
     block tags
       ul.tags
         for tag in model.tags || []
@@ -47,6 +52,7 @@ td
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.glyphicon.glyphicon-cloud-download
+
   block file-path
     // empty by default
 td.size-column-cell

@@ -105,13 +105,15 @@ module.exports = class FileView extends BaseView
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
-            @$('.spinholder').spin 'small'
+            @$('.spinholder').show()
+            @$('.fa-folder').hide()
         @listenTo @model, 'sync error', =>
             # for overwritten files, render entirely to show
             #  modification date and type
             @render() if @model.conflict
 
-            @$('.spinholder').spin false
+            @$('.spinholder').hide()
+            @$('.fa-folder').show()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -388,3 +390,5 @@ module.exports = class FileView extends BaseView
         # if it's a folder and if it has children being uploaded
         if @hasUploadingChildren
             @$('.fa-folder').addClass 'spin'
+
+        @$('.spinholder').hide()

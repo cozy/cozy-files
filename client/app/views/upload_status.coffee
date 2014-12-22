@@ -78,7 +78,15 @@ module.exports = class UploadStatusView extends BaseView
 
         return parts.join ' '
 
-    resetCollection: -> @collection.reset()
+    resetCollection: ->
+        alert "clear collection"
+        @collection.reset()
+        # Force hiding of the upload status widget. In case of afterRender
+        # is called too early.
+        setTimeout =>
+            @$el.hide()
+            $('#content').css 'margin-top': 56
+        , 200
 
     uploadCount: (e) ->
         if @collection.length

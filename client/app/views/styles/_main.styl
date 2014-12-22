@@ -253,6 +253,11 @@ tr.folder-row
   &.selected > td
     background lightblue + 70% !important
 
+  &.selected
+    .icon-zone
+      .fa
+        display: none
+
   td
     vertical-align: middle
 
@@ -269,6 +274,7 @@ tr.folder-row
 
     .caption-wrapper .fa-folder.spin
       animation spin 2s infinite ease-out
+
   // the filename
   .caption
     font-size: 16px
@@ -277,21 +283,27 @@ tr.folder-row
     margin-left: 0px
     margin-right: 10px
 
-    input[type=checkbox]
-      display none
-      width 20px
-      margin 0 15px 0 0
-      cursor pointer
-      &:checked
-        display inline-block
-      &:checked + .fa
+    .selector-wrapper
+      display: inline
+      padding-top: 4px
+
+      input[type=checkbox]
+        display none
+        width 20px
+        margin 0 15px 0 0
+        cursor pointer
+        &:checked
+          display inline-block
+        &:checked + .fa
           display none
 
     .icon-zone:hover
       .fa
-        display none
+        display: none
+      .spinholder
+        display: none
       input[type=checkbox]
-        display inline-block
+        display: inline
 
 
 
@@ -301,14 +313,16 @@ tr.folder-row
     text-decoration: none
 
   .spinholder
+    vertical-align: top
     display: inline
-    position: relative
-    width: 40px
-    float: right
+    margin: 0
+    padding: 0 18px 0 5px
 
   // the toolbox - delete, rename, etc
   .operations
     font-size: 16px
+    margin: 0
+    padding: 0
     display: none
 
     a
@@ -333,11 +347,9 @@ tr.folder-row
     height: 100%
 
   ul.tags
-    margin-bottom: 0
-    padding-top: 5px
-    padding-left: 10px
-    padding-bottom: 0
-    margin-top: 3px
+    margin: 0
+    padding: 0
+    margin-top: 5px
     display: inline-block
     border: none
     font-size: 1.3rem
@@ -355,7 +367,7 @@ tr.folder-row
       border: 1px solid lightgray
       border-radius: 6px
       padding: 0.2em 0.5em 0.2em 0.5em
-      margin-top: 0
+      margin-top: 0px
       margin-right: 5px
       border: 1px solid transparent
       border-radius: 0
@@ -870,11 +882,14 @@ body.error-404 .error-frame
       background-color orange + 40%
 
 .btn-link
+.btn-link:visited
     color basecolor - 30%
-    border-bottom: 1px solid transparent
 
 .btn-link:hover
     color actioncolor - 10%
     text-decoration: none
-    border-bottom: 1px solid actioncolor - 10%
+
+.btn-link:active
+.btn-link:focus
+    text-decoration: none
 

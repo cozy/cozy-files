@@ -138,6 +138,7 @@ module.exports = class FolderView extends BaseView
         # We make a reload after the view is displayed to update
         # the client without degrading UX
         @refreshData()
+        @$("#loading-indicator").show()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
@@ -162,7 +163,11 @@ module.exports = class FolderView extends BaseView
 
         @uploadStatus.render().$el.appendTo @$('#upload-status-container')
 
-    spin: (state = 'small') -> @$("#loading-indicator").spin state
+    spin: (state=true) ->
+        if state
+            @$("#loading-indicator").show()
+        else
+            @$("#loading-indicator").hide()
 
     # Refresh folder's content and manage spinner
     refreshData: ->
