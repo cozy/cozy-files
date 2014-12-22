@@ -1,4 +1,8 @@
 td
+
+  block file-path
+    // empty by default
+
   div.caption-wrapper
 
     block title
@@ -53,8 +57,6 @@ td
               target="_blank", title="#{t('tooltip download')}")
             span.glyphicon.glyphicon-cloud-download
 
-  block file-path
-    // empty by default
 td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}
