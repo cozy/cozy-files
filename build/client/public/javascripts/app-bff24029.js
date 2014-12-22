@@ -1906,11 +1906,15 @@ module.exports = Router = (function(_super) {
       type: "search",
       name: "" + (t('breadcrumbs search title')) + " '" + query + "'"
     });
+    if (this.folderView != null) {
+      this.folderView.spin();
+    }
     return folder.fetchContent((function(_this) {
       return function(err, content) {
         var collection;
         collection = new FileCollection(content);
         if (_this.folderView != null) {
+          _this.folderView.spin(false);
           return _this.folderView.updateSearch(folder, collection);
         } else {
           return _this._renderFolderView(folder, collection, query);
@@ -3023,7 +3027,7 @@ module.exports = FolderView = (function(_super) {
       }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    shouldChecked = selectedElements.length >= 3 || force === true;
+    shouldChecked = selectedElements.length === this.collection.size() || force === true;
     return this.$('input#select-all').prop('checked', shouldChecked);
   };
 
@@ -3665,7 +3669,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<td><div class=\"caption-wrapper\">");
+buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
 buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
@@ -3724,7 +3728,7 @@ buf.push("<span class=\"fa fa-lock\"></span>");
 }
 buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
 }
-buf.push("</div><!-- empty by default--></td><td class=\"size-column-cell\">");
+buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3763,7 +3767,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
-buf.push("<td><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
+buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
 if ( model.type && model.type == "folder")
 {
 buf.push("<i class=\"fa fa-folder\"></i>");
@@ -3802,7 +3806,7 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
   }
 }).call(this);
 
-buf.push("</ul><!-- empty!--></div><!-- empty by default--></td><td class=\"size-column-cell\">");
+buf.push("</ul><!-- empty!--></div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
@@ -3841,7 +3845,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<td><div class=\"caption-wrapper\">");
+buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
 buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
@@ -3900,7 +3904,7 @@ buf.push("<span class=\"fa fa-lock\"></span>");
 }
 buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
 }
-buf.push("</div><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</p></td><td class=\"size-column-cell\">");
+buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
