@@ -2716,7 +2716,8 @@ module.exports = FolderView = (function(_super) {
     this.renderFileList();
     this.renderUploadStatus();
     this.refreshData();
-    return this.$("#loading-indicator").show();
+    this.$("#loading-indicator").show();
+    return this.$('input#search-box').focus();
   };
 
   FolderView.prototype.renderBreadcrumb = function() {
@@ -3122,13 +3123,13 @@ module.exports = FolderView = (function(_super) {
     var clearance, shareStateContent;
     clearance = this.model.getClearance();
     if (clearance === 'public') {
-      shareStateContent = "" + (t('public')) + "\n<span class=\"fa fa-globe\"></span>";
+      shareStateContent = "<span class=\"text\">" + (t('public')) + "</span>\n<span class=\"fa fa-globe\"></span>";
     } else if ((clearance != null) && clearance.length > 0) {
-      shareStateContent = "" + (t('shared')) + "\n<span class=\"fa fa-users\"></span>\n<span>" + clearance.length + "</span>";
+      shareStateContent = "<span class=\"text\">" + (t('shared')) + "</span>\n<span class=\"fa fa-users\"></span>\n<span>" + clearance.length + "</span>";
     } else {
-      shareStateContent = "" + (t('private')) + "\n<span class=\"fa fa-lock\"></span>";
+      shareStateContent = "<span class=\"text\">" + (t('private')) + "</span>\n<span class=\"fa fa-lock\"></span>";
     }
-    return this.$('#share-state').html(shareStateContent);
+    return this.$('#folder-state').html(shareStateContent);
   };
 
   return FolderView;
@@ -3679,15 +3680,37 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-folder\"></i>");
+}
+buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-users\"></span>");
+}
+buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
 buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
@@ -3724,20 +3747,7 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 buf.push("</ul>");
 if ( !isBeingUploadetag)
 {
-buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span class=\"fa fa-lock\"></span>");
-}
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
+buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
@@ -3855,15 +3865,37 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,clearance = locals_.clearance,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div><i class=\"fa fa-folder\"></i></span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-folder\"></i>");
+}
+buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-users\"></span>");
+}
+buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
 buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
@@ -3900,20 +3932,7 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 buf.push("</ul>");
 if ( !isBeingUploadetag)
 {
-buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\">");
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-users\">" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span class=\"fa fa-lock\"></span>");
-}
-buf.push("</a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
+buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"glyphicon glyphicon-edit\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"glyphicon glyphicon-cloud-download\"></span></a></div>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
@@ -3992,20 +4011,20 @@ if ( model.type != 'search')
 buf.push("<div id=\"upload-buttons\" class=\"pull-right\">");
 if ( model.id != 'root')
 {
-buf.push("<a id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\">");
+buf.push("<span id=\"folder-state\">");
 if ( clearance == 'public')
 {
-buf.push("" + (jade.escape((jade_interp = t('public')) == null ? '' : jade_interp)) + "<span class=\"fa fa-globe\"></span>");
+buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('public')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-globe\"></span>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "<span class=\"fa fa-users\"></span><span>" + (jade.escape(null == (jade_interp = clearance.length) ? "" : jade_interp)) + "</span>");
+buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-users\"></span><span>" + (jade.escape(null == (jade_interp = clearance.length) ? "" : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_interp)) + "<span class=\"fa fa-lock\"></span>");
+buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-lock\"></span>");
 }
-buf.push("</a>&nbsp;");
+buf.push("</span><a" + (jade.attr("title", "" + (t('share')) + "", true, false)) + " id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"><span class=\"fa fa-share-alt\"></span></a>&nbsp;");
 }
 buf.push("<div id=\"upload-btngroup\" class=\"btn-group\"><a id=\"button-upload-new-file\" class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"" + (jade.attr("title", t('upload button'), true, false)) + "/><img src=\"images/add-file.png\"/></a>");
 if ( supportsDirectoryUpload)
