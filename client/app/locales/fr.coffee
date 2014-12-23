@@ -152,6 +152,7 @@ module.exports =
     "public"                          : "Public"
     "private"                         : "Privé"
     "shared"                          : "Partagé"
+    "share"                           : "Partager"
     "save"                            : "Sauvegarder"
     "see link"                        : "Voir le lien"
     "sharing"                         : "Partage"

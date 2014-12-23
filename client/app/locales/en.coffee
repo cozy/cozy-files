@@ -157,6 +157,7 @@ module.exports =
     "public"                          : "Public"
     "private"                         : "Private"
     "shared"                          : "Shared"
+    "share"                           : "Share"
     "save"                            : "Save"
     "see link"                        : "See link"
     "send mails question"             : "Send a notification email to:"
