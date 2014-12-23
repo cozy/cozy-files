@@ -20,11 +20,11 @@ module.exports = class FolderView extends BaseView
     template: require './templates/folder'
 
     events: ->
-        'click #button-new-folder'     : 'onNewFolderClicked'
-        'click #cancel-new-folder'     : 'onCancelFolder'
-        'click #cancel-new-file'       : 'onCancelFile'
-        'click #share-state'           : 'onShareClicked'
-        'click #download-link'         : 'onDownloadAsZipClicked'
+        'click #button-new-folder': 'onNewFolderClicked'
+        'click #cancel-new-folder': 'onCancelFolder'
+        'click #cancel-new-file': 'onCancelFile'
+        'click #share-state': 'onShareClicked'
+        'click #download-link': 'onDownloadAsZipClicked'
         'change #uploader': 'onFilesSelected'
         'change #folder-uploader': 'onDirectorySelected'
 
@@ -33,15 +33,15 @@ module.exports = class FolderView extends BaseView
 
         'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
-        'click #button-bulk-move'  : 'bulkMove'
+        'click #button-bulk-move': 'bulkMove'
 
-        'dragstart #files' : 'onDragStart'
-        'dragenter #files' : 'onDragEnter'
-        'dragover #files'  : 'onDragEnter'
-        'dragleave #files' : 'onDragLeave'
-        'drop #files'      : 'onDrop'
+        'dragstart #files': 'onDragStart'
+        'dragenter #files': 'onDragEnter'
+        'dragover #files': 'onDragEnter'
+        'dragleave #files': 'onDragLeave'
+        'drop #files': 'onDrop'
 
-        'keyup input#search-box'       : 'onSearchKeyPress'
+        'keyup input#search-box': 'onSearchKeyPress'
 
     initialize: (options) ->
         super options
@@ -392,6 +392,8 @@ module.exports = class FolderView extends BaseView
         else
             if app.isPublic
                 @$('#download-link').show() # in public area
+                @$('#upload-btngroup').show()
+                @$('#button-new-folder').show()
             else
                 @$('#share-state').show()
                 @$('#upload-btngroup').show()
