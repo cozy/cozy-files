@@ -332,14 +332,19 @@ module.exports = class FolderView extends BaseView
         Search
     ###
     onSearchKeyPress: (e) ->
-        query = @$('input#search-box').val()
+        if @searching isnt true
+            searching = true
+            setTimeout =>
+                query = @$('input#search-box').val()
 
-        if query isnt ''
-            route = "#search/#{query}"
-        else
-            route = ''
+                if query isnt ''
+                    route = "#search/#{query}"
+                else
+                    route = ''
 
-        window.app.router.navigate route, true
+                window.app.router.navigate route, true
+                searching = false
+            , 1000
 
     # Refreshes the view by changing the files list
     # we basically re-do @initialize but only render file list
