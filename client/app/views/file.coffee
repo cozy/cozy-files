@@ -175,7 +175,9 @@ module.exports = class FileView extends BaseView
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
-        @$el.html @templateEdit model: model
+        @$el.html @templateEdit
+            model: model
+            clearance: @model.getClearance()
 
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
