@@ -2153,7 +2153,7 @@ module.exports = FileView = (function(_super) {
     this.listenTo(this.model, 'request', (function(_this) {
       return function() {
         _this.$('.spinholder').show();
-        return _this.$('.fa-folder').hide();
+        return _this.$('.icon-zone .fa').hide();
       };
     })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
@@ -2162,7 +2162,7 @@ module.exports = FileView = (function(_super) {
           _this.render();
         }
         _this.$('.spinholder').hide();
-        return _this.$('.fa-folder').show();
+        return _this.$('.icon-zone .fa').show();
       };
     })(this));
     this.listenTo(this.model, 'toggle-select', this.onToggleSelect);
@@ -2250,7 +2250,8 @@ module.exports = FileView = (function(_super) {
       model["class"] = 'folder';
     }
     this.$el.html(this.templateEdit({
-      model: model
+      model: model,
+      clearance: this.model.getClearance()
     }));
     this.$(".file-edit-name").width(width);
     this.$(".file-edit-name").focus();
@@ -2284,7 +2285,7 @@ module.exports = FileView = (function(_super) {
     name = this.$('.file-edit-name').val();
     if (name && name !== "") {
       this.$el.removeClass('edit-mode');
-      this.$('.fa-folder').hide();
+      this.$('.icon-zone .fa').hide();
       this.$('.spinholder').show();
       return this.model.save({
         name: name
@@ -2293,14 +2294,14 @@ module.exports = FileView = (function(_super) {
         success: (function(_this) {
           return function(data) {
             _this.$('.spinholder').hide();
-            _this.$('.fa-folder').show();
+            _this.$('.icon-zone .fa').show();
             return _this.render();
           };
         })(this),
         error: (function(_this) {
           return function(model, err) {
             _this.$('.spinholder').hide();
-            _this.$('.fa-folder').show();
+            _this.$('.icon-zone .fa').show();
             _this.$('.file-edit-name').focus();
             return _this.displayError(err.status === 400 ? t('modal error in use') : t('modal error rename'));
           };
@@ -3787,11 +3788,24 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
 if ( model.type && model.type == "folder")
 {
-buf.push("<span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"fa fa-folder\"></i></span>");
+buf.push("<span class=\"icon-zone\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-folder\"></i>");
+}
+buf.push("<div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div></span>");
 }
 else
 {
