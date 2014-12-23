@@ -138,6 +138,7 @@ module.exports = class FolderView extends BaseView
         # the client without degrading UX
         @refreshData()
         @$("#loading-indicator").show()
+        @$('input#search-box').focus()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
@@ -483,19 +484,19 @@ module.exports = class FolderView extends BaseView
         clearance = @model.getClearance()
         if clearance is 'public'
             shareStateContent = """
-                #{t 'public'}
+                <span class="text">#{t 'public'}</span>
                 <span class="fa fa-globe"></span>
             """
         else if clearance? and clearance.length > 0
             shareStateContent = """
-                #{t 'shared'}
+                <span class="text">#{t 'shared'}</span>
                 <span class="fa fa-users"></span>
                 <span>#{clearance.length}</span>
             """
         else
             shareStateContent = """
-                #{t 'private'}
+                <span class="text">#{t 'private'}</span>
                 <span class="fa fa-lock"></span>
             """
 
-        @$('#share-state').html shareStateContent
+        @$('#folder-state').html shareStateContent

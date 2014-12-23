@@ -12,17 +12,19 @@
 
                 //- clearance modification buttons
                 if model.id != 'root'
-                  a.btn.btn-cozy#share-state.btn-cozy-contrast
+                  span#folder-state
                     if clearance == 'public'
-                      | #{t('public')}
+                      span.text #{t('public')}
                       span.fa.fa-globe
                     else if clearance && clearance.length > 0
-                      | #{t('shared')}
+                      span.text #{t('shared')}
                       span.fa.fa-users
                       span= clearance.length
                     else
-                      | #{t('private')}
+                      span.text #{t('private')}
                       span.fa.fa-lock
+                  a.btn.btn-cozy.btn-cozy-contrast(title="#{t('share')}")#share-state
+                    span.fa.fa-share-alt
                   | &nbsp;
 
                 //- file & folder uploaders

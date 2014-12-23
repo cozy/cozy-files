@@ -352,6 +352,7 @@ tr.folder-row
     .fa-lock
     .fa-users
     .fa-globe
+    .fa-share-alt
     .fa-tag
         padding-top: 6px
 
@@ -672,11 +673,19 @@ tr.folder-row
         margin-top: 0
 
   #share-state
-    font-size 14px
-    line-height 21px
-    span
-      margin-left: 5px
-      font-size 17px
+      font-size: 18px
+      line-height: 20px
+
+  #folder-state
+    font-family: styled
+    font-size: 20px
+    margin-right: 10px
+    position: relative
+    top: 5px
+    color: #666
+
+    .fa
+        margin-left: 5px
 
   // by default (private area) we don't display download and notif buttons
   #notifications
@@ -963,4 +972,13 @@ body.error-404 .error-frame
 .btn-link:active
 .btn-link:focus
     text-decoration: none
+
+
+.caption
+    .fa-users
+    .fa-globe
+        position: absolute
+        top: 12px
+        left: -3px
+        font-size: 12px
 
