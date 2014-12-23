@@ -398,8 +398,10 @@ module.exports = class FolderView extends BaseView
         else
             if app.isPublic
                 @$('#download-link').show() # in public area
-                @$('#upload-btngroup').show()
-                @$('#button-new-folder').show()
+                clearance = @model.getClearance()?[0]
+                if clearance? and clearance.perm is 'rw'
+                    @$('#upload-btngroup').show()
+                    @$('#button-new-folder').show()
             else
                 @$('#share-state').show()
                 @$('#upload-btngroup').show()
