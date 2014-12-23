@@ -206,8 +206,8 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
-            @$('.spinholder').show()
             @$('.fa-folder').hide()
+            @$('.spinholder').show()
 
             @model.save name: name,
                 wait: true,

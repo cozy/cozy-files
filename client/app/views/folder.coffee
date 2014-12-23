@@ -21,7 +21,6 @@ module.exports = class FolderView extends BaseView
 
     events: ->
         'click #button-new-folder'     : 'onNewFolderClicked'
-        'click #new-folder-send'       : 'onAddFolder'
         'click #cancel-new-folder'     : 'onCancelFolder'
         'click #cancel-new-file'       : 'onCancelFile'
         'click #share-state'           : 'onShareClicked'
@@ -193,6 +192,7 @@ module.exports = class FolderView extends BaseView
                 name: ''
                 type: 'folder'
                 path: @model.getRepository()
+            @newFolder.type = 'folder'
 
             @baseCollection.add @newFolder
             view = @filesList.views[@newFolder.cid]

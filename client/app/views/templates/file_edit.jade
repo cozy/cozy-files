@@ -3,7 +3,10 @@ extends file
 block title
   span.caption.caption-edit.btn.btn-link
     if model.type && model.type == "folder"
-      i.fa.fa-folder
+      span.icon-zone
+        div.spinholder
+          img(src="images/spinner.svg")
+        i.fa.fa-folder
     else
       if model.mime && this.mimeClasses[model.mime]
         i(class="fa #{this.mimeClasses[model.mime]}")

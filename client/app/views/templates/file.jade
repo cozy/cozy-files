@@ -61,11 +61,13 @@ td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}
     span #{filesize(model.size || 0, options)}
+
 td.type-column-cell
   if model.type == 'folder'
     span.pull-left #{t('folder')}
   else
     span.pull-left #{t(model.class)}
+
 td.date-column-cell
   if model.lastModification
     span #{moment(model.lastModification).calendar()}
