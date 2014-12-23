@@ -3017,7 +3017,7 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.toggleFolderActions = function(force) {
-    var selectedElements, shouldChecked;
+    var clearance, selectedElements, shouldChecked, _ref;
     if (force == null) {
       force = false;
     }
@@ -3031,8 +3031,11 @@ module.exports = FolderView = (function(_super) {
     } else {
       if (app.isPublic) {
         this.$('#download-link').show();
-        this.$('#upload-btngroup').show();
-        this.$('#button-new-folder').show();
+        clearance = (_ref = this.model.getClearance()) != null ? _ref[0] : void 0;
+        if ((clearance != null) && clearance.perm === 'rw') {
+          this.$('#upload-btngroup').show();
+          this.$('#button-new-folder').show();
+        }
       } else {
         this.$('#share-state').show();
         this.$('#upload-btngroup').show();
