@@ -343,6 +343,7 @@ module.exports.findContent = (req, res, next) ->
                 else
                     [folders, files, parents] = results
                     content = folders.concat files
+
                     res.send 200, {content, parents}
 
 module.exports.findFolders = (req, res, next) ->

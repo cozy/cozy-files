@@ -106,14 +106,14 @@ module.exports = class FileView extends BaseView
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
             @$('.spinholder').show()
-            @$('.fa-folder').hide()
+            @$('.icon-zone .fa').hide()
         @listenTo @model, 'sync error', =>
             # for overwritten files, render entirely to show
             #  modification date and type
             @render() if @model.conflict
 
             @$('.spinholder').hide()
-            @$('.fa-folder').show()
+            @$('.icon-zone .fa').show()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -206,18 +206,18 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
-            @$('.fa-folder').hide()
+            @$('.icon-zone .fa').hide()
             @$('.spinholder').show()
 
             @model.save name: name,
                 wait: true,
                 success: (data) =>
                     @$('.spinholder').hide()
-                    @$('.fa-folder').show()
+                    @$('.icon-zone .fa').show()
                     @render()
                 error: (model, err) =>
                     @$('.spinholder').hide()
-                    @$('.fa-folder').show()
+                    @$('.icon-zone .fa').show()
                     @$('.file-edit-name').focus()
                     @displayError if err.status is 400 then t 'modal error in use'
                     else t 'modal error rename'
