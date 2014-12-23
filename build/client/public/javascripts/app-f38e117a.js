@@ -2284,8 +2284,8 @@ module.exports = FileView = (function(_super) {
     name = this.$('.file-edit-name').val();
     if (name && name !== "") {
       this.$el.removeClass('edit-mode');
-      this.$('.spinholder').show();
       this.$('.fa-folder').hide();
+      this.$('.spinholder').show();
       return this.model.save({
         name: name
       }, {
@@ -2623,7 +2623,6 @@ module.exports = FolderView = (function(_super) {
   FolderView.prototype.events = function() {
     return {
       'click #button-new-folder': 'onNewFolderClicked',
-      'click #new-folder-send': 'onAddFolder',
       'click #cancel-new-folder': 'onCancelFolder',
       'click #cancel-new-file': 'onCancelFile',
       'click #share-state': 'onShareClicked',
@@ -2784,6 +2783,7 @@ module.exports = FolderView = (function(_super) {
           path: this.model.getRepository()
         });
       }
+      this.newFolder.type = 'folder';
       this.baseCollection.add(this.newFolder);
       view = this.filesList.views[this.newFolder.cid];
       view.onEditClicked();
@@ -2955,14 +2955,23 @@ module.exports = FolderView = (function(_super) {
    */
 
   FolderView.prototype.onSearchKeyPress = function(e) {
-    var query, route;
-    query = this.$('input#search-box').val();
-    if (query !== '') {
-      route = "#search/" + query;
-    } else {
-      route = '';
+    var searching;
+    if (this.searching !== true) {
+      searching = true;
+      return setTimeout((function(_this) {
+        return function() {
+          var query, route;
+          query = _this.$('input#search-box').val();
+          if (query !== '') {
+            route = "#search/" + query;
+          } else {
+            route = '';
+          }
+          window.app.router.navigate(route, true);
+          return searching = false;
+        };
+      })(this), 1000);
     }
-    return window.app.router.navigate(route, true);
   };
 
   FolderView.prototype.updateSearch = function(model, collection) {
@@ -3020,6 +3029,8 @@ module.exports = FolderView = (function(_super) {
     } else {
       if (app.isPublic) {
         this.$('#download-link').show();
+        this.$('#upload-btngroup').show();
+        this.$('#button-new-folder').show();
       } else {
         this.$('#share-state').show();
         this.$('#upload-btngroup').show();
@@ -3770,7 +3781,7 @@ var locals_ = (locals || {}),model = locals_.model,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
 if ( model.type && model.type == "folder")
 {
-buf.push("<i class=\"fa fa-folder\"></i>");
+buf.push("<span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"fa fa-folder\"></i></span>");
 }
 else
 {
