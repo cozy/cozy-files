@@ -109,9 +109,7 @@ resetTimeout = function() {
   if (timeout != null) {
     clearTimeout(timeout);
   }
-  return timeout = setTimeout(function() {
-    return updateParents();
-  }, 60 * 1000);
+  return timeout = setTimeout(updateParents, 60 * 1000);
 };
 
 updateParents = function() {
@@ -160,7 +158,7 @@ module.exports.create = function(req, res, next) {
   fields = {};
   form = new multiparty.Form();
   form.on('part', function(part) {
-    var err, fullPath, name, path;
+    var attachBinary, err, fullPath, keepAlive, name, now, overwrite, path, rollback, upload;
     if (part.filename == null) {
       fields[part.name] = '';
       part.on('data', function(buffer) {
@@ -170,29 +168,91 @@ module.exports.create = function(req, res, next) {
     }
     name = fields.name;
     path = fields.path;
+    overwrite = fields.overwrite;
     if (!name || name === "") {
       err = new Error("Invalid arguments: no name given");
       err.status = 400;
       return next(err);
     }
+    upload = true;
+    keepAlive = function() {
+      if (upload) {
+        feed.publish('usage.application', 'files');
+        setTimeout(keepAlive, 60 * 1000);
+        return resetTimeout();
+      }
+    };
+    rollback = function(file, err) {
+      return file.destroy(function(delerr) {
+        if (delerr) {
+          log.error(delerr);
+        }
+        if (isStorageError(err)) {
+          return res.send({
+            error: true,
+            code: 'ESTORAGE',
+            msg: "modal error size"
+          }, 400);
+        } else {
+          return next(err);
+        }
+      });
+    };
+    attachBinary = function(file) {
+      var metadata;
+      part.path = file.name;
+      metadata = {
+        name: "file"
+      };
+      return file.attachBinary(part, metadata, function(err) {
+        upload = false;
+        if (err) {
+          return rollback(file, err);
+        }
+        return file.index(["name"], function(err) {
+          var who;
+          if (err) {
+            log.debug(err);
+          }
+          who = req.guestEmail || 'owner';
+          return sharing.notifyChanges(who, file, function(err) {
+            if (err) {
+              log.debug(err);
+            }
+            return res.send(file, 200);
+          });
+        });
+      });
+    };
+    now = moment().toISOString();
     path = normalizePath(path);
     fullPath = "" + path + "/" + name;
     return File.byFullPath({
       key: fullPath
     }, (function(_this) {
       return function(err, sameFiles) {
-        var data, keepAlive, now, upload;
+        var data, file;
         if (err) {
           return next(err);
         }
         if (sameFiles.length > 0) {
-          return res.send({
-            error: true,
-            code: 'EEXISTS',
-            msg: "This file already exists"
-          }, 400);
+          if (overwrite) {
+            file = sameFiles[0];
+            return file.updateAttributes({
+              lastModification: now
+            }, function() {
+              keepAlive();
+              return attachBinary(file);
+            });
+          } else {
+            upload = false;
+            return res.send({
+              error: true,
+              code: 'EEXISTS',
+              msg: "This file already exists"
+            }, 400);
+          }
         }
-        now = moment().toISOString();
         data = {
           name: name,
           path: normalizePath(path),
@@ -202,14 +262,6 @@ module.exports.create = function(req, res, next) {
           size: part.byteCount,
           tags: [],
           "class": getFileClass(part)
-        };
-        upload = true;
-        keepAlive = function() {
-          if (upload) {
-            feed.publish('usage.application', 'files');
-            setTimeout(keepAlive, 60 * 1000);
-            return resetTimeout();
-          }
         };
         return confirmCanUpload(data, req, function(err) {
           if (err) {
@@ -230,50 +282,11 @@ module.exports.create = function(req, res, next) {
                 folderParent[parent.name] = parent;
               }
               return File.create(data, function(err, newFile) {
-                var metadata, rollback;
                 if (err) {
                   return next(err);
                 }
                 keepAlive();
-                rollback = function(err) {
-                  return newFile.destroy(function(delerr) {
-                    if (delerr) {
-                      log.error(delerr);
-                    }
-                    if (isStorageError(err)) {
-                      return res.send({
-                        error: true,
-                        code: 'ESTORAGE',
-                        msg: "modal error size"
-                      }, 400);
-                    } else {
-                      return next(err);
-                    }
-                  });
-                };
-                part.path = data.name;
-                metadata = {
-                  name: "file"
-                };
-                return newFile.attachBinary(part, metadata, function(err) {
-                  upload = false;
-                  if (err) {
-                    return rollback(err);
-                  }
-                  return newFile.index(["name"], function(err) {
-                    var who;
-                    if (err) {
-                      log.debug(err);
-                    }
-                    who = req.guestEmail || 'owner';
-                    return sharing.notifyChanges(who, newFile, function(err) {
-                      if (err) {
-                        log.debug(err);
-                      }
-                      return res.send(newFile, 200);
-                    });
-                  });
-                });
+                return attachBinary(newFile);
               });
             };
           })(this));

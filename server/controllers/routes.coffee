@@ -43,8 +43,14 @@ module.exports =
         get: folders.find
         put: folders.modify
         delete: folders.destroy
+
+    # Skips the folder retrieval for root actions
+    'folders/root/zip/:name':
+        get: folders.zip
+        post: folders.zip
     'folders/:folderid/zip/:name':
         get: folders.zip
+        post: folders.zip
 
     'search/folders':
         post: folders.search
@@ -75,6 +81,7 @@ module.exports =
         put: [public_auth.checkClearance('r', 'folder'), folders.changeNotificationsState]
     'public/folders/:folderid/zip/:name':
         get: [public_auth.checkClearance('r', 'folder'), folders.zip]
+        post: [public_auth.checkClearance('r', 'folder'), folders.zip]
     'public/folders/:folderid':
         get: folders.publicList
 

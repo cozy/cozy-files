@@ -60,8 +60,13 @@ module.exports = {
     put: folders.modify,
     "delete": folders.destroy
   },
+  'folders/root/zip/:name': {
+    get: folders.zip,
+    post: folders.zip
+  },
   'folders/:folderid/zip/:name': {
-    get: folders.zip
+    get: folders.zip,
+    post: folders.zip
   },
   'search/folders': {
     post: folders.search
@@ -98,7 +103,8 @@ module.exports = {
     put: [public_auth.checkClearance('r', 'folder'), folders.changeNotificationsState]
   },
   'public/folders/:folderid/zip/:name': {
-    get: [public_auth.checkClearance('r', 'folder'), folders.zip]
+    get: [public_auth.checkClearance('r', 'folder'), folders.zip],
+    post: [public_auth.checkClearance('r', 'folder'), folders.zip]
   },
   'public/folders/:folderid': {
     get: folders.publicList

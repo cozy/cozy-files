@@ -39,13 +39,13 @@ module.exports = class File extends Backbone.Model
             formdata.append 'name', model.get 'name'
             formdata.append 'path', model.get 'path'
             formdata.append 'lastModification', model.get 'lastModification'
+            formdata.append 'overwrite', true if @overwrite
             formdata.append 'file', model.file
 
             # trigger upload progress on the model
             progress = (e) ->
                 model.loaded = e.loaded
                 model.trigger 'progress', e
-
             _.extend options,
                 contentType: false
                 data: formdata
@@ -76,15 +76,17 @@ module.exports = class File extends Backbone.Model
         return url + toAppend + key
 
     getPublicURL: (key) ->
+        link = "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
         if @isFile()
-            "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}/attach/#{@get 'name'}"
-        else
-            "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+            name = encodeURIComponent @get 'name'
+            link = "#{link}/attach/#{name}"
+
+        return link
 
     # Only relevant if model is a folder
     getZipURL: ->
         if @isFolder()
-            toAppend = "/zip/#{@get 'name'}"
+            toAppend = "/zip/#{encodeURIComponent @get 'name'}"
             @url toAppend
 
     # Only relevant if model is a file
@@ -153,6 +155,7 @@ module.exports = class File extends Backbone.Model
                     # during search or for root, there is not parents
                     content = body
                     parents = []
+
                 @setBreadcrumb parents or []
                 callbacks null, content, parents
 
@@ -163,4 +166,13 @@ module.exports = class File extends Backbone.Model
             @breadcrumb = [window.app.root.toJSON(), @toJSON()]
         else
             parents.unshift window.app.root.toJSON()
+            # adds the current folder to the parent's list unless it's the root
+            parents.push @toJSON() unless @isRoot()
             @breadcrumb = parents
+
+    getClearance: ->
+        inheritedClearance = @get 'inheritedClearance'
+        if not inheritedClearance or inheritedClearance.length is 0
+            return @get 'clearance'
+        else
+            return inheritedClearance[0].clearance

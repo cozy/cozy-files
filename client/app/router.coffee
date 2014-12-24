@@ -30,12 +30,14 @@ module.exports = class Router extends Backbone.Router
                 type: "search"
                 name: "#{t('breadcrumbs search title')} '#{query}'"
 
+        @folderView.spin() if @folderView?
         folder.fetchContent (err, content) =>
             collection = new FileCollection content
 
             # we don't re-render the view to prevent the search field
             # from being reset
             if @folderView?
+                @folderView.spin false
                 @folderView.updateSearch folder, collection
             else
                 @_renderFolderView folder, collection, query
@@ -60,7 +62,7 @@ module.exports = class Router extends Backbone.Router
 
         # we generate a mixed collection with content & uploads
         filteredUploads = app.uploadQueue.filteredByFolder folder, collection.comparator
-        mergedCollection = MergedCollection(collection, filteredUploads, 'name')
+        mergedCollection = MergedCollection collection, filteredUploads, 'name'
 
         @folderView = @_getFolderView
             model: folder

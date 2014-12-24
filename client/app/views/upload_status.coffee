@@ -37,19 +37,23 @@ module.exports = class UploadStatusView extends BaseView
 
     complete: ->
         @$('.progress').remove()
-        @dismiss.show()
-
         result = @collection.getResults()
-        @$el.addClass result.status
-        @$('span').text [
-            if result.success
-                t 'upload complete', smart_count: result.success
-            if result.existing.length
-                @makeExistingSentence result.existing
+        if result.success > 0 or result.error > 0 or result.existing > 0
+            @dismiss.show()
 
-            if result.error.length
-                @makeErrorSentence result.error
-        ].join ' '
+            @$el.addClass result.status
+
+            @$('span').text [
+                if result.success
+                    t 'upload complete', smart_count: result.success
+                if result.existing.length
+                    @makeExistingSentence result.existing
+
+                if result.error.length
+                    @makeErrorSentence result.error
+            ].join ' '
+        else
+            @resetCollection()
 
     # generate a sentence explaining existing files
     makeExistingSentence: (existing) ->
@@ -78,27 +82,27 @@ module.exports = class UploadStatusView extends BaseView
         @collection.reset()
 
     uploadCount: (e) ->
-        if @collection.length
-            @$el.slideDown easing: 'linear'
-            $('#content').animate 'margin-top': 108,
-                easing: 'linear'
+        if @collection.length > 0
+            @$el.show()
+            $('#content').addClass 'mt108'
 
         @render() if @completed and not @collection.completed
         @counter.text @collection.length
         @counterDone.text @collection.loaded
 
     afterRender: ->
-        unless @collection.length
-            @$el.hide()
-            $('#content').css 'margin-top': 56
-        else
-            $('#content').css 'margin-top': 108
-
         @$el.removeClass 'success danger warning'
         @counter = @$ '.counter'
         @counterDone = @$ '.counter-done'
         @progressbar = @$ '.progress-bar-info'
         @progressbarContent = @$ '.progress-bar-content'
         @dismiss = @$('#dismiss').hide()
+
+        if @collection.length is 0
+            @$el.hide()
+            $('#content').removeClass 'mt108'
+        else
+            $('#content').addClass 'mt108'
+
         if @collection.completed then @complete()
 

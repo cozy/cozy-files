@@ -51,7 +51,7 @@ module.exports = class ViewCollection extends BaseView
                     @bufferEl.insertBefore view.el, brotherAfter
             else
                 selector = @getItemViewSelector()
-                view.$el.insertAfter $(selector).eq(index - 1)
+                view.$el.insertAfter $(selector).eq index - 1
 
         ###
             If buffering is enabled, we batch all appendView to one DOM request
@@ -98,7 +98,6 @@ module.exports = class ViewCollection extends BaseView
     # after render, we reattach the views
     afterRender: ->
         @$collectionEl = $ @collectionEl
-        @appendView view for id, view of @views
         @onReset @collection
         @onChange @views
 
@@ -109,7 +108,7 @@ module.exports = class ViewCollection extends BaseView
 
     # event listener for reset
     onReset: (newcollection) ->
-        view.remove() for id, view of @views
+        @removeItem view.model for id, view of @views
         newcollection.forEach @addItem
 
     # event listeners for add

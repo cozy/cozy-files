@@ -39,6 +39,7 @@ module.exports = class Autocomplete extends BaseView
         # maximum number of tags to display in the list
         @limit = options.limit or 10
 
+        window.tags ?= []
         @tags = window.tags.map (value, idx) ->
             el = document.createElement 'li'
             el.textContent = value

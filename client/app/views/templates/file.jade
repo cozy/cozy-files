@@ -1,26 +1,48 @@
 td
-  div.spinholder &nbsp;
+
+  block file-path
+    // empty by default
+
   div.caption-wrapper
+
     block title
       if model.type == 'folder'
         .caption.btn.btn-link
-          input.selector(type="checkbox")
-          i.fa.fa-folder
+          span.icon-zone
+            div.spinholder 
+              img(src="images/spinner.svg")
+            div.selector-wrapper
+              input.selector(type="checkbox")
+            if clearance == 'public'
+              span.fa.fa-globe
+              i.fa.fa-folder-o
+            else if clearance && clearance.length > 0
+              span.fa.fa-users
+              i.fa.fa-folder-o
+            else
+              i.fa.fa-folder
           a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
             span
               | #{model.name}
       else if model.type == 'file'
         .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
-          input.selector(type="checkbox")
-          if model.mime && this.mimeClasses[model.mime]
-            i(class="fa #{this.mimeClasses[model.mime]}")
-          else
-            i.fa.fa-file-o
+          span.icon-zone
+            if clearance == 'public'
+              span.fa.fa-globe
+            else if clearance && clearance.length > 0
+              span.fa.fa-users
+            div.selector-wrapper
+              input.selector(type="checkbox")
+            if model.mime && this.mimeClasses[model.mime]
+              i(class="fa #{this.mimeClasses[model.mime]}")
+            else
+              i.fa.fa-file-o
           a.btn-link(
             href="#{attachmentUrl}",
             title="#{t('download file')}", target="_blank")
               span
                 | #{model.name}
+
     block tags
       ul.tags
         for tag in model.tags || []
@@ -28,36 +50,30 @@ td
             span.deleter &times;
 
     block actions
-      if !isBeingUploaded
+      if !isBeingUploadetag
         .operations
+          a.file-tags(title="#{t('tooltip tag')}")
+            span.fa.fa-tag
           a.file-share(title="#{t('tooltip share')}")
-            if model.clearance == 'public'
-              span.fa.fa-globe
-            else if model.clearance && model.clearance.length > 0
-              span.fa.fa-users #{model.clearance.length}
-            else
-              span.fa.fa-lock
+            span.fa.fa-share-alt
           a.file-edit(title="#{t('tooltip edit')}")
             span.glyphicon.glyphicon-edit
-          a.file-move(title="#{t('tooltip move')}")
-            span.glyphicon.glyphicon-arrow-right
-          a.file-delete(title="#{t('tooltip delete')}")
-            span.glyphicon.glyphicon-remove-circle
           a.file-download(
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.glyphicon.glyphicon-cloud-download
-  block file-path
-    // empty by default
+
 td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}
     span #{filesize(model.size || 0, options)}
+
 td.type-column-cell
   if model.type == 'folder'
     span.pull-left #{t('folder')}
   else
     span.pull-left #{t(model.class)}
+
 td.date-column-cell
   if model.lastModification
     span #{moment(model.lastModification).calendar()}

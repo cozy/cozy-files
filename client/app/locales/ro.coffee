@@ -57,6 +57,18 @@ module.exports =
         dosarul a fost trimis cu succes la server ||||
         %{smart_count} dosare au fost trimise cu succes la server.
     """
+
+    "chrome error dragdrop title": "Files are going to be ignored"
+    "chrome error dragdrop content": """
+        Due to a bug in Chrome, the following file: %{files} is going to be
+        ignored because it has an accent in its name. You can still add
+        it by using the button on the top right of your screen. ||||
+        Due to a bug in Chrome, the following files: %{files} are going to be
+        ignored because they have an accent in their name. You can still add
+        them by using the button on the top right of your screen.
+    """
+    "chrome error submit": "Ok"
+
     "upload caption"            : "Încărcare fișier"
     "upload msg"                : "Alegeți fișierul de încărcat:"
     "upload close"              : "Anulare"
@@ -71,6 +83,12 @@ module.exports =
     "new folder button"         : "Creare director"
 
     "upload folder msg"         : "Încărcați un director"
+
+    "overwrite modal title"     : "A file already exist"
+    "overwrite modal content"   : "Do you want to overwrite \"%{fileName}\"?"
+    "overwrite modal remember label" : "Apply this decision to all conflicts"
+    "overwrite modal yes button": "Overwrite"
+    "overwrite modal no button" : "Skip"
 
     "folder"                    : "Director"
     "image"                     : "Imagine"

@@ -59,6 +59,7 @@
         ul.tags
             display: none
 
+        .file-tags
         .file-delete
         .file-download
         .file-edit
@@ -84,9 +85,26 @@
             a
                 display: none
 
+@media (max-width: 900px)
+    tr.folder-row
+        ul.tags
+            display: none
+            margin-top: 5px
 
-@media (max-width: 992px)
+@media (max-width: 1000px)
+    .size-column-cell
+        display: none
+
+    #folder-state
+        .text
+            display: none
+
+
+@media (max-width: 1200px)
     // Portrait tablet to landscape and desktop
+
+    .type-column-cell
+        display: none
 
     .application
         .container
@@ -94,5 +112,7 @@
             width: 100%
             max-width: 100%
 
-@media (min-width: 992px)
-    // Desktop
+// Fix bootstrap
+@media (max-width: 768px)
+    #container
+        max-width: 100%

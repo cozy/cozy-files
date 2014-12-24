@@ -103,9 +103,7 @@ isStorageError = (err) ->
 # After 1 minute of inactivity, update parents
 resetTimeout = ->
     clearTimeout(timeout) if timeout?
-    timeout = setTimeout () ->
-        updateParents()
-    , 60 * 1000
+    timeout = setTimeout updateParents, 60 * 1000
 
 
 # Save in RAM lastModification date for parents
@@ -161,12 +159,61 @@ module.exports.create = (req, res, next) ->
         # stream in memory.
         name = fields.name
         path = fields.path
+        overwrite = fields.overwrite
 
         # we have no name for this file, give up
         if not name or name is ""
             err = new Error "Invalid arguments: no name given"
             err.status = 400
             return next err
+
+        upload = true
+
+        # while this upload is processing
+        # we send usage.application to prevent auto-stop
+        # and we defer parents lastModification update
+        keepAlive = ->
+            if upload
+                feed.publish 'usage.application', 'files'
+                setTimeout keepAlive, 60*1000
+                resetTimeout()
+
+        # if anything happens after the file is created
+        # we need to destroy it
+        rollback = (file, err) ->
+            file.destroy (delerr) ->
+                # nothing more we can do with delerr
+                log.error delerr if delerr
+                if isStorageError err
+                    res.send
+                        error: true
+                        code: 'ESTORAGE'
+                        msg: "modal error size"
+                    , 400
+                else
+                    next err
+
+        attachBinary = (file) ->
+            # request-json requires a path field to be set
+            # before uploading
+            part.path = file.name
+            metadata = name: "file"
+            file.attachBinary part, metadata, (err) ->
+                upload = false
+                return rollback file, err if err
+
+                # index the file in cozy-indexer for fast search
+                file.index ["name"], (err) ->
+                    # we ignore indexing errors
+                    log.debug err if err
+                    # send email or notification of file changed
+                    who = req.guestEmail or 'owner'
+                    sharing.notifyChanges who, file, (err) ->
+                        # we ignore notification errors
+                        log.debug err if err
+                        res.send file, 200
+
+        now = moment().toISOString()
 
         # Check that the file doesn't exist yet.
         path = normalizePath path
@@ -176,14 +223,19 @@ module.exports.create = (req, res, next) ->
 
             # there is already a file with the same name, give up
             if sameFiles.length > 0
-                return res.send
-                    error: true
-                    code: 'EEXISTS'
-                    msg: "This file already exists"
-                , 400
+                if overwrite
+                    file = sameFiles[0]
+                    return file.updateAttributes lastModification: now, ->
+                        keepAlive()
+                        attachBinary file
+                else
+                    upload = false
+                    return res.send
+                        error: true
+                        code: 'EEXISTS'
+                        msg: "This file already exists"
+                    , 400
 
-
-            now = moment().toISOString()
             # Generate file metadata.
             data =
                 name: name
@@ -194,16 +246,6 @@ module.exports.create = (req, res, next) ->
                 size: part.byteCount
                 tags: []
                 class: getFileClass part
-
-            upload = true
-            # while this upload is processing
-            # we send usage.application to prevent auto-stop
-            # and we defer parents lastModification update
-            keepAlive = ->
-                if upload
-                    feed.publish 'usage.application', 'files'
-                    setTimeout keepAlive, 60*1000
-                    resetTimeout()
 
             # check if the request is allowed
             confirmCanUpload data, req, (err) ->
@@ -226,39 +268,7 @@ module.exports.create = (req, res, next) ->
                         return next err if err
 
                         keepAlive()
-                        # if anything happens after the file is created
-                        # we need to destroy it
-                        rollback = (err) ->
-                            newFile.destroy (delerr) ->
-                                # nothing more we can do with delerr
-                                log.error delerr if delerr
-                                if isStorageError err
-                                    res.send
-                                        error: true
-                                        code: 'ESTORAGE'
-                                        msg: "modal error size"
-                                    , 400
-                                else
-                                    next err
-
-                        # request-json requires a path field to be set
-                        # before uploading
-                        part.path = data.name
-                        metadata = name: "file"
-                        newFile.attachBinary part, metadata, (err) ->
-                            upload = false
-                            return rollback err if err
-
-                            # index the file in cozy-indexer for fast search
-                            newFile.index ["name"], (err) ->
-                                # we ignore indexing errors
-                                log.debug err if err
-                                # send email or notification of file changed
-                                who = req.guestEmail or 'owner'
-                                sharing.notifyChanges who, newFile, (err) ->
-                                    # we ignore notification errors
-                                    log.debug err if err
-                                    res.send newFile, 200
+                        attachBinary newFile
 
 
     form.on 'error', (err) ->

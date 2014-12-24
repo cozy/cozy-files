@@ -19,6 +19,9 @@ h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
 label
     font-weight: normal
 
+.mt108
+    margin-top: 108px
+
 .modal-content
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2)
 
@@ -46,6 +49,8 @@ a:focus,
 .btn[disabled=disabled], .btn:disabled
   opacity: 0.2
 
+.error
+    color: red
 
 /*      COZY BUTTONS    */
 .btn
@@ -230,6 +235,12 @@ table#table-items
 
 tr.folder-row
 
+  .file-path
+    color: darkcolor
+    font-family: main
+    margin-bottom: 0
+    margin-left: 3px
+
   &:hover
     color: mediumcolor-contrast
 
@@ -239,19 +250,40 @@ tr.folder-row
     .glyphicon.no-hover
       color: mediumcolor
 
-    .file-path
-      color: mediumcolor
-
   &:hover, &.pseudohover
     .tags input
-      visibility visible
+      visibility: visible
 
-  &.edit-mode .tags input
-      visibility hidden
+  &.edit-mode 
+    .tags
+        display: none
+
+    .spinholder
+        display: none
+
+    .caption
+        .icon-zone
+          .fa
+            display: inline-block
+
+          .fa-folder-o
+              position: relative
+              top: -3px
+
+        .icon-zone:hover
+          .fa
+            display: inline-block
+          input[type=checkbox]
+            display: none
 
   // mandatory to override bootstrap
   &.selected > td
-    background green + 95% !important
+    background lightblue + 70% !important
+
+  &.selected
+    .icon-zone
+      .fa
+        display: none
 
   td
     vertical-align: middle
@@ -269,6 +301,7 @@ tr.folder-row
 
     .caption-wrapper .fa-folder.spin
       animation spin 2s infinite ease-out
+
   // the filename
   .caption
     font-size: 16px
@@ -277,20 +310,27 @@ tr.folder-row
     margin-left: 0px
     margin-right: 10px
 
-    input[type=checkbox]
-      display none
-      width 20px
-      margin 0 15px 0 0
-      &:checked
-        display inline-block
-      &:checked + .fa
+    .selector-wrapper
+      display: inline
+      padding-top: 4px
+
+      input[type=checkbox]
+        display none
+        width 20px
+        margin 0 15px 0 0
+        cursor pointer
+        &:checked
+          display inline-block
+        &:checked + .fa
           display none
 
-    &:hover
+    .icon-zone:hover
       .fa
-        display none
+        display: none
+      .spinholder
+        display: none
       input[type=checkbox]
-        display inline-block
+        display: inline
 
 
 
@@ -300,14 +340,16 @@ tr.folder-row
     text-decoration: none
 
   .spinholder
+    vertical-align: top
     display: inline
-    position: relative
-    width: 40px
-    float: right
+    margin: 0
+    padding: 0 18px 0 5px
 
   // the toolbox - delete, rename, etc
   .operations
     font-size: 16px
+    margin: 0
+    padding: 0
     display: none
 
     a
@@ -324,6 +366,8 @@ tr.folder-row
     .fa-lock
     .fa-users
     .fa-globe
+    .fa-share-alt
+    .fa-tag
         padding-top: 6px
 
   .caption-wrapper
@@ -331,11 +375,9 @@ tr.folder-row
     height: 100%
 
   ul.tags
-    margin-bottom: 0
-    padding-top: 5px
-    padding-left: 10px
-    padding-bottom: 0
-    margin-top: 3px
+    margin: 0
+    padding: 0
+    margin-top: 5px
     display: inline-block
     border: none
     font-size: 1.3rem
@@ -353,7 +395,7 @@ tr.folder-row
       border: 1px solid lightgray
       border-radius: 6px
       padding: 0.2em 0.5em 0.2em 0.5em
-      margin-top: 0
+      margin-top: 0px
       margin-right: 5px
       border: 1px solid transparent
       border-radius: 0
@@ -645,11 +687,19 @@ tr.folder-row
         margin-top: 0
 
   #share-state
-    font-size 14px
-    line-height 21px
-    span
-      margin-left: 5px
-      font-size 17px
+      font-size: 18px
+      line-height: 20px
+
+  #folder-state
+    font-family: styled
+    font-size: 20px
+    margin-right: 10px
+    position: relative
+    top: 5px
+    color: #666
+
+    .fa
+        margin-left: 5px
 
   // by default (private area) we don't display download and notif buttons
   #notifications
@@ -659,10 +709,30 @@ tr.folder-row
 .file-edit-name
   min-width: 150px
 
-.caption-edit
+tr.folder-row td span.caption.caption-edit
+  margin: 0
+  padding: 0
+  float: left
+
+  input.file-edit-name
+    border: 1px solid blue
+    outline: 0
+
+    &:hover
+      border: 1px solid orange
+      color: #333
+
+    &:active
+    &:focus
+      border: 1px solid blue
+   
+tr.folder-row td input.caption
+  margin-left: 5px
+  margin-top: 2px
+     
 .file-edit-save
 .file-edit-cancel
-  margin-top: 5px
+  margin-top: 0px
 
 tr.folder-row
   .caption-edit
@@ -718,6 +788,10 @@ tr.folder-row
 #content
   background: white
   padding-bottom: 10px
+  margin-top: 56px
+
+#content.mt108
+  margin-top: 108px
 
 #files
   // margin-top 60px
@@ -791,8 +865,13 @@ body.error-404 .error-frame
   We hide some part of the UI that are not relevant in the public part
 */
 .public
+
+  #loading-indicator
+    margin-top: 10px
+
   #affixbar
     #share-state
+    #folder-state
     #upload-btngroup
     #button-new-folder
       display none
@@ -800,6 +879,34 @@ body.error-404 .error-frame
     #notifications
     #download-link
       display inline-block
+
+    #bulk-actions-btngroup
+      position: static
+
+      #button-bulk-move
+      #button-bulk-remove
+        display: none
+
+      #button-bulk-download
+        border-radius: 4px
+
+        span
+          padding: 0
+          font-size: 14px
+          font-weight: normal
+          font-family: main
+
+    #upload-buttons
+      padding-left: 0
+      margin-left: 0
+
+    #download-link
+      font-size: 14px
+      font-weight: normal
+      font-family: main
+
+    #search-box
+      display: none
 
   &.can-upload #affixbar
     #upload-btngroup
@@ -866,3 +973,25 @@ body.error-404 .error-frame
 
     &.selected, &:hover
       background-color orange + 40%
+
+.btn-link
+.btn-link:visited
+    color basecolor - 30%
+
+.btn-link:hover
+    color actioncolor - 10%
+    text-decoration: none
+
+.btn-link:active
+.btn-link:focus
+    text-decoration: none
+
+
+.caption
+    .fa-users
+    .fa-globe
+        position: absolute
+        top: 12px
+        left: -3px
+        font-size: 12px
+

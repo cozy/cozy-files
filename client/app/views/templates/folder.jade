@@ -12,17 +12,19 @@
 
                 //- clearance modification buttons
                 if model.id != 'root'
-                  a.btn.btn-cozy#share-state.btn-cozy-contrast
-                    if model.clearance == 'public'
-                      | #{t('public')}
+                  span#folder-state
+                    if clearance == 'public'
+                      span.text #{t('public')}
                       span.fa.fa-globe
-                    else if model.clearance && model.clearance.length > 0
-                      | #{t('shared')}
+                    else if clearance && clearance.length > 0
+                      span.text #{t('shared')}
                       span.fa.fa-users
-                      span= model.clearance.length
+                      span= clearance.length
                     else
-                      | #{t('private')}
+                      span.text #{t('private')}
                       span.fa.fa-lock
+                  a.btn.btn-cozy.btn-cozy-contrast(title="#{t('share')}")#share-state
+                    span.fa.fa-share-alt
                   | &nbsp;
 
                 //- file & folder uploaders
@@ -43,11 +45,16 @@
 
                 //- bulk actions: move and remove
                 .btn-group#bulk-actions-btngroup
-                  a#button-bulk-move.btn.btn-cozy.btn-cozy
-                    | #{t('move all')}&nbsp;
+                  if isPublic
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy-contrast
+                        span.label #{t("download all")}&nbsp;
+                        span.icon-arrow-down.icon-white
+                  else
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy
+                        span.icon-arrow-down.icon-white
+                  a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
                     span.glyphicon.glyphicon-arrow-right
-                  a#button-bulk-remove.btn.btn-cozy.btn-cozy
-                    | #{t('remove all')}&nbsp;
+                  a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy
                     span.glyphicon.glyphicon-remove-circle
 
               //- notification toggle button
@@ -70,7 +77,8 @@
 .container
   .row
     .col-lg-12#content
-      #loading-indicator &nbsp;
+      #loading-indicator
+        img(src="images/spinner.svg", width="20")
       #files
       #files-drop-zone
         .overlay

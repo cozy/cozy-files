@@ -4,6 +4,7 @@ BreadcrumbsView = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
 Modal = require './modal'
 ModalBulkMove = require './modal_bulk_move'
+ModalConflict = require './modal_conflict'
 ModalShareView = null
 
 File = require '../models/file'
@@ -19,29 +20,28 @@ module.exports = class FolderView extends BaseView
     template: require './templates/folder'
 
     events: ->
-        'click #button-new-folder'     : 'onNewFolderClicked'
-        # 'click #button-upload-new-file': 'onUploadNewFileClicked'
-        'click #new-folder-send'       : 'onAddFolder'
-        'click #cancel-new-folder'     : 'onCancelFolder'
-        'click #cancel-new-file'       : 'onCancelFile'
-        'click #share-state'           : 'onShareClicked'
-        'click #download-link'         : 'onDownloadAsZipClicked'
+        'click #button-new-folder': 'onNewFolderClicked'
+        'click #cancel-new-folder': 'onCancelFolder'
+        'click #cancel-new-file': 'onCancelFile'
+        'click #share-state': 'onShareClicked'
+        'click #download-link': 'onDownloadAsZipClicked'
         'change #uploader': 'onFilesSelected'
         'change #folder-uploader': 'onDirectorySelected'
 
         'change #select-all': 'onSelectAllChanged'
         'change input.selector': 'onSelectChanged'
 
+        'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
-        'click #button-bulk-move'  : 'bulkMove'
+        'click #button-bulk-move': 'bulkMove'
 
-        'dragstart #files' : 'onDragStart'
-        'dragenter #files' : 'onDragEnter'
-        'dragover #files'  : 'onDragEnter'
-        'dragleave #files' : 'onDragLeave'
-        'drop #files'      : 'onDrop'
+        'dragstart #files': 'onDragStart'
+        'dragenter #files': 'onDragEnter'
+        'dragover #files': 'onDragEnter'
+        'dragleave #files': 'onDragLeave'
+        'drop #files': 'onDrop'
 
-        'keyup input#search-box'       : 'onSearchKeyPress'
+        'keyup input#search-box': 'onSearchKeyPress'
 
     initialize: (options) ->
         super options
@@ -60,7 +60,44 @@ module.exports = class FolderView extends BaseView
         @listenTo @baseCollection, 'remove', @toggleFolderActions
         @listenTo @collection, 'remove', @toggleFolderActions
 
+        # when clearance is saved, we update the share button's icon
+        @listenTo @model, 'sync', @onFolderSync
+
+        # We create a queue to manage conflict, that process one item at a time
+        # so we can use a remembered choice
+        @conflictQueue = async.queue @resolveConflict.bind(@), 1
+        @conflictRememberedChoice = null
+
+        # reset remembered choice when all conflicts have been resolved
+        @conflictQueue.drain = => @conflictRememberedChoice = null
+
+        # adding the model to the queue when a conflict is detected by the
+        # upload queue
+        @listenTo @uploadQueue, 'conflict', @conflictQueue.push
+
         return this
+
+    resolveConflict: (model, done) ->
+
+        # if the user has selected the remember choice option
+        # it is not asked again
+        if @conflictRememberedChoice?
+            model.overwrite = @conflictRememberedChoice
+            model.processSave model
+            done()
+        else
+            # Ask the user his choice about overwriting the file
+            new ModalConflict model, (choice, rememberChoice) =>
+
+                # save the remembered choice if the user has set it
+                if rememberChoice?
+                    @conflictRememberedChoice = rememberChoice
+
+                model.overwrite = choice
+                # starts the upload (and therefore unlocks the upload queue)
+                model.processSave model
+
+                done()
 
     destroy: ->
         # reset selection for each models
@@ -72,11 +109,16 @@ module.exports = class FolderView extends BaseView
         @filesList.destroy()
         @filesList = null
 
+        # terminates conflict queue
+        @conflictQueue.kill()
+        @conflictQueue = null
+
         super()
 
     getRenderData: ->
         supportsDirectoryUpload: @testEnableDirectoryUpload()
         model: @model.toJSON()
+        clearance: @model.getClearance()
         query: @query
         zipUrl: @model.getZipURL()
 
@@ -95,19 +137,23 @@ module.exports = class FolderView extends BaseView
         # We make a reload after the view is displayed to update
         # the client without degrading UX
         @refreshData()
+        @$("#loading-indicator").show()
+        @$('input#search-box').focus()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
-        @breadcrumbsView = new BreadcrumbsView collection: @model.breadcrumb, model: @model
+        @breadcrumbsView = new BreadcrumbsView
+            collection: @model.breadcrumb
+            model: @model
         @$("#crumbs").append @breadcrumbsView.render().$el
 
     renderFileList: ->
 
         @filesList = new FilesView
-                model: @model
-                collection: @collection
-                uploadQueue: @uploadQueue
-                isSearchMode: @model.get('type') is "search"
+            model: @model
+            collection: @collection
+            uploadQueue: @uploadQueue
+            isSearchMode: @model.get('type') is "search"
 
         @filesList.render()
 
@@ -117,12 +163,21 @@ module.exports = class FolderView extends BaseView
 
         @uploadStatus.render().$el.appendTo @$('#upload-status-container')
 
-    spin: (state = 'small') -> @$("#loading-indicator").spin state
+    spin: (state=true) ->
+        if state
+            @$("#loading-indicator").show()
+        else
+            @$("#loading-indicator").hide()
 
     # Refresh folder's content and manage spinner
     refreshData: ->
         @spin()
-        @baseCollection.getFolderContent @model, => @spin false
+        @baseCollection.getFolderContent @model, =>
+            @spin false
+
+            # if the inherited clearance has changed, we need to refresh
+            # the share button's icon
+            @onFolderSync()
 
     ###
         Button handlers
@@ -138,14 +193,13 @@ module.exports = class FolderView extends BaseView
                 name: ''
                 type: 'folder'
                 path: @model.getRepository()
+            @newFolder.type = 'folder'
 
             @baseCollection.add @newFolder
             view = @filesList.views[@newFolder.cid]
             view.onEditClicked()
 
-            @newFolder.once 'sync destroy', =>
-                @newFolder = null
-
+            @newFolder.once 'sync destroy', => @newFolder = null
 
     onShareClicked: -> new ModalShareView model: @model
 
@@ -212,13 +266,32 @@ module.exports = class FolderView extends BaseView
         # the callback when there are no operation pending
         pending = 0
         files = []
+        errors = []
         callback = =>
-            @uploadQueue.addFolderBlobs files, @model
 
-            if e.target?
-                target = $ e.target
-                # reset the input
-                target.replaceWith target.clone true
+            processUpload = =>
+                @uploadQueue.addFolderBlobs files, @model
+
+                if e.target?
+                    target = $ e.target
+                    # reset the input
+                    target.replaceWith target.clone true
+
+            if errors.length > 0
+                formattedErrors = errors
+                    .map (name) -> "\"#{name}\""
+                    .join ', '
+                localeOptions =
+                    files: formattedErrors
+                    smart_count: errors.length
+
+                new Modal t('chrome error dragdrop title'), \
+                    t('chrome error dragdrop content', localeOptions), \
+                    t('chrome error submit'), null, (confirm) =>
+                        processUpload()
+            else
+                processUpload()
+
 
         # An entry can be a folder or a file
         parseEntriesRecursively = (entry, path) =>
@@ -229,11 +302,15 @@ module.exports = class FolderView extends BaseView
             # if it's a file we add it to the file list with a proper
             # relative path
             if entry.isFile
-                entry.file (file) =>
+                entry.file (file) ->
                     file.relativePath = "#{path}#{file.name}"
                     files.push file
                     pending = pending - 1
-
+                    # if there are no operation left, the upload starts
+                    callback() if pending is 0
+                , (error) ->
+                    errors.push entry.name
+                    pending = pending - 1
                     # if there are no operation left, the upload starts
                     callback() if pending is 0
 
@@ -256,14 +333,19 @@ module.exports = class FolderView extends BaseView
         Search
     ###
     onSearchKeyPress: (e) ->
-        query = @$('input#search-box').val()
+        if @searching isnt true
+            searching = true
+            setTimeout =>
+                query = @$('input#search-box').val()
 
-        if query isnt ''
-            route = "#search/#{query}"
-        else
-            route = ''
+                if query isnt ''
+                    route = "#search/#{query}"
+                else
+                    route = ''
 
-        window.app.router.navigate route, true
+                window.app.router.navigate route, true
+                searching = false
+            , 1000
 
     # Refreshes the view by changing the files list
     # we basically re-do @initialize but only render file list
@@ -311,18 +393,26 @@ module.exports = class FolderView extends BaseView
             @$('#share-state').hide()
             @$('#upload-btngroup').hide()
             @$('#button-new-folder').hide()
+            @$('#download-link').hide() # in public area
             @$('#bulk-actions-btngroup').addClass 'enabled'
         else
-            @$('#share-state').show()
-            @$('#upload-btngroup').show()
-            @$('#button-new-folder').show()
+            if app.isPublic
+                @$('#download-link').show() # in public area
+                clearance = @model.getClearance()?[0]
+                if clearance? and clearance.perm is 'rw'
+                    @$('#upload-btngroup').show()
+                    @$('#button-new-folder').show()
+            else
+                @$('#share-state').show()
+                @$('#upload-btngroup').show()
+                @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
-        # we check the "select-all" checkbox if there are few elements selected
-        # or if it has been clicked directly
-        # strict equality check for force since it can be something that is not
-        # a boolean
-        shouldChecked = selectedElements.length >= 3 or force is true
+        # Check if all checkbox should be selected. It is selected
+        # when it's forced or when collection length == amount of selected
+        # files
+        shouldChecked = \
+            selectedElements.length is @collection.size() or force is true
         @$('input#select-all').prop 'checked', shouldChecked
 
 
@@ -333,10 +423,10 @@ module.exports = class FolderView extends BaseView
         new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
                 window.pendingOperations.deletion++
-                async.eachLimit @getSelectedElements(), 10, (element, cb) ->
+                async.eachSeries @getSelectedElements(), (element, cb) ->
                     element.destroy
-                        success: -> cb()
-                        error: -> cb()
+                        success: -> setTimeout cb, 200
+                        error: -> setTimeout cb, 200
                 , (err) ->
                     window.pendingOperations.deletion--
                     if err?
@@ -347,6 +437,32 @@ module.exports = class FolderView extends BaseView
         new ModalBulkMove
             collection: @getSelectedElements()
             parentPath: @model.getRepository()
+
+    bulkDownload: ->
+        selectedElements = @getSelectedElements()
+        selectedPaths = selectedElements.map (element) ->
+            if element.isFolder()
+                return "#{element.getRepository()}/"
+            else
+                return "#{element.getRepository()}"
+        url = @model.getZipURL()
+
+        serializedSelection = selectedPaths.join ';'
+
+        # To trigger a download from a POST request, we must create an hidden
+        # form and submit it.
+        inputValue = """
+        value="#{serializedSelection}"
+        """
+        form = """
+        <form id="temp-zip-download" action="#{url}" method="post">
+            <input type="hidden" name="selectedPaths" #{inputValue}/>
+        </form>
+        """
+        $('body').append form
+        $('#temp-zip-download').submit()
+        $('#temp-zip-download').remove()
+
 
     ###
         Misc
@@ -364,3 +480,25 @@ module.exports = class FolderView extends BaseView
         if @collection.length is 0
             event.preventDefault()
             Modal.error t 'modal error zip empty folder'
+
+    # Updates the share button's icon and content
+    onFolderSync: ->
+        clearance = @model.getClearance()
+        if clearance is 'public'
+            shareStateContent = """
+                <span class="text">#{t 'public'}</span>
+                <span class="fa fa-globe"></span>
+            """
+        else if clearance? and clearance.length > 0
+            shareStateContent = """
+                <span class="text">#{t 'shared'}</span>
+                <span class="fa fa-users"></span>
+                <span>#{clearance.length}</span>
+            """
+        else
+            shareStateContent = """
+                <span class="text">#{t 'private'}</span>
+                <span class="fa fa-lock"></span>
+            """
+
+        @$('#folder-state').html shareStateContent

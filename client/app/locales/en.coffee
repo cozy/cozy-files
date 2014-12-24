@@ -47,7 +47,8 @@ module.exports =
     "tooltip delete"          : "Delete"
     "tooltip edit"            : "Rename"
     "tooltip download"        : "Download"
-    "tooltip share"            : "Share"
+    "tooltip share"           : "Share"
+    "tooltip tag"             : "Tag"
 
     # folder template
     'and x files'         : """
@@ -60,6 +61,18 @@ module.exports =
         One file successfully uploaded. ||||
         %{smart_count} files successfully uploaded.
     """
+
+    "chrome error dragdrop title": "Files are going to be ignored"
+    "chrome error dragdrop content": """
+        Due to a bug in Chrome, the following file: %{files} is going to be
+        ignored because it has an accent in its name. You can still add
+        it by using the button on the top right of your screen. ||||
+        Due to a bug in Chrome, the following files: %{files} are going to be
+        ignored because they have an accent in their name. You can still add
+        them by using the button on the top right of your screen.
+    """
+    "chrome error submit": "Ok"
+
 
     "upload caption"            : "Upload a new file"
     "upload msg"                : "Drag files or click here to choose files."
@@ -81,6 +94,7 @@ module.exports =
     "new folder send"           : "Create Folder"
     "new folder button"         : "Create a new folder"
 
+    "download all"              : "Download the selection"
     "move all"                  : "Move the selection"
     "remove all"                : "Remove the selection"
 
@@ -88,6 +102,12 @@ module.exports =
 
     "upload folder msg"         : "Upload a folder"
     "upload folder separator"   : "or"
+
+    "overwrite modal title"     : "A file already exist"
+    "overwrite modal content"   : "Do you want to overwrite \"%{fileName}\"?"
+    "overwrite modal remember label" : "Apply this decision to all conflicts"
+    "overwrite modal yes button": "Overwrite"
+    "overwrite modal no button" : "Skip"
 
     "folder"                    : "Folder"
     "image"                     : "Image"
@@ -103,7 +123,7 @@ module.exports =
     "type"                      : "Type"
     "size"                      : "Size"
     "date"                      : "Last update"
-    "download"                  : "Download"
+    "download"                  : "Download all"
     "MB"                        : "MB"
     "KB"                        : "KB"
     "B"                         : "B"
@@ -137,6 +157,7 @@ module.exports =
     "public"                          : "Public"
     "private"                         : "Private"
     "shared"                          : "Shared"
+    "share"                           : "Share"
     "save"                            : "Save"
     "see link"                        : "See link"
     "send mails question"             : "Send a notification email to:"

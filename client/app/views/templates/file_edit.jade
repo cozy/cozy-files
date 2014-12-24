@@ -1,11 +1,24 @@
 extends file
 
 block title
-  span.caption.caption-edit.btn-link
+  span.caption.caption-edit.btn.btn-link
     if model.type && model.type == "folder"
-      i.fa.fa-folder
+      span.icon-zone
+        if clearance == 'public'
+          span.fa.fa-globe
+          i.fa.fa-folder-o
+        else if clearance && clearance.length > 0
+          span.fa.fa-users
+          i.fa.fa-folder-o
+        else
+          i.fa.fa-folder
+        div.spinholder
+          img(src="images/spinner.svg")
     else
-      i.fa.fa-file-o
+      if model.mime && this.mimeClasses[model.mime]
+        i(class="fa #{this.mimeClasses[model.mime]}")
+      else
+        i.fa.fa-file-o
     input.caption.file-edit-name(value=model.name)
   a.btn.btn-sm.btn-cozy.file-edit-save
     | #{t("file edit save")}

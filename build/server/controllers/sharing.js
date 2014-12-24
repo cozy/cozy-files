@@ -69,32 +69,14 @@ module.exports.fetch = function(req, res, next, id) {
 };
 
 module.exports.details = function(req, res, next) {
-  var element;
-  element = req.doc;
-  return element.getParents(function(err, parents) {
-    var inherited, isPublic;
+  return req.doc.getInheritedClearance(function(err, inherited) {
     if (err != null) {
       return next(err);
+    } else {
+      return res.send({
+        inherited: inherited
+      });
     }
-    if (parents.length > 0 && parents[0].id === element.id) {
-      parents.shift();
-    }
-    isPublic = false;
-    inherited = parents != null ? parents.filter(function(parent) {
-      if (parent.clearance == null) {
-        parent.clearance = [];
-      }
-      if (isPublic) {
-        return false;
-      }
-      if (parent.clearance === 'public') {
-        isPublic = true;
-      }
-      return parent.clearance.length !== 0;
-    }) : void 0;
-    return res.send({
-      inherited: inherited
-    });
   });
 };
 

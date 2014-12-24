@@ -1,5 +1,6 @@
 File = require '../models/file'
 Folder = require '../models/folder'
+async = require 'async'
 
 
 # Update index
@@ -9,11 +10,15 @@ module.exports.updateIndex = (callback) ->
         if err
             console.log err
         else
-            for file in files
-                file.index ['name'], () =>
-    Folder.all (err, folders) ->
-        if err
-            console.log err
-        else
-            for folder in folders
-                folder.index ['name'], () =>
+            async.eachSeries files, (file) ->
+                file.index ['name'], ->
+            , ->
+                Folder.all (err, folders) ->
+                    if err
+                        console.log err
+                    else
+                        async.eachSeries folders, (folder) ->
+                            folders.index ['name'], ->
+                        , ->
+                            console.log 'Re-indexation is done.'
+                            callback() if callback

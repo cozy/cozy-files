@@ -15,13 +15,14 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
+        'click a.file-tags'        : 'onTagClicked'
         'click a.file-delete'      : 'onDeleteClicked'
-        'click a.file-share'       : 'onShare'
+        'click a.file-share'       : 'onShareClicked'
         'click a.file-edit'        : 'onEditClicked'
         'click a.file-edit-save'   : 'onSaveClicked'
         'click a.file-edit-cancel' : 'onCancelClicked'
         'click a.file-move'        : 'onMoveClicked'
-        'keydown input.file-edit-name'  : 'onKeyPress'
+        'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
 
     mimeClasses:
@@ -98,14 +99,21 @@ module.exports = class FileView extends BaseView
             isBeingUploaded: @model.isBeingUploaded()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
+            clearance: @model.getClearance()
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
-            @$('.spinholder').spin 'small'
+            @$('.spinholder').show()
+            @$('.icon-zone .fa').hide()
         @listenTo @model, 'sync error', =>
-            @$('.spinholder').spin false
+            # for overwritten files, render entirely to show
+            #  modification date and type
+            @render() if @model.conflict
+
+            @$('.spinholder').hide()
+            @$('.icon-zone .fa').show()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -130,7 +138,6 @@ module.exports = class FileView extends BaseView
                 @$('.fa-folder').removeClass 'spin'
 
     refresh: ->
-
         changes = Object.keys @model.changed
 
         if changes.length is 1
@@ -146,11 +153,13 @@ module.exports = class FileView extends BaseView
         # more complex change = rerender
         @render()
 
-
     displayError: (msg) ->
-        @errorField ?= $('<span class="error">').insertAfter @$('.tags')
+        @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
         if msg is false then @errorField.hide()
         else @errorField.text msg
+
+    onTagClicked: ->
+        @tags.toggleInput()
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
@@ -166,11 +175,10 @@ module.exports = class FileView extends BaseView
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
-        @$el.html @templateEdit model: model
-        @tags = new TagsView
-            el: @$ '.tags'
-            model: @model
-        @tags.render()
+        @$el.html @templateEdit
+            model: model
+            clearance: @model.getClearance()
+
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
 
@@ -192,18 +200,26 @@ module.exports = class FileView extends BaseView
 
         @$el.addClass 'edit-mode'
 
-    onShare: -> new ModalShareView model: @model
+    onShareClicked: ->
+        new ModalShareView model: @model
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
+            @$('.icon-zone .fa').hide()
+            @$('.spinholder').show()
+
             @model.save name: name,
                 wait: true,
                 success: (data) =>
+                    @$('.spinholder').hide()
+                    @$('.icon-zone .fa').show()
                     @render()
                 error: (model, err) =>
+                    @$('.spinholder').hide()
+                    @$('.icon-zone .fa').show()
                     @$('.file-edit-name').focus()
                     @displayError if err.status is 400 then t 'modal error in use'
                     else t 'modal error rename'
@@ -344,6 +360,8 @@ module.exports = class FileView extends BaseView
         return true
 
     onToggleSelect: ->
+        @$el.toggleClass 'selected', @model.isSelected
+        @$('input.selector').prop 'checked', @model.isSelected
         if @model.isSelected
             @$('.file-move, .file-delete').addClass 'hidden'
         else
@@ -354,17 +372,18 @@ module.exports = class FileView extends BaseView
         if @model.isBeingUploaded()
             @$('.type-column-cell').remove()
             @$('.date-column-cell').remove()
-            @progressbar = new ProgressBar(model: @model)
-            cell = $('<td colspan="2"></td>')
+            @progressbar = new ProgressBar model: @model
+            cell = $ '<td colspan="2"></td>'
             cell.append @progressbar.render().$el
             @$('.size-column-cell').after cell
             # we don't want the file link to react
             @$('a.caption.btn').click (event) -> event.preventDefault()
         else
             @tags = new TagsView
-                el: @$('.tags')
+                el: @$ '.tags'
                 model: @model
             @tags.render()
+            @tags.hideInput()
 
         # hides the file move and remove buttons if they are in a bulk selection
         if @model.isSelected
@@ -375,3 +394,5 @@ module.exports = class FileView extends BaseView
         # if it's a folder and if it has children being uploaded
         if @hasUploadingChildren
             @$('.fa-folder').addClass 'spin'
+
+        @$('.spinholder').hide()
