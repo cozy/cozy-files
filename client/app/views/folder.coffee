@@ -499,3 +499,4 @@ module.exports = class FolderView extends BaseView
             shareStateContent = ""
 
         @$('#folder-state').html shareStateContent
+        @filesList.updateInheritedClearance [clearance: clearance]

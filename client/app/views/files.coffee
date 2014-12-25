@@ -39,7 +39,7 @@ module.exports = class FilesView extends ViewCollection
 
         if nbElements > 0
             @$("#file-amount-indicator").html t 'element',
-                                                smart_count: nbElements
+                smart_count: nbElements
             @$("#file-amount-indicator").show()
             @$("#no-files-indicator").hide()
         else
@@ -69,6 +69,11 @@ module.exports = class FilesView extends ViewCollection
         @collection.order = order
         @collection.type = type
         @collection.sort()
+
+    updateInheritedClearance: (clearance) ->
+        if clearance? and clearance.length > 0 and clearance[0].clearance?
+            for file in @collection.models
+                file.set 'inheritedClearance', clearance
 
     destroy: ->
         @stopListening @collection
