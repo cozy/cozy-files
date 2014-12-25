@@ -36,6 +36,8 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
           });
         });
       });
+      console.log(contacts);
+      console.log(items);
       items = items.filter(extrafilter);
       return items;
     },
@@ -76,7 +78,7 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
   });
 };
 
-
+  
 });
 
 require.register("cozy-clearance/contact_collection", function(exports, require, module){
@@ -109,7 +111,7 @@ collection.fetch();
 
 module.exports = collection;
 
-
+  
 });
 
 require.register("cozy-clearance/modal", function(exports, require, module){
@@ -272,7 +274,7 @@ Modal.error = function(text, cb) {
 
 module.exports = Modal;
 
-
+  
 });
 
 require.register("cozy-clearance/modal_share_template", function(exports, require, module){
@@ -280,15 +282,26 @@ require.register("cozy-clearance/modal_share_template", function(exports, requir
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-;var locals_for_with = (locals || {});(function (t, type, model, clearance, makeURL, Object, possible_permissions) {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('public')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p>");
-if ( clearance == 'public')
+;var locals_for_with = (locals || {});(function (t, type, model, JSON, clearance, makeURL, undefined, Object, possible_permissions) {
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('shared')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p><!-- If no clearance are set, we consider it's a private object.-->");
+if ( JSON.stringify(clearance) == '[]')
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared ' + type + ' link msg')) ? "" : jade_interp)) + "</p><input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p>");
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
+buf.push("<p>&nbsp;</p><p>" + (jade.escape(null == (jade_interp = t('modal shared public link msg')) ? "" : jade_interp)) + "</p>");
+if ( clearance == 'public')
+{
+buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
+}
+else
+{
+buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control disabled\"/>");
+}
+buf.push("<p>&nbsp;</p><p>" + (jade.escape(null == (jade_interp = t('modal shared with people msg')) ? "" : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
+if ( clearance != 'public')
+{
 // iterate clearance
 ;(function(){
   var $$obj = clearance;
@@ -297,6 +310,8 @@ buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? ""
     for (var i = 0, $$l = $$obj.length; i < $$l; i++) {
       var rule = $$obj[i];
 
+if ( rule != undefined)
+{
 var key = rule.key
 buf.push("<li class=\"clearance-line\">");
 if ( rule.contact)
@@ -313,7 +328,7 @@ buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp =
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
+buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/><span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -348,6 +363,7 @@ else
 buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
+}
     }
 
   } else {
@@ -355,6 +371,8 @@ buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", 
     for (var i in $$obj) {
       $$l++;      var rule = $$obj[i];
 
+if ( rule != undefined)
+{
 var key = rule.key
 buf.push("<li class=\"clearance-line\">");
 if ( rule.contact)
@@ -371,7 +389,7 @@ buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp =
 }
 else
 {
-buf.push("<span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
+buf.push("<img width=\"40\" src=\"images/defaultpicture.png\"/><span class=\"clearance-name\">" + (jade.escape(null == (jade_interp = rule.email) ? "" : jade_interp)) + "</span>");
 }
 var keys = Object.keys(possible_permissions)
 if ( keys.length > 1)
@@ -406,16 +424,18 @@ else
 buf.push(jade.escape(null == (jade_interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade_interp));
 }
 buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
+}
     }
 
   }
 }).call(this);
 
+}
 buf.push("</ul>");
-}}("t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined));;return buf.join("");
+}}("t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"JSON" in locals_for_with?locals_for_with.JSON:typeof JSON!=="undefined"?JSON:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined));;return buf.join("");
 }
 module.exports = template;
-
+  
 });
 
 require.register("cozy-clearance/modal_share_view", function(exports, require, module){
@@ -472,16 +492,17 @@ module.exports = CozyClearanceModal = (function(_super) {
   __extends(CozyClearanceModal, _super);
 
   function CozyClearanceModal() {
-    this.showLink = __bind(this.showLink, this);
     this.onClose = __bind(this.onClose, this);
     this.onYes = __bind(this.onYes, this);
     this.onNo = __bind(this.onNo, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
+    this.showLink = __bind(this.showLink, this);
     this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
-    this.getRenderData = __bind(this.getRenderData, this);
+    this.existsEmail = __bind(this.existsEmail, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
     this.makeURL = __bind(this.makeURL, this);
+    this.getRenderData = __bind(this.getRenderData, this);
     return CozyClearanceModal.__super__.constructor.apply(this, arguments);
   }
 
@@ -518,77 +539,6 @@ module.exports = CozyClearanceModal = (function(_super) {
     return CozyClearanceModal.__super__.initialize.apply(this, arguments);
   };
 
-  CozyClearanceModal.prototype.makeURL = function(key) {
-    var url;
-    url = this.model.getPublicURL();
-    if (key) {
-      url += '?key=' + key;
-    }
-    return url;
-  };
-
-  CozyClearanceModal.prototype.makePublic = function() {
-    if (this.model.get('clearance') === 'public') {
-      return;
-    }
-    this.lastPrivate = this.model.get('clearance');
-    this.model.set({
-      clearance: 'public'
-    });
-    return this.refresh();
-  };
-
-  CozyClearanceModal.prototype.makePrivate = function() {
-    if (Array.isArray(this.model.get('clearance'))) {
-      return;
-    }
-    this.model.set({
-      clearance: this.lastPrivate || []
-    });
-    return this.refresh();
-  };
-
-  CozyClearanceModal.prototype.render = function() {
-    var foot;
-    CozyClearanceModal.__super__.render.call(this);
-    foot = $('.modal-footer');
-    return foot.prepend($("<span class='pull-left'>" + (t('send email hint')) + "</span>"));
-  };
-
-  CozyClearanceModal.prototype.afterRender = function() {
-    var clearance;
-    clearance = this.model.get('clearance') || [];
-    if (clearance === 'public') {
-      this.$('#share-public').addClass('toggled');
-    } else {
-      this.$('#share-private').addClass('toggled');
-      contactTypeahead(this.$('#share-input'), this.onGuestAdded, this.typeaheadFilter);
-    }
-    return setTimeout((function(_this) {
-      return function() {
-        if (clearance === 'public') {
-          return _this.$('#public-url').focus().select();
-        } else {
-          return _this.$('input#share-input').select();
-        }
-      };
-    })(this), 100);
-  };
-
-  CozyClearanceModal.prototype.renderContent = function() {
-    return $('<p>Please wait</p>');
-  };
-
-  CozyClearanceModal.prototype.typeaheadFilter = function(item) {
-    return !this.existsEmail(item.toString().split(';')[0]);
-  };
-
-  CozyClearanceModal.prototype.existsEmail = function(email) {
-    return this.model.get('clearance').some(function(rule) {
-      return rule.email === email;
-    });
-  };
-
   CozyClearanceModal.prototype.getRenderData = function() {
     return {
       type: this.model.get('type'),
@@ -600,20 +550,56 @@ module.exports = CozyClearanceModal = (function(_super) {
     };
   };
 
-  CozyClearanceModal.prototype.getClearanceWithContacts = function() {
+  CozyClearanceModal.prototype.render = function() {
+    var body;
+    CozyClearanceModal.__super__.render.call(this);
+    body = $('.modal-body');
+    return body.append($("<span class='pull-left'>" + (t('send email hint')) + "</span>"));
+  };
+
+  CozyClearanceModal.prototype.renderContent = function() {
+    return $('<p>Please wait</p>');
+  };
+
+  CozyClearanceModal.prototype.afterRender = function() {
     var clearance;
     clearance = this.model.get('clearance') || [];
-    if (clearance === 'public') {
-      return 'public';
+    this._checkToggleButtonState(clearance);
+    this._configureTypeAhead(clearance);
+    this._firstFocus(clearance);
+    if (this.isPublicClearance()) {
+      return this.$('#public-url').removeClass('disabled');
+    } else {
+      return this.$('#public-url').addClass('disabled');
     }
-    return clearance.map(function(rule) {
-      var out;
-      out = _.clone(rule);
-      if (out.contactid) {
-        out.contact = contactCollection.get(rule.contactid);
-      }
-      return out;
-    });
+  };
+
+  CozyClearanceModal.prototype._checkToggleButtonState = function(clearance) {
+    if (typeof clearance === "object" && clearance.length === 0) {
+      return this.$('#share-private').addClass('toggled');
+    } else {
+      return this.$('#share-public').addClass('toggled');
+    }
+  };
+
+  CozyClearanceModal.prototype._configureTypeAhead = function(clearance) {
+    var input;
+    if (typeof clearance !== "object" || clearance.length > 0) {
+      input = this.$('#share-input');
+      return contactTypeahead(input, this.onGuestAdded, this.typeaheadFilter);
+    }
+  };
+
+  CozyClearanceModal.prototype._firstFocus = function(clearance) {
+    return setTimeout((function(_this) {
+      return function() {
+        if (_this.isPublicClearance()) {
+          return _this.$('#public-url').focus().select();
+        } else if (clearance.length > 0) {
+          return _this.$('input#share-input').select();
+        }
+      };
+    })(this), 200);
   };
 
   CozyClearanceModal.prototype.refresh = function() {
@@ -621,25 +607,142 @@ module.exports = CozyClearanceModal = (function(_super) {
     return this.afterRender();
   };
 
+  CozyClearanceModal.prototype.makePublic = function() {
+    if (this.model.get('clearance') !== 'public') {
+      this.lastPrivate = this.model.get('clearance');
+      if (this.lastClearance != null) {
+        this.model.set({
+          clearance: this.lastClearance
+        });
+      } else {
+        this.model.set({
+          clearance: 'public'
+        });
+      }
+      return this.refresh();
+    }
+  };
+
+  CozyClearanceModal.prototype.makePrivate = function() {
+    this.lastClearance = this.model.get('clearance');
+    this.model.set({
+      clearance: []
+    });
+    return this.refresh();
+  };
+
+  CozyClearanceModal.prototype.makeURL = function(key) {
+    var url;
+    url = this.model.getPublicURL();
+    if (key) {
+      url += '?key=' + key;
+    }
+    return url;
+  };
+
+  CozyClearanceModal.prototype.typeaheadFilter = function(item) {
+    return !this.existsEmail(item.toString().split(';')[0]);
+  };
+
+  CozyClearanceModal.prototype.existsEmail = function(email) {
+    return _.some(this.model.get('clearance'), function(rule) {
+      return rule.email === email;
+    });
+  };
+
+  CozyClearanceModal.prototype.getClearanceWithContacts = function() {
+    var clearance;
+    clearance = this.model.get('clearance') || [];
+    if (typeof clearance === "object") {
+      clearance = clearance.map(function(rule) {
+        var out;
+        out = _.clone(rule);
+        if (out.contactid) {
+          out.contact = contactCollection.get(rule.contactid);
+        }
+        return out;
+      });
+    }
+    return clearance;
+  };
+
+  CozyClearanceModal.prototype.doSave = function(sendmail, clearances) {
+    return request('PUT', "clearance/" + this.model.id, this.saveData(), {
+      error: function() {
+        return Modal.error('server error occured');
+      },
+      success: (function(_this) {
+        return function(data) {
+          _this.model.trigger('change', _this.model);
+          if (!sendmail) {
+            return _this.$el.modal('hide');
+          } else {
+            return request('POST', "clearance/" + _this.model.id + "/send", clearances, {
+              error: function() {
+                return Modal.error('mail not send');
+              },
+              success: function(data) {
+                return _this.$el.modal('hide');
+              }
+            });
+          }
+        };
+      })(this)
+    });
+  };
+
+  CozyClearanceModal.prototype.saveData = function() {
+    return {
+      clearance: this.model.get('clearance')
+    };
+  };
+
+  CozyClearanceModal.prototype.showLink = function(event) {
+    var label, line, link, url, urlField;
+    line = $(event.target).parents('li');
+    if (line.find('.linkshow').length === 0) {
+      link = $(event.currentTarget);
+      url = link.prop('href');
+      line = $('<div class="linkshow">');
+      label = $('<label>').text(t('copy paste link'));
+      urlField = $('<input type="text">').val(url);
+      link.parents('li').append(line.append(label, urlField));
+      urlField.focus().select();
+      event.preventDefault();
+    } else {
+      line.find('.linkshow').remove();
+    }
+    return false;
+  };
+
+  CozyClearanceModal.prototype.isPublicClearance = function() {
+    return this.model.get('clearance') === 'public';
+  };
+
   CozyClearanceModal.prototype.onAddClicked = function() {
     return this.onGuestAdded(this.$('#share-input').val());
   };
 
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
-    var contactid, email, key, perm, _ref;
+    var contactid, email, isEmailEmpty, key, perm, _ref;
     _ref = result.split(';'), email = _ref[0], contactid = _ref[1];
-    if (this.existsEmail(email)) {
+    isEmailEmpty = email === '' || email.indexOf('@') < 1;
+    if (!(this.existsEmail(email) || isEmailEmpty)) {
+      key = randomString();
+      perm = 'r';
+      if (this.isPublicClearance()) {
+        this.model.set('clearance', []);
+      }
+      this.model.get('clearance').push({
+        contactid: contactid,
+        email: email,
+        key: key,
+        perm: perm
+      });
+      return this.refresh();
+    } else {
       return null;
     }
-    key = randomString();
-    perm = 'r';
-    this.model.get('clearance').push({
-      email: email,
-      contactid: contactid,
-      key: key,
-      perm: perm
-    });
-    return this.refresh();
   };
 
   CozyClearanceModal.prototype.revoke = function(event) {
@@ -647,9 +750,15 @@ module.exports = CozyClearanceModal = (function(_super) {
     clearance = this.model.get('clearance').filter(function(rule) {
       return rule.key !== event.currentTarget.dataset.key;
     });
-    this.model.set({
-      clearance: clearance
-    });
+    if (clearance.length === 0) {
+      this.model.set({
+        clearance: 'public'
+      });
+    } else {
+      this.model.set({
+        clearance: clearance
+      });
+    }
     return this.refresh();
   };
 
@@ -721,58 +830,9 @@ module.exports = CozyClearanceModal = (function(_super) {
     }
   };
 
-  CozyClearanceModal.prototype.doSave = function(sendmail, clearances) {
-    return request('PUT', "clearance/" + this.model.id, this.saveData(), {
-      error: function() {
-        return Modal.error('server error occured');
-      },
-      success: (function(_this) {
-        return function(data) {
-          _this.model.trigger('change', _this.model);
-          if (!sendmail) {
-            return _this.$el.modal('hide');
-          } else {
-            return request('POST', "clearance/" + _this.model.id + "/send", clearances, {
-              error: function() {
-                return Modal.error('mail not send');
-              },
-              success: function(data) {
-                return _this.$el.modal('hide');
-              }
-            });
-          }
-        };
-      })(this)
-    });
-  };
-
-  CozyClearanceModal.prototype.saveData = function() {
-    return {
-      clearance: this.model.get('clearance')
-    };
-  };
-
-  CozyClearanceModal.prototype.showLink = function(event) {
-    var label, line, link, url, urlField;
-    line = $(event.target).parents('li');
-    if (line.find('.linkshow').length === 0) {
-      link = $(event.currentTarget);
-      url = link.prop('href');
-      line = $('<div class="linkshow">');
-      label = $('<label>').text(t('copy paste link'));
-      urlField = $('<input type="text">').val(url);
-      link.parents('li').append(line.append(label, urlField));
-      urlField.focus().select();
-      event.preventDefault();
-    } else {
-      line.find('.linkshow').remove();
-    }
-    return false;
-  };
-
   return CozyClearanceModal;
 
 })(Modal);
 
-
+  
 });

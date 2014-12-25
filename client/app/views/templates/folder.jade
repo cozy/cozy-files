@@ -14,15 +14,16 @@
                 if model.id != 'root'
                   span#folder-state
                     if clearance == 'public'
-                      span.text #{t('public')}
                       span.fa.fa-globe
-                    else if clearance && clearance.length > 0
                       span.text #{t('shared')}
-                      span.fa.fa-users
-                      span= clearance.length
-                    else
-                      span.text #{t('private')}
-                      span.fa.fa-lock
+                    else if clearance && clearance.length > 0
+                      span.fa.fa-globe
+                      span.text #{t('shared')}
+                      //-span.fa.fa-users
+                      span &nbsp;(#{clearance.length})
+                    //-else
+                      //-span.text #{t('private')}
+                      //-span.fa.fa-lock
                   a.btn.btn-cozy.btn-cozy-contrast(title="#{t('share')}")#share-state
                     span.fa.fa-share-alt
                   | &nbsp;

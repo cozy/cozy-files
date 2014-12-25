@@ -486,19 +486,16 @@ module.exports = class FolderView extends BaseView
         clearance = @model.getClearance()
         if clearance is 'public'
             shareStateContent = """
-                <span class="text">#{t 'public'}</span>
                 <span class="fa fa-globe"></span>
+                <span class="text">#{t 'shared'}</span>
             """
         else if clearance? and clearance.length > 0
             shareStateContent = """
+                <span class="fa fa-globe"></span>
                 <span class="text">#{t 'shared'}</span>
-                <span class="fa fa-users"></span>
-                <span>#{clearance.length}</span>
+                <span>(#{clearance.length})</span>
             """
         else
-            shareStateContent = """
-                <span class="text">#{t 'private'}</span>
-                <span class="fa fa-lock"></span>
-            """
+            shareStateContent = ""
 
         @$('#folder-state').html shareStateContent
