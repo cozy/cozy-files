@@ -70,6 +70,8 @@ module.exports = class FilesView extends ViewCollection
         @collection.type = type
         @collection.sort()
 
+    # Update inherited clearance. It's useful when the folder state is changed.
+    # It updates the displayed icon and the sharing state.
     updateInheritedClearance: (clearance) ->
         if clearance? and clearance.length > 0 and clearance[0].clearance?
             for file in @collection.models
