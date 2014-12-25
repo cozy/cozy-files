@@ -1,23 +1,45 @@
 @import 'nib'
 @import '_colors'
 
-@keyframes spin
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-
 
 html, body
-  height: 100%
+    height: 100%
 
 body
-  font-family: styled, helvetica
-  background-image: url('../images/background.jpg');
+    font-family: styled, helvetica
+    background-image: url('../images/background.jpg');
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
-  font-family: styled, helvetica
+    font-family: styled, helvetica
 
 label
     font-weight: normal
+
+
+// Boostrap fix
+
+body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
+    margin-right: 0
+
+textarea:hover,
+input[type="text"]:hover,
+textarea:active,
+input[type="text"]:active,
+textarea:focus,
+input[type="text"]:focus
+a:focus,
+.btn:focus
+     outline:0px !important
+     -webkit-appearance:none
+.btn[disabled=disabled], .btn:disabled
+    opacity: 0.2
+
+.error
+    color: red
+
+
+// Helpers
+
 
 .mt108
     margin-top: 108px
@@ -31,67 +53,60 @@ label
 .hidden
     display: none
 
+.btn-link
+.btn-link:visited
+    color: basecolor - 30%
 
-/*      FIXING BOOTSTRAP */
-body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
-  margin-right: 0
+.btn-link:hover
+    color: actioncolor - 10%
+    text-decoration: none
 
-textarea:hover,
-input[type="text"]:hover,
-textarea:active,
-input[type="text"]:active,
-textarea:focus,
-input[type="text"]:focus
-a:focus,
-.btn:focus
-     outline:0px !important
-     -webkit-appearance:none
-.btn[disabled=disabled], .btn:disabled
-  opacity: 0.2
+.btn-link:active
+.btn-link:focus
+    text-decoration: none
 
-.error
-    color: red
 
-/*      COZY BUTTONS    */
-.btn
-  // position: relative for spinner
-  position: relative
-
-  &.btn-cozy
-    background-color: basecolor
-    border-color: basecolor
-    font-family: main
-    color: white
-
-    .caret
-      border-top-color: white
-      border-bottom-color: white
-
-    &:hover
-      background-color: actioncolor
-      border-color: actioncolor
-
-  &.btn-cozy.toggled
-    box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
-    background-color: basecolor - 10%
-
-    &:hover
-      background-color: actioncolor - 10%
-
-  &.btn-cozy-contrast
-    background-color: contrastcolor - 10%
-    border-color: contrastcolor - 10%
-    color: white
-
-    &:hover
-      background-color: actioncolor
-      border-color: actioncolor
+// buttons
 
 a
-  cursor: pointer
+    cursor: pointer
+
+.btn
+    position: relative
+
+    &.btn-cozy
+        background-color: basecolor
+        border-color: basecolor
+        font-family: main
+        color: white
+
+        .caret
+            border-top-color: white
+            border-bottom-color: white
+
+        &:hover
+            background-color: actioncolor
+            border-color: actioncolor
+
+    &.btn-cozy.toggled
+        box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+        background-color: basecolor - 10%
+
+        &:hover
+            background-color: actioncolor - 10%
+
+    &.btn-cozy-contrast
+        background-color: contrastcolor - 10%
+        border-color: contrastcolor - 10%
+        color: white
+
+        &:hover
+            background-color: actioncolor
+            border-color: actioncolor
 
 
-/*      INPUTS          */
+// Inputs
+
 input
     border: 1px solid #ccc
     color: #33
@@ -125,325 +140,585 @@ input#search-box
     height: auto
 
 
-/*      SHADOWS         */
-.content-shadow
-    background-color: white
-    box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1)
-    height: 100%
+// Menu
 
-.shadow-down
-    box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.1)
-
-
-/*      AFFIX           */
 div#affixbar
-  height: 45px
-  z-index: 100
-  width: 100%
-  position: fixed
+    height: 45px
+    z-index: 100
+    width: 100%
+    position: fixed
 
+    .row
+        background-color: white
 
-  .row
-    background-color: white
+        p
+            margin-bottom: 5px
 
-    p
-      margin-bottom: 5px
-    &:first-of-type
-      padding-top: 15px
+        &:first-of-type
+            padding-top: 15px
 
-  a.btn
-    height: 35px
+    a.btn
+        height: 35px
 
-  img
-    height: 20px
-    color: #C60
+    img
+        height: 20px
+        color: #C60
 
 .affix-top
-  color: blue
+    color: blue
 
 .affix
-  position: fixed
-  color: yellow
+    position: fixed
+    color: yellow
 
-  .row
-    -moz-box-shadow:    0 5px 7px 0 rgba(0,0,0,0.2);
-    -webkit-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
-    box-shadow:         0 5px 7px 0 rgba(0,0,0,0.2);
+    .row
+        -moz-box-shadow:        0 5px 7px 0 rgba(0,0,0,0.2);
+        -webkit-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
+        box-shadow:                 0 5px 7px 0 rgba(0,0,0,0.2);
+
+#crumbs
+    Overflow: hidden
+
+    img
+        height: 25px
+        margin-top: 0px
+        margin-left:-5px
+        margin-right:-5px
+
+    ul
+        margin-top: 10px
+        margin-bottom: 0px
+        padding-left: 0
+        list-style none
+        display inline-table
+        li
+            display inline
+            a
+                display block
+                float left
+                height 35px
+                background basecolor
+                text-align center
+                padding 8px 5px 0 22px
+                position relative
+                margin 10px 5px 0 0
+                font-size 15px
+                text-decoration none
+                color #fff
+                &:after
+                    content ""
+                    border-top 17px solid transparent
+                    border-bottom 17px solid transparent
+                    border-left 17px solid basecolor
+                    position absolute
+                    right -17px
+                    top 0
+                    z-index 1
+                &:before
+                    content ""
+                    border-top 17px solid transparent
+                    border-bottom 17px solid transparent
+                    border-left 17px solid white
+                    position absolute
+                    left 0
+                    top 0
+                &:hover
+                    background actioncolor
+                    &:after
+                        border-left-color actioncolor
+            &:first-child
+                a
+                    padding-left: 20px
+                    border-top-left-radius 10px
+                    border-bottom-left-radius 10px
+                    &:before
+                        display none
+            &:last-child
+                a
+                    padding-right 20px
+                    border-top-right-radius 10px
+                    border-bottom-right-radius 10px
+                    &:after
+                        display none
+
+#affixbar
+    #crumbs
+        ul
+            margin-top: 0
+
+        li
+            a
+                margin-top: 0
+
+    #share-state
+            font-size: 18px
+            line-height: 20px
+
+    #folder-state
+        font-family: styled
+        font-size: 20px
+        margin-right: 20px
+        position: relative
+        top: 5px
+        color: #666
+
+        .fa
+                margin-right: 10px
+
+    // by default (private area) we don't display download and notif buttons
+    #notifications
+    #download-link
+        display none
+
+
+#bulk-actions-btngroup
+    display none
+    &.enabled
+        display inline-block
+
+    a
+        border-radius 10px
+        margin 0 2.5px
+
+#button-upload-new-file
+    position: relative
+    overflow: hidden
+    cursor: pointer
+    color white
+    padding 6px 12px
+    line-height 1.5
+    min-height 34px
+    background-color basecolor
+
+    &:hover
+        background-color orange
+
+#button-upload-new-file, #button-upload-folder
+    input
+        cursor: pointer
+        position: absolute
+        width: 200px
+        display: block
+        height: 45px
+        font-size: 45px
+        top: 0px
+        right: 0px
+        line-height: 45px
+        opacity: 0.01
+        z-index: 100
+
+.table
+    .tbody
+        .td
+            span
+                display none
+
+#clearancemanager
+    label
+        font-weight: normal
+
+
+#cozy-clearance-modal
+    .modal-dialog
+        width 700px
+
+    .input-group
+        width 100%
+        input
+            width 90%
+            height 34px
+            line-height 1.428
+            padding-left 5px
+            -webkit-appearance button
+        a.btn
+            width 10%
+            border-bottom-left-radius 0
+            border-top-left-radius 0
+
+#public-url.disabled
+    color: #DDD
+    background: #DDD
+    cursor: default
+    user-select: none
+
+    &:hover
+    &:active
+    &:focus
+        border: 1px solid #CCC
+
+#share-list
+    list-style-type: none
+    margin-top 5px
+    padding-left 5px
+
+    // will allow inline-block children to be vertically aligned
+    li
+        font-size 0
+        letter-spacing 0
+        word-spacing 0
+
+        span
+            display inline-block
+            vertical-align middle
+
+            &.clearance-name
+                max-width 190px
+                overflow hidden
+                text-overflow ellipsis
+                white-space nowrap
+
+        select
+                vertical-align middle
+                font-size 14px
+                margin-left 5px
+                background: white
+                border-bottom: 1px solid lightcolor
+
+                &:focus
+                        outline: none
+
+
+#inherited-share-list
+    li.header
+        list-style-type none
+        margin-left -30px
+        font-weight bold
+
+.linkshow
+    font-size 14px
+    margin-bottom 5px
+    margin-left -5px
+    padding-left 10px
+    line-height: 20px
+
+    label
+            margin-top: 10px
+            font-weight: normal
+
+    input
+        color #444
+        width 70%
+
+.typeahead.dropdown-menu > li > a
+    padding: 3px 6px 3px 3px
+
+.typeahead.dropdown-menu > li > a > img
+    margin: 0 3px 0 0
+
+.clearance-name
+    font-size: 15px
+    margin-left: 5px
+
+    &:first-child
+        margin-left: 50px
+
+.clearance-btn
+    font-size: 20px
+    margin-left: 10px
+
+.clearance-btn.revoke
+    font-size: 12px
+
+.clearance-line
+    line-height: 47px
+    border-bottom: 1px solid lightcolor
+    padding-bottom: 5px
+
+.notifs-label
+    margin-top: 30px
+    font-weight: normal
+    margin-bottom: 0px
+
+    input
+        margin-right: 5px
+
+
+
+// Loader
 
 #loading-indicator
-  position absolute
-  width 25px
-  height 25px
-  left 50%
+    position: absolute
+    width: 25px
+    height: 25px
+    left: 50%
 
 
-/*      ITEMS           */
+// File table
+
 table
 table#table-items
-  margin-bottom: 10px
+    margin-bottom: 10px
 
-  .unactive
-    opacity: 0.5
-
-  td
-      height: 40px
-
-      .progress
-        margin-bottom 0px
-
-  td.type-column-cell
-  td.size-column-cell
-  td.date-column-cell
-    padding-top: 10px
-    color: gray
-    width: 100px
-
-  td.date-column-cell
-    width: 190px
-    text-align: left
-
-    &:first-letter
-      text-transform capitalize
-
-  .table-headers
-
-    td:first-child input[type=checkbox]
-      width 20px
-      margin 0 15px 0 0
-      font-size 16px
-
-      &:focus
-        outline none
+    .unactive
+        opacity: 0.5
 
     td
-      border-top: 0
+        height: 40px
 
-    span
-      line-height: 30px
+        .progress
+            margin-bottom 0px
 
-    .btn
-      top: -2px
+    td.type-column-cell
+    td.size-column-cell
+    td.date-column-cell
+        padding-top: 10px
+        color: gray
+        width: 100px
 
-    a:hover
-      color: orange
+    td.date-column-cell
+        width: 190px
+        text-align: left
 
-    #down-name
-    #down-size
-    #down-class
-    #down-lastModification
-      display none
+        &:first-letter
+            text-transform capitalize
+
+    .table-headers
+
+        td:first-child input[type=checkbox]
+            width: 20px
+            margin: 0 15px 0 0
+            font-size: 16px
+
+            &:focus
+                outline none
+
+        td
+            border-top: 0
+
+        span
+            line-height: 30px
+
+        .btn
+            top: -2px
+
+        a:hover
+            color: orange
+
+        #down-name
+        #down-size
+        #down-class
+        #down-lastModification
+            display: none
 
 tr.folder-row
 
-  .file-path
-    color: darkcolor
-    font-family: main
-    margin-bottom: 0
-    margin-left: 3px
+    .file-path
+        color: darkcolor
+        font-family: main
+        margin-bottom: 0
+        margin-left: 3px
 
-  &:hover
-    color: mediumcolor-contrast
+    &:hover
+        color: mediumcolor-contrast
 
-    .operations
-      display: inline
+        .operations
+            display: inline
 
-    .glyphicon.no-hover
-      color: mediumcolor
+        .glyphicon.no-hover
+            color: mediumcolor
 
-  &:hover, &.pseudohover
-    .tags input
-      visibility: visible
+    &:hover, &.pseudohover
+        .tags input
+            visibility: visible
 
-  &.edit-mode 
-    .tags
-        display: none
+    &.edit-mode 
+        .tags
+                display: none
 
-    .spinholder
-        display: none
+        .spinholder
+                display: none
 
-    .caption
+        .caption
+                .icon-zone
+                    .fa
+                        display: inline-block
+
+                    .fa-folder-o
+                            position: relative
+                            top: -3px
+
+                .icon-zone:hover
+                    .fa
+                        display: inline-block
+                    input[type=checkbox]
+                        display: none
+
+    // mandatory to override bootstrap
+    &.selected > td
+        background lightblue + 70% !important
+
+    &.selected
         .icon-zone
-          .fa
-            display: inline-block
+            .fa
+                display: none
 
-          .fa-folder-o
-              position: relative
-              top: -3px
+    td
+        vertical-align: middle
+
+        div
+        span
+        ul
+        li
+        a
+        i
+            vertical-align: middle
+
+        span.caption
+            padding-left 3px // 3 for file and 6 for folder
+
+        .caption-wrapper .fa-folder.spin
+            animation spin 2s infinite ease-out
+
+    // the filename
+    .caption
+        font-size: 16px
+        font-family: main
+        padding: 0
+        margin-left: 0px
+        margin-right: 10px
+
+        .selector-wrapper
+            display: inline
+            padding-top: 4px
+
+            input[type=checkbox]
+                display none
+                width 20px
+                margin 0 15px 0 0
+                cursor pointer
+                &:checked
+                    display inline-block
+                &:checked + .fa
+                    display none
 
         .icon-zone:hover
-          .fa
-            display: inline-block
-          input[type=checkbox]
-            display: none
+            .fa
+                display: none
+            .spinholder
+                display: none
+            input[type=checkbox]
+                display: inline
 
-  // mandatory to override bootstrap
-  &.selected > td
-    background lightblue + 70% !important
+        .fa-users
+        .fa-share-alt
+        .fa-globe
+            position: absolute
+            top: 12px
+            left: -3px
+            font-size: 12px
 
-  &.selected
-    .icon-zone
-      .fa
-        display: none
 
-  td
-    vertical-align: middle
+    .caption:hover
+        color: orange - 10%
+        border: 1px solid transparent
+        text-decoration: none
 
-    div
-    span
-    ul
-    li
-    a
-    i
-      vertical-align: middle
-
-    span.caption
-      padding-left 3px // 3 for file and 6 for folder
-
-    .caption-wrapper .fa-folder.spin
-      animation spin 2s infinite ease-out
-
-  // the filename
-  .caption
-    font-size: 16px
-    font-family: main
-    padding: 0
-    margin-left: 0px
-    margin-right: 10px
-
-    .selector-wrapper
-      display: inline
-      padding-top: 4px
-
-      input[type=checkbox]
-        display none
-        width 20px
-        margin 0 15px 0 0
-        cursor pointer
-        &:checked
-          display inline-block
-        &:checked + .fa
-          display none
-
-    .icon-zone:hover
-      .fa
-        display: none
-      .spinholder
-        display: none
-      input[type=checkbox]
+    .spinholder
+        vertical-align: top
         display: inline
+        margin: 0
+        padding: 0 18px 0 5px
 
+    // the toolbox - delete, rename, etc
+    .operations
+        font-size: 16px
+        margin: 0
+        padding: 0
+        display: none
 
+        a
+            padding-left: 5px
+            color: blue
 
-  .caption:hover
-    color: orange - 10%
-    border: 1px solid transparent
-    text-decoration: none
+            span:hover
+            i:hover
+                color: orange
 
-  .spinholder
-    vertical-align: top
-    display: inline
-    margin: 0
-    padding: 0 18px 0 5px
+        a:hover
+            color: orange
 
-  // the toolbox - delete, rename, etc
-  .operations
-    font-size: 16px
-    margin: 0
-    padding: 0
-    display: none
+        .fa-lock
+        .fa-users
+        .fa-globe
+        .fa-share-alt
+        .fa-tag
+            padding-top: 6px
 
-    a
-      padding-left: 5px
-      color: blue
+    .caption-wrapper
+        display: inline
+        height: 100%
 
-      span:hover
-      i:hover
-        color: orange
+    ul.tags
+        margin: 0
+        padding: 0
+        margin-top: 5px
+        display: inline-block
+        border: none
+        font-size: 1.3rem
 
-    a:hover
-      color: orange
+        input
+            visibility: hidden
+            padding-left: 5px
+            width: 100px
 
-    .fa-lock
-    .fa-users
-    .fa-globe
-    .fa-share-alt
-    .fa-tag
-        padding-top: 6px
+            &:focus
+                visibility: visible
 
-  .caption-wrapper
-    display: inline
-    height: 100%
+        li.tag
+            display: inline-block
+            border: 1px solid lightgray
+            border-radius: 6px
+            padding: 0.2em 0.5em 0.2em 0.5em
+            margin-top: 0px
+            margin-right: 5px
+            border: 1px solid transparent
+            border-radius: 0
+            background-color: blue + 90%
+            cursor: pointer
+            font-family: styled
+            color: blue - 40%
+            user-select: none
 
-  ul.tags
-    margin: 0
-    padding: 0
-    margin-top: 5px
-    display: inline-block
-    border: none
-    font-size: 1.3rem
+            .deleter
+                cursor: pointer
+                &:hover
+                    color: orange - 40%
 
-    input
-      visibility: hidden
-      padding-left: 5px
-      width: 100px
+            &:hover
+                border: 1px solid orange
+                background-color: orange + 90%
+                color: orange - 40%
 
-      &:focus
+            &:focus
+            &:active
+                border: 1px solid blue
+                box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+
+    i.fa
+        margin: 0px 15px 0 0
+        width: 20px
+
+    .icon
+        font-size: 14px
+
+    &:hover .operations
         visibility: visible
 
-    li.tag
-      display: inline-block
-      border: 1px solid lightgray
-      border-radius: 6px
-      padding: 0.2em 0.5em 0.2em 0.5em
-      margin-top: 0px
-      margin-right: 5px
-      border: 1px solid transparent
-      border-radius: 0
-      background-color: blue + 90%
-      cursor: pointer
-      font-family: styled
-      color: blue - 40%
-      user-select: none
+        a
+            color: lightgray
 
-      .deleter
-        cursor: pointer
-        &:hover
-          color: orange - 40%
+        a:hover
+            color: orange
 
-      &:hover
-        border: 1px solid orange
-        background-color: orange + 90%
-        color: orange - 40%
-
-      &:focus
-      &:active
-        border: 1px solid blue
-        box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
-
-  i.fa
-    margin: 0px 15px 0 0
-    width: 20px
-
-  .icon
-    font-size: 14px
-
-  &:hover .operations
-    visibility: visible
-
-    a
-      color: lightgray
-
-    a:hover
-      color: orange
-
-    a:active
-      color: orange
+        a:active
+            color: orange
 
 
 .visible-lg.visible-md.visible-inline
   display: inline!important
 
-/* Move widgets */
+
+// Move widget
 
 .move-widget
     padding: 10px 10px 10px 35px
@@ -461,537 +736,269 @@ tr.folder-row
     padding-left: 35px
     color: #333
 
-
-/* BREADCRUMBS */
-#crumbs
-  overflow: hidden
-
-  img
-    height: 25px
-    margin-top: 0px
-    margin-left:-5px
-    margin-right:-5px
-
-  ul
-    margin-top: 10px
-    margin-bottom: 0px
-    padding-left: 0
-    list-style none
-    display inline-table
-    li
-      display inline
-      a
-        display block
-        float left
-        height 35px
-        background basecolor
-        text-align center
-        padding 8px 5px 0 22px
-        position relative
-        margin 10px 5px 0 0
-        font-size 15px
-        text-decoration none
-        color #fff
-        &:after
-          content ""
-          border-top 17px solid transparent
-          border-bottom 17px solid transparent
-          border-left 17px solid basecolor
-          position absolute
-          right -17px
-          top 0
-          z-index 1
-        &:before
-          content ""
-          border-top 17px solid transparent
-          border-bottom 17px solid transparent
-          border-left 17px solid white
-          position absolute
-          left 0
-          top 0
-        &:hover
-          background actioncolor
-          &:after
-            border-left-color actioncolor
-      &:first-child
-        a
-          padding-left: 20px
-          border-top-left-radius 10px
-          border-bottom-left-radius 10px
-          &:before
-            display none
-      &:last-child
-        a
-          padding-right 20px
-          border-top-right-radius 10px
-          border-bottom-right-radius 10px
-          &:after
-            display none
-
-#bulk-actions-btngroup
-  display none
-  &.enabled
-    display inline-block
-
-  a
-    border-radius 10px
-    margin 0 2.5px
-
-#button-upload-new-file
-  position: relative
-  overflow: hidden
-  cursor: pointer
-  color white
-  padding 6px 12px
-  line-height 1.5
-  min-height 34px
-  background-color basecolor
-
-  &:hover
-    background-color orange
-
-#button-upload-new-file, #button-upload-folder
-  input
-      cursor: pointer
-      position: absolute
-      width: 200px
-      display: block
-      height: 45px
-      font-size: 45px
-      top: 0px
-      right: 0px
-      line-height: 45px
-      opacity: 0.01
-      z-index: 100
-
-.table
-  .tbody
-    .td
-      span
-        display none
-
-#clearancemanager
-  label
-    font-weight normal
-
-#cozy-clearance-modal
-  .modal-dialog
-    width 700px
-
-  .input-group
-    width 100%
-    input
-      width 90%
-      height 34px
-      line-height 1.428
-      padding-left 5px
-      -webkit-appearance button
-    a.btn
-      width 10%
-      border-bottom-left-radius 0
-      border-top-left-radius 0
-
-#share-list
-    list-style-type: none
-    margin-top 5px
-    padding-left 5px
-
-    // will allow inline-block children to be vertically aligned
-    li
-      font-size 0
-      letter-spacing 0
-      word-spacing 0
-
-      span
-        display inline-block
-        vertical-align middle
-
-        &.clearance-name
-          max-width 190px
-          overflow hidden
-          text-overflow ellipsis
-          white-space nowrap
-
-    select
-        vertical-align middle
-        font-size 14px
-        margin-left 5px
-        background: white
-        border-bottom: 1px solid lightcolor
-
-        &:focus
-            outline: none
-
-
-#inherited-share-list
-  li.header
-    list-style-type none
-    margin-left -30px
-    font-weight bold
-
-.linkshow
-  font-size 14px
-  margin-bottom 5px
-  margin-left -5px
-  padding-left 10px
-  line-height: 20px
-
-  label
-      margin-top: 10px
-      font-weight: normal
-
-  input
-    color #444
-    width 70%
-
-.typeahead.dropdown-menu > li > a
-  padding: 3px 6px 3px 3px
-
-.typeahead.dropdown-menu > li > a > img
-  margin: 0 3px 0 0
-
-.clearance-name
-  font-size: 15px
-  margin-left: 5px
-
-  &:first-child
-    margin-left: 50px
-
-.clearance-btn
-  font-size: 20px
-  margin-left: 10px
-
-.clearance-btn.revoke
-  font-size: 12px
-
-.clearance-line
-  line-height: 47px
-  border-bottom: 1px solid lightcolor
-  padding-bottom: 5px
-
-.notifs-label
-  margin-top: 30px
-  font-weight: normal
-  margin-bottom: 0px
-
-  input
-    margin-right: 5px
-
-#affixbar
-  #crumbs
-    ul
-      margin-top: 0
-
-    li
-      a
-        margin-top: 0
-
-  #share-state
-      font-size: 18px
-      line-height: 20px
-
-  #folder-state
-    font-family: styled
-    font-size: 20px
-    margin-right: 10px
-    position: relative
-    top: 5px
-    color: #666
-
-    .fa
-        margin-left: 5px
-
-  // by default (private area) we don't display download and notif buttons
-  #notifications
-  #download-link
-    display none
-
 .file-edit-name
-  min-width: 150px
+    min-width: 150px
 
-tr.folder-row td span.caption.caption-edit
-  margin: 0
-  padding: 0
-  float: left
+tr.folder-row td span.caption.caption-edit margin: 0
+    padding: 0
+    float: left
 
-  input.file-edit-name
-    border: 1px solid blue
-    outline: 0
+    input.file-edit-name
+        border: 1px solid blue
+        outline: 0
 
-    &:hover
-      border: 1px solid orange
-      color: #333
+        &:hover
+            border: 1px solid orange
+            color: #333
 
-    &:active
-    &:focus
-      border: 1px solid blue
-   
-tr.folder-row td input.caption
-  margin-left: 5px
-  margin-top: 2px
+        &:active
+        &:focus
+            border: 1px solid blue
      
+tr.folder-row td input.caption
+    margin-left: 5px
+    margin-top: 2px
+         
 .file-edit-save
 .file-edit-cancel
-  margin-top: 0px
+    margin-top: 0px
 
 tr.folder-row
-  .caption-edit
-    i.fa
-      margin-right: 9px
+    .caption-edit
+        i.fa
+            margin-right: 9px
 
 .spinner
-    display: inline-block
+        display: inline-block
 
 .progress
-  position relative
-  background lightblue
+    position relative
+    background lightblue
 
-  .progress-bar
-    font-size 14px
-    position absolute
+    .progress-bar
+        font-size 14px
+        position absolute
 
-    &.progress-bar-content
-      width 100%
-      background transparent
-      color #fff
-      text-align center
+        &.progress-bar-content
+            width 100%
+            background transparent
+            color #fff
+            text-align center
 
-  .progress-name
-    margin-bottom 8px
-    height 20px
-    line-height 20px
+    .progress-name
+        margin-bottom 8px
+        height 20px
+        line-height 20px
 
-    span
-      display inline-block
-      overflow hidden
+        span
+            display inline-block
+            overflow hidden
 
-    .name
-      font-weight bold
-      white-space nowrap
-      text-overflow ellipsis
-      width: 150px
-    .error
-      color red
-    .success
-      color green
-    .progressview
-      display inline-block
-      width: 380px
-      .progress
-        margin-bottom 0px
+        .name
+            font-weight bold
+            white-space nowrap
+            text-overflow ellipsis
+            width: 150px
+        .error
+            color red
+        .success
+            color green
+        .progressview
+            display inline-block
+            width: 380px
+            .progress
+                margin-bottom 0px
 
 .footer
-  text-align: center
-  color: grey
-  font-style: italic
+    text-align: center
+    color: grey
+    font-style: italic
 
 #content
-  background: white
-  padding-bottom: 10px
-  margin-top: 56px
+    background: white
+    padding-bottom: 10px
+    margin-top: 56px
 
 #content.mt108
-  margin-top: 108px
+    margin-top: 108px
 
 #files
-  // margin-top 60px
-  position relative
+    // margin-top 60px
+    position relative
 
 #files-drop-zone
-  pointer-events none // prevent overlay from triggering dragleave
-  display none
-  position absolute
-  width 100%
-  height 100%
-  top 0
-  left 0
-  z-index 99
-
-  .overlay
-    opacity 0.4
-    background grey
-    width 100%
-    height 100%
-    position absolute
-
-  .vertical-container
-    display table
-    width 100%
-    height 100%
-
-    p
-      display table-cell
-      vertical-align middle
-      text-align center
-      font-size 25px
-      color 000
-      margin auto
-
-  #file-amount-indicator
-  #no-files-indicator
+    pointer-events none // prevent overlay from triggering dragleave
     display none
+    position absolute
+    width 100%
+    height 100%
+    top 0
+    left 0
+    z-index 99
+
+    .overlay
+        opacity 0.4
+        background grey
+        width 100%
+        height 100%
+        position absolute
+
+    .vertical-container
+        display table
+        width 100%
+        height 100%
+
+        p
+            display table-cell
+            vertical-align middle
+            text-align center
+            font-size 25px
+            color 000
+            margin auto
+
+    #file-amount-indicator
+    #no-files-indicator
+        display none
+
+#upload-status
+    color: #31708f
+    background-color: #d9edf7
+    border-color: #bce8f1
+    padding: 15px
+    border: 1px solid transparent
+    border-radius: 4px
+
+    .btn
+        margin-top -6px
+        margin-right 5px
+
+    .progress
+        margin-right 5px
+        width 300px
+
+    &.success
+        color: #3c763d
+        background-color: #dff0d8
+        border-color: #d6e9c6
+    &.error
+        color: #a94442
+        background-color: #f2dede
+        border-color: #ebccd1
+    &.warning
+        color: #8a6d3b
+        background-color: #fcf8e3
+        border-color: #faebcc
+
+#tagsAutocomplete
+    background-color: white
+    border: 1px solid blue
+    position: absolute
+    width: 150px
+    list-style-type: none
+    padding-left: 0px
+
+    &.empty
+        border 0
+
+    li
+        padding-left: 5px
+
+        &.selected, &:hover
+            background-color orange + 40%
+
 
 
 // 404 page (not found)
 
 body.error-404
-  background #fff
+    background #fff
 
 body.error-404 .container
-  display table
-  overflow hidden
-  position relative
-  height 100%
+    display table
+    overflow hidden
+    position relative
+    height 100%
 
 body.error-404 .row
-  display table-cell
-  vertical-align middle
+    display table-cell
+    vertical-align middle
 
 body.error-404 .error-frame
-  padding 80px 40px
-  background #fff
-  border 10px solid blue
-  font-size 25px
-  text-align center
+    padding 80px 40px
+    background #fff
+    border 10px solid blue
+    font-size 25px
+    text-align center
 
-  .headline
-    margin-bottom 50px
-    font-size 30px
-    color blue
+    .headline
+        margin-bottom 50px
+        font-size 30px
+        color blue
 
 /*
-  PUBLIC STYLES
+    PUBLIC STYLES
 
-  We hide some part of the UI that are not relevant in the public part
+    We hide some part of the UI that are not relevant in the public part
 */
 .public
 
-  #loading-indicator
-    margin-top: 10px
+    #loading-indicator
+        margin-top: 10px
 
-  #affixbar
-    #share-state
-    #folder-state
-    #upload-btngroup
-    #button-new-folder
-      display none
+    #affixbar
+        #share-state
+        #folder-state
+        #upload-btngroup
+        #button-new-folder
+            display none
 
-    #notifications
-    #download-link
-      display inline-block
+        #notifications
+        #download-link
+            display inline-block
 
-    #bulk-actions-btngroup
-      position: static
+        #bulk-actions-btngroup
+            position: static
 
-      #button-bulk-move
-      #button-bulk-remove
-        display: none
+            #button-bulk-move
+            #button-bulk-remove
+                display: none
 
-      #button-bulk-download
-        border-radius: 4px
+            #button-bulk-download
+                border-radius: 4px
 
-        span
-          padding: 0
-          font-size: 14px
-          font-weight: normal
-          font-family: main
+                span
+                    padding: 0
+                    font-size: 14px
+                    font-weight: normal
+                    font-family: main
 
-    #upload-buttons
-      padding-left: 0
-      margin-left: 0
+        #upload-buttons
+            padding-left: 0
+            margin-left: 0
 
-    #download-link
-      font-size: 14px
-      font-weight: normal
-      font-family: main
+        #download-link
+            font-size: 14px
+            font-weight: normal
+            font-family: main
 
-    #search-box
-      display: none
+        #search-box
+            display: none
 
-  &.can-upload #affixbar
-    #upload-btngroup
-    #button-new-folder
-      display inline-block
+    &.can-upload #affixbar
+        #upload-btngroup
+        #button-new-folder
+            display inline-block
 
-  #files
-    .tagit-new
-    .tagit-close
-    .operations
-      // !important to prevent any manipulation from JS on mouseover
-      display none !important
+    #files
+        .tagit-new
+        .tagit-close
+        .operations
+            // !important to prevent any manipulation from JS on mouseover
+            display none !important
 
-    // since we hide the close 'x' we must reduce parent's size
-    .tagit-choice
-      padding-right 0.5em !important
+        // since we hide the close 'x' we must reduce parent's size
+        .tagit-choice
+            padding-right 0.5em !important
 
-    .tags
-        display: none
-
-// overrides tagit styles
-#upload-status
-  color: #31708f
-  background-color: #d9edf7
-  border-color: #bce8f1
-  padding: 15px
-  border: 1px solid transparent
-  border-radius: 4px
-
-  .btn
-    margin-top -6px
-    margin-right 5px
-
-  .progress
-    margin-right 5px
-    width 300px
-
-  &.success
-    color: #3c763d
-    background-color: #dff0d8
-    border-color: #d6e9c6
-  &.error
-    color: #a94442
-    background-color: #f2dede
-    border-color: #ebccd1
-  &.warning
-    color: #8a6d3b
-    background-color: #fcf8e3
-    border-color: #faebcc
-
-#tagsAutocomplete
-  background-color: white
-  border: 1px solid blue
-  position: absolute
-  width: 150px
-  list-style-type: none
-  padding-left: 0px
-
-  &.empty
-    border 0
-
-  li
-    padding-left: 5px
-
-    &.selected, &:hover
-      background-color orange + 40%
-
-.btn-link
-.btn-link:visited
-    color basecolor - 30%
-
-.btn-link:hover
-    color actioncolor - 10%
-    text-decoration: none
-
-.btn-link:active
-.btn-link:focus
-    text-decoration: none
-
-
-.caption
-    .fa-users
-    .fa-globe
-        position: absolute
-        top: 12px
-        left: -3px
-        font-size: 12px
-
+        .tags
+                display: none
