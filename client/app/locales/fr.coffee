@@ -161,7 +161,8 @@ module.exports =
     "revoke"                          : "Révoquer la permission"
     "send mails question"             : "Envoyer un email de notification à : "
     "modal send mails"                : "Envoyer une notification"
-    "forced public"                   : "Ce dossier est public car un parent est public : "
+    "forced public"                   : "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé."
+    "forced shared"                   : "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé. Voici la liste des personnes avec qui il est partagé :"
     "confirm"                         : "Confirmer"
     "share forgot add"                : """
         Il semble que vous ayez oublié d'appuyer sur le bouton Add

@@ -164,7 +164,8 @@ module.exports =
     "send mails question"             : "Send a notification email to:"
     "sharing"                         : "Sharing"
     "revoke"                          : "Revoke"
-    "forced public"                   : "This is public because one of the parent folder is public:"
+    "forced public"                   : "The current file/folder is shared because one of the parent folder is shared."
+    "forced share"                   : "The current file/folder is shared because one of the parent folder is shared. Here is the list of guests who can access to it:"
     "confirm"                         : "Confirm"
     "share forgot add"                : """
         Looks like you forgot to click the Add button

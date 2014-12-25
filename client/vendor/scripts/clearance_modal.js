@@ -650,9 +650,10 @@ module.exports = CozyClearanceModal = (function(_super) {
     });
   };
 
-  CozyClearanceModal.prototype.getClearanceWithContacts = function() {
-    var clearance;
-    clearance = this.model.get('clearance') || [];
+  CozyClearanceModal.prototype.getClearanceWithContacts = function(clearance) {
+    if (clearance == null) {
+      clearance = this.model.get('clearance') || [];
+    }
     if (typeof clearance === "object") {
       clearance = clearance.map(function(rule) {
         var out;
