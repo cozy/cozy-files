@@ -1305,21 +1305,24 @@ module.exports = {
   "inherited from": "inherited from",
   "modal question folder shareable": "Select share mode for this folder",
   "modal shared folder custom msg": "Enter email and press enter",
-  "modal shared folder link msg": "Send this link to let people access this folder",
+  "modal shared public link msg": "Send this link to let people access this folder:",
+  "modal shared with people msg": "OR invite a selection of contacts to access it. Type email in the field and press enter (An email will be sent to them):",
   "modal send mails": "Send a notification",
   "modal question file shareable": "Select share mode for this file",
   "modal shared file custom msg": "Enter email and press enter",
   "modal shared file link msg": "Send this link to let people access this file",
-  "only you can see": "Only you and the people listed below can access this resource",
+  "only you can see": "Only you can access this resource",
   "public": "Public",
   "private": "Private",
   "shared": "Shared",
+  "share": "Share",
   "save": "Save",
   "see link": "See link",
   "send mails question": "Send a notification email to:",
   "sharing": "Sharing",
   "revoke": "Revoke",
-  "forced public": "This is public because one of the parent folder is public:",
+  "forced public": "The current file/folder is shared because one of the parent folder is shared.",
+  "forced share": "The current file/folder is shared because one of the parent folder is shared. Here is the list of guests who can access to it:",
   "confirm": "Confirm",
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
@@ -1448,17 +1451,21 @@ module.exports = {
   "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
   "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
   "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
-  "only you can see": "Seuls vous et les personnes ci-dessous pouvez accéder à cette ressource.",
+  "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier:",
+  "modal shared with people msg": "OU invitez une sélection de contacts à y accéder. Taper l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):",
+  "only you can see": "Seul vous pouvez accéder à cette ressource.",
   "public": "Public",
   "private": "Privé",
   "shared": "Partagé",
+  "share": "Partager",
   "save": "Sauvegarder",
   "see link": "Voir le lien",
   "sharing": "Partage",
   "revoke": "Révoquer la permission",
   "send mails question": "Envoyer un email de notification à : ",
   "modal send mails": "Envoyer une notification",
-  "forced public": "Ce dossier est public car un parent est public : ",
+  "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé.",
+  "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé. Voici la liste des personnes avec qui il est partagé :",
   "confirm": "Confirmer",
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
   "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr ?",
@@ -2569,6 +2576,19 @@ module.exports = FilesView = (function(_super) {
     return this.collection.sort();
   };
 
+  FilesView.prototype.updateInheritedClearance = function(clearance) {
+    var file, _i, _len, _ref, _results;
+    if ((clearance != null) && clearance.length > 0 && (clearance[0].clearance != null)) {
+      _ref = this.collection.models;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        file = _ref[_i];
+        _results.push(file.set('inheritedClearance', clearance));
+      }
+      return _results;
+    }
+  };
+
   FilesView.prototype.destroy = function() {
     this.stopListening(this.collection);
     return FilesView.__super__.destroy.call(this);
@@ -3127,13 +3147,18 @@ module.exports = FolderView = (function(_super) {
     var clearance, shareStateContent;
     clearance = this.model.getClearance();
     if (clearance === 'public') {
-      shareStateContent = "<span class=\"text\">" + (t('public')) + "</span>\n<span class=\"fa fa-globe\"></span>";
+      shareStateContent = "<span class=\"fa fa-globe\"></span>\n<span class=\"text\">" + (t('shared')) + "</span>";
     } else if ((clearance != null) && clearance.length > 0) {
-      shareStateContent = "<span class=\"text\">" + (t('shared')) + "</span>\n<span class=\"fa fa-users\"></span>\n<span>" + clearance.length + "</span>";
+      shareStateContent = "<span class=\"fa fa-globe\"></span>\n<span class=\"text\">" + (t('shared')) + "</span>\n<span>(" + clearance.length + ")</span>";
     } else {
-      shareStateContent = "<span class=\"text\">" + (t('private')) + "</span>\n<span class=\"fa fa-lock\"></span>";
+      shareStateContent = "";
     }
-    return this.$('#folder-state').html(shareStateContent);
+    this.$('#folder-state').html(shareStateContent);
+    return this.filesList.updateInheritedClearance([
+      {
+        clearance: clearance
+      }
+    ]);
   };
 
   return FolderView;
@@ -3443,16 +3468,14 @@ module.exports = ModalShareView = (function(_super) {
     this.summaryemails = [];
     return client.get("clearance/" + this.model.id, (function(_this) {
       return function(err, data) {
-        var last;
         if (err) {
           return Modal.error('server error occured', function() {
             return _this.$el.modal('hide');
           });
         } else {
           _this.inherited = data.inherited;
-          last = _.last(_this.inherited);
-          if ((last != null ? last.clearance : void 0) === 'public') {
-            _this.forcedPublic = last.name;
+          if (_this.inherited.length > 0) {
+            _this.forcedShared = true;
           }
           return _this.refresh();
         }
@@ -3480,28 +3503,66 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.getRenderData = function() {
-    var out;
+    var folder, guest, guests, out, _i, _j, _len, _len1, _ref, _ref1;
     out = ModalShareView.__super__.getRenderData.apply(this, arguments);
-    if (this.forcedPublic) {
-      out.clearance = 'public';
+    if (this.forcedShared) {
+      if (this.inherited[0].clearance === 'public') {
+        out.clearance = 'public';
+      } else {
+        guests = [];
+        _ref = this.inherited;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          folder = _ref[_i];
+          _ref1 = folder.clearance;
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            guest = _ref1[_j];
+            guests.push(guest);
+          }
+        }
+        out.clearance = this.getClearanceWithContacts(guests);
+      }
     }
     return out;
   };
 
-  ModalShareView.prototype.makePublic = function() {
-    if (this.forcedPublic) {
+  ModalShareView.prototype.makePrivate = function() {
+    if (this.forcedShared) {
       return;
     }
-    return ModalShareView.__super__.makePublic.apply(this, arguments);
+    return ModalShareView.__super__.makePrivate.apply(this, arguments);
   };
 
   ModalShareView.prototype.afterRender = function() {
     var checkbox, folder, guestCanWrite, html, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
     ModalShareView.__super__.afterRender.apply(this, arguments);
-    if (this.forcedPublic) {
-      text = t('forced public') + this.forcedPublic;
+    if (this.forcedShared) {
       this.$('#share-public').addClass('toggled');
-      this.$('#share-private').hide().after($('<p>').text(text));
+      this.$('#share-private').hide();
+      if (this.inherited[0].clearance === 'public') {
+        text = t('forced public');
+        this.$('#share-private').after($('<p>').text(text));
+        this.$('#share-private').after('<br><br>');
+        $('#share-input').hide();
+        $('#add-contact').hide();
+        $('.input-group').prev('p').hide();
+        $('#public-url').removeClass('disabled');
+        setTimeout(function() {
+          return $('#public-url').focus().select();
+        }, 200);
+      } else {
+        text = t('forced shared');
+        this.$('#share-private').after($('<p>').text(text));
+        this.$('#share-private').after('<br><br>');
+        $('#share-input').hide();
+        $('#add-contact').hide();
+        $('.input-group').prev('p').hide();
+        $('.input-group').prev('p').prev('p').hide();
+        $('#public-url').prev('p').hide();
+        $('#public-url').prev('p').prev('p').hide();
+        $('#public-url').hide();
+        $('.revoke').hide();
+        $('.changeperm').prop('disabled', true);
+      }
     } else {
       listitems = [];
       summary = [];
@@ -3516,13 +3577,16 @@ module.exports = ModalShareView = (function(_super) {
         _ref1 = folder.clearance;
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           rule = _ref1[_j];
+          if (!folder.clearance) {
+            continue;
+          }
           summary.push(rule.email);
           listitems.push($('<li>').text(rule.email));
         }
       }
       if (summary.length !== 0) {
         this.summaryemails = summary;
-        text = t('also have access') + ' : ' + summary.join(', ') + '. ';
+        text = t('also have access') + ': ' + summary.join(', ') + '. ';
         summary = $('<div id="inherited-share-summary">').text(text);
         summary.append($('<a>').text(t('details')));
         list = $('<ul id="inherited-share-list">').hide();
@@ -3695,7 +3759,7 @@ buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else
 {
@@ -3712,7 +3776,7 @@ buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\"></span>");
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
@@ -3802,7 +3866,7 @@ buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<span class=\"fa fa-share-alt\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else
 {
@@ -3893,7 +3957,7 @@ buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else
 {
@@ -3910,7 +3974,7 @@ buf.push("<span class=\"fa fa-globe\"></span>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-users\"></span>");
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
 buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
@@ -4031,15 +4095,11 @@ if ( model.id != 'root')
 buf.push("<span id=\"folder-state\">");
 if ( clearance == 'public')
 {
-buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('public')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-globe\"></span>");
+buf.push("<span class=\"fa fa-globe\"></span><span class=\"text\">" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "</span>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-users\"></span><span>" + (jade.escape(null == (jade_interp = clearance.length) ? "" : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span class=\"text\">" + (jade.escape((jade_interp = t('private')) == null ? '' : jade_interp)) + "</span><span class=\"fa fa-lock\"></span>");
+buf.push("<span class=\"fa fa-globe\"></span><span class=\"text\">" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "</span><span>&nbsp;(" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + ")</span>");
 }
 buf.push("</span><a" + (jade.attr("title", "" + (t('share')) + "", true, false)) + " id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"><span class=\"fa fa-share-alt\"></span></a>&nbsp;");
 }
