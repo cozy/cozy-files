@@ -23,7 +23,7 @@ module.exports =
     "modal error folder create" : "Folder could not be created"
     "modal error folder exists" : "Sorry, a file or folder having this name already exists"
     "modal error zip empty folder" : "You can't download an empty folder as a ZIP."
-    "upload running": "Upload is running. Do not close your browser"
+    "upload running": "Upload is progress. Do not close your browser"
 
 
     # file view
@@ -164,8 +164,8 @@ module.exports =
     "send mails question"             : "Send a notification email to:"
     "sharing"                         : "Sharing"
     "revoke"                          : "Revoke"
-    "forced public"                   : "The current file/folder is shared because one of the parent folder is shared."
-    "forced shared"                   : "The current file/folder is shared because one of the parent folder is shared. Here is the list of guests who can access to it:"
+    "forced public"                   : "The current file/folder is shared because one of its parent folders is shared."
+    "forced shared"                   : "The current file/folder is shared because one of its parent folders is shared. Here is the list of guests who can access it:"
     "confirm"                         : "Confirm"
     "share forgot add"                : """
         Looks like you forgot to click the Add button
