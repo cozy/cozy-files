@@ -26,7 +26,7 @@ module.exports =
     "upload running": "Upload en cours. Ne quittez pas votre navigateur."
 
     # file view
-    "modal are you sure"        : "Etes-vous sûr ?"
+    "modal are you sure"        : "Êtes-vous sûr(e) ?"
     "modal delete msg"          : "La suppression ne pourra pas être annulée"
     "modal delete ok"           : "Supprimer"
     "modal cancel"              : "Annuler"
@@ -140,7 +140,7 @@ module.exports =
     "also have access"                : "Ces personnes ont également accès, car elles ont accès à un dossier parent"
     "cancel"                          : "Annuler"
     "copy paste link"                 : "Pour donner accès à votre contact envoyez-lui ce lien : "
-    "details"                         : "Details"
+    "details"                         : "Détails"
     "inherited from"                  : "hérité de"
     "modal question folder shareable" : "Choisissez le mode de partage pour ce dossier"
     "modal shared folder custom msg"  : "Entrez un email et appuyez sur Entrée"
@@ -149,8 +149,8 @@ module.exports =
     "modal shared file custom msg"    : "Entrez un email et appuyez sur Entrée"
     "modal shared file link msg"      : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
     "modal shared public link msg"    : "Envoyez ce lien pour partager ce dossier ou fichier:"
-    "modal shared with people msg"    : "OU invitez une sélection de contacts à y accéder. Taper l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):"
-    "only you can see"                : "Seul vous pouvez accéder à cette ressource."
+    "modal shared with people msg"    : "OU invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):"
+    "only you can see"                : "Vous seul(e) pouvez accéder à cette ressource."
     "public"                          : "Public"
     "private"                         : "Privé"
     "shared"                          : "Partagé"
@@ -161,14 +161,14 @@ module.exports =
     "revoke"                          : "Révoquer la permission"
     "send mails question"             : "Envoyer un email de notification à : "
     "modal send mails"                : "Envoyer une notification"
-    "forced public"                   : "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé."
-    "forced shared"                   : "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé. Voici la liste des personnes avec qui il est partagé :"
+    "forced public"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé."
+    "forced shared"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :"
     "confirm"                         : "Confirmer"
     "share forgot add"                : """
         Il semble que vous ayez oublié d'appuyer sur le bouton Add
     """
     "share confirm save"              : """
-        Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr ?
+        Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
     """
     "yes forgot"                      : "Retour"
     "no forgot"                       : "Ok"
