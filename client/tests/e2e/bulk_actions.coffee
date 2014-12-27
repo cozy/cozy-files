@@ -76,7 +76,7 @@ casper.test.begin 'Bulk actions - select one item', (test) ->
     casper.run  -> test.done()
 
 
-casper.test.begin 'Bulk actions - selecting 3 items checks the "select-all" checkbox', (test) ->
+casper.test.begin 'Bulk actions - selecting 3 items doesnt check the "select-all" checkbox', (test) ->
 
     casper.start 'http://localhost:9121', ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
@@ -91,7 +91,7 @@ casper.test.begin 'Bulk actions - selecting 3 items checks the "select-all" chec
 
     casper.thenClick ".folder-row:nth-of-type(3) input.selector"
 
-    casper.then -> test.assertExist '#select-all:checked', "'Select all' checkbox should be checked"
+    casper.then -> test.assertDoesntExist '#select-all:checked', "'Select all' checkbox shouldn't be checked"
 
     casper.run -> test.done()
 
@@ -128,8 +128,8 @@ casper.test.begin 'Bulk actions - selecting all items when there are least than 
 casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
 
     movedElementsNum = null
-    casper.start 'http://localhost:9121', ->
 
+    casper.start 'http://localhost:9121', ->
         imageFolderSelector = helpers.getElementSelectorByName 'Mes images'
         test.assertEval ->
             return __utils__.findAll("tr.folder-row .fa-folder").length > 0
@@ -141,20 +141,24 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
         helpers.navigateToFolder 'Mes images'
 
     casper.then ->
-
-        movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
-        test.assert movedElementsNum > 0, "There should must be at least one item"
+        movedElementsNum = @evaluate ->
+            return __utils__.findAll("tr.folder-row").length
+        test.assert(
+            movedElementsNum > 0,
+            "There should must be at least one item")
 
         @click "input#select-all"
 
     casper.thenClick '#button-bulk-move'
 
     casper.waitUntilVisible '.modal-dialog'
+
     # the modal has an animation
     casper.wait 500, ->
         availableOptions = @evaluate ->
             options = __utils__.findAll '.move-select option'
-            return Array::map.call options, (option) -> return option.textContent
+            return Array::map.call options, (option) ->
+                return option.textContent
 
         photoIndex = availableOptions.indexOf '/Mes photos'
         test.assert photoIndex isnt -1
@@ -165,12 +169,13 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
     casper.thenClick 'button#modal-dialog-yes'
 
     casper.waitUntilVisible '#moved-infos button.cancel-move-btn', ->
-
         test.assertEval ->
             return __utils__.findAll("tr.folder-row").length is 0
         , "There shouldn't be any element"
 
-        test.assertVisible '#moved-infos button.cancel-move-btn', 'The button to cancel the action should be visible'
+        test.assertVisible(
+            '#moved-infos button.cancel-move-btn',
+            'The button to cancel the action should be visible')
 
         test.assertEvaluate ->
             return not __utils__.findOne('#select-all').checked

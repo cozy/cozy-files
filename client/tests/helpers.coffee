@@ -60,9 +60,6 @@ module.exports = (casper, utils) -> helpers =
         # forces the access to private/limited
         casper.thenClick '#share-private'
 
-        # removes all limited access
-        casper.thenClick 'li.clearance-line i.icon-remove'
-
     saveAndCloseModal: ->
         casper.thenClick '#modal-dialog-yes'
         casper.waitWhileVisible '#cozy-clearance-modal'
@@ -74,3 +71,6 @@ module.exports = (casper, utils) -> helpers =
 
         casper.thenClick '#share-public'
         casper.waitUntilVisible '#public-url'
+
+        # removes all limited access
+        # casper.thenClick 'li.clearance-line i.icon-remove'
