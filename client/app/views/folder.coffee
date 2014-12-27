@@ -201,7 +201,9 @@ module.exports = class FolderView extends BaseView
 
             @newFolder.once 'sync destroy', => @newFolder = null
 
-    onShareClicked: -> new ModalShareView model: @model
+    onShareClicked: ->
+        new ModalShareView
+            model: @model
 
     ###
         Drag and Drop and Upload

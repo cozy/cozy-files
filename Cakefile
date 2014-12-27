@@ -91,7 +91,6 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
                 cmd.on 'exit', (code) ->
                     app.server.close() if app?
                     if code is 1
-                        err = err
                         console.log "A least one test failed."
                         process.exit 1
                     else

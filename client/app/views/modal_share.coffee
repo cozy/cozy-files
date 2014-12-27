@@ -23,7 +23,10 @@ module.exports = class ModalShareView extends CozyClearanceModal
             else
                 @inherited = data.inherited
 
-                @forcedShared = true if @inherited.length > 0
+                if @inherited.length > 0
+                    @forcedShared = true
+
+                @makePublic()
 
                 # actually render content
                 @refresh()
@@ -45,13 +48,14 @@ module.exports = class ModalShareView extends CozyClearanceModal
     getRenderData: ->
         out = super
         if @forcedShared
-            if @inherited[0].clearance is 'public'
-                out.clearance = 'public'
-            else
-                guests = []
-                for folder in @inherited
-                    guests.push guest for guest in folder.clearance
-                out.clearance = @getClearanceWithContacts guests
+            if @inherited?
+                if @inherited[0].clearance is 'public'
+                    out.clearance = 'public'
+                else
+                    guests = []
+                    for folder in @inherited
+                        guests.push guest for guest in folder.clearance
+                    out.clearance = @getClearanceWithContacts guests
         return out
 
     # ignore click on 'private' button when forced public by inheritance
