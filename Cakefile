@@ -88,11 +88,11 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
                 cmd.stdout.pipe process.stdout
                 cmd.stderr.pipe process.stderr
 
-                cmd.on 'exit', ->
+                cmd.on 'exit', (code) ->
                     app.server.close() if app?
-                    if err?
+                    if code is 1
                         err = err
-                        console.log "Running casperjs caught exception:\n" + err
+                        console.log "A least one test failed."
                         process.exit 1
                     else
                         console.log "Clients tests successfully runned!"
