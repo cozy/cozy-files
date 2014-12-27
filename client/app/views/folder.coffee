@@ -388,7 +388,7 @@ module.exports = class FolderView extends BaseView
         return @collection.filter (element) -> return element.isSelected
 
     # we don't show the same actions wether there are selected elements or not
-    toggleFolderActions: (force = false) ->
+    toggleFolderActions: (force=false) ->
         selectedElements = @getSelectedElements()
 
         if selectedElements.length > 0
@@ -413,10 +413,13 @@ module.exports = class FolderView extends BaseView
         # Check if all checkbox should be selected. It is selected
         # when it's forced or when collection length == amount of selected
         # files
-        shouldChecked = \
-            selectedElements.length is @collection.size() or force is true
-        @$('input#select-all').prop 'checked', shouldChecked
-
+        if force is true
+            @$('input#select-all').prop 'checked', true
+        else if @collection.size() is 0
+            @$('input#select-all').prop 'checked', false
+        else
+            shouldChecked = selectedElements.length is @collection.size()
+            @$('input#select-all').prop 'checked', shouldChecked
 
     ###
         Bulk actions management
