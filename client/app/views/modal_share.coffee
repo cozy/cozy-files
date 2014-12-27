@@ -69,12 +69,11 @@ module.exports = class ModalShareView extends CozyClearanceModal
 
         if @forcedShared
             @$('#share-public').addClass 'toggled'
-            @$('#share-private').hide()
+            @$('#select-mode-section').hide()
 
             if @inherited[0].clearance is 'public'
                 text = t('forced public')
-                @$('#share-private').after $('<p>').text text
-                @$('#share-private').after '<br><br>'
+                @$('#select-mode-section').after $('<p>').text text
                 $('#share-input').hide()
                 $('#add-contact').hide()
                 $('.input-group').prev('p').hide()
@@ -84,8 +83,7 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 , 200
             else
                 text = t('forced shared')
-                @$('#share-private').after $('<p>').text text
-                @$('#share-private').after '<br><br>'
+                @$('#select-mode-section').after $('<p>').text text
                 $('#share-input').hide()
                 $('#add-contact').hide()
                 $('.input-group').prev('p').hide()

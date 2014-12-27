@@ -283,14 +283,14 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 ;var locals_for_with = (locals || {});(function (t, type, model, JSON, clearance, makeURL, undefined, Object, possible_permissions) {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('shared')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p><!-- If no clearance are set, we consider it's a private object.-->");
+buf.push("<div><div id=\"select-mode-section\"><p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('shared')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p></div><p>&nbsp;</p></div><!-- If no clearance are set, we consider it's a private object.-->");
 if ( JSON.stringify(clearance) == '[]')
 {
 buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? "" : jade_interp)) + "</p>");
 }
 else
 {
-buf.push("<p>&nbsp;</p><p>" + (jade.escape(null == (jade_interp = t('modal shared public link msg')) ? "" : jade_interp)) + "</p>");
+buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared public link msg')) ? "" : jade_interp)) + "</p>");
 if ( clearance == 'public')
 {
 buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
@@ -608,19 +608,16 @@ module.exports = CozyClearanceModal = (function(_super) {
   };
 
   CozyClearanceModal.prototype.makePublic = function() {
-    if (this.model.get('clearance') !== 'public') {
-      this.lastPrivate = this.model.get('clearance');
-      if (this.lastClearance != null) {
-        this.model.set({
-          clearance: this.lastClearance
-        });
-      } else {
-        this.model.set({
-          clearance: 'public'
-        });
-      }
-      return this.refresh();
+    if (this.lastClearance != null) {
+      this.model.set({
+        clearance: this.lastClearance
+      });
+    } else {
+      this.model.set({
+        clearance: 'public'
+      });
     }
+    return this.refresh();
   };
 
   CozyClearanceModal.prototype.makePrivate = function() {
