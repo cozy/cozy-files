@@ -26,7 +26,8 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 if @inherited.length > 0
                     @forcedShared = true
 
-                @makePublic()
+                if @isPrivateClearance()
+                    @makePublic()
 
                 # actually render content
                 @refresh()

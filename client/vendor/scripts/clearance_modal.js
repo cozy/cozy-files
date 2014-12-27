@@ -568,9 +568,11 @@ module.exports = CozyClearanceModal = (function(_super) {
     this._configureTypeAhead(clearance);
     this._firstFocus(clearance);
     if (this.isPublicClearance()) {
-      return this.$('#public-url').removeClass('disabled');
+      this.$('#public-url').removeClass('disabled');
+      return this.$('#public-url').prev('p').removeClass('disabled');
     } else {
-      return this.$('#public-url').addClass('disabled');
+      this.$('#public-url').addClass('disabled');
+      return this.$('#public-url').prev('p').addClass('disabled');
     }
   };
 
@@ -715,6 +717,12 @@ module.exports = CozyClearanceModal = (function(_super) {
 
   CozyClearanceModal.prototype.isPublicClearance = function() {
     return this.model.get('clearance') === 'public';
+  };
+
+  CozyClearanceModal.prototype.isPrivateClearance = function() {
+    var clearance;
+    clearance = this.model.get('clearance');
+    return typeof clearance === "object" && clearance.length === 0;
   };
 
   CozyClearanceModal.prototype.onAddClicked = function() {
