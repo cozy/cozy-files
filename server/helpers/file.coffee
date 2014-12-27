@@ -23,7 +23,7 @@ module.exports =
             contentHeader = "attachment; filename=\"#{file.name}\"; " + \
                             "filename*=UTF8''#{encodedFileName}"
         else
-            contentHeader = "inline; filename=\"#{file.name}\"; " + \
+            contentHeader = "inline; filename=#{file.name}; " + \
                             "filename*=UTF8''\"#{encodedFileName}\""
         res.setHeader 'content-disposition', contentHeader
 
