@@ -20,7 +20,7 @@ module.exports = {
     if (download) {
       contentHeader = ("attachment; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''" + encodedFileName);
     } else {
-      contentHeader = ("inline; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''\"" + encodedFileName + "\"");
+      contentHeader = ("inline; filename=" + file.name + "; ") + ("filename*=UTF8''\"" + encodedFileName + "\"");
     }
     res.setHeader('content-disposition', contentHeader);
     url = "/data/" + file.id + "/binaries/file";

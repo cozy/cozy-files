@@ -1222,7 +1222,7 @@ module.exports = {
   "modal error folder create": "Folder could not be created",
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
   "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
-  "upload running": "Upload is running. Do not close your browser",
+  "upload running": "Upload is progress. Do not close your browser",
   "modal are you sure": "Are you sure ?",
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
@@ -1321,8 +1321,8 @@ module.exports = {
   "send mails question": "Send a notification email to:",
   "sharing": "Sharing",
   "revoke": "Revoke",
-  "forced public": "The current file/folder is shared because one of the parent folder is shared.",
-  "forced shared": "The current file/folder is shared because one of the parent folder is shared. Here is the list of guests who can access to it:",
+  "forced public": "The current file/folder is shared because one of its parent folders is shared.",
+  "forced shared": "The current file/folder is shared because one of its parent folders is shared. Here is the list of guests who can access it:",
   "confirm": "Confirm",
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
@@ -1367,7 +1367,7 @@ module.exports = {
   "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
   "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
   "upload running": "Upload en cours. Ne quittez pas votre navigateur.",
-  "modal are you sure": "Etes-vous sûr ?",
+  "modal are you sure": "Êtes-vous sûr(e) ?",
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",
   "modal cancel": "Annuler",
@@ -1443,7 +1443,7 @@ module.exports = {
   "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
   "cancel": "Annuler",
   "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien : ",
-  "details": "Details",
+  "details": "Détails",
   "inherited from": "hérité de",
   "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
   "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
@@ -1452,8 +1452,8 @@ module.exports = {
   "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
   "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
   "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier:",
-  "modal shared with people msg": "OU invitez une sélection de contacts à y accéder. Taper l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):",
-  "only you can see": "Seul vous pouvez accéder à cette ressource.",
+  "modal shared with people msg": "OU invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):",
+  "only you can see": "Vous seul(e) pouvez accéder à cette ressource.",
   "public": "Public",
   "private": "Privé",
   "shared": "Partagé",
@@ -1464,11 +1464,11 @@ module.exports = {
   "revoke": "Révoquer la permission",
   "send mails question": "Envoyer un email de notification à : ",
   "modal send mails": "Envoyer une notification",
-  "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé.",
-  "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parent est partagé. Voici la liste des personnes avec qui il est partagé :",
+  "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
+  "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
   "confirm": "Confirmer",
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
-  "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr ?",
+  "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
   "yes forgot": "Retour",
   "no forgot": "Ok",
   "perm": "peut ",
@@ -1844,13 +1844,7 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.getClearance = function() {
-    var inheritedClearance;
-    inheritedClearance = this.get('inheritedClearance');
-    if (!inheritedClearance || inheritedClearance.length === 0) {
-      return this.get('clearance');
-    } else {
-      return inheritedClearance[0].clearance;
-    }
+    return this.get('clearance');
   };
 
   return File;
@@ -2160,7 +2154,7 @@ module.exports = FileView = (function(_super) {
     this.listenTo(this.model, 'request', (function(_this) {
       return function() {
         _this.$('.spinholder').show();
-        return _this.$('.icon-zone .fa').hide();
+        return _this.$('.icon-zone .fa').addClass('hidden');
       };
     })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
@@ -2169,7 +2163,7 @@ module.exports = FileView = (function(_super) {
           _this.render();
         }
         _this.$('.spinholder').hide();
-        return _this.$('.icon-zone .fa').show();
+        return _this.$('.icon-zone .fa').removeClass('hidden');
       };
     })(this));
     this.listenTo(this.model, 'toggle-select', this.onToggleSelect);
@@ -2292,7 +2286,7 @@ module.exports = FileView = (function(_super) {
     name = this.$('.file-edit-name').val();
     if (name && name !== "") {
       this.$el.removeClass('edit-mode');
-      this.$('.icon-zone .fa').hide();
+      this.$('.icon-zone .fa').addClass('hidden');
       this.$('.spinholder').show();
       return this.model.save({
         name: name
@@ -2301,14 +2295,14 @@ module.exports = FileView = (function(_super) {
         success: (function(_this) {
           return function(data) {
             _this.$('.spinholder').hide();
-            _this.$('.icon-zone .fa').show();
+            _this.$('.icon-zone .fa').removeClass('hidden');
             return _this.render();
           };
         })(this),
         error: (function(_this) {
           return function(model, err) {
             _this.$('.spinholder').hide();
-            _this.$('.icon-zone .fa').show();
+            _this.$('.icon-zone .fa').removeClass('hidden');
             _this.$('.file-edit-name').focus();
             return _this.displayError(err.status === 400 ? t('modal error in use') : t('modal error rename'));
           };
@@ -3063,8 +3057,14 @@ module.exports = FolderView = (function(_super) {
       }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    shouldChecked = selectedElements.length === this.collection.size() || force === true;
-    return this.$('input#select-all').prop('checked', shouldChecked);
+    if (force === true) {
+      return this.$('input#select-all').prop('checked', true);
+    } else if (this.collection.size() === 0) {
+      return this.$('input#select-all').prop('checked', false);
+    } else {
+      shouldChecked = selectedElements.length === this.collection.size();
+      return this.$('input#select-all').prop('checked', shouldChecked);
+    }
   };
 
 
@@ -3365,7 +3365,7 @@ module.exports = ModalBulkMoveView = (function(_super) {
 
   ModalBulkMoveView.prototype.bulkUpdate = function(newPath, callback) {
     window.pendingOperations.move++;
-    return async.eachLimit(this.collection, 10, function(model, cb) {
+    return async.eachSeries(this.collection, function(model, cb) {
       var id, type;
       id = model.get('id');
       type = model.get('type');
@@ -3477,6 +3477,9 @@ module.exports = ModalShareView = (function(_super) {
           if (_this.inherited.length > 0) {
             _this.forcedShared = true;
           }
+          if (_this.isPrivateClearance()) {
+            _this.makePublic();
+          }
           return _this.refresh();
         }
       };
@@ -3506,20 +3509,22 @@ module.exports = ModalShareView = (function(_super) {
     var folder, guest, guests, out, _i, _j, _len, _len1, _ref, _ref1;
     out = ModalShareView.__super__.getRenderData.apply(this, arguments);
     if (this.forcedShared) {
-      if (this.inherited[0].clearance === 'public') {
-        out.clearance = 'public';
-      } else {
-        guests = [];
-        _ref = this.inherited;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          folder = _ref[_i];
-          _ref1 = folder.clearance;
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            guest = _ref1[_j];
-            guests.push(guest);
+      if (this.inherited != null) {
+        if (this.inherited[0].clearance === 'public') {
+          out.clearance = 'public';
+        } else {
+          guests = [];
+          _ref = this.inherited;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            folder = _ref[_i];
+            _ref1 = folder.clearance;
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              guest = _ref1[_j];
+              guests.push(guest);
+            }
           }
+          out.clearance = this.getClearanceWithContacts(guests);
         }
-        out.clearance = this.getClearanceWithContacts(guests);
       }
     }
     return out;
@@ -3537,11 +3542,10 @@ module.exports = ModalShareView = (function(_super) {
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedShared) {
       this.$('#share-public').addClass('toggled');
-      this.$('#share-private').hide();
+      this.$('#select-mode-section').hide();
       if (this.inherited[0].clearance === 'public') {
         text = t('forced public');
-        this.$('#share-private').after($('<p>').text(text));
-        this.$('#share-private').after('<br><br>');
+        this.$('#select-mode-section').after($('<p>').text(text));
         $('#share-input').hide();
         $('#add-contact').hide();
         $('.input-group').prev('p').hide();
@@ -3551,8 +3555,7 @@ module.exports = ModalShareView = (function(_super) {
         }, 200);
       } else {
         text = t('forced shared');
-        this.$('#share-private').after($('<p>').text(text));
-        this.$('#share-private').after('<br><br>');
+        this.$('#select-mode-section').after($('<p>').text(text));
         $('#share-input').hide();
         $('#add-contact').hide();
         $('.input-group').prev('p').hide();
@@ -3866,7 +3869,7 @@ buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-share-alt\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
 }
 else
 {
