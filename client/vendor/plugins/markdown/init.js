@@ -20,31 +20,10 @@ window.plugins.markdown = {
           var icon = document.createElement('a');
           icon.innerHTML = "<i class='fa fa-eye' data-markdown></i>";
           icon.addEventListener('click', function () {
-            var xhr = new XMLHttpRequest(), popup, config, close;
+            var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
               if (xhr.readyState === 4) {
-                popup = document.createElement('div');
-                popup.innerHTML = window.markdown.toHTML(xhr.responseText);
-                popup.style.width  = "66%";
-                popup.style.padding = "5em";
-                popup.style.backgroundColor = '#EEE';
-                close = document.createElement('a');
-                close.innerHTML = "<i class='fa fa-times'></i>";
-                close.id = "popupClose";
-                close.style.fontSize = "2em";
-                close.style.position = "absolute";
-                close.style.top = "1em";
-                close.style.right = "1em";
-                popup.appendChild(close);
-                document.body.appendChild(popup);
-                config = {
-                  autoopen: true,
-                  color: '#FFF',
-                  opacity: 0.5,
-                  detach: true,
-                  closeelement: '#popupClose'
-                };
-                window.jQuery(popup).popup(config);
+                window.plugins.helpers.modal({body: window.markdown.toHTML(xhr.responseText), size: 'large'});
               }
             };
             xhr.open('GET', elmt.dataset.fileUrl, true);

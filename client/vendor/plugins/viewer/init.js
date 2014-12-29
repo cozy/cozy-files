@@ -11,21 +11,8 @@ window.plugins.viewer = {
     }
     return node.querySelectorAll("[data-file-url$=pdf], [data-file-url$=ods], [data-file-url$=odt]");
   },
-  modal: function (options) {
-    var win = document.createElement('div');
-    win.classList.add('modal');
-    win.classList.add('fade');
-    win.innerHTML = ('<div class="modal-dialog modal-lg"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button> <h4 class="modal-title"></h4> </div> <div class="modal-body"> </div> <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div> </div> </div>');
-    if (options.title) {
-      win.querySelector('.modal-title').innerHTML = options.title;
-    }
-    if (options.body) {
-      win.querySelector('.modal-body').innerHTML = options.body;
-    }
-    return win;
-  },
   addGallery: function (params) {
-    var files, self = this;
+    var files;
     files = this.getFiles();
     if (files.length > 0) {
       Array.prototype.forEach.call(files, function (elmt, idx) {
@@ -36,7 +23,7 @@ window.plugins.viewer = {
         var icon = document.createElement('a');
         icon.innerHTML = "<i class='fa fa-eye'></i>";
         icon.addEventListener('click', function () {
-          var viewer, popup;
+          var viewer;
           viewer = document.createElement('iframe');
           viewer.id = 'viewer';
           viewer.setAttribute('src', 'ViewerJS/#../' + elmt.dataset.fileUrl);
@@ -44,9 +31,7 @@ window.plugins.viewer = {
           viewer.setAttribute('width', '100%');
           viewer.setAttribute('allowfullscreen', 'allowfullscreen');
           viewer.setAttribute('webkitallowfullscreen', true);
-          popup = self.modal({body: viewer.outerHTML});
-          document.body.appendChild(popup);
-          window.jQuery(popup).modal('show');
+          window.plugins.helpers.modal({body: viewer.outerHTML, size: 'large'});
         });
         if (elmt.nextElementSibling) {
           elmt.parentNode.insertBefore(icon, elmt.nextElementSibling);
