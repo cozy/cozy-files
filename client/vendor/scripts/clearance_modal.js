@@ -174,31 +174,26 @@ Modal = (function(_super) {
   };
 
   Modal.prototype.onNo = function() {
-    if (this.closing) {
-      return;
-    }
-    this.closing = true;
-    this.$el.modal('hide');
-    setTimeout(((function(_this) {
-      return function() {
-        return _this.remove();
-      };
-    })(this)), 500);
+    this.close();
     return this.cb(false);
   };
 
   Modal.prototype.onYes = function() {
+    this.close();
+    return this.cb(true);
+  };
+
+  Modal.prototype.close = function() {
     if (this.closing) {
       return;
     }
     this.closing = true;
     this.$el.modal('hide');
-    setTimeout(((function(_this) {
+    return setTimeout(((function(_this) {
       return function() {
         return _this.remove();
       };
     })(this)), 500);
-    return this.cb(true);
   };
 
   Modal.prototype.closeOnEscape = function(e) {

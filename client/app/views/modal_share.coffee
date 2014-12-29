@@ -23,11 +23,9 @@ module.exports = class ModalShareView extends CozyClearanceModal
             else
                 @inherited = data.inherited
 
-                if @inherited.length > 0
-                    @forcedShared = true
+                @forcedShared = @inherited.length > 0
 
-                if @isPrivateClearance()
-                    @makePublic()
+                @makePublic() if @isPrivateClearance()
 
                 # actually render content
                 @refresh()
@@ -95,6 +93,9 @@ module.exports = class ModalShareView extends CozyClearanceModal
                 $('.revoke').hide()
                 $('.changeperm').prop 'disabled', true
 
+            $('#modal-dialog-no').hide()
+            $('#modal-dialog-yes').html t('ok')
+
         else
             listitems = []
             summary = []
@@ -130,3 +131,16 @@ module.exports = class ModalShareView extends CozyClearanceModal
     saveData: ->
         changeNotification = @$('#notifs').prop('checked') or false
         _.extend super, changeNotification: changeNotification
+
+    onYes: ->
+        if @forcedShared
+            @close()
+        else
+            super()
+
+    onNo: ->
+        if @forcedShared
+            @close()
+        else
+            super()
+
