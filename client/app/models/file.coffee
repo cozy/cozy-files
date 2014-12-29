@@ -171,4 +171,8 @@ module.exports = class File extends Backbone.Model
             @breadcrumb = parents
 
     getClearance: ->
-        return @get 'clearance'
+        inheritedClearance = @get 'inheritedClearance'
+        if not inheritedClearance or inheritedClearance.length is 0
+            return @get 'clearance'
+        else
+            return inheritedClearance[0].clearance

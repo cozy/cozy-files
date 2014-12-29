@@ -139,8 +139,8 @@ updateParents = () ->
     folderParent = {}
 
 module.exports.find = (req, res, next) ->
-    res.send req.folder
-
+    Folder.injectInheritedClearance [req.folder], (err, folders) ->
+        res.send folders[0]
 
 module.exports.tree = (req, res, next) ->
     folderChild = req.folder
