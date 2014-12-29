@@ -25,7 +25,7 @@ td
             span
               | #{model.name}
       else if model.type == 'file'
-        .caption.btn.btn-link
+        .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
           span.icon-zone
             if clearance == 'public'
               span.fa.fa-globe
