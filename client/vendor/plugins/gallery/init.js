@@ -9,7 +9,7 @@ window.plugins.gallery = {
     if (typeof node === 'undefined') {
       node = document;
     }
-    return node.querySelectorAll("[data-file-url$=jpg], [data-file-url$=png]");
+    return node.querySelectorAll("[data-file-url$=jpg], [data-file-url$=jpeg], [data-file-url$=png]");
   },
   addGallery: function (params) {
     var images, gal;
