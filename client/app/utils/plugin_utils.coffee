@@ -23,7 +23,8 @@ helpers =
                 <div class="modal-body"> </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default"
-                            data-dismiss="modal">Close</button>
+                            data-dismiss="modal">#{t 'plugin modal close'}
+                    </button>
                 </div>
             </div>
         </div>

@@ -193,6 +193,8 @@ module.exports =
 
     'file successfully moved to': 'File successfully moved to'
 
+    'plugin modal close': 'Close'
+
     # Bulk move modal
     'moving selected elements': 'Moving selected elements'
     'move elements to': "Move elements to"
