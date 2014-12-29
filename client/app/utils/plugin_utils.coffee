@@ -1,4 +1,6 @@
 helpers =
+    # Display a Bootstrap modal window
+    #
     # Available options:
     # title: modal window title
     # body: modal window body
@@ -8,7 +10,24 @@ helpers =
         win = document.createElement 'div'
         win.classList.add 'modal'
         win.classList.add 'fade'
-        win.innerHTML = '<div class="modal-dialog"> <div class="modal-content"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button> <h4 class="modal-title"></h4> </div> <div class="modal-body"> </div> <div class="modal-footer"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </div> </div> </div>'
+        win.innerHTML = """
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body"> </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"
+                            data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+        """
         if options.title
             win.querySelector('.modal-title').innerHTML = options.title
         if options.body
@@ -21,6 +40,21 @@ helpers =
             document.body.appendChild win
             window.jQuery(win).modal 'show'
         return win
+    getFiles: (extensions, node) ->
+        selector = extensions.map (f) ->
+            "[data-file-url$=" + f + "]"
+        .join ','
+        if not node?
+            node = document
+
+        return node.querySelectorAll selector
+    addIcon: (elmt, onClick) ->
+        if not elmt.dataset.hasPreview
+            elmt.dataset.hasPreview = true
+            icon = document.createElement 'a'
+            icon.innerHTML = "<i class='fa fa-eye'></i>"
+            icon.addEventListener 'click', onClick
+            elmt.parentNode.querySelector('.operations').appendChild icon
 
 module.exports =
 
@@ -28,10 +62,11 @@ module.exports =
         if not window.plugins?
             window.plugins = {}
 
-        window.plugins.helpers = helpers
-
+        # Init every plugins
         for own pluginName, pluginConf of window.plugins
             @activate pluginName
+
+        window.plugins.helpers = helpers
 
         if MutationObserver?
 

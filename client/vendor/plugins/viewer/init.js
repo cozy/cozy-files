@@ -1,28 +1,23 @@
 //jshint browser: true, strict: false, maxstatements: false
+//
+// Use Viewer.js to preview PDF and OpenDocument files
+//
 if (typeof window.plugins !== "object") {
   window.plugins = {};
 }
 window.plugins.viewer = {
   name: "Viewer",
   active: true,
+  extensions: ['pdf', 'ods', 'odt'],
   getFiles: function (node) {
-    if (typeof node === 'undefined') {
-      node = document;
-    }
-    return node.querySelectorAll("[data-file-url$=pdf], [data-file-url$=ods], [data-file-url$=odt]");
+    return window.plugins.helpers.getFiles(this.extensions, node);
   },
   addGallery: function (params) {
     var files;
     files = this.getFiles();
     if (files.length > 0) {
       Array.prototype.forEach.call(files, function (elmt, idx) {
-        if (elmt.dataset.hasPreview) {
-          return;
-        }
-        elmt.dataset.hasPreview = true;
-        var icon = document.createElement('a');
-        icon.innerHTML = "<i class='fa fa-eye'></i>";
-        icon.addEventListener('click', function () {
+        window.plugins.helpers.addIcon(elmt, function () {
           var viewer;
           viewer = document.createElement('iframe');
           viewer.id = 'viewer';
@@ -33,11 +28,6 @@ window.plugins.viewer = {
           viewer.setAttribute('webkitallowfullscreen', true);
           window.plugins.helpers.modal({body: viewer.outerHTML, size: 'large'});
         });
-        if (elmt.nextElementSibling) {
-          elmt.parentNode.insertBefore(icon, elmt.nextElementSibling);
-        } else {
-          elmt.parentNode.appendChild(icon);
-        }
       });
     }
   },

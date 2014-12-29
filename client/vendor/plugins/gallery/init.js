@@ -1,19 +1,20 @@
 //jshint browser: true, strict: false
+//
+// Allow to display a slideshow of every images in the folder
+//
 if (typeof window.plugins !== "object") {
   window.plugins = {};
 }
 window.plugins.gallery = {
   name: "Gallery",
   active: true,
-  getImages: function (node) {
-    if (typeof node === 'undefined') {
-      node = document;
-    }
-    return node.querySelectorAll("[data-file-url$=jpg], [data-file-url$=jpeg], [data-file-url$=png]");
+  extensions: ['jpg', 'jpeg', 'png', 'gif'],
+  getFiles: function (node) {
+    return window.plugins.helpers.getFiles(this.extensions, node);
   },
   addGallery: function (params) {
     var images, gal;
-    images = this.getImages();
+    images = this.getFiles();
     if (images.length > 0) {
       gal = document.getElementById('gallery');
       if (gal === null) {
@@ -25,27 +26,17 @@ window.plugins.gallery = {
         gal.innerHTML = '';
       }
       Array.prototype.forEach.call(images, function (elmt, idx) {
-        var a, img, icon;
+        var a, img;
         a = document.createElement('a');
         a.href = elmt.dataset.fileUrl;
         img = document.createElement('img');
         a.appendChild(img);
         gal.appendChild(a);
-        if (elmt.parentNode.querySelectorAll("[data-gallery]").length === 0) {
-          icon = document.createElement('a');
-          icon.innerHTML = "<i class='fa fa-eye' data-gallery></i>";
-          icon.addEventListener('click', function () {
-            var event = document.createEvent("MouseEvent");
-            event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-            a.dispatchEvent(event);
-            //img.dispatchEvent(new MouseEvent('click', { 'view': window, 'bubbles': true, 'cancelable': true }));
-          });
-          if (elmt.nextElementSibling) {
-            elmt.parentNode.insertBefore(icon, elmt.nextElementSibling);
-          } else {
-            elmt.parentNode.appendChild(icon);
-          }
-        }
+        window.plugins.helpers.addIcon(elmt, function () {
+          var event = document.createEvent("MouseEvent");
+          event.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+          a.dispatchEvent(event);
+        });
       });
       window.baguetteBox.run('#gallery', {
         captions: true,       // true|false - Display image captions
@@ -63,7 +54,7 @@ window.plugins.gallery = {
      * @param {DOMNode} root node of added subtree
      */
     condition: function (node) {
-      return this.getImages(node).length > 0;
+      return this.getFiles(node).length > 0;
     },
     /**
      * Perform action on added subtree

@@ -1,41 +1,32 @@
 //jshint browser: true, strict: false
+//
+// Allow to preview markdown files
+//
 if (typeof window.plugins !== "object") {
   window.plugins = {};
 }
 window.plugins.markdown = {
   name: "Markdown",
   active: true,
+  extensions: ['md', 'markdown'],
   getFiles: function (node) {
-    if (typeof node === 'undefined') {
-      node = document;
-    }
-    return node.querySelectorAll("[data-file-url$=md], [data-file-url$=markdown]");
+    return window.plugins.helpers.getFiles(this.extensions, node);
   },
   addGallery: function (params) {
     var files;
     files = this.getFiles();
     if (files.length > 0) {
       Array.prototype.forEach.call(files, function (elmt, idx) {
-        if (elmt.parentNode.querySelectorAll("[data-markdown]").length === 0) {
-          var icon = document.createElement('a');
-          icon.innerHTML = "<i class='fa fa-eye' data-markdown></i>";
-          icon.addEventListener('click', function () {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-              if (xhr.readyState === 4) {
-                window.plugins.helpers.modal({body: window.markdown.toHTML(xhr.responseText), size: 'large'});
-              }
-            };
-            xhr.open('GET', elmt.dataset.fileUrl, true);
-            xhr.send(null);
-
-          });
-          if (elmt.nextElementSibling) {
-            elmt.parentNode.insertBefore(icon, elmt.nextElementSibling);
-          } else {
-            elmt.parentNode.appendChild(icon);
-          }
-        }
+        window.plugins.helpers.addIcon(elmt, function () {
+          var xhr = new XMLHttpRequest();
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              window.plugins.helpers.modal({body: window.markdown.toHTML(xhr.responseText), size: 'large'});
+            }
+          };
+          xhr.open('GET', elmt.dataset.fileUrl, true);
+          xhr.send(null);
+        });
       });
     }
   },
