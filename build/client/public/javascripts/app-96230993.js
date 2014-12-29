@@ -688,6 +688,7 @@ $(function() {
   polyglot = new Polyglot();
   polyglot.extend(locales);
   window.t = polyglot.t.bind(polyglot);
+  require("./utils/plugin_utils").init();
   window.pendingOperations = {
     upload: 0,
     move: 0,
@@ -1341,6 +1342,7 @@ module.exports = {
   'error occured canceling move': 'An error occured while canceling move.',
   'error occured while moving element': 'An error occured while moving element',
   'file successfully moved to': 'File successfully moved to',
+  'plugin modal close': 'Close',
   'moving selected elements': 'Moving selected elements',
   'move elements to': "Move elements to",
   "elements successfully moved to": 'Elements successfully moved to',
@@ -1484,6 +1486,7 @@ module.exports = {
   "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
   "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
   "file successfully moved to": 'Fichier déplacé avec succès vers ',
+  'plugin modal close': 'Fermer',
   'moving selected elements': 'Déplacer des éléments',
   'move elements to': "Déplacer les éléments vers ",
   "elements successfully moved to": 'Eléments déplacés avec succès vers ',
@@ -1974,6 +1977,210 @@ module.exports = Router = (function(_super) {
   return Router;
 
 })(Backbone.Router);
+});
+
+;require.register("utils/plugin_utils", function(exports, require, module) {
+var helpers,
+  __hasProp = {}.hasOwnProperty;
+
+helpers = {
+  modal: function(options) {
+    var win;
+    win = document.createElement('div');
+    win.classList.add('modal');
+    win.classList.add('fade');
+    win.innerHTML = "<div class=\"modal-dialog\">\n    <div class=\"modal-content\">\n        <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\"\n                    aria-label=\"Close\">\n                <span aria-hidden=\"true\">&times;</span>\n            </button>\n            <h4 class=\"modal-title\"></h4>\n        </div>\n        <div class=\"modal-body\"> </div>\n        <div class=\"modal-footer\">\n            <button type=\"button\" class=\"btn btn-default\"\n                    data-dismiss=\"modal\">" + (t('plugin modal close')) + "\n            </button>\n        </div>\n    </div>\n</div>";
+    if (options.title) {
+      win.querySelector('.modal-title').innerHTML = options.title;
+    }
+    if (options.body) {
+      win.querySelector('.modal-body').innerHTML = options.body;
+    }
+    if (options.size === 'small') {
+      win.querySelector('.modal-dialog').classList.add('modal-sm');
+    }
+    if (options.size === 'large') {
+      win.querySelector('.modal-dialog').classList.add('modal-lg');
+    }
+    if (options.show !== false) {
+      document.body.appendChild(win);
+      window.jQuery(win).modal('show');
+    }
+    return win;
+  },
+  getFiles: function(extensions, node) {
+    var selector;
+    selector = extensions.map(function(f) {
+      return "[data-file-url$=" + f + "]";
+    }).join(',');
+    if (node == null) {
+      node = document;
+    }
+    return node.querySelectorAll(selector);
+  },
+  addIcon: function(elmt, onClick) {
+    var icon;
+    if (!elmt.dataset.hasPreview) {
+      elmt.dataset.hasPreview = true;
+      icon = document.createElement('a');
+      icon.innerHTML = "<i class='fa fa-eye'></i>";
+      icon.addEventListener('click', onClick);
+      return elmt.parentNode.querySelector('.operations').appendChild(icon);
+    }
+  }
+};
+
+module.exports = {
+  init: function() {
+    var config, observer, onMutation, pluginConf, pluginName, _ref;
+    if (window.plugins == null) {
+      window.plugins = {};
+    }
+    _ref = window.plugins;
+    for (pluginName in _ref) {
+      if (!__hasProp.call(_ref, pluginName)) continue;
+      pluginConf = _ref[pluginName];
+      this.activate(pluginName);
+    }
+    window.plugins.helpers = helpers;
+    if (typeof MutationObserver !== "undefined" && MutationObserver !== null) {
+      config = {
+        attributes: false,
+        childList: true,
+        characterData: false,
+        subtree: true
+      };
+      onMutation = function(mutations) {
+        var check, checkNode, mutation, _i, _len, _results;
+        checkNode = function(node, action) {
+          var listener, _ref1, _results;
+          if (node.nodeType !== Node.ELEMENT_NODE) {
+            return;
+          }
+          _ref1 = window.plugins;
+          _results = [];
+          for (pluginName in _ref1) {
+            if (!__hasProp.call(_ref1, pluginName)) continue;
+            pluginConf = _ref1[pluginName];
+            if (pluginConf.active) {
+              if (action === 'add') {
+                listener = pluginConf.onAdd;
+              }
+              if (action === 'delete') {
+                listener = pluginConf.onDelete;
+              }
+              if ((listener != null) && listener.condition.bind(pluginConf)(node)) {
+                _results.push(listener.action.bind(pluginConf)(node));
+              } else {
+                _results.push(void 0);
+              }
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        };
+        check = function(mutation) {
+          var node, nodes, _i, _j, _len, _len1, _results;
+          nodes = Array.prototype.slice.call(mutation.addedNodes);
+          for (_i = 0, _len = nodes.length; _i < _len; _i++) {
+            node = nodes[_i];
+            checkNode(node, 'add');
+          }
+          nodes = Array.prototype.slice.call(mutation.removedNodes);
+          _results = [];
+          for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
+            node = nodes[_j];
+            _results.push(checkNode(node, 'del'));
+          }
+          return _results;
+        };
+        _results = [];
+        for (_i = 0, _len = mutations.length; _i < _len; _i++) {
+          mutation = mutations[_i];
+          _results.push(check(mutation));
+        }
+        return _results;
+      };
+      observer = new MutationObserver(onMutation);
+      return observer.observe(document, config);
+    } else {
+      return setInterval(function() {
+        var _ref1, _results;
+        _ref1 = window.plugins;
+        _results = [];
+        for (pluginName in _ref1) {
+          if (!__hasProp.call(_ref1, pluginName)) continue;
+          pluginConf = _ref1[pluginName];
+          if (pluginConf.active) {
+            if (pluginConf.onAdd != null) {
+              if (pluginConf.onAdd.condition(document.body)) {
+                _results.push(pluginConf.onAdd.action(document.body));
+              } else {
+                _results.push(void 0);
+              }
+            } else {
+              _results.push(void 0);
+            }
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      }, 200);
+    }
+  },
+  activate: function(key) {
+    var event, listener, plugin, pluginConf, pluginName, type, _ref, _ref1, _results;
+    plugin = window.plugins[key];
+    type = plugin.type;
+    plugin.active = true;
+    if (plugin.listeners != null) {
+      _ref = plugin.listeners;
+      for (event in _ref) {
+        if (!__hasProp.call(_ref, event)) continue;
+        listener = _ref[event];
+        window.addEventListener(event, listener.bind(plugin));
+      }
+    }
+    if (plugin.onActivate) {
+      plugin.onActivate();
+    }
+    if (type != null) {
+      _ref1 = window.plugins;
+      _results = [];
+      for (pluginName in _ref1) {
+        if (!__hasProp.call(_ref1, pluginName)) continue;
+        pluginConf = _ref1[pluginName];
+        if (pluginName === key) {
+          continue;
+        }
+        if (pluginConf.type === type && pluginConf.active) {
+          _results.push(this.deactivate(pluginName));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    }
+  },
+  deactivate: function(key) {
+    var event, listener, plugin, _ref;
+    plugin = window.plugins[key];
+    plugin.active = false;
+    if (plugin.listeners != null) {
+      _ref = plugin.listeners;
+      for (event in _ref) {
+        if (!__hasProp.call(_ref, event)) continue;
+        listener = _ref[event];
+        window.removeEventListener(event, listener);
+      }
+    }
+    if (plugin.onDeactivate) {
+      return plugin.onDeactivate();
+    }
+  }
+};
 });
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
@@ -3772,7 +3979,7 @@ buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, f
 }
 else if ( model.type == 'file')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -3970,7 +4177,7 @@ buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, f
 }
 else if ( model.type == 'file')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
