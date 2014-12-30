@@ -44,7 +44,10 @@
   },
   "scripts": {
     "test": "cake --use-js --use-server tests",
-    "start": "node build/server.js"
+    "start": "node build/server.js",
+    "dev:client": "cd client && brunch w",
+    "dev:server": "nodemon server.coffee --ignore client/",
+    "dev": "npm run dev:server & npm run dev:client"
   },
   "cozy-permissions": {
     "File": {
