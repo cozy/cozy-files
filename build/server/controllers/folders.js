@@ -185,7 +185,9 @@ updateParents = function() {
 };
 
 module.exports.find = function(req, res, next) {
-  return res.send(req.folder);
+  return Folder.injectInheritedClearance([req.folder], function(err, folders) {
+    return res.send(folders[0]);
+  });
 };
 
 module.exports.tree = function(req, res, next) {

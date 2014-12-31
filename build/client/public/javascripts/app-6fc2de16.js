@@ -1847,7 +1847,13 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.getClearance = function() {
-    return this.get('clearance');
+    var inheritedClearance;
+    inheritedClearance = this.get('inheritedClearance');
+    if (!inheritedClearance || inheritedClearance.length === 0) {
+      return this.get('clearance');
+    } else {
+      return inheritedClearance[0].clearance;
+    }
   };
 
   return File;
@@ -3681,9 +3687,7 @@ module.exports = ModalShareView = (function(_super) {
           });
         } else {
           _this.inherited = data.inherited;
-          if (_this.inherited.length > 0) {
-            _this.forcedShared = true;
-          }
+          _this.forcedShared = _this.inherited.length > 0;
           if (_this.isPrivateClearance()) {
             _this.makePublic();
           }
@@ -3773,6 +3777,8 @@ module.exports = ModalShareView = (function(_super) {
         $('.revoke').hide();
         $('.changeperm').prop('disabled', true);
       }
+      $('#modal-dialog-no').hide();
+      $('#modal-dialog-yes').html(t('ok'));
     } else {
       listitems = [];
       summary = [];
@@ -3826,6 +3832,22 @@ module.exports = ModalShareView = (function(_super) {
     return _.extend(ModalShareView.__super__.saveData.apply(this, arguments), {
       changeNotification: changeNotification
     });
+  };
+
+  ModalShareView.prototype.onYes = function() {
+    if (this.forcedShared) {
+      return this.close();
+    } else {
+      return ModalShareView.__super__.onYes.call(this);
+    }
+  };
+
+  ModalShareView.prototype.onNo = function() {
+    if (this.forcedShared) {
+      return this.close();
+    } else {
+      return ModalShareView.__super__.onNo.call(this);
+    }
   };
 
   return ModalShareView;
