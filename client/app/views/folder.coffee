@@ -9,6 +9,8 @@ ModalShareView = null
 
 File = require '../models/file'
 
+BACKSPACE_KEY = 8
+
 ###
 Handles the display logic for a folder.
 Main entry point of the interface: handles breadcrumb, buttons and files list
@@ -338,14 +340,20 @@ module.exports = class FolderView extends BaseView
         if @searching isnt true
             searching = true
             setTimeout =>
-                query = @$('input#search-box').val()
+                query = @$('input#search-box').val().trim()
 
                 if query isnt ''
                     route = "#search/#{query}"
-                else
+
+                # query is empty and backspace is pressed = returns to home
+                else if e.keyCode is BACKSPACE_KEY
                     route = ''
 
-                window.app.router.navigate route, true
+                # nothing should be done
+                else
+                    route = null
+
+                window.app.router.navigate route, true if route?
                 searching = false
             , 1000
 
