@@ -149,7 +149,7 @@ module.exports =
     "modal shared file custom msg"    : "Entrez un email et appuyez sur Entrée"
     "modal shared file link msg"      : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
     "modal shared public link msg"    : "Envoyez ce lien pour partager ce dossier ou fichier:"
-    "modal shared with people msg"    : "OU invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):"
+    "modal shared with people msg"    : "OU invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé) :"
     "only you can see"                : "Vous seul(e) pouvez accéder à cette ressource."
     "public"                          : "Public"
     "private"                         : "Privé"
