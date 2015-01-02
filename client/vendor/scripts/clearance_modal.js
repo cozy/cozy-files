@@ -7,15 +7,13 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
       return true;
     };
   }
-  input.on('keyup', (function(_this) {
-    return function(event) {
-      if (event.which === 13 && !input.data('typeahead').shown) {
-        onGuestAdded(input.val());
-        input.val('');
-        return event.preventDefault();
-      }
-    };
-  })(this));
+  input.on('keyup', function(event) {
+    if (event.which === 13 && !input.data('typeahead').shown) {
+      onGuestAdded(input.val());
+      input.val('');
+      return event.preventDefault();
+    }
+  });
   return input.typeahead({
     source: function(query) {
       var contacts, items, regexp;
@@ -36,8 +34,6 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
           });
         });
       });
-      console.log(contacts);
-      console.log(items);
       items = items.filter(extrafilter);
       return items;
     },
@@ -69,12 +65,10 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
       img = contact.hasPicture ? '<img width="40" src="clearance/contacts/' + contact.id + '.jpg">&nbsp;' : '<img width="40" src="images/defaultpicture.png">&nbsp;';
       return img + old.call(this, contact.display);
     },
-    updater: (function(_this) {
-      return function(value) {
-        onGuestAdded(value);
-        return "";
-      };
-    })(this)
+    updater: function(value) {
+      onGuestAdded(value);
+      return "";
+    }
   });
 };
 
@@ -285,7 +279,7 @@ buf.push("<p>" + (jade.escape(null == (jade_interp = t('only you can see')) ? ""
 }
 else
 {
-buf.push("<p>" + (jade.escape(null == (jade_interp = t('modal shared public link msg')) ? "" : jade_interp)) + "</p>");
+buf.push("<div class=\"public-url\"><p>" + (jade.escape(null == (jade_interp = t('modal shared public link msg')) ? "" : jade_interp)) + "</p>");
 if ( clearance == 'public')
 {
 buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control\"/>");
@@ -294,7 +288,7 @@ else
 {
 buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control disabled\"/>");
 }
-buf.push("<p>&nbsp;</p><p>" + (jade.escape(null == (jade_interp = t('modal shared with people msg')) ? "" : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
+buf.push("<p>&nbsp;</p></div><p><span class=\"public-url\">" + (jade.escape(null == (jade_interp = t('or')) ? "" : jade_interp)) + "</span>&nbsp;" + (jade.escape((jade_interp = t('modal shared with people msg')) == null ? '' : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
 if ( clearance != 'public')
 {
 // iterate clearance
@@ -492,7 +486,6 @@ module.exports = CozyClearanceModal = (function(_super) {
     this.onNo = __bind(this.onNo, this);
     this.revoke = __bind(this.revoke, this);
     this.onGuestAdded = __bind(this.onGuestAdded, this);
-    this.showLink = __bind(this.showLink, this);
     this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
     this.existsEmail = __bind(this.existsEmail, this);
     this.typeaheadFilter = __bind(this.typeaheadFilter, this);
@@ -546,10 +539,9 @@ module.exports = CozyClearanceModal = (function(_super) {
   };
 
   CozyClearanceModal.prototype.render = function() {
-    var body;
     CozyClearanceModal.__super__.render.call(this);
-    body = $('.modal-body');
-    return body.append($("<span class='pull-left'>" + (t('send email hint')) + "</span>"));
+    $('.email-hint').remove();
+    return $('.modal-footer').prepend($("<span class='pull-left email-hint'>" + (t('send email hint')) + "</span>"));
   };
 
   CozyClearanceModal.prototype.renderContent = function() {
@@ -563,11 +555,15 @@ module.exports = CozyClearanceModal = (function(_super) {
     this._configureTypeAhead(clearance);
     this._firstFocus(clearance);
     if (this.isPublicClearance()) {
-      this.$('#public-url').removeClass('disabled');
-      return this.$('#public-url').prev('p').removeClass('disabled');
+      this.$('.public-url').show();
+      return $('.email-hint').hide();
     } else {
-      this.$('#public-url').addClass('disabled');
-      return this.$('#public-url').prev('p').addClass('disabled');
+      this.$('.public-url').hide();
+      if (this.isPrivateClearance()) {
+        return $('.email-hint').hide();
+      } else {
+        return $('.email-hint').show();
+      }
     }
   };
 
@@ -664,7 +660,7 @@ module.exports = CozyClearanceModal = (function(_super) {
   CozyClearanceModal.prototype.doSave = function(sendmail, clearances) {
     return request('PUT', "clearance/" + this.model.id, this.saveData(), {
       error: function() {
-        return Modal.error('server error occured');
+        return Modal.error(t('server error occured'));
       },
       success: (function(_this) {
         return function(data) {
@@ -674,7 +670,7 @@ module.exports = CozyClearanceModal = (function(_super) {
           } else {
             return request('POST', "clearance/" + _this.model.id + "/send", clearances, {
               error: function() {
-                return Modal.error('mail not send');
+                return Modal.error(t('mail not send'));
               },
               success: function(data) {
                 return _this.$el.modal('hide');
@@ -725,20 +721,25 @@ module.exports = CozyClearanceModal = (function(_super) {
   };
 
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
-    var contactid, email, isEmailEmpty, key, perm, _ref;
+    var clearance, contactid, email, isEmailEmpty, key, perm, _ref;
     _ref = result.split(';'), email = _ref[0], contactid = _ref[1];
     isEmailEmpty = email === '' || email.indexOf('@') < 1;
     if (!(this.existsEmail(email) || isEmailEmpty)) {
       key = randomString();
       perm = 'r';
       if (this.isPublicClearance()) {
-        this.model.set('clearance', []);
+        clearance = [];
+      } else {
+        clearance = this.model.get('clearance');
       }
-      this.model.get('clearance').push({
+      clearance.push({
         contactid: contactid,
         email: email,
         key: key,
         perm: perm
+      });
+      this.model.set({
+        clearance: clearance
       });
       return this.refresh();
     } else {

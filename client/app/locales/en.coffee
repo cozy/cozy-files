@@ -1,5 +1,8 @@
 module.exports =
 
+    # misc
+    "or"                        : "or"
+
     # folder view
     "modal error"               : "Error"
     "modal ok"                  : "OK"
