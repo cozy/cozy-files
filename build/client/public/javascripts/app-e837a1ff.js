@@ -1207,6 +1207,7 @@ module.exports = ViewCollection = (function(_super) {
 
 ;require.register("locales/en", function(exports, require, module) {
 module.exports = {
+  "or": "or",
   "modal error": "Error",
   "modal ok": "OK",
   "modal error get files": "Error getting files from server",
@@ -1352,6 +1353,7 @@ module.exports = {
 
 ;require.register("locales/fr", function(exports, require, module) {
 module.exports = {
+  "or": "ou",
   "modal error": "Erreur",
   "modal ok": "OK",
   "modal error get files": "Une erreur s'est produite en récupérant les fichiers du serveur",
@@ -1454,7 +1456,7 @@ module.exports = {
   "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
   "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
   "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier:",
-  "modal shared with people msg": "OU invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé):",
+  "modal shared with people msg": "Invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé) :",
   "only you can see": "Vous seul(e) pouvez accéder à cette ressource.",
   "public": "Public",
   "private": "Privé",
@@ -2807,7 +2809,7 @@ module.exports = FilesView = (function(_super) {
 });
 
 ;require.register("views/folder", function(exports, require, module) {
-var BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalConflict, ModalShareView, UploadStatusView,
+var BACKSPACE_KEY, BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalConflict, ModalShareView, UploadStatusView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2829,6 +2831,8 @@ ModalConflict = require('./modal_conflict');
 ModalShareView = null;
 
 File = require('../models/file');
+
+BACKSPACE_KEY = 8;
 
 
 /*
@@ -3190,13 +3194,17 @@ module.exports = FolderView = (function(_super) {
       return setTimeout((function(_this) {
         return function() {
           var query, route;
-          query = _this.$('input#search-box').val();
+          query = _this.$('input#search-box').val().trim();
           if (query !== '') {
             route = "#search/" + query;
-          } else {
+          } else if (e.keyCode === BACKSPACE_KEY) {
             route = '';
+          } else {
+            route = null;
           }
-          window.app.router.navigate(route, true);
+          if (route != null) {
+            window.app.router.navigate(route, true);
+          }
           return searching = false;
         };
       })(this), 1000);
