@@ -152,7 +152,7 @@ module.exports =
     "modal question folder shareable" : "Select share mode for this folder"
     "modal shared folder custom msg"  : "Enter email and press enter"
     "modal shared public link msg"    : "Send this link to let people access this folder:"
-    "modal shared with people msg"    : "OR give access to a selection of contacts. Type their emails or name in the field and press enter (an email will be sent to them when you will close this window):"
+    "modal shared with people msg"    : "Give access to a selection of contacts. Type their emails or name in the field and press enter (an email will be sent to them when you will close this window):"
     "modal send mails"                : "Send a notification"
     "modal question file shareable"   : "Select share mode for this file"
     "modal shared file custom msg"    : "Enter email and press enter"
