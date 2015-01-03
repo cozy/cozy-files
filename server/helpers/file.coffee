@@ -20,11 +20,11 @@ module.exports =
         # Configure headers
         encodedFileName = encodeURIComponent file.name
         if download
-            contentHeader = "attachment; filename=\"#{file.name}\"; " + \
+            contentHeader = "attachment; " + \
                             "filename*=UTF8''#{encodedFileName}"
         else
-            contentHeader = "inline; filename=#{file.name}; " + \
-                            "filename*=UTF8''\"#{encodedFileName}\""
+            contentHeader = "inline; " + \
+                            "filename*=UTF8''#{encodedFileName}"
         res.setHeader 'content-disposition', contentHeader
 
         # Perform download with the lowel level node js api to avoid too much
