@@ -1263,6 +1263,7 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "new folder": "new folder",
   "download all": "Download the selection",
   "move all": "Move the selection",
   "remove all": "Remove the selection",
@@ -1408,6 +1409,7 @@ module.exports = {
   "new folder close": "Annuler",
   "new folder send": "Créer",
   "new folder button": "Créer un nouveau dossier",
+  "new folder": "nouveau dossier",
   "download all": "Télécharger la sélection",
   "move all": "Déplacer la sélection",
   "remove all": "Supprimer la sélection",
@@ -1850,11 +1852,15 @@ module.exports = File = (function(_super) {
 
   File.prototype.getClearance = function() {
     var inheritedClearance;
-    inheritedClearance = this.get('inheritedClearance');
-    if (!inheritedClearance || inheritedClearance.length === 0) {
-      return this.get('clearance');
+    if (app.isPublic) {
+      return null;
     } else {
-      return inheritedClearance[0].clearance;
+      inheritedClearance = this.get('inheritedClearance');
+      if (!inheritedClearance || inheritedClearance.length === 0) {
+        return this.get('clearance');
+      } else {
+        return inheritedClearance[0].clearance;
+      }
     }
   };
 
@@ -2458,12 +2464,15 @@ module.exports = FileView = (function(_super) {
     })(this));
   };
 
-  FileView.prototype.onEditClicked = function() {
+  FileView.prototype.onEditClicked = function(name) {
     var input, lastIndexOfDot, model, range, width;
     width = this.$(".caption").width() + 10;
     model = this.model.toJSON();
     if (model["class"] == null) {
       model["class"] = 'folder';
+    }
+    if (typeof name === "string") {
+      model.name = name;
     }
     this.$el.html(this.templateEdit({
       model: model,
@@ -2476,6 +2485,7 @@ module.exports = FileView = (function(_super) {
       lastIndexOfDot = model.name.length;
     }
     input = this.$(".file-edit-name")[0];
+    console.log(lastIndexOfDot);
     if (typeof input.selectionStart !== "undefined") {
       input.selectionStart = 0;
       input.selectionEnd = lastIndexOfDot;
@@ -2483,8 +2493,8 @@ module.exports = FileView = (function(_super) {
       input.select();
       range = document.selection.createRange();
       range.collapse(true);
-      range.moveEnd("character", lastIndexOfDot);
       range.moveStart("character", 0);
+      range.moveEnd("character", lastIndexOfDot);
       range.select();
     }
     return this.$el.addClass('edit-mode');
@@ -3019,7 +3029,7 @@ module.exports = FolderView = (function(_super) {
       this.newFolder.type = 'folder';
       this.baseCollection.add(this.newFolder);
       view = this.filesList.views[this.newFolder.cid];
-      view.onEditClicked();
+      view.onEditClicked(t("new folder"));
       return this.newFolder.once('sync destroy', (function(_this) {
         return function() {
           return _this.newFolder = null;

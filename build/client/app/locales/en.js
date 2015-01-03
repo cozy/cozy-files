@@ -56,6 +56,7 @@ module.exports = {
   "new folder close": "Close",
   "new folder send": "Create Folder",
   "new folder button": "Create a new folder",
+  "new folder": "new folder",
   "download all": "Download the selection",
   "move all": "Move the selection",
   "remove all": "Remove the selection",

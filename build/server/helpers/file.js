@@ -18,9 +18,9 @@ module.exports = {
     file = req.file;
     encodedFileName = encodeURIComponent(file.name);
     if (download) {
-      contentHeader = ("attachment; filename=\"" + file.name + "\"; ") + ("filename*=UTF8''" + encodedFileName);
+      contentHeader = "attachment; " + ("filename*=UTF8''" + encodedFileName);
     } else {
-      contentHeader = ("inline; filename=" + file.name + "; ") + ("filename*=UTF8''\"" + encodedFileName + "\"");
+      contentHeader = "inline; " + ("filename*=UTF8''" + encodedFileName);
     }
     res.setHeader('content-disposition', contentHeader);
     url = "/data/" + file.id + "/binaries/file";
