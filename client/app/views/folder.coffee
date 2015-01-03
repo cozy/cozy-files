@@ -199,7 +199,7 @@ module.exports = class FolderView extends BaseView
 
             @baseCollection.add @newFolder
             view = @filesList.views[@newFolder.cid]
-            view.onEditClicked()
+            view.onEditClicked t "new folder"
 
             @newFolder.once 'sync destroy', => @newFolder = null
 

@@ -171,10 +171,15 @@ module.exports = class FileView extends BaseView
                         window.pendingOperations.deletion--
                         ModalView.error t "modal delete error"
 
-    onEditClicked: ->
+    onEditClicked: (name) ->
+
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
+
+        if typeof(name) is "string"
+            model.name = name
+
         @$el.html @templateEdit
             model: model
             clearance: @model.getClearance()
@@ -186,6 +191,8 @@ module.exports = class FileView extends BaseView
         lastIndexOfDot = model.name.lastIndexOf '.'
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
         input = @$(".file-edit-name")[0]
+
+        console.log lastIndexOfDot
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
@@ -194,8 +201,8 @@ module.exports = class FileView extends BaseView
             input.select()
             range = document.selection.createRange()
             range.collapse true
-            range.moveEnd "character", lastIndexOfDot
             range.moveStart "character", 0
+            range.moveEnd "character", lastIndexOfDot
             range.select()
 
         @$el.addClass 'edit-mode'
