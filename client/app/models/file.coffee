@@ -171,8 +171,11 @@ module.exports = class File extends Backbone.Model
             @breadcrumb = parents
 
     getClearance: ->
-        inheritedClearance = @get 'inheritedClearance'
-        if not inheritedClearance or inheritedClearance.length is 0
-            return @get 'clearance'
+        if app.isPublic
+            return null
         else
-            return inheritedClearance[0].clearance
+            inheritedClearance = @get 'inheritedClearance'
+            if not inheritedClearance or inheritedClearance.length is 0
+                return @get 'clearance'
+            else
+                return inheritedClearance[0].clearance
