@@ -46,14 +46,6 @@ window.plugins.markdown = {
       this.addGallery();
     }
   },
-  onActivate: function () {
-    var script = document.createElement('script');
-    script.src = "http://vast-engineering.github.io/jquery-popup-overlay/jquery.popupoverlay.js";
-    document.body.appendChild(script);
-
-  },
-  onDeactivate: function () {
-  },
   listeners: {
     'load': function (params) {
       this.addGallery();
