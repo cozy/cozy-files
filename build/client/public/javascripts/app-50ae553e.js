@@ -927,11 +927,13 @@ module.exports = MergedCollection = function(primary, secondary, uniqAttr) {
 });
 
 ;require.register("lib/socket", function(exports, require, module) {
-var File, SocketListener,
+var File, SocketListener, contactCollection,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 File = require('../models/file');
+
+contactCollection = require('cozy-clearance/contact_collection');
 
 module.exports = SocketListener = (function(_super) {
   __extends(SocketListener, _super);
@@ -945,7 +947,7 @@ module.exports = SocketListener = (function(_super) {
     'folder': File
   };
 
-  SocketListener.prototype.events = ['file.create', 'file.update', 'file.delete', 'folder.create', 'folder.update', 'folder.delete'];
+  SocketListener.prototype.events = ['file.create', 'file.update', 'file.delete', 'folder.create', 'folder.update', 'folder.delete', 'contact.create', 'contact.update', 'contact.delete'];
 
   SocketListener.prototype.isInCachedFolder = function(model) {
     var path;
@@ -980,49 +982,53 @@ module.exports = SocketListener = (function(_super) {
   SocketListener.prototype.process = function(event) {
     var doctype, id, model, operation;
     doctype = event.doctype, operation = event.operation, id = event.id;
-    switch (operation) {
-      case 'create':
-        model = new this.models[doctype]({
-          id: id,
-          type: doctype
-        });
-        return model.fetch({
-          success: (function(_this) {
-            return function(fetched) {
-              fetched.set({
-                type: doctype
-              });
-              return _this.onRemoteCreate(fetched);
-            };
-          })(this)
-        });
-      case 'update':
-        return this.collections.forEach((function(_this) {
-          return function(collection) {
-            if (!(model = collection.get(id))) {
-              return;
-            }
-            return model.fetch({
-              success: function(fetched) {
-                if (fetched.changedAttributes()) {
-                  fetched.set({
-                    type: doctype
-                  });
-                  return _this.onRemoteUpdate(fetched, collection);
-                }
+    if (doctype === 'contact') {
+      return contactCollection.handleRealtimeContactEvent(event);
+    } else {
+      switch (operation) {
+        case 'create':
+          model = new this.models[doctype]({
+            id: id,
+            type: doctype
+          });
+          return model.fetch({
+            success: (function(_this) {
+              return function(fetched) {
+                fetched.set({
+                  type: doctype
+                });
+                return _this.onRemoteCreate(fetched);
+              };
+            })(this)
+          });
+        case 'update':
+          return this.collections.forEach((function(_this) {
+            return function(collection) {
+              if (!(model = collection.get(id))) {
+                return;
               }
-            });
-          };
-        })(this));
-      case 'delete':
-        return this.collections.forEach((function(_this) {
-          return function(collection) {
-            if (!(model = collection.get(id))) {
-              return;
-            }
-            return _this.onRemoteDelete(model, collection);
-          };
-        })(this));
+              return model.fetch({
+                success: function(fetched) {
+                  if (fetched.changedAttributes()) {
+                    fetched.set({
+                      type: doctype
+                    });
+                    return _this.onRemoteUpdate(fetched, collection);
+                  }
+                }
+              });
+            };
+          })(this));
+        case 'delete':
+          return this.collections.forEach((function(_this) {
+            return function(collection) {
+              if (!(model = collection.get(id))) {
+                return;
+              }
+              return _this.onRemoteDelete(model, collection);
+            };
+          })(this));
+      }
     }
   };
 

@@ -100,3 +100,5 @@ module.exports.sendAll = clearanceCtl.sendAll;
 module.exports.contactList = clearanceCtl.contactList;
 
 module.exports.contactPicture = clearanceCtl.contactPicture;
+
+module.exports.contact = clearanceCtl.contact;
