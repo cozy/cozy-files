@@ -1,4 +1,5 @@
 File = require '../models/file'
+contactCollection = require 'cozy-clearance/contact_collection'
 
 module.exports = class SocketListener extends CozySocketListener
 
@@ -13,6 +14,9 @@ module.exports = class SocketListener extends CozySocketListener
         'folder.create'
         'folder.update'
         'folder.delete'
+        'contact.create'
+        'contact.update'
+        'contact.delete'
     ]
 
     isInCachedFolder: (model) ->
@@ -38,9 +42,10 @@ module.exports = class SocketListener extends CozySocketListener
     process: (event) ->
         {doctype, operation, id} = event
 
-        #console.info "received: #{operation}:#{doctype}"
+        if doctype is 'contact'
+            contactCollection.handleRealtimeContactEvent event
 
-        switch operation
+        else switch operation
             when 'create'
                 model = new @models[doctype](id: id, type: doctype)
                 model.fetch
