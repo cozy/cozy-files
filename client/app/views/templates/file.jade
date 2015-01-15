@@ -9,7 +9,7 @@ td
       if model.type == 'folder'
         .caption.btn.btn-link
           span.icon-zone
-            div.spinholder 
+            div.spinholder
               img(src="images/spinner.svg")
             div.selector-wrapper
               input.selector(type="checkbox")
@@ -33,8 +33,8 @@ td
               span.fa.fa-globe
             div.selector-wrapper
               input.selector(type="checkbox")
-            if model.mime && this.mimeClasses[model.mime]
-              i(class="fa #{this.mimeClasses[model.mime]}")
+            if model.mime && mimeClass
+              i(class="fa #{mimeClass}")
             else
               i.fa.fa-file-o
           a.btn-link(

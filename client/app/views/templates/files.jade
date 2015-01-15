@@ -1,20 +1,20 @@
 table#table-items.table.table-hover
   thead
     tr.table-headers
-      td
+      th.name(aria-sort="ascending")
         input#select-all(type="checkbox")
         span= t('name')
         a#down-name.btn.glyphicon.glyphicon-chevron-down.unactive
         a#up-name.btn.glyphicon.glyphicon-chevron-up.unactive
-      td.size-column-cell
+      th.size.size-column-cell(aria-sort="none")
         span= t('size')
         a#down-size.glyphicon.glyphicon-chevron-down.btn.unactive
         a#up-size.unactive.btn.glyphicon.glyphicon-chevron-up.unactive
-      td.type-column-cell
+      th.class.type-column-cell(aria-sort="none")
         span= t('type')
         a#down-class.btn.glyphicon.glyphicon-chevron-down.unactive
         a#up-class.glyphicon.glyphicon-chevron-up.btn.unactive
-      td.date-column-cell
+      th.lastModification.date-column-cell(aria-sort="none")
         span= t('date')
         a#down-lastModification.btn.glyphicon.glyphicon-chevron-down.unactive
         a#up-lastModification.btn.glyphicon.glyphicon-chevron-up.unactive

@@ -6,6 +6,71 @@ ProgressBar = require '../widgets/progressbar'
 
 client = require "../lib/client"
 
+
+mimeClasses =
+    'application/octet-stream'      : 'fa-file-o'
+    'application/x-binary'          : 'fa-file'
+    'text/plain'                    : 'fa-file-text-o'
+    'text/richtext'                 : 'fa-file-text-o'
+    'application/x-rtf'             : 'fa-file-text-o'
+    'application/rtf'               : 'fa-file-text-o'
+    'application/msword'            : 'fa-file-word-o'
+    'application/mspowerpoint'      : 'fa-file-powerpoint-o'
+    'application/vnd.ms-powerpoint' : 'fa-file-powerpoint-o'
+    'application/x-mspowerpoint'    : 'fa-file-powerpoint-o'
+    'application/excel'             : 'fa-file-excel-o'
+    'application/x-excel'           : 'fa-file-excel-o'
+    'aaplication/vnd.ms-excel'      : 'fa-file-excel-o'
+    'application/x-msexcel'         : 'fa-file-excel-o'
+    'application/pdf'               : 'fa-file-pdf-o'
+    'text/html'                     : 'fa-file-code-o'
+    'text/asp'                      : 'fa-file-code-o'
+    'text/css'                      : 'fa-file-code-o'
+    'application/x-javascript'      : 'fa-file-code-o'
+    'application/x-lisp'            : 'fa-file-code-o'
+    'application/xml'               : 'fa-file-code-o'
+    'text/xml'                      : 'fa-file-code-o'
+    'application/x-sh'              : 'fa-file-code-o'
+    'text/x-script.python'          : 'fa-file-code-o'
+    'application/x-bytecode.python' : 'fa-file-code-o'
+    'text/x-java-source'            : 'fa-file-code-o'
+    'application/postscript'        : 'fa-image'
+    'image/gif'                     : 'fa-image'
+    'image/jpg'                     : 'fa-image'
+    'image/jpeg'                    : 'fa-image'
+    'image/pjpeg'                   : 'fa-image'
+    'image/x-pict'                  : 'fa-image'
+    'image/pict'                    : 'fa-image'
+    'image/png'                    : 'fa-image'
+    'image/x-pcx'                   : 'fa-image'
+    'image/x-portable-pixmap'       : 'fa-image'
+    'image/x-tiff'                  : 'fa-image'
+    'image/tiff'                    : 'fa-image'
+    'audio/aiff'                    : 'fa-file-audio-o'
+    'audio/x-aiff'                  : 'fa-file-audio-o'
+    'audio/midi'                    : 'fa-file-audio-o'
+    'audio/x-midi'                  : 'fa-file-audio-o'
+    'audio/x-mid'                   : 'fa-file-audio-o'
+    'audio/mpeg'                    : 'fa-file-audio-o'
+    'audio/x-mpeg'                  : 'fa-file-audio-o'
+    'audio/mpeg3'                   : 'fa-file-audio-o'
+    'audio/x-mpeg3'                 : 'fa-file-audio-o'
+    'audio/wav'                     : 'fa-file-audio-o'
+    'audio/x-wav'                   : 'fa-file-audio-o'
+    'video/avi'                     : 'fa-file-video-o'
+    'video/mpeg'                    : 'fa-file-video-o'
+    'application/zip'               : 'fa-file-archive-o'
+    'multipart/x-zip'               : 'fa-file-archive-o'
+    'multipart/x-zip'               : 'fa-file-archive-o'
+    'application/x-bzip'            : 'fa-file-archive-o'
+    'application/x-bzip2'           : 'fa-file-archive-o'
+    'application/x-gzip'            : 'fa-file-archive-o'
+    'application/x-compress'        : 'fa-file-archive-o'
+    'application/x-compressed'      : 'fa-file-archive-o'
+    'application/x-zip-compressed'  : 'fa-file-archive-o'
+    'multipart/x-gzip'              : 'fa-file-archive-o'
+
+
 module.exports = class FileView extends BaseView
 
     className      : 'folder-row'
@@ -14,79 +79,6 @@ module.exports = class FileView extends BaseView
     templateEdit   : require './templates/file_edit'
     templateSearch : require './templates/file_search'
 
-    events:
-        'click a.file-tags'        : 'onTagClicked'
-        'click a.file-delete'      : 'onDeleteClicked'
-        'click a.file-share'       : 'onShareClicked'
-        'click a.file-edit'        : 'onEditClicked'
-        'click a.file-edit-save'   : 'onSaveClicked'
-        'click a.file-edit-cancel' : 'onCancelClicked'
-        'click a.file-move'        : 'onMoveClicked'
-        'keydown input.file-edit-name': 'onKeyPress'
-        'change input.selector': 'onSelectChanged'
-
-    mimeClasses:
-        'application/octet-stream'      : 'fa-file-o'
-        'application/x-binary'          : 'fa-file'
-        'text/plain'                    : 'fa-file-text-o'
-        'text/richtext'                 : 'fa-file-text-o'
-        'application/x-rtf'             : 'fa-file-text-o'
-        'application/rtf'               : 'fa-file-text-o'
-        'application/msword'            : 'fa-file-word-o'
-        'application/mspowerpoint'      : 'fa-file-powerpoint-o'
-        'application/vnd.ms-powerpoint' : 'fa-file-powerpoint-o'
-        'application/x-mspowerpoint'    : 'fa-file-powerpoint-o'
-        'application/excel'             : 'fa-file-excel-o'
-        'application/x-excel'           : 'fa-file-excel-o'
-        'aaplication/vnd.ms-excel'      : 'fa-file-excel-o'
-        'application/x-msexcel'         : 'fa-file-excel-o'
-        'application/pdf'               : 'fa-file-pdf-o'
-        'text/html'                     : 'fa-file-code-o'
-        'text/asp'                      : 'fa-file-code-o'
-        'text/css'                      : 'fa-file-code-o'
-        'application/x-javascript'      : 'fa-file-code-o'
-        'application/x-lisp'            : 'fa-file-code-o'
-        'application/xml'               : 'fa-file-code-o'
-        'text/xml'                      : 'fa-file-code-o'
-        'application/x-sh'              : 'fa-file-code-o'
-        'text/x-script.python'          : 'fa-file-code-o'
-        'application/x-bytecode.python' : 'fa-file-code-o'
-        'text/x-java-source'            : 'fa-file-code-o'
-        'application/postscript'        : 'fa-image'
-        'image/gif'                     : 'fa-image'
-        'image/jpg'                     : 'fa-image'
-        'image/jpeg'                    : 'fa-image'
-        'image/pjpeg'                   : 'fa-image'
-        'image/x-pict'                  : 'fa-image'
-        'image/pict'                    : 'fa-image'
-        'image/png'                    : 'fa-image'
-        'image/x-pcx'                   : 'fa-image'
-        'image/x-portable-pixmap'       : 'fa-image'
-        'image/x-tiff'                  : 'fa-image'
-        'image/tiff'                    : 'fa-image'
-        'audio/aiff'                    : 'fa-file-audio-o'
-        'audio/x-aiff'                  : 'fa-file-audio-o'
-        'audio/midi'                    : 'fa-file-audio-o'
-        'audio/x-midi'                  : 'fa-file-audio-o'
-        'audio/x-mid'                   : 'fa-file-audio-o'
-        'audio/mpeg'                    : 'fa-file-audio-o'
-        'audio/x-mpeg'                  : 'fa-file-audio-o'
-        'audio/mpeg3'                   : 'fa-file-audio-o'
-        'audio/x-mpeg3'                 : 'fa-file-audio-o'
-        'audio/wav'                     : 'fa-file-audio-o'
-        'audio/x-wav'                   : 'fa-file-audio-o'
-        'video/avi'                     : 'fa-file-video-o'
-        'video/mpeg'                    : 'fa-file-video-o'
-        'application/zip'               : 'fa-file-archive-o'
-        'multipart/x-zip'               : 'fa-file-archive-o'
-        'multipart/x-zip'               : 'fa-file-archive-o'
-        'application/x-bzip'            : 'fa-file-archive-o'
-        'application/x-bzip2'           : 'fa-file-archive-o'
-        'application/x-gzip'            : 'fa-file-archive-o'
-        'application/x-compress'        : 'fa-file-archive-o'
-        'application/x-compressed'      : 'fa-file-archive-o'
-        'application/x-zip-compressed'  : 'fa-file-archive-o'
-        'multipart/x-gzip'              : 'fa-file-archive-o'
 
     template: (args) ->
         if @isSearchMode
@@ -96,6 +88,7 @@ module.exports = class FileView extends BaseView
 
     getRenderData: ->
         _.extend super(),
+            mimeClass: mimeClasses[@model.mime]
             isBeingUploaded: @model.isBeingUploaded()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
@@ -103,19 +96,6 @@ module.exports = class FileView extends BaseView
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
-        @listenTo @model, 'change', @refresh
-        @listenTo @model, 'request', =>
-            @$('.spinholder').show()
-            @$('.icon-zone .fa').addClass 'hidden'
-        @listenTo @model, 'sync error', =>
-            # for overwritten files, render entirely to show
-            #  modification date and type
-            @render() if @model.conflict
-
-            @$('.spinholder').hide()
-            @$('.icon-zone .fa').removeClass 'hidden'
-
-        @listenTo @model, 'toggle-select', @onToggleSelect
 
         # prevent contacts loading in shared area
         unless app.isPublic
@@ -158,6 +138,21 @@ module.exports = class FileView extends BaseView
         if msg is false then @errorField.hide()
         else @errorField.text msg
 
+
+    onRequest: ->
+        @$('.spinholder').show()
+        @$('.icon-zone .fa').addClass 'hidden'
+
+
+    onSyncError: ->
+        # for overwritten files, render entirely to show
+        #  modification date and type
+        @render() if @model.conflict
+
+        @$('.spinholder').hide()
+        @$('.icon-zone .fa').removeClass 'hidden'
+
+
     onTagClicked: ->
         @tags.toggleInput()
 
@@ -192,7 +187,6 @@ module.exports = class FileView extends BaseView
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
         input = @$(".file-edit-name")[0]
 
-        console.log lastIndexOfDot
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
