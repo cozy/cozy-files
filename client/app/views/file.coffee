@@ -375,6 +375,8 @@ module.exports = class FileView extends BaseView
             @$('.file-move, .file-delete').removeClass 'hidden'
 
     afterRender: ->
+        @$el.data 'cid', @model.cid
+
         # if the file is being uploaded
         if @model.isBeingUploaded()
             @$('.type-column-cell').remove()

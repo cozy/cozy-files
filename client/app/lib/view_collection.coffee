@@ -18,7 +18,7 @@ module.exports = class ViewCollection extends BaseView
     collectionEl: null
     template: -> ''
     itemview: null
-    views: {}
+    views: []
     itemViewOptions: ->
 
     bufferEl: null
@@ -30,7 +30,7 @@ module.exports = class ViewCollection extends BaseView
 
     # add 'empty' class to view when there is no subview
     onChange: ->
-        @$el.toggleClass 'empty', _.size(@views) is 0
+        @$el.toggleClass 'empty', @views.length
 
     # we append the views at a specific index
     # based on their order in the collection
@@ -38,7 +38,7 @@ module.exports = class ViewCollection extends BaseView
         index = @collection.indexOf view.model
         if index is 0 # insert at the beginning
             if @isBuffering
-                $(@bufferEl).prepend view.$el
+                @bufferEl.insertBefore view.el, @bufferEl.firstChild
             else
                 @$collectionEl.prepend view.$el
         else
@@ -67,7 +67,7 @@ module.exports = class ViewCollection extends BaseView
     # bind listeners to the collection
     initialize: ->
         super
-        @views = {}
+        @views = []
         @listenTo @collection, "reset",   @onReset
         @listenTo @collection, "add",     @addItem
         @listenTo @collection, "remove",  @removeItem
@@ -92,7 +92,7 @@ module.exports = class ViewCollection extends BaseView
 
     # if we have views before a render call, we detach them
     render: ->
-        view.$el.detach() for id, view of @views
+        _.each @views, (view) -> view.$el.detach()
         super
 
     # after render, we reattach the views
@@ -108,21 +108,22 @@ module.exports = class ViewCollection extends BaseView
 
     # event listener for reset
     onReset: (newcollection) ->
-        @removeItem view.model for id, view of @views
+        _.each @views, (view) => @removeItem view.model
         newcollection.forEach @addItem
 
     # event listeners for add
     addItem: (model) =>
         options = _.extend {}, model: model, @itemViewOptions(model)
         view = new @itemview options
-        @views[model.cid] = view.render()
+        @views.push view.render()
         @appendView view
         @onChange @views
 
     # event listeners for remove
     removeItem: (model) =>
-        @views[model.cid].remove()
-        delete @views[model.cid]
+        item = _.find @views, (view) -> view.model.cid is model.cid
+        item.remove()
+        @views.splice _.indexOf(@views, item), 1
 
         @onChange @views
 
@@ -132,7 +133,7 @@ module.exports = class ViewCollection extends BaseView
         selector = @getItemViewSelector()
         $itemViews = $ selector
         orderChanged = @collection.find (item, index) =>
-            view = @views[item.cid]
+            view = _.find @views, (view) -> view.model.cid is item.cid
             indexView = $itemViews.index view.$el
             return view and indexView isnt index
 
