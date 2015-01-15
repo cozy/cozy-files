@@ -1,3 +1,5 @@
+include ./svgdefs.svg
+
 table#table-items.table.table-hover
   thead
     tr.table-headers
@@ -6,6 +8,7 @@ table#table-items.table.table-hover
         span= t('name')
         a#down-name.btn.glyphicon.glyphicon-chevron-down.unactive
         a#up-name.btn.glyphicon.glyphicon-chevron-up.unactive
+      th.operations.size-column-cell &nbsp;
       th.size.size-column-cell(aria-sort="none")
         span= t('size')
         a#down-size.glyphicon.glyphicon-chevron-down.btn.unactive

@@ -534,9 +534,6 @@ tr.folder-row
     &:hover
         color: mediumcolor-contrast
 
-        .operations
-            display: inline
-
         .glyphicon.no-hover
             color: mediumcolor
 
@@ -576,7 +573,7 @@ tr.folder-row
                 display: none
 
     td
-        vertical-align: middle
+        vertical-align: middle !important
 
         div
         span
@@ -643,29 +640,29 @@ tr.folder-row
         padding: 0 18px 0 5px
 
     // the toolbox - delete, rename, etc
-    .operations
-        font-size: 16px
-        margin: 0
-        padding: 0
-        display: none
+    &:hover .operations-column-cell
+        visibility: visible
+
+    .operations-column-cell
+        visibility: hidden
+
+        text-align: right;
 
         a
             padding-left: 5px
-            color: blue
 
-            span:hover
-            i:hover
-                color: orange
+            &:hover svg
+            &:active svg
+                fill: orange
 
-        a:hover
-            color: orange
+        svg
+            display: inline-block
+            width: 16px
+            height: 16px
+            margin: 8px 0 0 .65em
 
-        .fa-lock
-        .fa-users
-        .fa-globe
-        .fa-share-alt
-        .fa-tag
-            padding-top: 6px
+            fill: lightgray
+
 
     .caption-wrapper
         display: inline
@@ -723,18 +720,6 @@ tr.folder-row
 
     .icon
         font-size: 14px
-
-    &:hover .operations
-        visibility: visible
-
-        a
-            color: lightgray
-
-        a:hover
-            color: orange
-
-        a:active
-            color: orange
 
 
 .visible-lg.visible-md.visible-inline

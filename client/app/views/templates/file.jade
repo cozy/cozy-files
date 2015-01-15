@@ -49,19 +49,19 @@ td
           li.tag #{tag}
             span.deleter &times;
 
+td.operations-column-cell
     block actions
       if !isBeingUploadetag
-        .operations
           a.file-tags(title="#{t('tooltip tag')}")
-            span.fa.fa-tag
+            svg: use(xlink:href="#icon-tag")
           a.file-share(title="#{t('tooltip share')}")
-            span.fa.fa-share-alt
+            svg: use(xlink:href="#icon-share")
           a.file-edit(title="#{t('tooltip edit')}")
-            span.glyphicon.glyphicon-edit
+            svg: use(xlink:href="#icon-edit")
           a.file-download(
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
-            span.glyphicon.glyphicon-cloud-download
+            svg: use(xlink:href="#icon-download")
 
 td.size-column-cell
   if model.type == 'file'
