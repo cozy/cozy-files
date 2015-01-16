@@ -1,20 +1,19 @@
-americano = require 'americano-cozy'
+cozydb = require 'cozydb'
 
 module.exports =
     file:
-        all: (doc) -> emit doc._id, doc
-        byFolder: (doc) -> emit doc.path, doc
+        all: cozydb.defaultRequests.all
+        byTag: cozydb.defaultRequests.tags
+        byFolder: cozydb.defaultRequests.by 'path'
         byFullPath: (doc) -> emit (doc.path + '/' + doc.name), doc
-        byTag: (doc) -> emit(tag, doc) for tag in doc.tags or []
-
     folder:
-        all: (doc) -> emit doc._id, doc
-        byFolder: (doc) -> emit doc.path, doc
+        all: cozydb.defaultRequests.all
+        byTag: cozydb.defaultRequests.tags
+        byFolder: cozydb.defaultRequests.by 'path'
         byFullPath: (doc) -> emit (doc.path + '/' + doc.name), doc
-        byTag: (doc) -> emit(tag, doc) for tag in doc.tags or []
 
     contact:
-        all: (doc) -> emit doc._id, doc
+        all: cozydb.defaultRequests.all
 
     user:
-        all: (doc) -> emit doc._id, doc
+        all: cozydb.defaultRequests.all

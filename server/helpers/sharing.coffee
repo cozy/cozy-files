@@ -6,8 +6,7 @@ clearance = require 'cozy-clearance'
 NotificationHelper = require 'cozy-notifications-helper'
 localization = require '../lib/localization_manager'
 
-try CozyAdapter = require('americano-cozy/node_modules/jugglingdb-cozy-adapter')
-catch e then CozyAdapter = require('jugglingdb-cozy-adapter')
+CozyAdapter = require('cozydb').api
 
 cozydomain = 'http://your.friends.cozy.url/'
 CozyInstance.getURL (err, domain) =>

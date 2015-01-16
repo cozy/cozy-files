@@ -1,9 +1,9 @@
-americano = require 'americano-cozy'
+cozydb = require 'cozydb'
 moment = require 'moment'
 async = require 'async'
 CozyInstance = require './cozy_instance'
 
-module.exports = Folder = americano.getModel 'Folder',
+module.exports = Folder = cozydb.getModel 'Folder',
     path: String
     name: String
     docType: String
@@ -12,8 +12,8 @@ module.exports = Folder = americano.getModel 'Folder',
     size: Number
     modificationHistory: Object
     changeNotification: Boolean
-    clearance: (x) -> x
-    tags: (x) -> x
+    clearance: cozydb.NoSchema
+    tags: [String]
 
 Folder.all = (params, callback) ->
     Folder.request "all", params, callback

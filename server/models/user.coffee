@@ -1,6 +1,6 @@
-americano = require 'americano-cozy'
+cozydb = require 'cozydb'
 
-module.exports = User = americano.getModel 'User',
+module.exports = User = cozydb.getModel 'User',
     email: String
     password: String
     salt: String
