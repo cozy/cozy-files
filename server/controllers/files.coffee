@@ -6,50 +6,18 @@ mime = require 'mime'
 log = require('printit')
     prefix: 'files'
 
+cozydb = require 'cozydb'
 File = require '../models/file'
 Folder = require '../models/folder'
 feed = require '../lib/feed'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
-{normalizePath, processAttachment, getFileClass} = require '../helpers/file'
+{normalizePath, getFileClass} = require '../helpers/file'
 
-
-# Dirty stuff while waiting that combined stream library get fixed and included
-# in every dependencies.
-monkeypatch = (ctx, fn, after) ->
-    old = ctx[fn]
-
-    ctx[fn] = ->
-        after.apply @, arguments
-
-
-combinedStreamPath = 'americano-cozy/' + \
-                     'node_modules/jugglingdb-cozy-adapter/' + \
-                     'node_modules/request-json/' + \
-                     'node_modules/request/' + \
-                     'node_modules/form-data/' + \
-                     'node_modules/combined-stream'
-
-monkeypatch require(combinedStreamPath).prototype, 'pause', ->
-    if not @pauseStreams
-       return
-
-    if(@pauseStreams and typeof(@_currentStream.pause) is 'function')
-        @_currentStream.pause()
-    @emit 'pause'
-
-monkeypatch require(combinedStreamPath).prototype, 'resume', ->
-    if not @_released
-        @_released = true
-        @writable = true
-        @_getNext()
-
-    if @pauseStreams and typeof(@_currentStream.resume) is 'function'
-        @_currentStream.resume()
-
-    @emit 'resume'
-# End of dirty stuff
-
+baseController = new cozydb.SimpleController
+    model: File
+    reqProp: 'file'
+    reqParamID: 'fileid'
 
 ## Helpers ##
 
@@ -74,16 +42,28 @@ module.exports.fetch = (req, res, next, id) ->
 ## Actions ##
 
 
-module.exports.find = (req, res) ->
-    res.send req.file
+module.exports.find = baseController.send
+module.exports.all = baseController.listAll
 
+# Perform download as an inline attachment.
+sendBinary = baseController.sendBinary
+    filename: 'file'
 
-module.exports.all = (req, res, next) ->
-    File.all (err, files) ->
-        if err
-            next err
-        else
-            res.send files
+module.exports.getAttachment = (req, res, next) ->
+    # Configure headers
+    encodedFileName = encodeURIComponent req.file.name
+    res.setHeader 'Content-Disposition', """
+        inline; filename*=UTF8''#{encodedFileName}
+    """
+    sendBinary req, res, next
+
+# Perform download as a traditional attachment.
+module.exports.downloadAttachment = (req, res, next) ->
+    encodedFileName = encodeURIComponent req.file.name
+    res.setHeader 'Content-Disposition', """
+        attachment; filename*=UTF8''#{encodedFileName}
+    """
+    sendBinary req, res, next
 
 
 # Prior to file creation it ensures that all parameters are correct and that no
@@ -360,16 +340,6 @@ module.exports.destroy = (req, res, next) ->
             file.updateParentModifDate (err) ->
                 log.raw err if err
                 res.send success: 'File successfully deleted'
-
-
-# Perform download as an inline attachment.
-module.exports.getAttachment = (req, res, next) ->
-    processAttachment req, res, next, false
-
-
-# Perform download as a traditional attachment.
-module.exports.downloadAttachment = (req, res, next) ->
-    processAttachment req, res, next, true
 
 
 # Check if the research should be performed on tag or not.

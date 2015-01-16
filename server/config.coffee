@@ -24,15 +24,15 @@ config =
             'views': path.resolve __dirname, 'views'
         use: [
             americano.bodyParser()
-            require('cozy-i18n-helper').middleware
-            americano.errorHandler
+            staticMiddleware
+            publicStatic
+        ]
+        afterStart: (app, server) ->
+            # move here necessary after express 4.4
+            app.use americano.errorHandler
                 dumpExceptions: true
                 showStack: true
 
-            staticMiddleware
-            publicStatic
-
-        ]
     development: [
         americano.logger 'dev'
     ]

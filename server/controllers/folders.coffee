@@ -5,7 +5,6 @@ moment = require 'moment'
 log = require('printit')
     prefix: 'folders'
 
-downloader = require '../lib/downloader'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
 Folder = require '../models/folder'
