@@ -8,7 +8,6 @@ log = require('printit')
 
 Folder = require './folder'
 Binary = require './binary'
-CozyInstance = require './cozy_instance'
 
 module.exports = File = cozydb.getModel 'File',
     path: String
@@ -93,7 +92,7 @@ File::getFullPath = ->
     @path + '/' + @name
 
 File::getPublicURL = (cb) ->
-    CozyInstance.getURL (err, domain) =>
+    cozydb.api.getCozyDomain (err, domain) =>
         return cb err if err
         url = "#{domain}public/files/files/#{@id}/attach/#{@name}"
         cb null, url

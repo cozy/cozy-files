@@ -1,7 +1,6 @@
 cozydb = require 'cozydb'
 moment = require 'moment'
 async = require 'async'
-CozyInstance = require './cozy_instance'
 
 module.exports = Folder = cozydb.getModel 'Folder',
     path: String
@@ -70,7 +69,7 @@ Folder::getParents = (callback) ->
     Folder.byFullPath keys: parentFoldersPath.reverse(), callback
 
 Folder::getPublicURL = (cb) ->
-    CozyInstance.getURL (err, domain) =>
+    cozydb.api.getCozyDomain (err, domain) =>
         return cb err if err
         url = "#{domain}public/files/folders/#{@id}"
         cb null, url

@@ -1,15 +1,13 @@
 File = require '../models/file'
 Folder = require '../models/folder'
-CozyInstance = require '../models/cozy_instance'
 User = require '../models/user'
 clearance = require 'cozy-clearance'
 NotificationHelper = require 'cozy-notifications-helper'
 localization = require '../lib/localization_manager'
 
-CozyAdapter = require('cozydb').api
-
+cozydb = require 'cozydb'
 cozydomain = 'http://your.friends.cozy.url/'
-CozyInstance.getURL (err, domain) =>
+cozydb.api.getCozyDomain (err, domain) =>
     return console.log err if err
     cozydomain = domain
 
@@ -129,7 +127,7 @@ doSendNotif = ->
                     displayName: displayName
                     localization: localization
 
-            CozyAdapter.sendMailFromUser mailOptions, (err) ->
+            cozydb.api.sendMailFromUser mailOptions, (err) ->
                 console.log 'sent update mail to ', item.to
                 console.log err if err
 

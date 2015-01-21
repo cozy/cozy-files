@@ -14,6 +14,3 @@ module.exports =
 
     contact:
         all: cozydb.defaultRequests.all
-
-    user:
-        all: cozydb.defaultRequests.all

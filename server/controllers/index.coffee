@@ -1,16 +1,10 @@
 async = require 'async'
-Client = require('request-json').JsonClient
-
-CozyInstance = require '../models/cozy_instance'
+cozydb = require 'cozydb'
 
 module.exports.main = (req, res, next) ->
     async.parallel [
-        (cb) -> CozyInstance.getLocale cb
-        (cb) ->
-            dataSystem = new Client "http://localhost:9101/"
-            dataSystem.get 'tags', (err, response, body) ->
-                err = err or body.error
-                cb err, body
+        (cb) -> cozydb.api.getCozyLocale cb
+        (cb) -> cozydb.api.getCozyTags cb
     ], (err, results) =>
 
         if err then next err
