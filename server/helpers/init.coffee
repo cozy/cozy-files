@@ -18,7 +18,7 @@ module.exports.updateIndex = (callback) ->
                         console.log err
                     else
                         async.eachSeries folders, (folder) ->
-                            folders.index ['name'], ->
+                            folder.index ['name'], ->
                         , ->
                             console.log 'Re-indexation is done.'
                             callback() if callback

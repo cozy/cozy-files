@@ -20,7 +20,7 @@ module.exports.updateIndex = function(callback) {
             return console.log(err);
           } else {
             return async.eachSeries(folders, function(folder) {
-              return folders.index(['name'], function() {});
+              return folder.index(['name'], function() {});
             }, function() {
               console.log('Re-indexation is done.');
               if (callback) {
