@@ -3237,7 +3237,6 @@ module.exports = FilesView = (function(_super) {
   FilesView.prototype.onChangeOrder = function(event) {
     var order, type, _ref;
     _ref = event.target.id.split('-'), order = _ref[0], type = _ref[1];
-    console.log(order, type);
     order = order === 'up' ? 'desc' : 'asc';
     this.chevron = {
       order: order,
