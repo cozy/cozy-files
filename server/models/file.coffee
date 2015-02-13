@@ -1,5 +1,5 @@
 fs = require 'fs'
-americano = require 'americano-cozy'
+cozydb = require 'cozydb'
 moment = require 'moment'
 async = require 'async'
 feed = require '../lib/feed'
@@ -8,10 +8,8 @@ log = require('printit')
 
 Folder = require './folder'
 Binary = require './binary'
-CozyInstance = require './cozy_instance'
 
-
-module.exports = File = americano.getModel 'File',
+module.exports = File = cozydb.getModel 'File',
     path: String
     name: String
     docType: String
@@ -22,8 +20,8 @@ module.exports = File = americano.getModel 'File',
     size: Number
     binary: Object
     modificationHistory: Object
-    clearance: (x) -> x
-    tags: (x) -> x
+    clearance: cozydb.NoSchema
+    tags: [String]
 
 File.all = (params, callback) ->
     File.request "all", params, callback
@@ -94,7 +92,7 @@ File::getFullPath = ->
     @path + '/' + @name
 
 File::getPublicURL = (cb) ->
-    CozyInstance.getURL (err, domain) =>
+    cozydb.api.getCozyDomain (err, domain) =>
         return cb err if err
         url = "#{domain}public/files/files/#{@id}/attach/#{@name}"
         cb null, url

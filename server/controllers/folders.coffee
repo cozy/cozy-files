@@ -5,12 +5,11 @@ moment = require 'moment'
 log = require('printit')
     prefix: 'folders'
 
-downloader = require '../lib/downloader'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
 Folder = require '../models/folder'
 File = require '../models/file'
-CozyInstance = require '../models/cozy_instance'
+cozydb = require 'cozydb'
 
 publicfoldertemplate = require('path').join __dirname, '../views/publicfolder.jade'
 template = require('path').join __dirname, '../views/index.jade'
@@ -531,11 +530,8 @@ module.exports.publicList = (req, res, next) ->
             authorized = path.length isnt 0
             return errortemplate() unless authorized
             key = "#{folder.path}/#{folder.name}"
-            async.parallel [
-                (cb) -> CozyInstance.getLocale cb
-            ], (err, results) ->
+            cozydb.api.getCozyLocale (err, lang) ->
                 return errortemplate err if err
-                [lang] = results
 
                 publicKey = req.query.key or ""
                 imports = """
