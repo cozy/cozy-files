@@ -139,6 +139,7 @@ module.exports.create = (req, res, next) ->
         # stream in memory.
         name = fields.name
         path = fields.path
+        lastModification = moment(fields.lastModification).toISOString()
         overwrite = fields.overwrite
 
         # we have no name for this file, give up
@@ -205,7 +206,7 @@ module.exports.create = (req, res, next) ->
             if sameFiles.length > 0
                 if overwrite
                     file = sameFiles[0]
-                    return file.updateAttributes lastModification: now, ->
+                    return file.updateAttributes {lastModification}, ->
                         keepAlive()
                         attachBinary file
                 else
@@ -221,7 +222,7 @@ module.exports.create = (req, res, next) ->
                 name: name
                 path: normalizePath path
                 creationDate: now
-                lastModification: now
+                lastModification: lastModification
                 mime: mime.lookup name
                 size: part.byteCount
                 tags: []
@@ -316,7 +317,6 @@ module.exports.modify = (req, res, next) ->
                     name: newName
                     path: normalizePath newPath
                     public: isPublic
-                    lastModification: moment().toISOString()
 
                 data.clearance = body.clearance if body.clearance
 
