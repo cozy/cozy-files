@@ -15,8 +15,8 @@ block title
         div.spinholder
           img(src="images/spinner.svg")
     else
-      if model.mime && this.mimeClasses[model.mime]
-        i(class="fa #{this.mimeClasses[model.mime]}")
+      if model.mime && mimeClass
+        i(class="fa #{mimeClass}")
       else
         i.fa.fa-file-o
     input.caption.file-edit-name(value=model.name)

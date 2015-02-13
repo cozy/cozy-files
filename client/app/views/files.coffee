@@ -9,14 +9,19 @@ module.exports = class FilesView extends ViewCollection
     collectionEl: '#table-items-body'
 
     events:
-        'click #up-name'               : 'onChangeOrder'
-        'click #down-name'             : 'onChangeOrder'
-        'click #up-class'              : 'onChangeOrder'
-        'click #down-class'            : 'onChangeOrder'
-        'click #up-size'               : 'onChangeOrder'
-        'click #down-size'             : 'onChangeOrder'
-        'click #up-lastModification'   : 'onChangeOrder'
-        'click #down-lastModification' : 'onChangeOrder'
+        'click [aria-sort] a':          'onChangeOrder'
+
+        # file view events
+        'click a.file-tags':            (e) -> @viewProxy 'onTagClicked', e
+        'click a.file-delete':          (e) -> @viewProxy 'onDeleteClicked', e
+        'click a.file-share':           (e) -> @viewProxy 'onShareClicked', e
+        'click a.file-edit':            (e) -> @viewProxy 'onEditClicked', e
+        'click a.file-edit-save':       (e) -> @viewProxy 'onSaveClicked', e
+        'click a.file-edit-cancel':     (e) -> @viewProxy 'onCancelClicked', e
+        'click a.file-move':            (e) -> @viewProxy 'onMoveClicked', e
+        'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
+        'change input.selector':        (e) -> @viewProxy 'onSelectChanged', e
+
 
     initialize: (options) ->
         super options
@@ -28,11 +33,29 @@ module.exports = class FilesView extends ViewCollection
         @chevron = order: @collection.order, type: @collection.type
 
         @listenTo @collection, 'add remove', @updateNbFiles
+        @listenTo @collection, 'change',
+                               _.partial @viewProxy, 'refresh'
+        @listenTo @collection, 'request',
+                               _.partial @viewProxy, 'onRequest'
+        @listenTo @collection, 'sync error',
+                               _.partial @viewProxy, 'onSyncError'
+        @listenTo @collection, 'toggle-select',
+                               _.partial @viewProxy, 'onToggleSelect'
 
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
         @updateNbFiles()
+
+
+    viewProxy: (methodName, obj) ->
+        cid = if obj.cid? then obj.cid else
+                               @$(obj.target).parents('tr').data('cid')
+
+        view = _.find @views, (view) -> view.model.cid is cid
+        args = [].splice.call arguments, 1
+        view[methodName].apply view, args
+
 
     updateNbFiles: ->
         nbElements = @collection.length
@@ -48,15 +71,17 @@ module.exports = class FilesView extends ViewCollection
 
     # Helpers to display correct chevron to sort files
     displayChevron: (order, type) ->
+        $parentEl = @$ ".#{type}"
+        $parentEl.attr 'aria-sort', "#{order}ending"
 
         if order is "asc"
-            @$("#up-#{type}").show()
-            @$("#down-#{type}").hide()
-            @$("#up-#{type}").removeClass 'unactive'
+            $parentEl.find("#up-#{type}").show()
+            $parentEl.find("#down-#{type}").hide()
+            $parentEl.find("#up-#{type}").removeClass 'unactive'
         else
-            @$("#up-#{type}").hide()
-            @$("#down-#{type}").show()
-            @$("#down-#{type}").removeClass 'unactive'
+            $parentEl.find("#up-#{type}").hide()
+            $parentEl.find("#down-#{type}").show()
+            $parentEl.find("#down-#{type}").removeClass 'unactive'
 
 
     # Changer sorting depending on the clicked chevron.
@@ -69,6 +94,8 @@ module.exports = class FilesView extends ViewCollection
         @collection.order = order
         @collection.type = type
         @collection.sort()
+
+        @$("[aria-sort]:not('.#{type}')").attr 'aria-sort', 'none'
 
     # Update inherited clearance. It's useful when the folder state is changed.
     # It updates the displayed icon and the sharing state.
