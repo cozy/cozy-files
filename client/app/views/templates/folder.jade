@@ -49,14 +49,14 @@
                   if isPublic
                       a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy-contrast
                         span.label #{t("download all")}&nbsp;
-                        span.icon-arrow-down.icon-white
+                        span.fa.fa-arrow-down.icon-white
                   else
                       a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy
-                        span.icon-arrow-down.icon-white
+                        span.fa.fa-arrow-down
                   a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
-                    span.glyphicon.glyphicon-arrow-right
+                    span.fa.fa-arrow-right
                   a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy
-                    span.glyphicon.glyphicon-remove-circle
+                    span.fa.fa-trash-o
 
               //- notification toggle button
               if isPublic && hasPublicKey
