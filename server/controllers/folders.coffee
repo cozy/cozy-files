@@ -445,14 +445,13 @@ module.exports.zip = (req, res, next) ->
     else
         selectedPaths = []
 
-    # Download file with custom low level downloader and pipe the result in the
-    # archiver.
+    # Download file and pipe the result in the archiver.
     addToArchive = (file, cb) ->
         laterStream = file.getBinary "file", (err) ->
             if err
                 log.error """
-    An error occured while adding a file to archive. File: #{file.name}
-    """
+An error occured while adding a file to archive. File: #{file.name}
+"""
                 log.raw err
                 cb()
 
@@ -466,6 +465,8 @@ module.exports.zip = (req, res, next) ->
 
         # Start the streaming.
         archive.pipe res
+
+        # Arbort archiving process when request is closed.
         req.on 'close', ->
             archive.abort()
 
