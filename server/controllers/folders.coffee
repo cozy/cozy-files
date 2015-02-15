@@ -448,13 +448,15 @@ module.exports.zip = (req, res, next) ->
     # Download file with custom low level downloader and pipe the result in the
     # archiver.
     addToArchive = (file, cb) ->
-        downloader.download "/data/#{file.id}/binaries/file", (stream) ->
-            if stream.statusCode is 200
-                name = file.path.replace(key, "") + "/" + file.name
-                archive.append stream, name: name
-                stream.on 'end', cb
-            else
-                cb()
+        laterStream = file.getBinary "file", ->
+
+        req.on 'close', ->
+            stream.abort()
+        name = "#{file.path.replace(key, "")}/#{file.name}"
+        laterStream.on 'ready', (stream) ->
+            archive.append stream, name: name
+            cb()
+
 
     # Build zip from file list and pip the result in the response.
     makeZip = (zipName, files) ->
