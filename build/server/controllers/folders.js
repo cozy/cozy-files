@@ -608,9 +608,12 @@ module.exports.zip = function(req, res, next) {
   }
   addToArchive = function(file, cb) {
     var laterStream, name;
-    laterStream = file.getBinary("file", function() {});
-    req.on('close', function() {
-      return stream.abort();
+    laterStream = file.getBinary("file", function(err) {
+      if (err) {
+        log.error("An error occured while adding a file to archive. File: " + file.name);
+        log.raw(err);
+        return cb();
+      }
     });
     name = (file.path.replace(key, "")) + "/" + file.name;
     return laterStream.on('ready', function(stream) {
@@ -623,6 +626,9 @@ module.exports.zip = function(req, res, next) {
   makeZip = function(zipName, files) {
     var disposition;
     archive.pipe(res);
+    req.on('close', function() {
+      return archive.abort();
+    });
     disposition = "attachment; filename=\"" + zipName + ".zip\"";
     res.setHeader('Content-Disposition', disposition);
     res.setHeader('Content-Type', 'application/zip');
