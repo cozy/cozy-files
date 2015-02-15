@@ -448,21 +448,26 @@ module.exports.zip = (req, res, next) ->
     # Download file with custom low level downloader and pipe the result in the
     # archiver.
     addToArchive = (file, cb) ->
-        laterStream = file.getBinary "file", ->
+        laterStream = file.getBinary "file", (err) ->
+            if err
+                log.error """
+    An error occured while adding a file to archive. File: #{file.name}
+    """
+                log.raw err
+                cb()
 
-        req.on 'close', ->
-            stream.abort()
         name = "#{file.path.replace(key, "")}/#{file.name}"
         laterStream.on 'ready', (stream) ->
             archive.append stream, name: name
             cb()
-
 
     # Build zip from file list and pip the result in the response.
     makeZip = (zipName, files) ->
 
         # Start the streaming.
         archive.pipe res
+        req.on 'close', ->
+            archive.abort()
 
         # Set headers describing the final zip file.
         disposition = "attachment; filename=\"#{zipName}.zip\""
