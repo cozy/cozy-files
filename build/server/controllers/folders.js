@@ -607,17 +607,17 @@ module.exports.zip = function(req, res, next) {
     selectedPaths = [];
   }
   addToArchive = function(file, cb) {
-    return downloader.download("/data/" + file.id + "/binaries/file", function(stream) {
-      var name;
-      if (stream.statusCode === 200) {
-        name = file.path.replace(key, "") + "/" + file.name;
-        archive.append(stream, {
-          name: name
-        });
-        return stream.on('end', cb);
-      } else {
-        return cb();
-      }
+    var laterStream, name;
+    laterStream = file.getBinary("file", function() {});
+    req.on('close', function() {
+      return stream.abort();
+    });
+    name = (file.path.replace(key, "")) + "/" + file.name;
+    return laterStream.on('ready', function(stream) {
+      archive.append(stream, {
+        name: name
+      });
+      return cb();
     });
   };
   makeZip = function(zipName, files) {
