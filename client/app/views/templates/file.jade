@@ -9,7 +9,7 @@ td
       if model.type == 'folder'
         .caption.btn.btn-link
           span.icon-zone
-            div.spinholder 
+            div.spinholder
               img(src="images/spinner.svg")
             div.selector-wrapper
               input.selector(type="checkbox")
@@ -57,11 +57,11 @@ td
           a.file-share(title="#{t('tooltip share')}")
             span.fa.fa-share-alt
           a.file-edit(title="#{t('tooltip edit')}")
-            span.glyphicon.glyphicon-edit
+            span.fa.fa-pencil-square-o
           a.file-download(
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
-            span.glyphicon.glyphicon-cloud-download
+            span.fa.fa-download
 
 td.size-column-cell
   if model.type == 'file'
