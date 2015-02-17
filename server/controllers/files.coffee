@@ -1,6 +1,7 @@
 fs = require 'fs'
 async = require 'async'
 moment = require 'moment'
+crypto = require 'crypto'
 multiparty = require 'multiparty'
 mime = require 'mime'
 log = require('printit')
@@ -178,21 +179,31 @@ module.exports.create = (req, res, next) ->
             # request-json requires a path field to be set
             # before uploading
             part.path = file.name
+            checksum = crypto.createHash 'sha1'
+            checksum.setEncoding 'hex'
+            part.pause()
+            part.pipe checksum
             metadata = name: "file"
             file.attachBinary part, metadata, (err) ->
                 upload = false
+
                 return rollback file, err if err
 
-                # index the file in cozy-indexer for fast search
-                file.index ["name"], (err) ->
-                    # we ignore indexing errors
+                checksum = checksum.end()
+                # set the file checksum
+                file.updateAttributes {checksum}, (err) ->
+                    # we ignore checksum storing errors
                     log.debug err if err
-                    # send email or notification of file changed
-                    who = req.guestEmail or 'owner'
-                    sharing.notifyChanges who, file, (err) ->
-                        # we ignore notification errors
+                    # index the file in cozy-indexer for fast search
+                    file.index ["name"], (err) ->
+                        # we ignore indexing errors
                         log.debug err if err
-                        res.send file, 200
+                        # send email or notification of file changed
+                        who = req.guestEmail or 'owner'
+                        sharing.notifyChanges who, file, (err) ->
+                            # we ignore notification errors
+                            log.debug err if err
+                            res.send file, 200
 
         now = moment().toISOString()
 
