@@ -2,7 +2,7 @@ include ./svgdefs.svg
 
 table#table-items.table.table-hover
   thead
-    tr.table-headers
+    tr
       th.name(aria-sort="ascending")
         input#select-all(type="checkbox")
         span= t('name')
@@ -21,7 +21,7 @@ table#table-items.table.table-hover
         span= t('date')
         a#down-lastModification.btn.glyphicon.glyphicon-chevron-down.unactive
         a#up-lastModification.btn.glyphicon.glyphicon-chevron-up.unactive
-  tbody#table-items-body
+  tbody
 
 p.footer#file-amount-indicator
 p.footer#no-files-indicator

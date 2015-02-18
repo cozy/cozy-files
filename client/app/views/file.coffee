@@ -1,11 +1,8 @@
-BaseView = require '../lib/base_view'
-ModalView = require "./modal"
-ModalShareView = null
-TagsView = require "../widgets/tags"
+TagsView    = require "../widgets/tags"
 ProgressBar = require '../widgets/progressbar'
 
-client = require "../lib/client"
-
+h   = virtualDom.h
+svg = virtualDom.svg
 
 mimeClasses =
     'application/octet-stream'      : 'fa-file-o'
@@ -41,7 +38,7 @@ mimeClasses =
     'image/pjpeg'                   : 'fa-image'
     'image/x-pict'                  : 'fa-image'
     'image/pict'                    : 'fa-image'
-    'image/png'                    : 'fa-image'
+    'image/png'                     : 'fa-image'
     'image/x-pcx'                   : 'fa-image'
     'image/x-portable-pixmap'       : 'fa-image'
     'image/x-tiff'                  : 'fa-image'
@@ -71,67 +68,94 @@ mimeClasses =
     'multipart/x-gzip'              : 'fa-file-archive-o'
 
 
-module.exports = class FileView extends BaseView
+module.exports = class FileView
 
-    className      : 'folder-row'
-    tagName        : 'tr'
-    templateNormal : require './templates/file'
-    templateEdit   : require './templates/file_edit'
-    templateSearch : require './templates/file_search'
+    className: 'folder-row'
+    tagName:   'tr'
 
 
-    template: (args) ->
-        if @isSearchMode
-            @templateSearch args
-        else
-            @templateNormal args
-
-    getRenderData: ->
-        _.extend super(),
-            mimeClass: mimeClasses[@model.mime]
-            isBeingUploaded: @model.isBeingUploaded()
-            attachmentUrl: @model.getAttachmentUrl()
-            downloadUrl: @model.getDownloadUrl()
-            clearance: @model.getClearance()
-
-    initialize: (options) ->
+    constructor: (options) ->
+        @model        = options.model
+        @collection   = options.collection
         @isSearchMode = options.isSearchMode
 
-        # prevent contacts loading in shared area
-        unless app.isPublic
-            ModalShareView ?= require "./modal_share"
+        @isEditMode   = false
+        @isBusy       = false
+        @flashMessage = null
+        @nodes        = {}
 
-        # If the model is a folder, we listen to the upload queue to enable or
-        # disable the "something is being uploaded in my tree" indicator
-        if @model.isFolder()
-            uploadQueue = options.uploadQueue
-            path = @model.getRepository()
-            numUploadChildren = uploadQueue.getNumUploadingElementsByPath path
-            @hasUploadingChildren = numUploadChildren > 0
+        @attrs =
+            key:        @model.cid,
+            className:  @className
+            attributes:
+                'data-vdom': @model.cid
 
-            @listenTo uploadQueue, 'add remove reset', =>
-                hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0
-                @$('.fa-folder').toggleClass 'spin', hasItems
 
-            @listenTo uploadQueue, 'upload-complete', =>
-                @hasUploadingChildren = false
-                @$('.fa-folder').removeClass 'spin'
+    getDOMNode: (name) ->
+        if name is 'el'
+            @el
+        else if @nodes[name]?
+            @nodes[name]
+        else
+            @nodes[name] = @el.querySelector("[data-vdom=#{name}]")
 
-    refresh: ->
-        changes = Object.keys @model.changed
 
-        if changes.length is 1
-            if changes[0] is 'tags'
-                return # only tags has changed, TagsView handle it
+    getVTree: (name) ->
+        slug = "#{name}VTree"
+        return @[slug] if @[slug]?
+        return unless @elVTree
+        do findVNode = (node = @elVTree) =>
+            for child in node.children
+                if child.properties?.attributes?['data-vdom'] is name
+                    @[slug] = child
+                    break
+                else if child.children?
+                    findVNode child
+        return @[slug]
 
-            if changes[0] is 'lastModification'
-                # this change often, let's not re-render the whole view
-                date = moment(@model.changed.lastModification).calendar()
-                @$('td.date-column-cell span').text date
-                return
 
-        # more complex change = rerender
+    patch: (component, vtree) ->
+        if @getVTree(component)? and @el?
+            patches = virtualDom.diff @getVTree(component), vtree
+            node = virtualDom.patch @getDOMNode(component), patches
+            @["#{component}VTree"] = vtree
+
+        return node
+
+
+    toggleEditMode: (toggle) ->
+        toggle ?= !@isEditMode
+        @isEditMode = toggle
+        if @model.isNew() then @model.destroy()
         @render()
+
+
+    saveEdit: ->
+        name = @el.querySelector('.file-edit-name').value
+
+        if name
+            @isBusy = true
+            @renderIcons()
+
+            @model.save name: name,
+                wait: true,
+                success: (data) =>
+                    @isEditMode = false
+                    @isBusy     = false
+                    @render()
+                error: (model, err) =>
+                    @isEditMode   = true
+                    @isBusy       = false
+                    @flashMessage = if err.status is 400
+                        t 'modal error in use'
+                    else
+                        t 'modal error rename'
+                    @render()
+
+        else
+            @flashMessage = t 'modal error empty name'
+            @render()
+
 
     displayError: (msg) ->
         @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
@@ -139,53 +163,214 @@ module.exports = class FileView extends BaseView
         else @errorField.text msg
 
 
-    onRequest: ->
-        @$('.spinholder').show()
-        @$('.icon-zone .fa').addClass 'hidden'
+    renderPath: ->
+        unless @isSearchMode then return null
+
+        vtree = h 'p.file-path',
+            textContent: "#{@model.get 'path'}/"
+            attributes: 'data-vdom': 'path'
+
+        @patch 'path', vtree
+        return vtree
 
 
-    onSyncError: ->
-        # for overwritten files, render entirely to show
-        #  modification date and type
-        @render() if @model.conflict
+    renderIcons: ->
+        vtree = h 'span.icon-zone', attributes: 'data-vdom': 'icons'
 
-        @$('.spinholder').hide()
-        @$('.icon-zone .fa').removeClass 'hidden'
+        spinholderClassname  = ".spinholder"
+        spinholderClassname += ".hidden" unless @isBusy
+        vtree.children.push h spinholderClassname, [
+                h 'img', {src: 'images/spinner.svg'}]
+
+        vtree.children.push h 'div.selector-wrapper', [
+            h 'input.selector', {type: 'checkbox'}]
+
+        mime = @model.get 'mime'
+        if @model.get('type') is 'folder'
+            typeClass = 'fa-folder'
+        else if mime and mimeClasses[mime]
+            typeClass = mimeClasses[mime]
+        else
+            typeClass = 'fa-file-o'
+
+        clearance = @model.getClearance()
+        if clearance is 'public' or clearance?.length
+            vtree.children.push h 'span.fa.fa-globe'
+            typeClass += '-o' if @model.get('type') is 'folder'
+
+        iconClassname  = ".fa.#{typeClass}"
+        iconClassname += ".hidden" if @isBusy
+        vtree.children.push h "i#{iconClassname}"
+
+        @patch 'icons', vtree
+        return vtree
 
 
-    onTagClicked: ->
-        @tags.toggleInput()
+    renderName: ->
+        attrs = attributes: 'data-vdom': 'name'
 
-    onDeleteClicked: ->
-        new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
-            if confirm
-                window.pendingOperations.deletion++
-                @model.destroy
-                    success: -> window.pendingOperations.deletion--
-                    error: ->
-                        window.pendingOperations.deletion--
-                        ModalView.error t "modal delete error"
+        if @isEditMode
+            ctrl = 'a.btn.btn-sm'
+            vtree = h 'span', attrs, [
+                h 'input.caption.file-edit-name', value: @model.get 'name'
+                h "#{ctrl}.btn-cozy.file-edit-save", t 'file edit save'
+                h "#{ctrl}.btn-link.file-edit-cancel", t 'file edit cancel']
 
-    onEditClicked: (name) ->
+            vtree.children.push h 'span.error', @flashMessage if @flashMessage?
+            @flashMessage = null
 
-        width = @$(".caption").width() + 10
-        model = @model.toJSON()
-        model.class = 'folder' unless model.class?
+        else
+            if @model.get('type') is 'folder'
+                _.extend attrs,
+                    href: "#folders/#{@model.get 'id'}"
+                    title: t 'open folder'
+            else
+                _.extend attrs,
+                    href: @model.getAttachmentUrl()
+                    title: t 'download file'
+                    target: '_blank'
 
-        if typeof(name) is "string"
-            model.name = name
+            vtree = h 'a.btn-link', attrs, [
+                h 'span', @model.get 'name']
 
-        @$el.html @templateEdit
-            model: model
-            clearance: @model.getClearance()
+        @patch 'name', vtree
+        return vtree
 
-        @$(".file-edit-name").width width
-        @$(".file-edit-name").focus()
 
+    renderTags: ->
+        vtree = h 'ul.tags', attributes: 'data-vdom': 'tags'
+        _.each @model.get('tags'), (tag) ->
+            vtree.children.push h 'li.tag', textContent: tag, [
+                h 'span.deleter', innerHTML: ' &times; ']
+
+        @patch 'tags', vtree
+        return vtree
+
+
+    renderSize: ->
+        if @model.get('type') is 'file'
+            file = filesize(@model.get('size') || 0, {base: 2})
+        vtree = h 'span', attributes: 'data-vdom': 'size', file
+
+        @patch 'size', vtree
+        return vtree
+
+
+    renderLastModification: ->
+        if @model.get 'lastModification'
+            dateTime = moment(@model.get 'lastModification').calendar()
+
+        vtree = h 'span', attributes: 'data-vdom': 'date', dateTime
+
+        @patch 'date', vtree
+        return vtree
+
+
+    buildVTree: (fill = true) ->
+        return [] unless fill
+
+        editMode = if @isEditMode then '.caption-edit' else ''
+        name = h 'td', [
+            @renderPath()
+            h ".caption.btn.btn-link#{editMode}", [
+                @renderIcons(), @renderName()]
+            @renderTags()]
+
+        operations = h 'td.operations-column-cell'
+        unless @isEditMode
+            operations.children = [
+                h 'a.file-tags', {title: t 'tooltip tag'}, [
+                    svg 'svg', {innerHTML: '<use xlink:href="#icon-tag"/>'}]
+                h 'a.file-share', {title: t 'tooltip share'}, [
+                    svg 'svg', {innerHTML: '<use xlink:href="#icon-share"/>'}]
+                h 'a.file-edit', {title: t 'tooltip edit'}, [
+                    svg 'svg', {innerHTML: '<use xlink:href="#icon-edit"/>'}]
+                h 'a.file-download', {title: t 'tooltip download'}, [
+                    svg 'svg', {innerHTML: '<use xlink:href="#icon-download"/>'}
+            ]]
+
+        size = h 'td.size-column-cell', [@renderSize()]
+
+        typeText = if @model.get('type') is 'folder'
+            'folder'
+        else
+            @model.get 'class'
+        type = h 'td.type-column-cell', [
+            h 'span.pull-left', t typeText]
+
+        date = h 'td.date-column-cell', [@renderLastModification()]
+
+        [name, operations, size, type, date]
+
+
+    render: (fill = true) ->
+        unless @elVTree?
+            @elVTree = h @tagName, @attrs, @buildVTree(fill)
+
+        collectionNode = @collection.collectionNode
+        if collectionNode.children.length and not @el?
+            @el = collectionNode.querySelector "[data-vdom=#{@model.cid}]"
+
+        return @ unless @el?
+
+        if @model.hasChanged()
+            _.each @model.changed, (value, name) =>
+                action = "render#{name[0].toUpperCase()}#{name[1..-1]}"
+                @[action]() if @[action]?
+        else
+            @el = @patch 'el', h(@tagName, @attrs, @buildVTree(fill))
+
+        @afterRender()
+
+
+    afterRender: ->
+        $el = @collection.$el.find "[data-vdom=#{@model.cid}]"
+        @el ?= $el[0]
+
+        $el
+        .find '.fa-folder'
+            .toggleClass 'spin', @hasUploadingChildren?
+
+        @el.classList.toggle('edit-mode', @isEditMode)
+
+        @_renderEditMode() if @isEditMode
+        @_renderUploadMode($el) if @model.isBeingUploaded()
+        @_renderTags($el.find '.tags') unless @model.isBeingUploaded()
+
+        return @
+
+
+    _renderUploadMode: ($el)->
+        # TODO: revamp this progressbar injectiom runtime
+        # if the file is being uploaded
+        $el.find('.type-column-cell').remove()
+        $el.find('.date-column-cell').remove()
+
+        @progressbar = new ProgressBar model: @model
+        cell = $ '<td colspan="2"></td>'
+        cell.append @progressbar.render().$el
+        @$('.size-column-cell').after cell
+
+        # we don't want the file link to react
+        @$('a.caption.btn').click (event) -> event.preventDefault()
+
+
+    _renderTags: ($tags) ->
+        return unless $tags.is(':empty')
+        # TODO: let tags auto bind themselves outside of the view logic
+        @tags = new TagsView
+            el: $tags
+            model: @model
+        @tags.render()
+        @tags.hideInput()
+
+
+    _renderEditMode: ->
+        name = @model.get('name')
         # we only want to select the part before the file extension
-        lastIndexOfDot = model.name.lastIndexOf '.'
-        lastIndexOfDot = model.name.length if lastIndexOfDot is -1
-        input = @$(".file-edit-name")[0]
+        lastIndexOfDot = name.lastIndexOf '.'
+        lastIndexOfDot = name.length if lastIndexOfDot is -1
+        input = @el.querySelector('.file-edit-name')
 
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
@@ -199,203 +384,4 @@ module.exports = class FileView extends BaseView
             range.moveEnd "character", lastIndexOfDot
             range.select()
 
-        @$el.addClass 'edit-mode'
-
-    onShareClicked: ->
-        new ModalShareView model: @model
-
-    onSaveClicked: ->
-        name = @$('.file-edit-name').val()
-
-        if name and name isnt ""
-            @$el.removeClass 'edit-mode'
-            @$('.icon-zone .fa').addClass 'hidden'
-            @$('.spinholder').show()
-
-            @model.save name: name,
-                wait: true,
-                success: (data) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
-                    @render()
-                error: (model, err) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
-                    @$('.file-edit-name').focus()
-                    @displayError if err.status is 400 then t 'modal error in use'
-                    else t 'modal error rename'
-
-        else
-            @displayError t("modal error empty name")
-
-    onCancelClicked: ->
-        @$el.removeClass 'edit-mode'
-        if @model.isNew() then @model.destroy()
-        else @render()
-
-
-
-    # Display Move widget and handle move operation if user confirms.
-    onMoveClicked: =>
-        formTemplate = """
-            <div class="move-widget">
-            <span> #{t 'move element to'}: </span>
-            <select class="move-select"></select>
-            <button class="button btn move-btn">
-                #{t 'move'}
-            </button>
-            <button class="btn btn-link cancel-move-btn">
-                #{t 'cancel'}
-            </button>
-            </div>
-        """
-
-        errorTemplate = """
-            <div class="move-error">
-                <span class="error">
-                #{'modal error file exists'}: #{@model.get 'name'}.
-                </span>
-            </div>
-        """
-
-        movedTemplate = (path) ->
-            """
-            <div id="moved-infos">
-            <span>#{ t 'file successfully moved to'}: /#{path}.</span>
-            <button class="btn btn-link cancel-move-btn">
-                #{t 'cancel'}
-            </button>
-            </div>
-        """
-
-        optionTemplate =  (path) -> """
-            <option value="#{path}">#{path}</option>
-        """
-
-        firstCell = @$el.find 'td:first-child'
-
-        client.get 'folders/list', (err, paths) =>
-            if err
-                Modal.error err
-            else
-                parentPath = @model.get 'path'
-                fullPath =  @model.getRepository()
-                type = @model.get 'type'
-
-                # Add root folder to list.
-                paths.push '/' if parentPath isnt  ""
-
-
-                # Fill folder combobox with folder list.
-                moveForm = $ formTemplate
-                for path in paths
-                    if path isnt parentPath \
-                       and not(type is 'folder' and path.indexOf(fullPath) is 0)
-                        moveForm.find('select').append optionTemplate path
-
-                # Cancel move action on cancel clicked.
-                cancelButton =  moveForm.find(".cancel-move-btn")
-                cancelButton.click =>
-                    @$('.move-error').remove()
-                    moveForm.remove()
-
-                # Perform move operation on move clicked.
-                moveButton = moveForm.find(".move-btn")
-                moveButton.click =>
-
-                    # Show loading
-                    moveButton.html t "moving..."
-
-                    # Get path and url information.
-                    path = $(".move-select").val().substring 1
-                    id = @model.get 'id'
-                    previousPath = @model.get 'path'
-
-                    # Stop render sync.
-                    @stopListening @model
-                    window.app.socket.pause @model, null,
-                        ignoreMySocketNotification: true
-
-                    showMoveResult = =>
-                        moveForm.fadeOut()
-                        moveForm.remove()
-                        movedInfos = $ movedTemplate path
-                        firstCell.append movedInfos
-                        cancelButton =  movedInfos.find(".cancel-move-btn")
-                        movedInfos.click =>
-                            data = path: previousPath
-                            client.put "#{type}s/#{id}", data, (err) =>
-                                if err
-                                    ModalView.error t 'error occured canceling move'
-                                else
-                                    movedInfos.fadeOut()
-
-                    # Can't use Backbone model due to a weird sync
-                    # I can't figure out what is causing view to re-render.
-                    client.put "#{type}s/#{id}", path: path, (err) =>
-                        if err?
-                            firstCell.append errorTemplate
-                        else
-                            showMoveResult()
-
-                        # Put back synchronization.
-                        window.app.socket.resume @model, null,
-                            ignoreMySocketNotification: true
-                        @listenTo @model, 'change', @render
-
-                @$el.find('td:first-child').append moveForm
-
-
-    onKeyPress: (e) =>
-        if e.keyCode is 13
-            @onSaveClicked()
-        else if e.keyCode is 27
-            @render()
-
-    onSelectChanged: (event) ->
-        isChecked = $(event.target).is ':checked'
-        @$el.toggleClass 'selected', isChecked
-        @model.isSelected = isChecked
-
-        @onToggleSelect()
-        return true
-
-    onToggleSelect: ->
-        @$el.toggleClass 'selected', @model.isSelected
-        @$('input.selector').prop 'checked', @model.isSelected
-        if @model.isSelected
-            @$('.file-move, .file-delete').addClass 'hidden'
-        else
-            @$('.file-move, .file-delete').removeClass 'hidden'
-
-    afterRender: ->
-        @$el.data 'cid', @model.cid
-
-        # if the file is being uploaded
-        if @model.isBeingUploaded()
-            @$('.type-column-cell').remove()
-            @$('.date-column-cell').remove()
-            @progressbar = new ProgressBar model: @model
-            cell = $ '<td colspan="2"></td>'
-            cell.append @progressbar.render().$el
-            @$('.size-column-cell').after cell
-            # we don't want the file link to react
-            @$('a.caption.btn').click (event) -> event.preventDefault()
-        else
-            @tags = new TagsView
-                el: @$ '.tags'
-                model: @model
-            @tags.render()
-            @tags.hideInput()
-
-        # hides the file move and remove buttons if they are in a bulk selection
-        if @model.isSelected
-            @$('.file-move, .file-delete').addClass 'hidden'
-        else
-            @$('.file-move, .file-delete').removeClass 'hidden'
-
-        # if it's a folder and if it has children being uploaded
-        if @hasUploadingChildren
-            @$('.fa-folder').addClass 'spin'
-
-        @$('.spinholder').hide()
+        input.focus()

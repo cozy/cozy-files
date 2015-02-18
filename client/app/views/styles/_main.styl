@@ -475,10 +475,7 @@ table#table-items
     .unactive
         opacity: 0.5
 
-    td
-        height: 40px
-
-        .progress
+    .progress
             margin-bottom 0px
 
     td.type-column-cell
@@ -488,6 +485,9 @@ table#table-items
         color: gray
         width: 100px
 
+    td.size-column-cell
+        text-align right
+
     td.date-column-cell
         width: 190px
         text-align: left
@@ -495,9 +495,9 @@ table#table-items
         &:first-letter
             text-transform capitalize
 
-    .table-headers
+    thead
 
-        td:first-child input[type=checkbox]
+        th:first-child input[type=checkbox]
             width: 20px
             margin: 0 15px 0 0
             font-size: 16px
@@ -505,7 +505,7 @@ table#table-items
             &:focus
                 outline none
 
-        td
+        th
             border-top: 0
 
         span
@@ -524,7 +524,6 @@ table#table-items
             display: none
 
 tr.folder-row
-
     .file-path
         color: darkcolor
         font-family: main
@@ -543,8 +542,6 @@ tr.folder-row
 
     &.edit-mode
         .tags
-                display: none
-
         .spinholder
                 display: none
 
@@ -640,15 +637,14 @@ tr.folder-row
         padding: 0 18px 0 5px
 
     // the toolbox - delete, rename, etc
-    &:hover .operations-column-cell
+    &:hover .operations-column-cell a
         visibility: visible
 
     .operations-column-cell
-        visibility: hidden
-
         text-align: right;
 
         a
+            visibility: hidden
             padding-left: 5px
 
             &:hover svg
