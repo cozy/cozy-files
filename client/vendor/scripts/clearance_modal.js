@@ -72,7 +72,7 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
   });
 };
 
-  
+
 });
 
 require.register("cozy-clearance/contact_collection", function(exports, require, module){
@@ -132,7 +132,7 @@ collection.handleRealtimeContactEvent = function(event) {
 
 module.exports = collection;
 
-  
+
 });
 
 require.register("cozy-clearance/modal", function(exports, require, module){
@@ -290,7 +290,7 @@ Modal.error = function(text, cb) {
 
 module.exports = Modal;
 
-  
+
 });
 
 require.register("cozy-clearance/modal_share_template", function(exports, require, module){
@@ -377,7 +377,7 @@ else
 {
 buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
 }
-buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
+buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"fa fa-trash\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"fa fa-link\"></i></a></li>");
 }
     }
 
@@ -438,7 +438,7 @@ else
 {
 buf.push(jade.escape(null == (jade.interp = ' ' + t('perm') + possible_permissions[keys[0]]) ? "" : jade.interp));
 }
-buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"icon-remove\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"glyphicon glyphicon-link\"></i></a></li>");
+buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("revoke"), true, false)) + " class=\"clearance-btn pull-right revoke\"><i class=\"fa fa-trash\"></i></a><a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", t("see link"), true, false)) + (jade.attr("href", makeURL(key), true, false)) + " class=\"clearance-btn pull-right show-link\"><i class=\"fa fa-link\"></i></a></li>");
 }
     }
 
@@ -450,7 +450,7 @@ buf.push("</ul>");
 };return buf.join("");
 }
 module.exports = template;
-  
+
 });
 
 require.register("cozy-clearance/modal_share_view", function(exports, require, module){
@@ -862,5 +862,5 @@ module.exports = CozyClearanceModal = (function(_super) {
 
 })(Modal);
 
-  
+
 });
