@@ -108,7 +108,7 @@ module.exports = class TagsView extends BaseView
         html = ("""
                 <li class="tag" data-value="#{tag}">
                     #{tag}
-                    <span class="deleter"> &times; </span>
+                    <span class="deleter fa fa-times"></span>
                 </li>
             """ for tag in @tags or []).join ''
         @$el.prepend html
