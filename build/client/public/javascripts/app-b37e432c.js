@@ -5079,7 +5079,7 @@ module.exports = TagsView = (function(_super) {
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tag = _ref[_i];
-        _results.push("<li class=\"tag\" data-value=\"" + tag + "\">\n    " + tag + "\n    <span class=\"deleter\"> &times; </span>\n</li>");
+        _results.push("<li class=\"tag\" data-value=\"" + tag + "\">\n    " + tag + "\n    <span class=\"deleter fa fa-times\"></span>\n</li>");
       }
       return _results;
     }).call(this)).join('');
