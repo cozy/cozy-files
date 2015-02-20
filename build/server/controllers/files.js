@@ -200,7 +200,8 @@ module.exports.create = function(req, res, next) {
         if (err) {
           return rollback(file, err);
         }
-        checksum = checksum.end();
+        checksum.end();
+        checksum = checksum.read();
         return file.updateAttributes({
           checksum: checksum
         }, function(err) {

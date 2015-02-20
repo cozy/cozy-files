@@ -189,7 +189,8 @@ module.exports.create = (req, res, next) ->
 
                 return rollback file, err if err
 
-                checksum = checksum.end()
+                checksum.end()
+                checksum = checksum.read()
                 # set the file checksum
                 file.updateAttributes {checksum}, (err) ->
                     # we ignore checksum storing errors
