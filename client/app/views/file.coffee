@@ -379,6 +379,7 @@ module.exports = class FileView extends BaseView
         if @model.isBeingUploaded()
             @$('.type-column-cell').remove()
             @$('.date-column-cell').remove()
+            @$el.addClass 'uploading'
             @progressbar = new ProgressBar model: @model
             cell = $ '<td colspan="2"></td>'
             cell.append @progressbar.render().$el
@@ -386,6 +387,7 @@ module.exports = class FileView extends BaseView
             # we don't want the file link to react
             @$('a.caption.btn').click (event) -> event.preventDefault()
         else
+            @$el.removeClass 'uploading'
             @tags = new TagsView
                 el: @$ '.tags'
                 model: @model
