@@ -76,6 +76,7 @@ module.exports = class FolderView extends BaseView
         # adding the model to the queue when a conflict is detected by the
         # upload queue
         @listenTo @uploadQueue, 'conflict', @conflictQueue.push
+        @listenTo @uploadQueue, 'folderError', @onMozFolderError
 
         return this
 
@@ -210,39 +211,39 @@ module.exports = class FolderView extends BaseView
     ###
         Drag and Drop and Upload
     ###
-    onDragStart: (e) ->
-        e.preventDefault()
-        e.stopPropagation()
+    onDragStart: (event) ->
+        event.preventDefault()
+        event.stopPropagation()
 
-    onDragEnter: (e) ->
-        e.preventDefault()
-        e.stopPropagation()
+    onDragEnter: (event) ->
+        event.preventDefault()
+        event.stopPropagation()
         if not @isPublic or @canUpload
             @uploadButton.addClass 'btn-cozy-contrast'
             @$('#files-drop-zone').show()
 
-    onDragLeave: (e) ->
-        e.preventDefault()
-        e.stopPropagation()
+    onDragLeave: (event) ->
+        event.preventDefault()
+        event.stopPropagation()
         if not @isPublic or @canUpload
             @uploadButton.removeClass 'btn-cozy-contrast'
             @$('#files-drop-zone').hide()
 
-    onDrop: (e) ->
-        e.preventDefault()
-        e.stopPropagation()
+    onDrop: (event) ->
+        event.preventDefault()
+        event.stopPropagation()
         return false if @isPublic and not @canUpload
 
         # folder drag and drop is only supported in Chrome
-        if e.dataTransfer.items?
-            @onFilesSelectedInChrome e
+        if event.dataTransfer.items?
+            @onFilesSelectedInChrome event
         else
-            @onFilesSelected e
+            @onFilesSelected event
 
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
 
-    onDirectorySelected: (e) ->
+    onDirectorySelected: (event) ->
         input = @$ '#folder-uploader'
         files = input[0].files
         return unless files.length
@@ -250,16 +251,16 @@ module.exports = class FolderView extends BaseView
         # reset the input
         input.replaceWith input.clone true
 
-    onFilesSelected: (e) =>
-        files = e.dataTransfer?.files or e.target.files
-        return unless files.length
+    onFilesSelected: (event) =>
+        files = event.dataTransfer?.files or event.target.files
 
-        @uploadQueue.addBlobs files, @model
+        if files.length
+            @uploadQueue.addBlobs files, @model
 
-        if e.target?
-            target = $ e.target
-            # reset the input
-            target.replaceWith target.clone true
+            if event.target?
+                target = $ event.target
+                # reset the input
+                target.replaceWith target.clone true
 
     onFilesSelectedInChrome: (e) ->
         items = e.dataTransfer.items
@@ -513,3 +514,8 @@ module.exports = class FolderView extends BaseView
 
         @$('#folder-state').html shareStateContent
         @filesList.updateInheritedClearance [clearance: clearance]
+
+    # Display an error when the user tries to upload a folder in Firefox.
+    onMozFolderError: =>
+        Modal.error t 'modal error firefox dragdrop folder'
+

@@ -168,6 +168,7 @@ module.exports = class UploadQueue extends Backbone.Collection
             # mark as errored if it's a folder
             if blob.size is 0 and blob.type.length is 0
                 model.error = 'Cannot upload a folder with Firefox'
+                @trigger 'folderError', model
                 # since there is an error, the progressbar cannot compute
                 # the progress if those properties are not set
                 model.loaded = 0
