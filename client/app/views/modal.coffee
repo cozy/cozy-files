@@ -13,9 +13,8 @@ module.exports = class ModalView extends BaseView
         "click #modal-dialog-no"  : "onNo"
         "click #modal-dialog-yes" : "onYes"
 
-    constructor: (@title, @msg, @yes, @no, @cb, @hideOnYes) ->
+    constructor: (@title, @msg, @yes, @no, @cb, @hideOnYes=true) ->
         super()
-        @hideOnYes = true unless @hideOnYes?
 
     initialize: ->
         @$el.on 'hidden.bs.modal', @close.bind(@)

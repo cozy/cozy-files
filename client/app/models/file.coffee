@@ -12,6 +12,8 @@ module.exports = class File extends Backbone.Model
             options.type = if doctype is 'file' then 'file' else 'folder'
         super options
 
+        @isUploaded = true
+
 
     # helpers
     isFolder: -> return @get('type') is 'folder'
@@ -20,18 +22,23 @@ module.exports = class File extends Backbone.Model
     isRoot: -> return @get('id') is 'root'
 
     # Only relevant if it's a file
-    isBeingUploaded: -> return @isFile() and @file? and not @isUploaded
+    isUploading: ->
+        @isFile() and @file? and not @isUploaded
+
+    hasBinary: ->
+        @isFile and @get('binary')?.file?.id
 
     parse: (data) ->
         delete data.success
         return data
 
     # the repository is the model's full path (name included in the path)
-    getRepository: -> return if @isRoot() then "" else "#{@get("path")}/#{@get("name")}"
+    getRepository: ->
+        if @isRoot() then "" else "#{@get("path")}/#{@get("name")}"
 
     # Overrides sync method to allow file upload (multipart request)
     # and progress events
-    sync: (method, model, options)->
+    sync: (method, model, options) =>
 
         # this is a new model, let's upload it as a multipart
         if model.file
@@ -46,14 +53,16 @@ module.exports = class File extends Backbone.Model
             progress = (e) ->
                 model.loaded = e.loaded
                 model.trigger 'progress', e
+
             _.extend options,
                 contentType: false
                 data: formdata
                 # patch Model.sync so it could trigger progress event
-                xhr: ->
+                xhr: =>
                     xhr = $.ajaxSettings.xhr()
                     if xhr.upload
                         xhr.upload.addEventListener 'progress', progress, false
+                        @uploadXhrRequest = xhr
                     xhr
 
         Backbone.sync.apply @, arguments
@@ -92,7 +101,7 @@ module.exports = class File extends Backbone.Model
     # Only relevant if model is a file
     getAttachmentUrl: ->
         # if the file is being uploaded, it's not accessible (yet)
-        if @isBeingUploaded()
+        if @isUploading()
             "#"
         else if @isFile()
             toAppend = "/attach/#{encodeURIComponent @get 'name'}"

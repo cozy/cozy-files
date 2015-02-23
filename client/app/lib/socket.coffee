@@ -24,8 +24,9 @@ module.exports = class SocketListener extends CozySocketListener
         return @collection.isPathCached path
 
     onRemoteCreate: (model) ->
-        if @isInCachedFolder model
-            # console.info "remote create", model
+        # Check if model is located in current folder and if it has binary data
+        # If it has no binary data, it means that it is uploading.
+        if @isInCachedFolder(model) and model.hasBinary()
             if not (@collection.get model.get("id"))
                 @collection.add model, merge: true
 

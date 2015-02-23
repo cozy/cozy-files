@@ -50,7 +50,7 @@ td
             span.deleter &times;
 
     block actions
-      if !isBeingUploadetag
+      if !isUploading
         .operations
           a.file-tags(title="#{t('tooltip tag')}")
             span.fa.fa-tag
@@ -62,7 +62,9 @@ td
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.fa.fa-download
-
+      else
+        button#cancel-button.btn.btn-link #{t('cancel')}
+          
 td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}
