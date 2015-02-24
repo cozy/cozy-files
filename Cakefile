@@ -34,7 +34,6 @@ walk = (dir, excludeElements = []) ->
 
 taskDetails = '(default: ./tests, use -f or -d to specify files and directory)'
 task 'tests:server', "Run tests #{taskDetails}", testsServer = (opts, callback) ->
-
     logger.options.prefix = 'cake:tests'
     files = []
     options = opts
@@ -47,31 +46,25 @@ task 'tests:server', "Run tests #{taskDetails}", testsServer = (opts, callback) 
     unless options.dir or options.file
         files = walk "test"
 
-    env =
-        NODE_ENV:  if options['env'] then options.env else "test"
-        PATH: "/usr/bin:/usr/local/bin"
-    env.USE_JS = true if options['use-js']? and options['use-js']
 
-    logger.info "Running tests with #{JSON.stringify env}..."
-    cmdoptions = [
-        '--reporter'
-        'spec'
-        '--colors'
-        '--compilers'
-        'coffee:coffee-script/register'
-    ]
-
-    console.log files.join ' '
-    cmd = spawn 'mocha', files.concat(cmdoptions),
-        env: env
-    cmd.stdout.pipe process.stdout
-    cmd.stderr.pipe process.stderr
-
-    cmd.on 'exit', (code) ->
-        if code isnt 0
-            console.log "Running mocha raised the #{code} error code."
-            console.log code
-            process.exit code
+    env = if options['env'] then "NODE_ENV=#{options.env}" else "NODE_ENV=test"
+    env += " USE_JS=true" if options['use-js']? and options['use-js']
+    logger.info "Running tests with #{env}..."
+    command = "#{env} mocha " + files.join(" ") + " --reporter spec --colors "
+    command += "--compilers coffee:coffee-script/register"
+    exec command, (err, stdout, stderr) ->
+        console.log stdout if stdout? and stdout.length > 0
+        #console.log stderr if stderr? and stderr.length > 0
+        if err?
+            err = err
+            console.log "Running mocha caught exception:\n" + err
+            process.exit 1
+        else
+            console.log "Tests succeeded!"
+            if callback?
+                callback()
+            else
+                process.exit 0
 
 task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
     logger.options.prefix = 'cake:tests:client'
@@ -108,7 +101,7 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
                             process.exit 0
 
 task 'tests', 'Run tests for client and server', (opts) ->
-    testsClient opts, -> testsServer opts
+    testsServer opts, -> testsClient opts, -> process.exit 0
 
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
