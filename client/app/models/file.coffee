@@ -16,6 +16,12 @@ module.exports = class File extends Backbone.Model
 
 
     # helpers
+    getPath: ->
+        path = @get 'path'
+        path = "/#{path}" if path.length is 0 or path[0] isnt '/'
+        name = @get 'name'
+        "#{path}/#{name}"
+
     isFolder: -> return @get('type') is 'folder'
     isFile: -> return @get('type') is 'file'
     isSearch: -> return @get('type') is 'search'
@@ -26,7 +32,7 @@ module.exports = class File extends Backbone.Model
         @isFile() and @file? and not @isUploaded
 
     hasBinary: ->
-        @isFile and @get('binary')?.file?.id
+        @isFile and @get('binary')?.file?.id?
 
     parse: (data) ->
         delete data.success

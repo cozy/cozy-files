@@ -19,16 +19,20 @@ module.exports = class SocketListener extends CozySocketListener
         'contact.delete'
     ]
 
+    # Check if the model is located in the currently displayed path
     isInCachedFolder: (model) ->
         path = model.get 'path'
         return @collection.isPathCached path
 
     onRemoteCreate: (model) ->
-        # Check if model is located in current folder and if it has binary data
-        # If it has no binary data, it means that it is uploading.
-        if @isInCachedFolder(model) and model.hasBinary()
-            if not (@collection.get model.get("id"))
-                @collection.add model, merge: true
+        console.log 'onRemoteCreate'
+
+        # Check if model is located in current folder
+        isLocatedInFolder = @isInCachedFolder model
+        isAlreadyInFolder = @collection.isFileStored model
+
+        if isLocatedInFolder and not isAlreadyInFolder
+            @collection.add model, merge: true
 
     onRemoteDelete: (model) ->
         if @isInCachedFolder model
