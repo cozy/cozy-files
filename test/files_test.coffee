@@ -22,8 +22,10 @@ describe "Files management", ->
             it "When I send a request to create a file", (done) ->
                 file =
                     name: "test"
+                    lastModification: "Tue Feb 03 2015 16:35:23 GMT+0100 (CET)"
                     path: ""
-                client.sendFile 'files/', './test/fixtures/files/test.txt', file, (err, res, body) =>
+                TESTFILE = './test/fixtures/files/test.txt'
+                client.sendFile 'files/', TESTFILE, file, (err, res, body) =>
                     @res = res
                     @body = body
                     done()
@@ -39,11 +41,12 @@ describe "Files management", ->
                 body = JSON.parse @body
 
                 should.exist body.creationDate
-                should.exist body.lastModification
-                body.creationDate.should.be.equal body.lastModification
                 creationDate = moment(body.creationDate)
                 creationDate.date().should.be.equal now.date()
                 creationDate.month().should.be.equal now.month()
+                should.exist body.lastModification
+                body.lastModification.should.equal '2015-02-03T15:35:23.000Z'
+
 
         describe "Try to create the same file", ->
             it "When I send a request to create a file", (done) ->

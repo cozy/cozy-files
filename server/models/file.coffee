@@ -19,6 +19,7 @@ module.exports = File = cozydb.getModel 'File',
     class: String
     size: Number
     binary: Object
+    checksum: String
     modificationHistory: Object
     clearance: cozydb.NoSchema
     tags: [String]

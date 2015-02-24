@@ -1,6 +1,7 @@
 fs = require 'fs'
 async = require 'async'
 moment = require 'moment'
+crypto = require 'crypto'
 multiparty = require 'multiparty'
 mime = require 'mime'
 log = require('printit')
@@ -131,77 +132,118 @@ module.exports.create = (req, res, next) ->
             fields[part.name] = ''
             part.on 'data', (buffer) ->
                 fields[part.name] = buffer.toString()
+            return
 
-        else
-            # We assume that only one file is sent.
-            # we do not write a subfunction because it seems to load the whole
-            # stream in memory.
-            name = fields.name
-            path = fields.path
-            overwrite = fields.overwrite
+        # We assume that only one file is sent.
+        # we do not write a subfunction because it seems to load the whole
+        # stream in memory.
+        name = fields.name
+        path = fields.path
+        lastModification = moment(fields.lastModification).toISOString()
+        overwrite = fields.overwrite
+        upload = true
+        canceled = false
 
-            # we have no name for this file, give up
-            if not name or name is ""
-                err = new Error "Invalid arguments: no name given"
-                err.status = 400
-                next err
-            else
+        # we have no name for this file, give up
+        if not name or name is ""
+            err = new Error "Invalid arguments: no name given"
+            err.status = 400
+            return next err
 
-                upload = true
-                canceled = false
+        # while this upload is processing
+        # we send usage.application to prevent auto-stop
+        # and we defer parents lastModification update
+        keepAlive = ->
+            if upload
+                feed.publish 'usage.application', 'files'
+                setTimeout keepAlive, 60*1000
+                resetTimeout()
 
-                # while this upload is processing
-                # we send usage.application to prevent auto-stop
-                # and we defer parents lastModification update
-                keepAlive = ->
-                    if upload
-                        feed.publish 'usage.application', 'files'
-                        setTimeout keepAlive, 60*1000
-                        resetTimeout()
+        # if anything happens after the file is created
+        # we need to destroy it
+        rollback = (file, err) ->
+            canceled = true
+            file.destroy (delerr) ->
+                # nothing more we can do with delerr
+                log.error delerr if delerr
+                if isStorageError err
+                    res.send
+                        error: true
+                        code: 'ESTORAGE'
+                        msg: "modal error size"
+                    , 400
+                else
+                    next err
 
-                # if anything happens after the file is created
-                # we need to destroy it
-                rollback = (file, err) ->
-                    canceled = true
-                    file.destroy (delerr) ->
-                        # nothing more we can do with delerr
-                        log.error delerr if delerr
-                        if isStorageError err
-                            res.send
-                                error: true
-                                code: 'ESTORAGE'
-                                msg: "modal error size"
-                            , 400
-                        else
-                            next err
+        attachBinary = (file) ->
+            # request-json requires a path field to be set
+            # before uploading
+            part.path = file.name
+            checksum = crypto.createHash 'sha1'
+            checksum.setEncoding 'hex'
+            part.pause()
+            part.pipe checksum
+            metadata = name: "file"
+            file.attachBinary part, metadata, (err) ->
+                upload = false
 
-                attachBinary = (file) ->
-                    # request-json requires a path field to be set
-                    # before uploading
-                    part.path = file.name
-                    metadata = name: "file"
-                    file.attachBinary part, metadata, (err) ->
-                        upload = false
-                        return rollback file, err if err
+                return rollback file, err if err
 
-                        unless canceled
-                            # index the file in cozy-indexer for fast search
-                            file.index ["name"], (err) ->
-                                # we ignore indexing errors
+                checksum.end()
+                checksum = checksum.read()
+                # set the file checksum
+
+                unless canceled
+                    file.updateAttributes {checksum}, (err) ->
+                        # we ignore checksum storing errors
+                        log.debug err if err
+                        # index the file in cozy-indexer for fast search
+                        file.index ["name"], (err) ->
+                            # we ignore indexing errors
+                            log.debug err if err
+                            # send email or notification of file changed
+                            who = req.guestEmail or 'owner'
+                            sharing.notifyChanges who, file, (err) ->
+                                # we ignore notification errors
                                 log.debug err if err
-                                # send email or notification of file changed
-                                who = req.guestEmail or 'owner'
-                                sharing.notifyChanges who, file, (err) ->
-                                    # we ignore notification errors
-                                    log.debug err if err
-                                    res.send file, 200
+                                res.send file, 200
 
-            now = moment().toISOString()
+        now = moment().toISOString()
 
-            # Check that the file doesn't exist yet.
-            path = normalizePath path
-            fullPath = "#{path}/#{name}"
-            File.byFullPath key: fullPath, (err, sameFiles) =>
+        # Check that the file doesn't exist yet.
+        path = normalizePath path
+        fullPath = "#{path}/#{name}"
+        File.byFullPath key: fullPath, (err, sameFiles) =>
+            return next err if err
+
+            # there is already a file with the same name, give up
+            if sameFiles.length > 0
+                if overwrite
+                    file = sameFiles[0]
+                    return file.updateAttributes {lastModification}, ->
+                        keepAlive()
+                        attachBinary file
+                else
+                    upload = false
+                    return res.send
+                        error: true
+                        code: 'EEXISTS'
+                        msg: "This file already exists"
+                    , 400
+
+            # Generate file metadata.
+            data =
+                name: name
+                path: normalizePath path
+                creationDate: now
+                lastModification: lastModification
+                mime: mime.lookup name
+                size: part.byteCount
+                tags: []
+                class: getFileClass part
+
+            # check if the request is allowed
+            confirmCanUpload data, req, (err) ->
                 return next err if err
 
                 # there is already a file with the same name, give up
@@ -328,7 +370,6 @@ module.exports.modify = (req, res, next) ->
                     name: newName
                     path: normalizePath newPath
                     public: isPublic
-                    lastModification: moment().toISOString()
 
                 data.clearance = body.clearance if body.clearance
 
