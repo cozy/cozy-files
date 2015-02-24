@@ -333,6 +333,10 @@ describe "Folders management", ->
                     .src(archivePath)
                     .dest(archiveDest)
                     .use Decompress.zip(strip: 0)
+
+                # Timeout is required to ensure the end of the upload. It looks
+                # like the files app send a responsed while the uploading is
+                # not fully finished.
                 setTimeout =>
                     decompress.run (err, files) =>
                         should.not.exist err
