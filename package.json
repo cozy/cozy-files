@@ -50,6 +50,7 @@
     "dev:server": "nodemon server.coffee --ignore client/",
     "dev": "npm run dev:server & npm run dev:client"
   },
+  "cozy-permissions": {
     "File": {
       "description": "Store files in your cozy"
     },
