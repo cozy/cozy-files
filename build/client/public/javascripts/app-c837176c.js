@@ -347,6 +347,21 @@ module.exports = FileCollection = (function(_super) {
     }
   };
 
+  FileCollection.prototype.isFileStored = function(model) {
+    var isThere, models, path;
+    isThere = false;
+    if (this.get(model.get('id'))) {
+      isThere = true;
+    } else {
+      path = model.getPath();
+      models = this.filter(function(currentModel) {
+        return currentModel.getPath() === path;
+      });
+      isThere = models.length > 0;
+    }
+    return isThere;
+  };
+
   return FileCollection;
 
 })(Backbone.Collection);
@@ -963,12 +978,14 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteCreate = function(model) {
-    if (this.isInCachedFolder(model) && model.hasBinary()) {
-      if (!(this.collection.get(model.get("id")))) {
-        return this.collection.add(model, {
-          merge: true
-        });
-      }
+    var isAlreadyInFolder, isLocatedInFolder;
+    console.log('onRemoteCreate');
+    isLocatedInFolder = this.isInCachedFolder(model);
+    isAlreadyInFolder = this.collection.isFileStored(model);
+    if (isLocatedInFolder && !isAlreadyInFolder) {
+      return this.collection.add(model, {
+        merge: true
+      });
     }
   };
 
@@ -1644,6 +1661,16 @@ module.exports = File = (function(_super) {
     this.isUploaded = true;
   }
 
+  File.prototype.getPath = function() {
+    var name, path;
+    path = this.get('path');
+    if (path.length === 0 || path[0] !== '/') {
+      path = "/" + path;
+    }
+    name = this.get('name');
+    return "" + path + "/" + name;
+  };
+
   File.prototype.isFolder = function() {
     return this.get('type') === 'folder';
   };
@@ -1666,7 +1693,7 @@ module.exports = File = (function(_super) {
 
   File.prototype.hasBinary = function() {
     var _ref, _ref1;
-    return this.isFile && ((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0);
+    return this.isFile && (((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0) != null);
   };
 
   File.prototype.parse = function(data) {
