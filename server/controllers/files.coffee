@@ -266,7 +266,7 @@ module.exports.create = (req, res, next) ->
                     name: name
                     path: normalizePath path
                     creationDate: now
-                    lastModification: now
+                    lastModification: lastModification
                     mime: mime.lookup name
                     size: part.byteCount
                     tags: []
