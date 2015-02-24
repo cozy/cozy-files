@@ -27,6 +27,8 @@ td
       else if model.type == 'file'
         .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
           span.icon-zone
+            div.spinholder
+              img(src="images/spinner.svg")
             if clearance == 'public'
               span.fa.fa-globe
             else if clearance && clearance.length > 0

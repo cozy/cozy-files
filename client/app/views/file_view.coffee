@@ -5,7 +5,6 @@ TagsView = require "../widgets/tags"
 ProgressBar = require '../widgets/progressbar'
 
 client = require "../lib/client"
-counter = 0
 
 module.exports = class FileView extends BaseView
 
@@ -109,16 +108,13 @@ module.exports = class FileView extends BaseView
         @isSearchMode = options.isSearchMode
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
-            @$('.spinholder').show()
-            @$('.icon-zone .fa').addClass 'hidden'
+            #@showLoading()
 
         @listenTo @model, 'sync error', =>
             # for overwritten files, render entirely to show
             #  modification date and type
-            @render() if @model.conflict
+            @render() if @model.conflict or not @model.isFile()
 
-            @$('.spinholder').hide()
-            @$('.icon-zone .fa').removeClass 'hidden'
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -202,7 +198,6 @@ module.exports = class FileView extends BaseView
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
         input = @$(".file-edit-name")[0]
 
-        console.log lastIndexOfDot
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
@@ -227,18 +222,15 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
-            @$('.icon-zone .fa').addClass 'hidden'
-            @$('.spinholder').show()
+            @showLoading()
 
             @model.save name: name,
                 wait: true,
                 success: (data) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
+                    @hideLoading()
                     @render()
                 error: (model, err) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
+                    @hideLoading()
                     @$('.file-edit-name').focus()
                     @displayError if err.status is 400 then t 'modal error in use'
                     else t 'modal error rename'
@@ -390,9 +382,6 @@ module.exports = class FileView extends BaseView
 
 
     afterRender: ->
-        counter++
-        console.log counter
-        console.log @model.isUploading()
         if @model.isUploading()
             @$el.addClass 'uploading'
             @addProgressBar()
@@ -401,8 +390,8 @@ module.exports = class FileView extends BaseView
             @$el.removeClass 'uploading'
             @addTags()
 
-        @showFolderLoading() if @hasUploadingChildren
         @hideLoading()
+        @showLoading() if @hasUploadingChildren
 
 
     # add and display progress bar.
@@ -432,16 +421,14 @@ module.exports = class FileView extends BaseView
 
     # Show loading spinner.
     showLoading: ->
+        @$('.icon-zone .fa').addClass 'hidden'
+        @$('.icon-zone .selector-wrapper').addClass 'hidden'
         @$('.spinholder').show()
 
 
     # Hide loading spinner.
     hideLoading: ->
+        @$('.icon-zone .fa').removeClass 'hidden'
+        @$('.icon-zone .selector-wrapper').removeClass 'hidden'
         @$('.spinholder').hide()
-
-
-    # if it's a folder and if it has children being uploaded, display folder
-    # spinner.
-    showFolderLoading: ->
-        @$('.fa-folder').addClass 'spin'
 
