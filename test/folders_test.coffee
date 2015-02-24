@@ -1,6 +1,10 @@
+fs = require 'fs'
+path = require 'path'
 should = require('chai').should()
 americano = require 'americano'
 moment = require 'moment'
+rimraf = require 'rimraf'
+Decompress = require 'decompress'
 
 helpers = require './helpers'
 client = helpers.getClient()
@@ -287,19 +291,67 @@ describe "Folders management", ->
 
 
     describe "Download folder in zip format", =>
+        archivePath = path.join '.', 'test-archive.zip'
+        archiveDest = path.join '.', 'test-archive'
 
-        it "When I send a request to create a root folder", (done) ->
+        before (done) =>
+            rimraf archivePath, =>
+                rimraf archiveDest, done
+
+        it "When I send a request to create folders", (done) ->
             folder =
                 name: "folder"
                 path: ""
             client.post "folders/", folder, (err, res, body) =>
                 @id = body.id
-                done()
+                folder =
+                    name: "subfolder"
+                    path: "/folder"
+                client.post "folders/", folder, (err, res, body) =>
+                    done()
+
+        it "And I put files in this folders", (done) ->
+            file =
+                name: "test"
+                path: "/folder"
+            filePath = './test/fixtures/files/test.txt'
+            client.sendFile 'files/', filePath, file, (err, res, body) =>
+                file =
+                    name: "test2"
+                    path: "/folder/subfolder"
+                filePath = './test/fixtures/files/test.txt'
+                client.sendFile 'files/', filePath, file, (err, res, body) =>
+                    should.not.exist err
+                    done()
 
         it "And I send a request to get a folder", (done) ->
-            client.get "folders/#{@id}/zip/folder",(err, res, body) =>
+            urlPath = "folders/#{@id}/zip/folder"
+            client.saveFile urlPath, archivePath, (err, res, body) =>
                 @res = res
-                done()
+
+                decompress = new Decompress()
+                    .src(archivePath)
+                    .dest(archiveDest)
+                    .use Decompress.zip(strip: 0)
+
+                # Timeout is required to ensure the end of the upload. It looks
+                # like the files app send a responsed while the uploading is
+                # not fully finished.
+                setTimeout =>
+                    decompress.run (err, files) =>
+                        should.not.exist err
+
+                        isExist = fs.existsSync path.join archiveDest, 'test'
+                        isExist.should.be.ok
+
+                        subfolderPath = path.join archiveDest, 'subfolder'
+                        isExist = fs.existsSync subfolderPath
+                        isExist.should.be.ok
+
+                        isExist = fs.existsSync path.join subfolderPath, 'test2'
+                        isExist.should.be.ok
+                        done()
+                , 1000
 
         it "And 200 should be returned as response code", ->
             @res.statusCode.should.be.equal 200

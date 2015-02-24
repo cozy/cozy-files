@@ -27,6 +27,8 @@ td
       else if model.type == 'file'
         .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
           span.icon-zone
+            div.spinholder
+              img(src="images/spinner.svg")
             if clearance == 'public'
               span.fa.fa-globe
             else if clearance && clearance.length > 0
@@ -50,7 +52,7 @@ td
             span.deleter &times;
 
     block actions
-      if !isBeingUploadetag
+      if !isUploading
         .operations
           a.file-tags(title="#{t('tooltip tag')}")
             span.fa.fa-tag
@@ -62,7 +64,9 @@ td
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.fa.fa-download
-
+      else
+        a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
+          
 td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}

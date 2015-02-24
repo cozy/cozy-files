@@ -8,52 +8,9 @@ Helpers = require '../lib/folder_helpers'
 
 module.exports = class UploadQueue extends Backbone.Collection
 
-    # number of files actually loaded
-    loaded: 0
+    loaded: 0 # number of files actually loaded
+    uploadingPaths: {} # list of paths where files are being uploaded
 
-    # list of paths where files are being uploaded
-    uploadingPaths: {}
-
-    initialize: ->
-        @asyncQueue = async.queue @uploadWorker, 5
-
-        # when a model is added, we queue it for upload
-        @listenTo this, 'add', (model) =>
-            @completed = false
-            # Files at the bottom, Folder at the top
-            if model.get('type') is 'file'
-
-                # we add the conflictual models at the end so the upload
-                # can start without waiting for user input
-                if model.conflict
-                    @asyncQueue.push model
-                else
-                    @asyncQueue.unshift model
-
-            else if model.get('type') is 'folder' then @asyncQueue.unshift model
-            else throw new Error('adding wrong typed model to upload queue')
-
-        # never happens, but should be handled
-        @listenTo this, 'remove', (model) =>
-            model.error = 'aborted'
-
-        # when an upload completes or fails, we keep counts
-        @listenTo this, 'sync error', (model) =>
-            path = model.get('path') + '/'
-            @uploadingPaths[path]--
-            @loaded++
-
-        # proxy progress events, throttled to every 100ms
-        @listenTo this, 'progress', _.throttle =>
-            @trigger 'upload-progress', @computeProgress()
-        , 100
-
-        # when the queue is totally completed
-        @asyncQueue.drain = =>
-            window.pendingOperations.upload = 0
-            @completed = true
-            @loaded = 0
-            @trigger 'upload-complete'
 
     add: (models, options) ->
         # if model doesn't exist, it's a reset so we don't increment
@@ -61,6 +18,7 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         @reset() if @completed
         super models, options
+
 
     reset: (models, options) ->
         # sets the progress to 0% so next upload initial progress is 0% instead
@@ -78,32 +36,80 @@ module.exports = class UploadQueue extends Backbone.Collection
         @uploadingPaths = {}
         super
 
-    computeProgress: =>
-        return @progress =
-            loadedFiles: @loaded
-            totalFiles: @length
-            loadedBytes: @sumProp 'loaded'
-            totalBytes: @sumProp 'total'
 
-    sumProp: (prop) =>
-        iter = (sum, model) -> sum + model[prop]
-        @reduce iter, 0
+    initialize: ->
+        @asyncQueue = async.queue @uploadWorker, 5
 
-    uploadWorker: (model, cb) =>
-        if model.existing or model.error or model.isUploaded
-            setTimeout cb, 10
+        @listenTo this, 'add', @onAdd
+        @listenTo this, 'remove', @onRemove
+        @listenTo this, 'sync error', @onSyncError
+        @listenTo this, 'progress', _.throttle =>
+            @trigger 'upload-progress', @computeProgress()
+        , 100
+
+        @asyncQueue.drain = @completeUpload
+
+
+    # Never happens, but should be handled
+    onRemove: (model) =>
+        model.error = 'aborted'
+
+
+    # When an upload completes or fails, we keep counts
+    onSyncError: (model) =>
+        path = model.get('path') + '/'
+        @uploadingPaths[path]--
+        @loaded++
+
+
+    # when a model is added, we queue it for upload
+    onAdd: (model) =>
+        @completed = false
+
+        # This model is marked for being uploaded.
+        model.isUploaded = false
+
+        # Files at the bottom, Folder at the top
+        if model.get('type') is 'file'
+
+            # we add the conflictual models at the end so the upload
+            # can start without waiting for user input
+            if model.conflict
+                @asyncQueue.push model
+            else
+                @asyncQueue.unshift model
+
+        else if model.get('type') is 'folder'
+            @asyncQueue.unshift model
+        else
+            throw new Error('adding wrong typed model to upload queue')
+
+
+    # Reset variables and trigger completion events
+    completeUpload: =>
+        window.pendingOperations.upload = 0
+        @completed = true
+        @loaded = 0
+        @trigger 'upload-complete'
+
+
+    uploadWorker: (model, callback) =>
+        if model.existing or model.error
+            setTimeout callback, 10
         else
             processSave = (model) ->
+
                 if not model.conflict or model.conflict and model.overwrite
                     model.save null,
-                        success: ->
+                        success: (model) ->
                             model.file = null
                             model.isUploaded = true
                             model.loaded = model.total
                             unless app.baseCollection.get(model.id)
                                 app.baseCollection.add model
-                            cb null
+                            callback null
                         error: (_, err) =>
+                            model.file = null
                             body = try JSON.parse(err.responseText)
                             catch e then msg: null
 
@@ -112,11 +118,11 @@ module.exports = class UploadQueue extends Backbone.Collection
                             # folder. Thus we just show a warning
                             if err.status is 400 and body.code is 'EEXISTS'
                                 model.existing = true
-                                return cb new Error body.msg
+                                return callback new Error body.msg
 
                             if err.status is 400 and body.code is 'ESTORAGE'
                                 model.error = new Error body.msg
-                                return cb model.error
+                                return callback model.error
 
                             model.tries = 1 + (model.tries or 0)
                             if model.tries > 3
@@ -125,9 +131,10 @@ module.exports = class UploadQueue extends Backbone.Collection
                             else
                                 # let's try again
                                 @asyncQueue.push model
-                            cb err
+
+                            callback err
                 else
-                    cb()
+                    callback()
 
             # If there is a conflict, the queue waits for the user to
             # make a decision.
@@ -137,6 +144,7 @@ module.exports = class UploadQueue extends Backbone.Collection
             # Otherwise, the upload starts directly
             else
                 processSave.call @, model
+
 
     addBlobs: (blobs, folder) ->
 
@@ -168,26 +176,29 @@ module.exports = class UploadQueue extends Backbone.Collection
             # mark as errored if it's a folder
             if blob.size is 0 and blob.type.length is 0
                 model.error = 'Cannot upload a folder with Firefox'
+                @trigger 'folderError', model
                 # since there is an error, the progressbar cannot compute
                 # the progress if those properties are not set
                 model.loaded = 0
                 model.total = 0
-            else if model.getRepository() in existingPaths
 
+            else if model.getRepository() in existingPaths
                 model.conflict = true
                 @trigger 'conflict', model
                 model.file = blob
                 model.loaded = 0
                 model.total = blob.size
+
             else
                 model.file = blob
                 model.loaded = 0
                 model.total = blob.size
 
             @add model
-            @markAsBeingUploaded model
+            @markAsUploading model
 
             setTimeout nonBlockingLoop, 2
+
 
     addFolderBlobs: (blobs, parent) ->
 
@@ -219,9 +230,10 @@ module.exports = class UploadQueue extends Backbone.Collection
 
             # add folder to be saved
             @add folder
-            @markAsBeingUploaded folder
+            @markAsUploading folder
 
             setTimeout nonBlockingLoop, 2
+
 
     filteredByFolder: (folder, comparator) ->
         filteredUploads = new BackboneProjections.Filtered this,
@@ -230,6 +242,7 @@ module.exports = class UploadQueue extends Backbone.Collection
                     not file.isUploaded
 
             comparator: comparator
+
 
     getResults: ->
         error = []
@@ -253,8 +266,9 @@ module.exports = class UploadQueue extends Backbone.Collection
 
         return {status, error, existing, success, skipped}
 
+
     # we keep track of models being uploaded by path
-    markAsBeingUploaded: (model) ->
+    markAsUploading: (model) ->
         # appending a / prevents conflict with elements
         # having the same prefix in their names
         path = model.get('path') + '/'
@@ -262,6 +276,7 @@ module.exports = class UploadQueue extends Backbone.Collection
             @uploadingPaths[path] = 0
 
         @uploadingPaths[path]++
+
 
     # returns the number of children elements being uploading for a given path
     getNumUploadingElementsByPath: (path) ->
@@ -275,3 +290,19 @@ module.exports = class UploadQueue extends Backbone.Collection
             else
                 return memo
         , 0
+
+
+    # Recalculate progress
+    computeProgress: =>
+        return @progress =
+            loadedFiles: @loaded
+            totalFiles: @length
+            loadedBytes: @sumProp 'loaded'
+            totalBytes: @sumProp 'total'
+
+
+    # Add all values for a given property.
+    sumProp: (prop) =>
+        iter = (sum, model) -> sum + model[prop]
+        @reduce iter, 0
+

@@ -132,7 +132,6 @@ module.exports.create = (req, res, next) ->
             fields[part.name] = ''
             part.on 'data', (buffer) ->
                 fields[part.name] = buffer.toString()
-
             return
 
         # We assume that only one file is sent.
@@ -142,14 +141,14 @@ module.exports.create = (req, res, next) ->
         path = fields.path
         lastModification = moment(fields.lastModification).toISOString()
         overwrite = fields.overwrite
+        upload = true
+        canceled = false
 
         # we have no name for this file, give up
         if not name or name is ""
             err = new Error "Invalid arguments: no name given"
             err.status = 400
             return next err
-
-        upload = true
 
         # while this upload is processing
         # we send usage.application to prevent auto-stop
@@ -163,6 +162,7 @@ module.exports.create = (req, res, next) ->
         # if anything happens after the file is created
         # we need to destroy it
         rollback = (file, err) ->
+            canceled = true
             file.destroy (delerr) ->
                 # nothing more we can do with delerr
                 log.error delerr if delerr
@@ -192,19 +192,21 @@ module.exports.create = (req, res, next) ->
                 checksum.end()
                 checksum = checksum.read()
                 # set the file checksum
-                file.updateAttributes {checksum}, (err) ->
-                    # we ignore checksum storing errors
-                    log.debug err if err
-                    # index the file in cozy-indexer for fast search
-                    file.index ["name"], (err) ->
-                        # we ignore indexing errors
+
+                unless canceled
+                    file.updateAttributes {checksum}, (err) ->
+                        # we ignore checksum storing errors
                         log.debug err if err
-                        # send email or notification of file changed
-                        who = req.guestEmail or 'owner'
-                        sharing.notifyChanges who, file, (err) ->
-                            # we ignore notification errors
+                        # index the file in cozy-indexer for fast search
+                        file.index ["name"], (err) ->
+                            # we ignore indexing errors
                             log.debug err if err
-                            res.send file, 200
+                            # send email or notification of file changed
+                            who = req.guestEmail or 'owner'
+                            sharing.notifyChanges who, file, (err) ->
+                                # we ignore notification errors
+                                log.debug err if err
+                                res.send file, 200
 
         now = moment().toISOString()
 
@@ -244,25 +246,64 @@ module.exports.create = (req, res, next) ->
             confirmCanUpload data, req, (err) ->
                 return next err if err
 
-                # find parent folder for updating its last modification
-                # date and applying tags to uploaded file.
-                Folder.byFullPath key: data.path, (err, parents) =>
+                # there is already a file with the same name, give up
+                if sameFiles.length > 0
+                    if overwrite
+                        file = sameFiles[0]
+                        return file.updateAttributes lastModification: now, ->
+                            keepAlive()
+                            attachBinary file
+                    else
+                        upload = false
+                        return res.send
+                            error: true
+                            code: 'EEXISTS'
+                            msg: "This file already exists"
+                        , 400
+
+                # Generate file metadata.
+                data =
+                    name: name
+                    path: normalizePath path
+                    creationDate: now
+                    lastModification: lastModification
+                    mime: mime.lookup name
+                    size: part.byteCount
+                    tags: []
+                    class: getFileClass part
+
+                # check if the request is allowed
+                confirmCanUpload data, req, (err) ->
                     return next err if err
 
-                    # inherit parent folder tags and update its
-                    # last modification date
-                    if parents.length > 0
-                        parent = parents[0]
-                        data.tags = parent.tags
-                        parent.lastModification = now
-                        folderParent[parent.name] = parent
-
-                    File.create data, (err, newFile) =>
+                    # find parent folder for updating its last modification
+                    # date and applying tags to uploaded file.
+                    Folder.byFullPath key: data.path, (err, parents) =>
                         return next err if err
 
-                        keepAlive()
-                        attachBinary newFile
+                        # inherit parent folder tags and update its
+                        # last modification date
+                        if parents.length > 0
+                            parent = parents[0]
+                            data.tags = parent.tags
+                            parent.lastModification = now
+                            folderParent[parent.name] = parent
 
+                        # Save file metadata
+                        File.create data, (err, newFile) =>
+                            return next err if err
+
+                            # Ask for the data system to not run autostop
+                            # while the upload is running.
+                            keepAlive()
+
+                            # If user stops the upload, the file is deleted.
+                            err = new Error 'Request canceled by user'
+                            res.on 'close', ->
+                                rollback newFile, err
+
+                            # Attach file in database.
+                            attachBinary newFile
 
     form.on 'error', (err) ->
         log.error err

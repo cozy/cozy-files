@@ -347,6 +347,21 @@ module.exports = FileCollection = (function(_super) {
     }
   };
 
+  FileCollection.prototype.isFileStored = function(model) {
+    var isThere, models, path;
+    isThere = false;
+    if (this.get(model.get('id'))) {
+      isThere = true;
+    } else {
+      path = model.getPath();
+      models = this.filter(function(currentModel) {
+        return currentModel.getPath() === path;
+      });
+      isThere = models.length > 0;
+    }
+    return isThere;
+  };
+
   return FileCollection;
 
 })(Backbone.Collection);
@@ -367,61 +382,19 @@ module.exports = UploadQueue = (function(_super) {
   __extends(UploadQueue, _super);
 
   function UploadQueue() {
-    this.uploadWorker = __bind(this.uploadWorker, this);
     this.sumProp = __bind(this.sumProp, this);
     this.computeProgress = __bind(this.computeProgress, this);
+    this.uploadWorker = __bind(this.uploadWorker, this);
+    this.completeUpload = __bind(this.completeUpload, this);
+    this.onAdd = __bind(this.onAdd, this);
+    this.onSyncError = __bind(this.onSyncError, this);
+    this.onRemove = __bind(this.onRemove, this);
     return UploadQueue.__super__.constructor.apply(this, arguments);
   }
 
   UploadQueue.prototype.loaded = 0;
 
   UploadQueue.prototype.uploadingPaths = {};
-
-  UploadQueue.prototype.initialize = function() {
-    this.asyncQueue = async.queue(this.uploadWorker, 5);
-    this.listenTo(this, 'add', (function(_this) {
-      return function(model) {
-        _this.completed = false;
-        if (model.get('type') === 'file') {
-          if (model.conflict) {
-            return _this.asyncQueue.push(model);
-          } else {
-            return _this.asyncQueue.unshift(model);
-          }
-        } else if (model.get('type') === 'folder') {
-          return _this.asyncQueue.unshift(model);
-        } else {
-          throw new Error('adding wrong typed model to upload queue');
-        }
-      };
-    })(this));
-    this.listenTo(this, 'remove', (function(_this) {
-      return function(model) {
-        return model.error = 'aborted';
-      };
-    })(this));
-    this.listenTo(this, 'sync error', (function(_this) {
-      return function(model) {
-        var path;
-        path = model.get('path') + '/';
-        _this.uploadingPaths[path]--;
-        return _this.loaded++;
-      };
-    })(this));
-    this.listenTo(this, 'progress', _.throttle((function(_this) {
-      return function() {
-        return _this.trigger('upload-progress', _this.computeProgress());
-      };
-    })(this), 100));
-    return this.asyncQueue.drain = (function(_this) {
-      return function() {
-        window.pendingOperations.upload = 0;
-        _this.completed = true;
-        _this.loaded = 0;
-        return _this.trigger('upload-complete');
-      };
-    })(this);
-  };
 
   UploadQueue.prototype.add = function(models, options) {
     if (models != null) {
@@ -447,43 +420,74 @@ module.exports = UploadQueue = (function(_super) {
     return UploadQueue.__super__.reset.apply(this, arguments);
   };
 
-  UploadQueue.prototype.computeProgress = function() {
-    return this.progress = {
-      loadedFiles: this.loaded,
-      totalFiles: this.length,
-      loadedBytes: this.sumProp('loaded'),
-      totalBytes: this.sumProp('total')
-    };
+  UploadQueue.prototype.initialize = function() {
+    this.asyncQueue = async.queue(this.uploadWorker, 5);
+    this.listenTo(this, 'add', this.onAdd);
+    this.listenTo(this, 'remove', this.onRemove);
+    this.listenTo(this, 'sync error', this.onSyncError);
+    this.listenTo(this, 'progress', _.throttle((function(_this) {
+      return function() {
+        return _this.trigger('upload-progress', _this.computeProgress());
+      };
+    })(this), 100));
+    return this.asyncQueue.drain = this.completeUpload;
   };
 
-  UploadQueue.prototype.sumProp = function(prop) {
-    var iter;
-    iter = function(sum, model) {
-      return sum + model[prop];
-    };
-    return this.reduce(iter, 0);
+  UploadQueue.prototype.onRemove = function(model) {
+    return model.error = 'aborted';
   };
 
-  UploadQueue.prototype.uploadWorker = function(model, cb) {
+  UploadQueue.prototype.onSyncError = function(model) {
+    var path;
+    path = model.get('path') + '/';
+    this.uploadingPaths[path]--;
+    return this.loaded++;
+  };
+
+  UploadQueue.prototype.onAdd = function(model) {
+    this.completed = false;
+    model.isUploaded = false;
+    if (model.get('type') === 'file') {
+      if (model.conflict) {
+        return this.asyncQueue.push(model);
+      } else {
+        return this.asyncQueue.unshift(model);
+      }
+    } else if (model.get('type') === 'folder') {
+      return this.asyncQueue.unshift(model);
+    } else {
+      throw new Error('adding wrong typed model to upload queue');
+    }
+  };
+
+  UploadQueue.prototype.completeUpload = function() {
+    window.pendingOperations.upload = 0;
+    this.completed = true;
+    this.loaded = 0;
+    return this.trigger('upload-complete');
+  };
+
+  UploadQueue.prototype.uploadWorker = function(model, callback) {
     var processSave;
-    if (model.existing || model.error || model.isUploaded) {
-      return setTimeout(cb, 10);
+    if (model.existing || model.error) {
+      return setTimeout(callback, 10);
     } else {
       processSave = function(model) {
         if (!model.conflict || model.conflict && model.overwrite) {
           return model.save(null, {
-            success: function() {
+            success: function(model) {
               model.file = null;
               model.isUploaded = true;
               model.loaded = model.total;
               if (!app.baseCollection.get(model.id)) {
                 app.baseCollection.add(model);
               }
-              return cb(null);
+              return callback(null);
             },
             error: (function(_this) {
               return function(_, err) {
                 var body, defaultMessage, e;
+                model.file = null;
                 body = (function() {
                   try {
                     return JSON.parse(err.responseText);
@@ -496,11 +500,11 @@ module.exports = UploadQueue = (function(_super) {
                 })();
                 if (err.status === 400 && body.code === 'EEXISTS') {
                   model.existing = true;
-                  return cb(new Error(body.msg));
+                  return callback(new Error(body.msg));
                 }
                 if (err.status === 400 && body.code === 'ESTORAGE') {
                   model.error = new Error(body.msg);
-                  return cb(model.error);
+                  return callback(model.error);
                 }
                 model.tries = 1 + (model.tries || 0);
                 if (model.tries > 3) {
@@ -509,12 +513,12 @@ module.exports = UploadQueue = (function(_super) {
                 } else {
                   _this.asyncQueue.push(model);
                 }
-                return cb(err);
+                return callback(err);
               };
             })(this)
           });
         } else {
-          return cb();
+          return callback();
         }
       };
       if (model.conflict && (model.overwrite == null)) {
@@ -550,6 +554,7 @@ module.exports = UploadQueue = (function(_super) {
         });
         if (blob.size === 0 && blob.type.length === 0) {
           model.error = 'Cannot upload a folder with Firefox';
+          _this.trigger('folderError', model);
           model.loaded = 0;
           model.total = 0;
         } else if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
@@ -564,7 +569,7 @@ module.exports = UploadQueue = (function(_super) {
           model.total = blob.size;
         }
         _this.add(model);
-        _this.markAsBeingUploaded(model);
+        _this.markAsUploading(model);
         return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
@@ -599,7 +604,7 @@ module.exports = UploadQueue = (function(_super) {
         folder.loaded = 0;
         folder.total = 250;
         _this.add(folder);
-        _this.markAsBeingUploaded(folder);
+        _this.markAsUploading(folder);
         return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
@@ -643,7 +648,7 @@ module.exports = UploadQueue = (function(_super) {
     };
   };
 
-  UploadQueue.prototype.markAsBeingUploaded = function(model) {
+  UploadQueue.prototype.markAsUploading = function(model) {
     var path;
     path = model.get('path') + '/';
     if (this.uploadingPaths[path] == null) {
@@ -661,6 +666,23 @@ module.exports = UploadQueue = (function(_super) {
         return memo;
       }
     }, 0);
+  };
+
+  UploadQueue.prototype.computeProgress = function() {
+    return this.progress = {
+      loadedFiles: this.loaded,
+      totalFiles: this.length,
+      loadedBytes: this.sumProp('loaded'),
+      totalBytes: this.sumProp('total')
+    };
+  };
+
+  UploadQueue.prototype.sumProp = function(prop) {
+    var iter;
+    iter = function(sum, model) {
+      return sum + model[prop];
+    };
+    return this.reduce(iter, 0);
   };
 
   return UploadQueue;
@@ -956,12 +978,14 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteCreate = function(model) {
-    if (this.isInCachedFolder(model)) {
-      if (!(this.collection.get(model.get("id")))) {
-        return this.collection.add(model, {
-          merge: true
-        });
-      }
+    var isAlreadyInFolder, isLocatedInFolder;
+    console.log('onRemoteCreate');
+    isLocatedInFolder = this.isInCachedFolder(model);
+    isAlreadyInFolder = this.collection.isFileStored(model);
+    if (isLocatedInFolder && !isAlreadyInFolder) {
+      return this.collection.add(model, {
+        merge: true
+      });
     }
   };
 
@@ -1221,6 +1245,7 @@ module.exports = {
   "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
+  'modal error firefox dragdrop folder': "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
   "root folder name": "root",
   "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Search",
@@ -1368,6 +1393,7 @@ module.exports = {
   "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
   "modal error empty name": "Le nom ne peut pas être vide",
   "modal error file invalid": "Le fichier ne parait pas être valide",
+  'modal error firefox dragdrop folder': "Mozilla Firefox ne gère pas le téléchargement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
   "root folder name": "racine",
   "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
   "breadcrumbs search title": "Recherche",
@@ -1613,6 +1639,7 @@ module.exports = {
 
 ;require.register("models/file", function(exports, require, module) {
 var File, client,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1624,13 +1651,25 @@ module.exports = File = (function(_super) {
   File.prototype.breadcrumb = [];
 
   function File(options) {
+    this.sync = __bind(this.sync, this);
     var doctype, _ref;
     doctype = (_ref = options.docType) != null ? _ref.toLowerCase() : void 0;
     if (doctype != null) {
       options.type = doctype === 'file' ? 'file' : 'folder';
     }
     File.__super__.constructor.call(this, options);
+    this.isUploaded = true;
   }
+
+  File.prototype.getPath = function() {
+    var name, path;
+    path = this.get('path');
+    if (path.length === 0 || path[0] !== '/') {
+      path = "/" + path;
+    }
+    name = this.get('name');
+    return "" + path + "/" + name;
+  };
 
   File.prototype.isFolder = function() {
     return this.get('type') === 'folder';
@@ -1648,8 +1687,13 @@ module.exports = File = (function(_super) {
     return this.get('id') === 'root';
   };
 
-  File.prototype.isBeingUploaded = function() {
+  File.prototype.isUploading = function() {
     return this.isFile() && (this.file != null) && !this.isUploaded;
+  };
+
+  File.prototype.hasBinary = function() {
+    var _ref, _ref1;
+    return this.isFile && (((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0) != null);
   };
 
   File.prototype.parse = function(data) {
@@ -1683,14 +1727,17 @@ module.exports = File = (function(_super) {
       _.extend(options, {
         contentType: false,
         data: formdata,
-        xhr: function() {
-          var xhr;
-          xhr = $.ajaxSettings.xhr();
-          if (xhr.upload) {
-            xhr.upload.addEventListener('progress', progress, false);
-          }
-          return xhr;
-        }
+        xhr: (function(_this) {
+          return function() {
+            var xhr;
+            xhr = $.ajaxSettings.xhr();
+            if (xhr.upload) {
+              xhr.upload.addEventListener('progress', progress, false);
+              _this.uploadXhrRequest = xhr;
+            }
+            return xhr;
+          };
+        })(this)
       });
     }
     return Backbone.sync.apply(this, arguments);
@@ -1738,7 +1785,7 @@ module.exports = File = (function(_super) {
 
   File.prototype.getAttachmentUrl = function() {
     var toAppend;
-    if (this.isBeingUploaded()) {
+    if (this.isUploading()) {
       return "#";
     } else if (this.isFile()) {
       toAppend = "/attach/" + (encodeURIComponent(this.get('name')));
@@ -2244,7 +2291,7 @@ module.exports = BreadcrumbsView = (function(_super) {
 })(BaseView);
 });
 
-;require.register("views/file", function(exports, require, module) {
+;require.register("views/file_view", function(exports, require, module) {
 var BaseView, FileView, ModalShareView, ModalView, ProgressBar, TagsView, client,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2288,6 +2335,7 @@ module.exports = FileView = (function(_super) {
     'click a.file-edit': 'onEditClicked',
     'click a.file-edit-save': 'onSaveClicked',
     'click a.file-edit-cancel': 'onCancelClicked',
+    'click a.cancel-upload-button': 'onCancelUploadClicked',
     'click a.file-move': 'onMoveClicked',
     'keydown input.file-edit-name': 'onKeyPress',
     'change input.selector': 'onSelectChanged'
@@ -2367,7 +2415,7 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.getRenderData = function() {
     return _.extend(FileView.__super__.getRenderData.call(this), {
-      isBeingUploaded: this.model.isBeingUploaded(),
+      isUploading: this.model.isUploading(),
       attachmentUrl: this.model.getAttachmentUrl(),
       downloadUrl: this.model.getDownloadUrl(),
       clearance: this.model.getClearance()
@@ -2375,22 +2423,18 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.initialize = function(options) {
-    var numUploadChildren, path, uploadQueue;
+    var numUploadChildren, path;
     this.isSearchMode = options.isSearchMode;
+    this.uploadQueue = options.uploadQueue;
     this.listenTo(this.model, 'change', this.refresh);
     this.listenTo(this.model, 'request', (function(_this) {
-      return function() {
-        _this.$('.spinholder').show();
-        return _this.$('.icon-zone .fa').addClass('hidden');
-      };
+      return function() {};
     })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
-        if (_this.model.conflict) {
-          _this.render();
+        if (_this.model.conflict || !_this.model.isFile()) {
+          return _this.render();
         }
-        _this.$('.spinholder').hide();
-        return _this.$('.icon-zone .fa').removeClass('hidden');
       };
     })(this));
     this.listenTo(this.model, 'toggle-select', this.onToggleSelect);
@@ -2400,21 +2444,24 @@ module.exports = FileView = (function(_super) {
       }
     }
     if (this.model.isFolder()) {
-      uploadQueue = options.uploadQueue;
       path = this.model.getRepository();
-      numUploadChildren = uploadQueue.getNumUploadingElementsByPath(path);
+      numUploadChildren = this.uploadQueue.getNumUploadingElementsByPath(path);
       this.hasUploadingChildren = numUploadChildren > 0;
-      this.listenTo(uploadQueue, 'add remove reset', (function(_this) {
+      this.listenTo(this.uploadQueue, 'add remove reset', (function(_this) {
         return function() {
           var hasItems;
-          hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0;
-          return _this.$('.fa-folder').toggleClass('spin', hasItems);
+          hasItems = _this.uploadQueue.getNumUploadingElementsByPath(path) > 0;
+          if (hasItems && !_this.$('.spinholder').is(':visible')) {
+            return _this.showLoading();
+          } else if (!hasItems && _this.$('.spinholder').is(':visible')) {
+            return _this.hideLoading();
+          }
         };
       })(this));
-      return this.listenTo(uploadQueue, 'upload-complete', (function(_this) {
+      return this.listenTo(this.uploadQueue, 'upload-complete', (function(_this) {
         return function() {
           _this.hasUploadingChildren = false;
-          return _this.$('.fa-folder').removeClass('spin');
+          return _this.hideLoading();
         };
       })(this));
     }
@@ -2491,7 +2538,6 @@ module.exports = FileView = (function(_super) {
       lastIndexOfDot = model.name.length;
     }
     input = this.$(".file-edit-name")[0];
-    console.log(lastIndexOfDot);
     if (typeof input.selectionStart !== "undefined") {
       input.selectionStart = 0;
       input.selectionEnd = lastIndexOfDot;
@@ -2517,23 +2563,20 @@ module.exports = FileView = (function(_super) {
     name = this.$('.file-edit-name').val();
     if (name && name !== "") {
       this.$el.removeClass('edit-mode');
-      this.$('.icon-zone .fa').addClass('hidden');
-      this.$('.spinholder').show();
+      this.showLoading();
       return this.model.save({
         name: name
       }, {
         wait: true,
         success: (function(_this) {
           return function(data) {
-            _this.$('.spinholder').hide();
-            _this.$('.icon-zone .fa').removeClass('hidden');
+            _this.hideLoading();
             return _this.render();
           };
         })(this),
         error: (function(_this) {
           return function(model, err) {
-            _this.$('.spinholder').hide();
-            _this.$('.icon-zone .fa').removeClass('hidden');
+            _this.hideLoading();
             _this.$('.file-edit-name').focus();
             return _this.displayError(err.status === 400 ? t('modal error in use') : t('modal error rename'));
           };
@@ -2551,6 +2594,12 @@ module.exports = FileView = (function(_super) {
     } else {
       return this.render();
     }
+  };
+
+  FileView.prototype.onCancelUploadClicked = function() {
+    this.uploadQueue.remove(this.model);
+    this.model.uploadXhrRequest.abort();
+    return this.model.destroy();
   };
 
   FileView.prototype.onMoveClicked = function() {
@@ -2668,35 +2717,56 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.afterRender = function() {
-    var cell;
-    if (this.model.isBeingUploaded()) {
-      this.$('.type-column-cell').remove();
-      this.$('.date-column-cell').remove();
-      this.progressbar = new ProgressBar({
-        model: this.model
-      });
-      cell = $('<td colspan="2"></td>');
-      cell.append(this.progressbar.render().$el);
-      this.$('.size-column-cell').after(cell);
-      this.$('a.caption.btn').click(function(event) {
-        return event.preventDefault();
-      });
+    if (this.model.isUploading()) {
+      this.$el.addClass('uploading');
+      this.addProgressBar();
+      this.blockDownloadLink();
     } else {
-      this.tags = new TagsView({
-        el: this.$('.tags'),
-        model: this.model
-      });
-      this.tags.render();
-      this.tags.hideInput();
+      this.$el.removeClass('uploading');
+      this.addTags();
     }
-    if (this.model.isSelected) {
-      this.$('.file-move, .file-delete').addClass('hidden');
-    } else {
-      this.$('.file-move, .file-delete').removeClass('hidden');
-    }
+    this.hideLoading();
     if (this.hasUploadingChildren) {
-      this.$('.fa-folder').addClass('spin');
+      return this.showLoading();
     }
+  };
+
+  FileView.prototype.addProgressBar = function() {
+    var cell;
+    this.$('.type-column-cell').remove();
+    this.$('.date-column-cell').remove();
+    this.progressbar = new ProgressBar({
+      model: this.model
+    });
+    cell = $('<td colspan="2"></td>');
+    cell.append(this.progressbar.render().$el);
+    return this.$('.size-column-cell').after(cell);
+  };
+
+  FileView.prototype.addTags = function() {
+    this.tags = new TagsView({
+      el: this.$('.tags'),
+      model: this.model
+    });
+    this.tags.render();
+    return this.tags.hideInput();
+  };
+
+  FileView.prototype.blockDownloadLink = function() {
+    return this.$('a.caption.btn').click(function(event) {
+      return event.preventDefault();
+    });
+  };
+
+  FileView.prototype.showLoading = function() {
+    this.$('.icon-zone .fa').addClass('hidden');
+    this.$('.icon-zone .selector-wrapper').addClass('hidden');
+    return this.$('.spinholder').show();
+  };
+
+  FileView.prototype.hideLoading = function() {
+    this.$('.icon-zone .fa').removeClass('hidden');
+    this.$('.icon-zone .selector-wrapper').removeClass('hidden');
     return this.$('.spinholder').hide();
   };
 
@@ -2712,7 +2782,7 @@ var FileView, FilesView, ViewCollection,
 
 ViewCollection = require('../lib/view_collection');
 
-FileView = require('./file');
+FileView = require('./file_view');
 
 module.exports = FilesView = (function(_super) {
   __extends(FilesView, _super);
@@ -2860,6 +2930,7 @@ module.exports = FolderView = (function(_super) {
   __extends(FolderView, _super);
 
   function FolderView() {
+    this.onMozFolderError = __bind(this.onMozFolderError, this);
     this.onFilesSelected = __bind(this.onFilesSelected, this);
     return FolderView.__super__.constructor.apply(this, arguments);
   }
@@ -2913,6 +2984,7 @@ module.exports = FolderView = (function(_super) {
       };
     })(this);
     this.listenTo(this.uploadQueue, 'conflict', this.conflictQueue.push);
+    this.listenTo(this.uploadQueue, 'folderError', this.onMozFolderError);
     return this;
   };
 
@@ -3055,45 +3127,45 @@ module.exports = FolderView = (function(_super) {
       Drag and Drop and Upload
    */
 
-  FolderView.prototype.onDragStart = function(e) {
-    e.preventDefault();
-    return e.stopPropagation();
+  FolderView.prototype.onDragStart = function(event) {
+    event.preventDefault();
+    return event.stopPropagation();
   };
 
-  FolderView.prototype.onDragEnter = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  FolderView.prototype.onDragEnter = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
     if (!this.isPublic || this.canUpload) {
       this.uploadButton.addClass('btn-cozy-contrast');
       return this.$('#files-drop-zone').show();
     }
   };
 
-  FolderView.prototype.onDragLeave = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  FolderView.prototype.onDragLeave = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
     if (!this.isPublic || this.canUpload) {
       this.uploadButton.removeClass('btn-cozy-contrast');
       return this.$('#files-drop-zone').hide();
     }
   };
 
-  FolderView.prototype.onDrop = function(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  FolderView.prototype.onDrop = function(event) {
+    event.preventDefault();
+    event.stopPropagation();
     if (this.isPublic && !this.canUpload) {
       return false;
     }
-    if (e.dataTransfer.items != null) {
-      this.onFilesSelectedInChrome(e);
+    if (event.dataTransfer.items != null) {
+      this.onFilesSelectedInChrome(event);
     } else {
-      this.onFilesSelected(e);
+      this.onFilesSelected(event);
     }
     this.uploadButton.removeClass('btn-cozy-contrast');
     return this.$('#files-drop-zone').hide();
   };
 
-  FolderView.prototype.onDirectorySelected = function(e) {
+  FolderView.prototype.onDirectorySelected = function(event) {
     var files, input;
     input = this.$('#folder-uploader');
     files = input[0].files;
@@ -3104,16 +3176,15 @@ module.exports = FolderView = (function(_super) {
     return input.replaceWith(input.clone(true));
   };
 
-  FolderView.prototype.onFilesSelected = function(e) {
+  FolderView.prototype.onFilesSelected = function(event) {
     var files, target, _ref;
-    files = ((_ref = e.dataTransfer) != null ? _ref.files : void 0) || e.target.files;
-    if (!files.length) {
-      return;
-    }
-    this.uploadQueue.addBlobs(files, this.model);
-    if (e.target != null) {
-      target = $(e.target);
-      return target.replaceWith(target.clone(true));
+    files = ((_ref = event.dataTransfer) != null ? _ref.files : void 0) || event.target.files;
+    if (files.length) {
+      this.uploadQueue.addBlobs(files, this.model);
+      if (event.target != null) {
+        target = $(event.target);
+        return target.replaceWith(target.clone(true));
+      }
     }
   };
 
@@ -3398,6 +3469,10 @@ module.exports = FolderView = (function(_super) {
     ]);
   };
 
+  FolderView.prototype.onMozFolderError = function() {
+    return Modal.error(t('modal error firefox dragdrop folder'));
+  };
+
   return FolderView;
 
 })(BaseView);
@@ -3438,11 +3513,8 @@ module.exports = ModalView = (function(_super) {
     this.yes = yes;
     this.no = no;
     this.cb = cb;
-    this.hideOnYes = hideOnYes;
+    this.hideOnYes = hideOnYes != null ? hideOnYes : true;
     ModalView.__super__.constructor.call(this);
-    if (this.hideOnYes == null) {
-      this.hideOnYes = true;
-    }
   }
 
   ModalView.prototype.initialize = function() {
@@ -4004,7 +4076,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4025,7 +4097,7 @@ buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, f
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4069,9 +4141,13 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 }).call(this);
 
 buf.push("</ul>");
-if ( !isBeingUploadetag)
+if ( !isUploading)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
+}
+else
+{
+buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
@@ -4202,7 +4278,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBeingUploadetag = locals_.isBeingUploadetag,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4223,7 +4299,7 @@ buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, f
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\">");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4267,9 +4343,13 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 }).call(this);
 
 buf.push("</ul>");
-if ( !isBeingUploadetag)
+if ( !isUploading)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
+}
+else
+{
+buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')

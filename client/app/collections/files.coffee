@@ -150,3 +150,21 @@ module.exports = class FileCollection extends Backbone.Collection
             return 1
         else # t1 is 'folder' and t2 is 'file'
             return -1
+
+
+    # Returns true if a file with a similar id or a similar location (path +
+    # name) is already in the database.
+    isFileStored: (model) ->
+        isThere = false
+
+        if @get model.get 'id'
+            isThere = true
+
+        else
+            path = model.getPath()
+            models = @filter (currentModel) ->
+                currentModel.getPath() is path
+            isThere = models.length > 0
+
+        isThere
+

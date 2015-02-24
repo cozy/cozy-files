@@ -1,5 +1,5 @@
 ViewCollection = require '../lib/view_collection'
-FileView = require './file'
+FileView = require './file_view'
 
 module.exports = class FilesView extends ViewCollection
     template: require './templates/files'

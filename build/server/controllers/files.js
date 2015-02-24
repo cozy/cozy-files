@@ -144,7 +144,7 @@ module.exports.create = function(req, res, next) {
   fields = {};
   form = new multiparty.Form();
   form.on('part', function(part) {
-    var attachBinary, err, fullPath, keepAlive, lastModification, name, now, overwrite, path, rollback, upload;
+    var attachBinary, canceled, err, fullPath, keepAlive, lastModification, name, now, overwrite, path, rollback, upload;
     if (part.filename == null) {
       fields[part.name] = '';
       part.on('data', function(buffer) {
@@ -156,12 +156,13 @@ module.exports.create = function(req, res, next) {
     path = fields.path;
     lastModification = moment(fields.lastModification).toISOString();
     overwrite = fields.overwrite;
+    upload = true;
+    canceled = false;
     if (!name || name === "") {
       err = new Error("Invalid arguments: no name given");
       err.status = 400;
       return next(err);
     }
-    upload = true;
     keepAlive = function() {
       if (upload) {
         feed.publish('usage.application', 'files');
@@ -170,6 +171,7 @@ module.exports.create = function(req, res, next) {
       }
     };
     rollback = function(file, err) {
+      canceled = true;
       return file.destroy(function(delerr) {
         if (delerr) {
           log.error(delerr);
@@ -202,26 +204,28 @@ module.exports.create = function(req, res, next) {
         }
         checksum.end();
         checksum = checksum.read();
-        return file.updateAttributes({
-          checksum: checksum
-        }, function(err) {
-          if (err) {
-            log.debug(err);
-          }
-          return file.index(["name"], function(err) {
-            var who;
+        if (!canceled) {
+          return file.updateAttributes({
+            checksum: checksum
+          }, function(err) {
             if (err) {
               log.debug(err);
             }
-            who = req.guestEmail || 'owner';
-            return sharing.notifyChanges(who, file, function(err) {
+            return file.index(["name"], function(err) {
+              var who;
               if (err) {
                 log.debug(err);
               }
-              return res.send(file, 200);
+              who = req.guestEmail || 'owner';
+              return sharing.notifyChanges(who, file, function(err) {
+                if (err) {
+                  log.debug(err);
+                }
+                return res.send(file, 200);
+              });
             });
           });
-        });
+        }
       });
     };
     now = moment().toISOString();
@@ -267,29 +271,66 @@ module.exports.create = function(req, res, next) {
           if (err) {
             return next(err);
           }
-          return Folder.byFullPath({
-            key: data.path
-          }, (function(_this) {
-            return function(err, parents) {
-              var parent;
-              if (err) {
-                return next(err);
-              }
-              if (parents.length > 0) {
-                parent = parents[0];
-                data.tags = parent.tags;
-                parent.lastModification = now;
-                folderParent[parent.name] = parent;
-              }
-              return File.create(data, function(err, newFile) {
+          if (sameFiles.length > 0) {
+            if (overwrite) {
+              file = sameFiles[0];
+              return file.updateAttributes({
+                lastModification: now
+              }, function() {
+                keepAlive();
+                return attachBinary(file);
+              });
+            } else {
+              upload = false;
+              return res.send({
+                error: true,
+                code: 'EEXISTS',
+                msg: "This file already exists"
+              }, 400);
+            }
+          }
+          data = {
+            name: name,
+            path: normalizePath(path),
+            creationDate: now,
+            lastModification: lastModification,
+            mime: mime.lookup(name),
+            size: part.byteCount,
+            tags: [],
+            "class": getFileClass(part)
+          };
+          return confirmCanUpload(data, req, function(err) {
+            if (err) {
+              return next(err);
+            }
+            return Folder.byFullPath({
+              key: data.path
+            }, (function(_this) {
+              return function(err, parents) {
+                var parent;
                 if (err) {
                   return next(err);
                 }
-                keepAlive();
-                return attachBinary(newFile);
-              });
-            };
-          })(this));
+                if (parents.length > 0) {
+                  parent = parents[0];
+                  data.tags = parent.tags;
+                  parent.lastModification = now;
+                  folderParent[parent.name] = parent;
+                }
+                return File.create(data, function(err, newFile) {
+                  if (err) {
+                    return next(err);
+                  }
+                  keepAlive();
+                  err = new Error('Request canceled by user');
+                  res.on('close', function() {
+                    return rollback(newFile, err);
+                  });
+                  return attachBinary(newFile);
+                });
+              };
+            })(this));
+          });
         });
       };
     })(this));

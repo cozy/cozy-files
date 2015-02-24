@@ -11,6 +11,11 @@ module.exports =
     "modal error get content"   : "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur"
     "modal error empty name"    : "Le nom ne peut pas être vide"
     "modal error file invalid"  : "Le fichier ne parait pas être valide"
+    'modal error firefox dragdrop folder': """
+Mozilla Firefox ne gère pas le téléchargement de dossiers. Si vous avez besoin
+de cette fonctionnalité, elle est disponible avec les navigateurs Chromium,
+Chrome et Safari.
+"""
 
     "root folder name"          : "racine"
 

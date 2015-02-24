@@ -15,13 +15,14 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
-        'click a.file-tags'        : 'onTagClicked'
-        'click a.file-delete'      : 'onDeleteClicked'
-        'click a.file-share'       : 'onShareClicked'
-        'click a.file-edit'        : 'onEditClicked'
-        'click a.file-edit-save'   : 'onSaveClicked'
-        'click a.file-edit-cancel' : 'onCancelClicked'
-        'click a.file-move'        : 'onMoveClicked'
+        'click a.file-tags': 'onTagClicked'
+        'click a.file-delete': 'onDeleteClicked'
+        'click a.file-share': 'onShareClicked'
+        'click a.file-edit': 'onEditClicked'
+        'click a.file-edit-save': 'onSaveClicked'
+        'click a.file-edit-cancel': 'onCancelClicked'
+        'click a.cancel-upload-button': 'onCancelUploadClicked'
+        'click a.file-move': 'onMoveClicked'
         'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
 
@@ -59,7 +60,7 @@ module.exports = class FileView extends BaseView
         'image/pjpeg'                   : 'fa-image'
         'image/x-pict'                  : 'fa-image'
         'image/pict'                    : 'fa-image'
-        'image/png'                    : 'fa-image'
+        'image/png'                     : 'fa-image'
         'image/x-pcx'                   : 'fa-image'
         'image/x-portable-pixmap'       : 'fa-image'
         'image/x-tiff'                  : 'fa-image'
@@ -88,32 +89,34 @@ module.exports = class FileView extends BaseView
         'application/x-zip-compressed'  : 'fa-file-archive-o'
         'multipart/x-gzip'              : 'fa-file-archive-o'
 
+
     template: (args) ->
         if @isSearchMode
             @templateSearch args
         else
             @templateNormal args
 
+
     getRenderData: ->
         _.extend super(),
-            isBeingUploaded: @model.isBeingUploaded()
+            isUploading: @model.isUploading()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
             clearance: @model.getClearance()
 
+
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
+        @uploadQueue = options.uploadQueue
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
-            @$('.spinholder').show()
-            @$('.icon-zone .fa').addClass 'hidden'
+            #@showLoading()
+
         @listenTo @model, 'sync error', =>
             # for overwritten files, render entirely to show
             #  modification date and type
-            @render() if @model.conflict
+            @render() if @model.conflict or not @model.isFile()
 
-            @$('.spinholder').hide()
-            @$('.icon-zone .fa').removeClass 'hidden'
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -124,18 +127,21 @@ module.exports = class FileView extends BaseView
         # If the model is a folder, we listen to the upload queue to enable or
         # disable the "something is being uploaded in my tree" indicator
         if @model.isFolder()
-            uploadQueue = options.uploadQueue
             path = @model.getRepository()
-            numUploadChildren = uploadQueue.getNumUploadingElementsByPath path
+            numUploadChildren = @uploadQueue.getNumUploadingElementsByPath path
             @hasUploadingChildren = numUploadChildren > 0
 
-            @listenTo uploadQueue, 'add remove reset', =>
-                hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0
-                @$('.fa-folder').toggleClass 'spin', hasItems
+            @listenTo @uploadQueue, 'add remove reset', =>
+                hasItems = @uploadQueue.getNumUploadingElementsByPath(path) > 0
+                if hasItems and not @$('.spinholder').is ':visible'
+                    @showLoading()
+                else if not hasItems and @$('.spinholder').is ':visible'
+                    @hideLoading()
 
-            @listenTo uploadQueue, 'upload-complete', =>
+            @listenTo @uploadQueue, 'upload-complete', =>
                 @hasUploadingChildren = false
-                @$('.fa-folder').removeClass 'spin'
+                @hideLoading()
+
 
     refresh: ->
         changes = Object.keys @model.changed
@@ -153,13 +159,16 @@ module.exports = class FileView extends BaseView
         # more complex change = rerender
         @render()
 
+
     displayError: (msg) ->
         @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
         if msg is false then @errorField.hide()
         else @errorField.text msg
 
+
     onTagClicked: ->
         @tags.toggleInput()
+
 
     onDeleteClicked: ->
         new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
@@ -170,6 +179,7 @@ module.exports = class FileView extends BaseView
                     error: ->
                         window.pendingOperations.deletion--
                         ModalView.error t "modal delete error"
+
 
     onEditClicked: (name) ->
 
@@ -192,7 +202,6 @@ module.exports = class FileView extends BaseView
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
         input = @$(".file-edit-name")[0]
 
-        console.log lastIndexOfDot
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
@@ -207,26 +216,25 @@ module.exports = class FileView extends BaseView
 
         @$el.addClass 'edit-mode'
 
+
     onShareClicked: ->
         new ModalShareView model: @model
+
 
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
-            @$('.icon-zone .fa').addClass 'hidden'
-            @$('.spinholder').show()
+            @showLoading()
 
             @model.save name: name,
                 wait: true,
                 success: (data) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
+                    @hideLoading()
                     @render()
                 error: (model, err) =>
-                    @$('.spinholder').hide()
-                    @$('.icon-zone .fa').removeClass 'hidden'
+                    @hideLoading()
                     @$('.file-edit-name').focus()
                     @displayError if err.status is 400 then t 'modal error in use'
                     else t 'modal error rename'
@@ -234,12 +242,17 @@ module.exports = class FileView extends BaseView
         else
             @displayError t("modal error empty name")
 
+
     onCancelClicked: ->
         @$el.removeClass 'edit-mode'
         if @model.isNew() then @model.destroy()
         else @render()
 
 
+    onCancelUploadClicked: ->
+        @uploadQueue.remove @model
+        @model.uploadXhrRequest.abort()
+        @model.destroy()
 
     # Display Move widget and handle move operation if user confirms.
     onMoveClicked: =>
@@ -358,6 +371,7 @@ module.exports = class FileView extends BaseView
         else if e.keyCode is 27
             @render()
 
+
     onSelectChanged: (event) ->
         isChecked = $(event.target).is ':checked'
         @$el.toggleClass 'selected', isChecked
@@ -365,6 +379,7 @@ module.exports = class FileView extends BaseView
 
         @onToggleSelect()
         return true
+
 
     onToggleSelect: ->
         @$el.toggleClass 'selected', @model.isSelected
@@ -374,32 +389,55 @@ module.exports = class FileView extends BaseView
         else
             @$('.file-move, .file-delete').removeClass 'hidden'
 
+
     afterRender: ->
-        # if the file is being uploaded
-        if @model.isBeingUploaded()
-            @$('.type-column-cell').remove()
-            @$('.date-column-cell').remove()
-            @progressbar = new ProgressBar model: @model
-            cell = $ '<td colspan="2"></td>'
-            cell.append @progressbar.render().$el
-            @$('.size-column-cell').after cell
-            # we don't want the file link to react
-            @$('a.caption.btn').click (event) -> event.preventDefault()
+        if @model.isUploading()
+            @$el.addClass 'uploading'
+            @addProgressBar()
+            @blockDownloadLink()
         else
-            @tags = new TagsView
-                el: @$ '.tags'
-                model: @model
-            @tags.render()
-            @tags.hideInput()
+            @$el.removeClass 'uploading'
+            @addTags()
 
-        # hides the file move and remove buttons if they are in a bulk selection
-        if @model.isSelected
-            @$('.file-move, .file-delete').addClass 'hidden'
-        else
-            @$('.file-move, .file-delete').removeClass 'hidden'
+        @hideLoading()
+        @showLoading() if @hasUploadingChildren
 
-        # if it's a folder and if it has children being uploaded
-        if @hasUploadingChildren
-            @$('.fa-folder').addClass 'spin'
 
+    # add and display progress bar.
+    addProgressBar: ->
+        @$('.type-column-cell').remove()
+        @$('.date-column-cell').remove()
+
+        @progressbar = new ProgressBar model: @model
+        cell = $ '<td colspan="2"></td>'
+        cell.append @progressbar.render().$el
+        @$('.size-column-cell').after cell
+
+
+    # Add and display tag widget.
+    addTags: ->
+        @tags = new TagsView
+            el: @$ '.tags'
+            model: @model
+        @tags.render()
+        @tags.hideInput()
+
+
+    # Make download link inactive.
+    blockDownloadLink: ->
+        @$('a.caption.btn').click (event) -> event.preventDefault()
+
+
+    # Show loading spinner.
+    showLoading: ->
+        @$('.icon-zone .fa').addClass 'hidden'
+        @$('.icon-zone .selector-wrapper').addClass 'hidden'
+        @$('.spinholder').show()
+
+
+    # Hide loading spinner.
+    hideLoading: ->
+        @$('.icon-zone .fa').removeClass 'hidden'
+        @$('.icon-zone .selector-wrapper').removeClass 'hidden'
         @$('.spinholder').hide()
+

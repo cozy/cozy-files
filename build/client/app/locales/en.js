@@ -8,6 +8,7 @@ module.exports = {
   "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
+  'modal error firefox dragdrop folder': "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
   "root folder name": "root",
   "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Search",

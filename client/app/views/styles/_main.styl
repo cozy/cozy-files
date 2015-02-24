@@ -300,6 +300,12 @@ div#affixbar
         border-radius 10px
         margin 0 2.5px
 
+#uploader
+    cursor: pointer
+
+#upload-btngroup
+    cursor: pointer
+
 #button-upload-new-file
     position: relative
     overflow: hidden
@@ -520,6 +526,7 @@ table#table-items
         #down-lastModification
             display: none
 
+
 tr.folder-row
 
     .file-path
@@ -712,8 +719,6 @@ tr.folder-row
         font-size: 14px
 
     &:hover .operations
-        visibility: visible
-
         a
             color: lightgray
 
@@ -722,6 +727,12 @@ tr.folder-row
 
         a:active
             color: orange
+
+
+tr.folder-row.uploading
+    &:hover
+        .operations
+            display: none
 
 
 .visible-lg.visible-md.visible-inline
