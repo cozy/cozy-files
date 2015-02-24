@@ -15,13 +15,14 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
-        'click a.file-tags'        : 'onTagClicked'
-        'click a.file-delete'      : 'onDeleteClicked'
-        'click a.file-share'       : 'onShareClicked'
-        'click a.file-edit'        : 'onEditClicked'
-        'click a.file-edit-save'   : 'onSaveClicked'
-        'click a.file-edit-cancel' : 'onCancelClicked'
-        'click a.file-move'        : 'onMoveClicked'
+        'click a.file-tags': 'onTagClicked'
+        'click a.file-delete': 'onDeleteClicked'
+        'click a.file-share': 'onShareClicked'
+        'click a.file-edit': 'onEditClicked'
+        'click a.file-edit-save': 'onSaveClicked'
+        'click a.file-edit-cancel': 'onCancelClicked'
+        'click a.cancel-upload-button': 'onCancelUploadClicked'
+        'click a.file-move': 'onMoveClicked'
         'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
 
@@ -59,7 +60,7 @@ module.exports = class FileView extends BaseView
         'image/pjpeg'                   : 'fa-image'
         'image/x-pict'                  : 'fa-image'
         'image/pict'                    : 'fa-image'
-        'image/png'                    : 'fa-image'
+        'image/png'                     : 'fa-image'
         'image/x-pcx'                   : 'fa-image'
         'image/x-portable-pixmap'       : 'fa-image'
         'image/x-tiff'                  : 'fa-image'
@@ -106,6 +107,7 @@ module.exports = class FileView extends BaseView
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
+        @uploadQueue = options.uploadQueue
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'request', =>
             #@showLoading()
@@ -125,18 +127,20 @@ module.exports = class FileView extends BaseView
         # If the model is a folder, we listen to the upload queue to enable or
         # disable the "something is being uploaded in my tree" indicator
         if @model.isFolder()
-            uploadQueue = options.uploadQueue
             path = @model.getRepository()
-            numUploadChildren = uploadQueue.getNumUploadingElementsByPath path
+            numUploadChildren = @uploadQueue.getNumUploadingElementsByPath path
             @hasUploadingChildren = numUploadChildren > 0
 
-            @listenTo uploadQueue, 'add remove reset', =>
-                hasItems = uploadQueue.getNumUploadingElementsByPath(path) > 0
-                @$('.fa-folder').toggleClass 'spin', hasItems
+            @listenTo @uploadQueue, 'add remove reset', =>
+                hasItems = @uploadQueue.getNumUploadingElementsByPath(path) > 0
+                if hasItems and not @$('.spinholder').is ':visible'
+                    @showLoading()
+                else if not hasItems and @$('.spinholder').is ':visible'
+                    @hideLoading()
 
-            @listenTo uploadQueue, 'upload-complete', =>
+            @listenTo @uploadQueue, 'upload-complete', =>
                 @hasUploadingChildren = false
-                @$('.fa-folder').removeClass 'spin'
+                @hideLoading()
 
 
     refresh: ->
@@ -244,6 +248,11 @@ module.exports = class FileView extends BaseView
         if @model.isNew() then @model.destroy()
         else @render()
 
+
+    onCancelUploadClicked: ->
+        @uploadQueue.remove @model
+        @model.uploadXhrRequest.abort()
+        @model.destroy()
 
     # Display Move widget and handle move operation if user confirms.
     onMoveClicked: =>
