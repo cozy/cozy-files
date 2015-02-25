@@ -1,5 +1,6 @@
 path = require 'path'
 americano = require 'americano'
+errorHandler = require './middlewares/errors'
 
 staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
             maxAge: 86400000
@@ -29,9 +30,7 @@ config =
         ]
         afterStart: (app, server) ->
             # move here necessary after express 4.4
-            app.use americano.errorHandler
-                dumpExceptions: true
-                showStack: true
+            app.use errorHandler
 
     development: [
         americano.logger 'dev'
