@@ -21,5 +21,10 @@ module.exports.checkClearance = (permission, type) -> (req, res, next) ->
             next()
         else
             err = new Error 'You cannot access this resource'
-            err.status = 401
+            err.status = 404
+            err.template =
+                name: '404'
+                params:
+                    localization: require '../lib/localization_manager'
+                    isPublic: true
             next err
