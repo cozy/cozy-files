@@ -189,24 +189,38 @@ module.exports.create = (req, res, next) ->
 
                 return rollback file, err if err
 
+                # TODO move everythin below in the model.
                 checksum.end()
                 checksum = checksum.read()
+
                 # set the file checksum
 
                 unless canceled
-                    file.updateAttributes {checksum}, (err) ->
+
+                    data =
+                        checksum: checksum
+                        uploading: false
+
+                    file.updateAttributes data, (err) ->
                         # we ignore checksum storing errors
                         log.debug err if err
+
                         # index the file in cozy-indexer for fast search
                         file.index ["name"], (err) ->
                             # we ignore indexing errors
                             log.debug err if err
+
                             # send email or notification of file changed
                             who = req.guestEmail or 'owner'
                             sharing.notifyChanges who, file, (err) ->
+
                                 # we ignore notification errors
                                 log.debug err if err
-                                res.send file, 200
+
+                                # Retrieve binary metadat
+                                File.find file.id, (err, file) ->
+                                    log.debug err if err
+                                    res.send file, 200
 
         now = moment().toISOString()
 
@@ -241,6 +255,7 @@ module.exports.create = (req, res, next) ->
                 size: part.byteCount
                 tags: []
                 class: getFileClass part
+                uploading: true
 
             # check if the request is allowed
             confirmCanUpload data, req, (err) ->
@@ -271,6 +286,7 @@ module.exports.create = (req, res, next) ->
                     size: part.byteCount
                     tags: []
                     class: getFileClass part
+                    uploading: true
 
                 # check if the request is allowed
                 confirmCanUpload data, req, (err) ->

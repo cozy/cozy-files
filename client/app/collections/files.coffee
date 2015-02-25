@@ -153,7 +153,7 @@ module.exports = class FileCollection extends Backbone.Collection
 
 
     # Returns true if a file with a similar id or a similar location (path +
-    # name) is already in the database.
+    # name) is already in the collection.
     isFileStored: (model) ->
         isThere = false
 

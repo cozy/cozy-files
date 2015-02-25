@@ -23,6 +23,7 @@ module.exports = File = cozydb.getModel 'File',
     modificationHistory: Object
     clearance: cozydb.NoSchema
     tags: [String]
+    uploading: Boolean
 
 File.all = (params, callback) ->
     File.request "all", params, callback

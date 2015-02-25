@@ -25,23 +25,26 @@ module.exports = class SocketListener extends CozySocketListener
         return @collection.isPathCached path
 
     onRemoteCreate: (model) ->
-        console.log 'onRemoteCreate'
 
         # Check if model is located in current folder
         isLocatedInFolder = @isInCachedFolder model
-        isAlreadyInFolder = @collection.isFileStored model
 
-        if isLocatedInFolder and not isAlreadyInFolder
-            @collection.add model, merge: true
+        if isLocatedInFolder
+            isAlreadyInFolder = @collection.isFileStored model
+            isInQueue = @uploadQueue.isFileStored model
+            isAlreadyInFolder = isAlreadyInFolder or isInQueue
+            isUploading = model.get('uploading') or false
+
+            if not(isAlreadyInFolder) and not(isUploading)
+                @collection.add model, merge: true
 
     onRemoteDelete: (model) ->
         if @isInCachedFolder model
-            # console.info "remote delete", model
             @collection.remove model
 
     onRemoteUpdate: (model, collection) ->
-        if @isInCachedFolder model
-            # console.info "remote update", model
+        isUploading = model.get('uploading') or false
+        if @isInCachedFolder(model) and not(isUploading)
             collection.add model, merge: true
 
     process: (event) ->
@@ -61,12 +64,20 @@ module.exports = class SocketListener extends CozySocketListener
 
             when 'update'
                 @collections.forEach (collection) =>
-                    return unless model = collection.get id
-                    model.fetch
-                        success: (fetched) =>
-                            if fetched.changedAttributes()
+                    model = collection.get id
+                    if model?
+                        model.fetch
+                            success: (fetched) =>
+                                if fetched.changedAttributes()
+                                    fetched.set type: doctype
+                                    @onRemoteUpdate fetched, collection
+                    else
+                        model = new @models[doctype](id: id, type: doctype)
+                        model.fetch
+                            success: (fetched) =>
+                                # set as a folder or a file
                                 fetched.set type: doctype
-                                @onRemoteUpdate fetched, collection
+                                @onRemoteCreate fetched
 
             when 'delete'
                 @collections.forEach (collection) =>

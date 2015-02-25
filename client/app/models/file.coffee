@@ -18,7 +18,7 @@ module.exports = class File extends Backbone.Model
     # helpers
     getPath: ->
         path = @get 'path'
-        path = "/#{path}" if path.length is 0 or path[0] isnt '/'
+        path = "/#{path}" if (path.length > 0) and (path[0] isnt '/')
         name = @get 'name'
         "#{path}/#{name}"
 
