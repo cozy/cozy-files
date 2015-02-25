@@ -49,7 +49,7 @@ td
       ul.tags
         for tag in model.tags || []
           li.tag #{tag}
-            span.deleter &times;
+            span.deleter.fa.fa-times
 
     block actions
       if !isUploading
