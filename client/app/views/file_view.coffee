@@ -23,6 +23,7 @@ module.exports = class FileView extends BaseView
         'click a.file-edit-cancel': 'onCancelClicked'
         'click a.cancel-upload-button': 'onCancelUploadClicked'
         'click a.file-move': 'onMoveClicked'
+        'click a.broken-button': 'onDeleteClicked'
         'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
 
@@ -98,8 +99,13 @@ module.exports = class FileView extends BaseView
 
 
     getRenderData: ->
+        isUploading = @model.isUploading()
+        isBroken = (not @model.hasBinary()) and (not @model.isFolder())
+        isBroken = isBroken and not isUploading
+
         _.extend super(),
-            isUploading: @model.isUploading()
+            isUploading: isUploading
+            isBroken: isBroken
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
             clearance: @model.getClearance()
@@ -397,7 +403,10 @@ module.exports = class FileView extends BaseView
             @blockDownloadLink()
         else
             @$el.removeClass 'uploading'
+            unless @model.hasBinary() or @model.isFolder()
+                @$el.addClass 'broken'
             @addTags()
+
 
         @hideLoading()
         @showLoading() if @hasUploadingChildren

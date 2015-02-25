@@ -1,5 +1,8 @@
 module.exports =
 
+    "file broken indicator": "Broken file"
+    "file broken remove": "Remove broken file"
+
     # misc
     "or"                        : "or"
 

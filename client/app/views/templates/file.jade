@@ -52,7 +52,7 @@ td
             span.deleter.fa.fa-times
 
     block actions
-      if !isUploading
+      if !isUploading && !isBroken
         .operations
           a.file-tags(title="#{t('tooltip tag')}")
             span.fa.fa-tag
@@ -64,9 +64,16 @@ td
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.fa.fa-download
-      else
-        a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
           
+      else if isUploading
+        a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
+        
+      else
+        .broken-widget
+          span.broken-text #{t('file broken indicator')}
+          a.broken-button(title="#{t('file broken remove')}")
+              span.fa.fa-trash
+
 td.size-column-cell
   if model.type == 'file'
     - options = {base: 2}

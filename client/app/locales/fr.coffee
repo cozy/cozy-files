@@ -1,5 +1,8 @@
 module.exports =
 
+    "file broken indicator": "Fichier cassé"
+    "file broken remove": "Supprimer le fichier cassé"
+
     # misc
     "or"                        : "ou"
 
