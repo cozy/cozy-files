@@ -382,7 +382,12 @@ module.exports.searchContent = (req, res, next) ->
     # if the clearance is 'public', we don't allow the search (for privacy reasons)
     if isPublic and not key?.length > 0
         err = new Error 'You cannot access public search result'
-        err.status = 401
+        err.status = 404
+        err.template =
+            name: '404'
+            params:
+                localization: require '../lib/localization_manager'
+                isPublic: true
         next err
     else
         if query.indexOf('tag:') isnt -1
