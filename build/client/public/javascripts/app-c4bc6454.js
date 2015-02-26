@@ -116,6 +116,7 @@ module.exports = {
     this.uploadQueue = new UploadQueue();
     this.socket = new SocketListener();
     this.socket.watch(this.baseCollection);
+    this.socket.uploadQueue = this.uploadQueue;
     Router = require('router');
     this.router = new Router();
     if (window.rootFolder != null) {
@@ -685,6 +686,21 @@ module.exports = UploadQueue = (function(_super) {
     return this.reduce(iter, 0);
   };
 
+  UploadQueue.prototype.isFileStored = function(model) {
+    var isThere, models, path;
+    isThere = false;
+    if (this.get(model.get('id'))) {
+      isThere = true;
+    } else {
+      path = model.getPath();
+      models = this.filter(function(currentModel) {
+        return currentModel.getPath() === path;
+      });
+      isThere = models.length > 0;
+    }
+    return isThere;
+  };
+
   return UploadQueue;
 
 })(Backbone.Collection);
@@ -978,14 +994,18 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteCreate = function(model) {
-    var isAlreadyInFolder, isLocatedInFolder;
-    console.log('onRemoteCreate');
+    var isAlreadyInFolder, isInQueue, isLocatedInFolder, isUploading;
     isLocatedInFolder = this.isInCachedFolder(model);
-    isAlreadyInFolder = this.collection.isFileStored(model);
-    if (isLocatedInFolder && !isAlreadyInFolder) {
-      return this.collection.add(model, {
-        merge: true
-      });
+    if (isLocatedInFolder) {
+      isAlreadyInFolder = this.collection.isFileStored(model);
+      isInQueue = this.uploadQueue.isFileStored(model);
+      isAlreadyInFolder = isAlreadyInFolder || isInQueue;
+      isUploading = model.get('uploading') || false;
+      if (!isAlreadyInFolder && !isUploading) {
+        return this.collection.add(model, {
+          merge: true
+        });
+      }
     }
   };
 
@@ -996,7 +1016,9 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteUpdate = function(model, collection) {
-    if (this.isInCachedFolder(model)) {
+    var isUploading;
+    isUploading = model.get('uploading') || false;
+    if (this.isInCachedFolder(model) && !isUploading) {
       return collection.add(model, {
         merge: true
       });
@@ -1028,19 +1050,32 @@ module.exports = SocketListener = (function(_super) {
         case 'update':
           return this.collections.forEach((function(_this) {
             return function(collection) {
-              if (!(model = collection.get(id))) {
-                return;
-              }
-              return model.fetch({
-                success: function(fetched) {
-                  if (fetched.changedAttributes()) {
+              model = collection.get(id);
+              if (model != null) {
+                return model.fetch({
+                  success: function(fetched) {
+                    if (fetched.changedAttributes()) {
+                      fetched.set({
+                        type: doctype
+                      });
+                      return _this.onRemoteUpdate(fetched, collection);
+                    }
+                  }
+                });
+              } else {
+                model = new _this.models[doctype]({
+                  id: id,
+                  type: doctype
+                });
+                return model.fetch({
+                  success: function(fetched) {
                     fetched.set({
                       type: doctype
                     });
-                    return _this.onRemoteUpdate(fetched, collection);
+                    return _this.onRemoteCreate(fetched);
                   }
-                }
-              });
+                });
+              }
             };
           })(this));
         case 'delete':
@@ -1237,6 +1272,8 @@ module.exports = ViewCollection = (function(_super) {
 
 ;require.register("locales/en", function(exports, require, module) {
 module.exports = {
+  "file broken indicator": "Broken file",
+  "file broken remove": "Remove broken file",
   "or": "or",
   "modal error": "Error",
   "modal ok": "OK",
@@ -1385,6 +1422,8 @@ module.exports = {
 
 ;require.register("locales/fr", function(exports, require, module) {
 module.exports = {
+  "file broken indicator": "Fichier cassé",
+  "file broken remove": "Supprimer le fichier cassé",
   "or": "ou",
   "modal error": "Erreur",
   "modal ok": "OK",
@@ -1664,7 +1703,7 @@ module.exports = File = (function(_super) {
   File.prototype.getPath = function() {
     var name, path;
     path = this.get('path');
-    if (path.length === 0 || path[0] !== '/') {
+    if ((path.length > 0) && (path[0] !== '/')) {
       path = "/" + path;
     }
     name = this.get('name');
@@ -2337,6 +2376,7 @@ module.exports = FileView = (function(_super) {
     'click a.file-edit-cancel': 'onCancelClicked',
     'click a.cancel-upload-button': 'onCancelUploadClicked',
     'click a.file-move': 'onMoveClicked',
+    'click a.broken-button': 'onDeleteClicked',
     'keydown input.file-edit-name': 'onKeyPress',
     'change input.selector': 'onSelectChanged'
   };
@@ -2414,8 +2454,13 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.getRenderData = function() {
+    var isBroken, isUploading;
+    isUploading = this.model.isUploading();
+    isBroken = (!this.model.hasBinary()) && (!this.model.isFolder());
+    isBroken = isBroken && !isUploading;
     return _.extend(FileView.__super__.getRenderData.call(this), {
-      isUploading: this.model.isUploading(),
+      isUploading: isUploading,
+      isBroken: isBroken,
       attachmentUrl: this.model.getAttachmentUrl(),
       downloadUrl: this.model.getDownloadUrl(),
       clearance: this.model.getClearance()
@@ -2723,6 +2768,9 @@ module.exports = FileView = (function(_super) {
       this.blockDownloadLink();
     } else {
       this.$el.removeClass('uploading');
+      if (!(this.model.hasBinary() || this.model.isFolder())) {
+        this.$el.addClass('broken');
+      }
       this.addTags();
     }
     this.hideLoading();
@@ -4076,7 +4124,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,isBroken = locals_.isBroken,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4126,7 +4174,7 @@ buf.push("<ul class=\"tags\">");
     for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
       var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   } else {
@@ -4134,20 +4182,24 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
     for (var $index in $$obj) {
       $$l++;      var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   }
 }).call(this);
 
 buf.push("</ul>");
-if ( !isUploading)
+if ( !isUploading && !isBroken)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
 }
-else
+else if ( isUploading)
 {
 buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
+}
+else
+{
+buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
@@ -4226,7 +4278,7 @@ buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"ca
     for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
       var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   } else {
@@ -4234,7 +4286,7 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
     for (var $index in $$obj) {
       $$l++;      var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   }
@@ -4278,7 +4330,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,isBroken = locals_.isBroken,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4328,7 +4380,7 @@ buf.push("<ul class=\"tags\">");
     for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
       var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   } else {
@@ -4336,20 +4388,24 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
     for (var $index in $$obj) {
       $$l++;      var tag = $$obj[$index];
 
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter\">&times;</span></li>");
+buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
     }
 
   }
 }).call(this);
 
 buf.push("</ul>");
-if ( !isUploading)
+if ( !isUploading && !isBroken)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
 }
-else
+else if ( isUploading)
 {
 buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
+}
+else
+{
+buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
 buf.push("</div></td><td class=\"size-column-cell\">");
 if ( model.type == 'file')
