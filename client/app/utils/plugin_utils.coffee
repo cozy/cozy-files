@@ -55,7 +55,8 @@ helpers =
             icon = document.createElement 'a'
             icon.innerHTML = "<i class='fa fa-eye'></i>"
             icon.addEventListener 'click', onClick
-            elmt.parentNode.querySelector('.operations').appendChild icon
+            operationsEl = elmt.parentNode.querySelector('.operations')
+            operationsEl?.appendChild icon
 
 module.exports =
 
