@@ -14,10 +14,8 @@ module.exports.afterStart = (app, server, callback) ->
 
     # retrieve locale and set polyglot object
     # notification events should be proxied to client
-    realtime = RealtimeAdapter
-        server: server
-        ['file.*', 'folder.*', 'contact.*']
-        resource: '/public/socket.io' # expose socket.io on public side
+    realtime = RealtimeAdapter server, ['file.*', 'folder.*', 'contact.*'], \
+        path: '/public/socket.io' # expose socket.io on public side
 
     init.updateIndex()
 
