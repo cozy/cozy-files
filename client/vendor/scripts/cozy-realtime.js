@@ -42,20 +42,20 @@
       var event, pathToSocketIO, socket, url, _i, _len, _ref, _results;
       url = window.location.origin;
       path = window.location.pathname.substring(1);
-
+      // CAREFUL, this is a modified version of cozy-realtime-adapter's client.
       var appName = 'files';
       if(path.indexOf(appName) != -1) {
         // if production
-        path = 'public/' + appName + '/'
+        path = 'public/' + appName
       }
       else {
         // if dev
-        path = 'public/'
+        path = 'public'
       }
 
-      pathToSocketIO = "" + path + "socket.io";
+      pathToSocketIO = "/" + path + "/socket.io";
       socket = io.connect(url, {
-        resource: pathToSocketIO
+        'path': pathToSocketIO
       });
       _ref = this.events;
       _results = [];
