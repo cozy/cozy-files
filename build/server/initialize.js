@@ -20,10 +20,8 @@ module.exports.beforeStart = function(callback) {
 module.exports.afterStart = function(app, server, callback) {
   var realtime, updateIndex;
   feed.initialize(server);
-  realtime = RealtimeAdapter({
-    server: server
-  }, ['file.*', 'folder.*', 'contact.*'], {
-    resource: '/public/socket.io'
+  realtime = RealtimeAdapter(server, ['file.*', 'folder.*', 'contact.*'], {
+    path: '/public/socket.io'
   });
   init.updateIndex();
   updateIndex = function(type, id) {
