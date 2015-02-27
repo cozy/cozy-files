@@ -74,7 +74,7 @@ describe "Sharing management", ->
                 path: "/readonly"
             client.sendFile 'public/files/?key=secret', './test/fixtures/files/test.txt', file, (err, res, body) =>
                 should.not.exist err
-                res.statusCode.should.equal 401
+                res.statusCode.should.equal 404
                 done()
 
     describe 'writable sharing', ->
