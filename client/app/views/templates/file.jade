@@ -39,11 +39,15 @@ td
               i(class="fa #{this.mimeClasses[model.mime]}")
             else
               i.fa.fa-file-o
-          a.btn-link(
-            href="#{attachmentUrl}",
-            title="#{t('download file')}", target="_blank")
-              span
-                | #{model.name}
+          if !isBroken
+              a.btn-link(
+                href="#{attachmentUrl}",
+                title="#{t('download file')}", target="_blank")
+                  span
+                    | #{model.name}
+          else
+            span.file-name
+              | #{model.name}
 
     block tags
       ul.tags
