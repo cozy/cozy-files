@@ -96,7 +96,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "upload button"             : "Upload a file"
     "upload success"            : "Upload successfuly completed!"
     "upload end button"         : "Close"
-    "total progress"            : "Total progress"
+    "total progress"            : "in progress…"
 
     "new folder caption"        : "Add a new folder"
     "new folder msg"            : "Create a folder named:"
