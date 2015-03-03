@@ -699,6 +699,7 @@ tr.folder-row
             .deleter
                 cursor: pointer
                 font-size: 10px
+                transform: translate(0px, -1px)
                 &:hover
                     color: orange - 40%
 
@@ -737,6 +738,13 @@ tr.folder-row.uploading
 
 tr.folder-row.broken
     background-color #FEE
+
+    .file-name
+        color #333
+        cursor: default
+
+        &:hover
+            color #333
 
     .broken-widget
         display inline

@@ -255,120 +255,12 @@ module.exports = class FileView extends BaseView
         else @render()
 
 
+    # Cancel current upload. Then display a notification that the upload has
+    # been canceled for two seconds before removing the whole file line.
     onCancelUploadClicked: ->
-        @uploadQueue.remove @model
+        @uploadQueue.remove @model, trigger: false
         @model.uploadXhrRequest.abort()
-        @model.destroy()
-
-    # Display Move widget and handle move operation if user confirms.
-    onMoveClicked: =>
-        formTemplate = """
-            <div class="move-widget">
-            <span> #{t 'move element to'}: </span>
-            <select class="move-select"></select>
-            <button class="button btn move-btn">
-                #{t 'move'}
-            </button>
-            <button class="btn btn-link cancel-move-btn">
-                #{t 'cancel'}
-            </button>
-            </div>
-        """
-
-        errorTemplate = """
-            <div class="move-error">
-                <span class="error">
-                #{'modal error file exists'}: #{@model.get 'name'}.
-                </span>
-            </div>
-        """
-
-        movedTemplate = (path) ->
-            """
-            <div id="moved-infos">
-            <span>#{ t 'file successfully moved to'}: /#{path}.</span>
-            <button class="btn btn-link cancel-move-btn">
-                #{t 'cancel'}
-            </button>
-            </div>
-        """
-
-        optionTemplate =  (path) -> """
-            <option value="#{path}">#{path}</option>
-        """
-
-        firstCell = @$el.find 'td:first-child'
-
-        client.get 'folders/list', (err, paths) =>
-            if err
-                Modal.error err
-            else
-                parentPath = @model.get 'path'
-                fullPath =  @model.getRepository()
-                type = @model.get 'type'
-
-                # Add root folder to list.
-                paths.push '/' if parentPath isnt  ""
-
-
-                # Fill folder combobox with folder list.
-                moveForm = $ formTemplate
-                for path in paths
-                    if path isnt parentPath \
-                       and not(type is 'folder' and path.indexOf(fullPath) is 0)
-                        moveForm.find('select').append optionTemplate path
-
-                # Cancel move action on cancel clicked.
-                cancelButton =  moveForm.find(".cancel-move-btn")
-                cancelButton.click =>
-                    @$('.move-error').remove()
-                    moveForm.remove()
-
-                # Perform move operation on move clicked.
-                moveButton = moveForm.find(".move-btn")
-                moveButton.click =>
-
-                    # Show loading
-                    moveButton.html t "moving..."
-
-                    # Get path and url information.
-                    path = $(".move-select").val().substring 1
-                    id = @model.get 'id'
-                    previousPath = @model.get 'path'
-
-                    # Stop render sync.
-                    @stopListening @model
-                    window.app.socket.pause @model, null,
-                        ignoreMySocketNotification: true
-
-                    showMoveResult = =>
-                        moveForm.fadeOut()
-                        moveForm.remove()
-                        movedInfos = $ movedTemplate path
-                        firstCell.append movedInfos
-                        cancelButton =  movedInfos.find(".cancel-move-btn")
-                        movedInfos.click =>
-                            data = path: previousPath
-                            client.put "#{type}s/#{id}", data, (err) =>
-                                if err
-                                    ModalView.error t 'error occured canceling move'
-                                else
-                                    movedInfos.fadeOut()
-
-                    # Can't use Backbone model due to a weird sync
-                    # I can't figure out what is causing view to re-render.
-                    client.put "#{type}s/#{id}", path: path, (err) =>
-                        if err?
-                            firstCell.append errorTemplate
-                        else
-                            showMoveResult()
-
-                        # Put back synchronization.
-                        window.app.socket.resume @model, null,
-                            ignoreMySocketNotification: true
-                        @listenTo @model, 'change', @render
-
-                @$el.find('td:first-child').append moveForm
+        @remove()
 
 
     onKeyPress: (e) =>
