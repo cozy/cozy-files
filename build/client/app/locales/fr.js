@@ -52,7 +52,7 @@ module.exports = {
   "upload button": "Ajouter un fichier",
   "upload success": "Ajouté avec succès !",
   "upload end button": "Fermer",
-  "total progress": "Progression totale",
+  "total progress": "Progression",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",

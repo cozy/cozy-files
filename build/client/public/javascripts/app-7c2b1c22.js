@@ -1325,7 +1325,7 @@ module.exports = {
   "upload button": "Upload a file",
   "upload success": "Upload successfuly completed!",
   "upload end button": "Close",
-  "total progress": "Total progress",
+  "total progress": "in progress…",
   "new folder caption": "Add a new folder",
   "new folder msg": "Create a folder named:",
   "new folder close": "Close",
@@ -1474,7 +1474,7 @@ module.exports = {
   "upload button": "Ajouter un fichier",
   "upload success": "Ajouté avec succès !",
   "upload end button": "Fermer",
-  "total progress": "Progression totale",
+  "total progress": "Progression",
   "new folder caption": "Créer un nouveau dossier",
   "new folder msg": "Entrer le nom du dossier :",
   "new folder close": "Annuler",
@@ -2125,13 +2125,14 @@ helpers = {
     return node.querySelectorAll(selector);
   },
   addIcon: function(elmt, onClick) {
-    var icon;
+    var icon, operationsEl;
     if (!elmt.dataset.hasPreview) {
       elmt.dataset.hasPreview = true;
       icon = document.createElement('a');
       icon.innerHTML = "<i class='fa fa-eye'></i>";
       icon.addEventListener('click', onClick);
-      return elmt.parentNode.querySelector('.operations').appendChild(icon);
+      operationsEl = elmt.parentNode.querySelector('.operations');
+      return operationsEl != null ? operationsEl.appendChild(icon) : void 0;
     }
   }
 };
@@ -2353,7 +2354,6 @@ module.exports = FileView = (function(_super) {
 
   function FileView() {
     this.onKeyPress = __bind(this.onKeyPress, this);
-    this.onMoveClicked = __bind(this.onMoveClicked, this);
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
@@ -2642,96 +2642,11 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onCancelUploadClicked = function() {
-    this.uploadQueue.remove(this.model);
+    this.uploadQueue.remove(this.model, {
+      trigger: false
+    });
     this.model.uploadXhrRequest.abort();
-    return this.model.destroy();
-  };
-
-  FileView.prototype.onMoveClicked = function() {
-    var errorTemplate, firstCell, formTemplate, movedTemplate, optionTemplate;
-    formTemplate = "<div class=\"move-widget\">\n<span> " + (t('move element to')) + ": </span>\n<select class=\"move-select\"></select>\n<button class=\"button btn move-btn\">\n    " + (t('move')) + "\n</button>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
-    errorTemplate = "<div class=\"move-error\">\n    <span class=\"error\">\n    " + 'modal error file exists' + ": " + (this.model.get('name')) + ".\n    </span>\n</div>";
-    movedTemplate = function(path) {
-      return "<div id=\"moved-infos\">\n<span>" + (t('file successfully moved to')) + ": /" + path + ".</span>\n<button class=\"btn btn-link cancel-move-btn\">\n    " + (t('cancel')) + "\n</button>\n</div>";
-    };
-    optionTemplate = function(path) {
-      return "<option value=\"" + path + "\">" + path + "</option>";
-    };
-    firstCell = this.$el.find('td:first-child');
-    return client.get('folders/list', (function(_this) {
-      return function(err, paths) {
-        var cancelButton, fullPath, moveButton, moveForm, parentPath, path, type, _i, _len;
-        if (err) {
-          return Modal.error(err);
-        } else {
-          parentPath = _this.model.get('path');
-          fullPath = _this.model.getRepository();
-          type = _this.model.get('type');
-          if (parentPath !== "") {
-            paths.push('/');
-          }
-          moveForm = $(formTemplate);
-          for (_i = 0, _len = paths.length; _i < _len; _i++) {
-            path = paths[_i];
-            if (path !== parentPath && !(type === 'folder' && path.indexOf(fullPath) === 0)) {
-              moveForm.find('select').append(optionTemplate(path));
-            }
-          }
-          cancelButton = moveForm.find(".cancel-move-btn");
-          cancelButton.click(function() {
-            _this.$('.move-error').remove();
-            return moveForm.remove();
-          });
-          moveButton = moveForm.find(".move-btn");
-          moveButton.click(function() {
-            var id, previousPath, showMoveResult;
-            moveButton.html(t("moving..."));
-            path = $(".move-select").val().substring(1);
-            id = _this.model.get('id');
-            previousPath = _this.model.get('path');
-            _this.stopListening(_this.model);
-            window.app.socket.pause(_this.model, null, {
-              ignoreMySocketNotification: true
-            });
-            showMoveResult = function() {
-              var movedInfos;
-              moveForm.fadeOut();
-              moveForm.remove();
-              movedInfos = $(movedTemplate(path));
-              firstCell.append(movedInfos);
-              cancelButton = movedInfos.find(".cancel-move-btn");
-              return movedInfos.click(function() {
-                var data;
-                data = {
-                  path: previousPath
-                };
-                return client.put("" + type + "s/" + id, data, function(err) {
-                  if (err) {
-                    return ModalView.error(t('error occured canceling move'));
-                  } else {
-                    return movedInfos.fadeOut();
-                  }
-                });
-              });
-            };
-            return client.put("" + type + "s/" + id, {
-              path: path
-            }, function(err) {
-              if (err != null) {
-                firstCell.append(errorTemplate);
-              } else {
-                showMoveResult();
-              }
-              window.app.socket.resume(_this.model, null, {
-                ignoreMySocketNotification: true
-              });
-              return _this.listenTo(_this.model, 'change', _this.render);
-            });
-          });
-          return _this.$el.find('td:first-child').append(moveForm);
-        }
-      };
-    })(this));
+    return this.remove();
   };
 
   FileView.prototype.onKeyPress = function(e) {
@@ -4124,7 +4039,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,isBroken = locals_.isBroken,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4163,7 +4078,16 @@ else
 {
 buf.push("<i class=\"fa fa-file-o\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("</span>");
+if ( !isBroken)
+{
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
+}
+else
+{
+buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+}
+buf.push("</div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -4330,7 +4254,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isUploading = locals_.isUploading,isBroken = locals_.isBroken,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4369,7 +4293,16 @@ else
 {
 buf.push("<i class=\"fa fa-file-o\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("</span>");
+if ( !isBroken)
+{
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
+}
+else
+{
+buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+}
+buf.push("</div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
