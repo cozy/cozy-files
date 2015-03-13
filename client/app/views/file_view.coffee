@@ -99,13 +99,10 @@ module.exports = class FileView extends BaseView
 
 
     getRenderData: ->
-        isUploading = @model.isUploading()
-        isBroken = (not @model.hasBinary()) and (not @model.isFolder())
-        isBroken = isBroken and not isUploading
-
         _.extend super(),
-            isUploading: isUploading
-            isBroken: isBroken
+            isUploading: @model.isUploading()
+            isServerUploading: @model.isServerUploading()
+            isBroken: @model.isBroken()
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
             clearance: @model.getClearance()
@@ -115,14 +112,10 @@ module.exports = class FileView extends BaseView
         @isSearchMode = options.isSearchMode
         @uploadQueue = options.uploadQueue
         @listenTo @model, 'change', @refresh
-        @listenTo @model, 'request', =>
-            #@showLoading()
-
         @listenTo @model, 'sync error', =>
             # for overwritten files, render entirely to show
             #  modification date and type
-            @render() if @model.conflict or not @model.isFile()
-
+            @render() if @model.isConflict() or @model.isFolder()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -155,12 +148,6 @@ module.exports = class FileView extends BaseView
         if changes.length is 1
             if changes[0] is 'tags'
                 return # only tags has changed, TagsView handle it
-
-            if changes[0] is 'lastModification'
-                # this change often, let's not re-render the whole view
-                date = moment(@model.changed.lastModification).calendar()
-                @$('td.date-column-cell span').text date
-                return
 
         # more complex change = rerender
         @render()
@@ -258,9 +245,7 @@ module.exports = class FileView extends BaseView
     # Cancel current upload. Then display a notification that the upload has
     # been canceled for two seconds before removing the whole file line.
     onCancelUploadClicked: ->
-        @uploadQueue.remove @model, trigger: false
-        @model.uploadXhrRequest.abort()
-        @remove()
+        @uploadQueue.abort @model
 
 
     onKeyPress: (e) =>
@@ -289,14 +274,13 @@ module.exports = class FileView extends BaseView
 
 
     afterRender: ->
-        if @model.isUploading()
+        if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
             @addProgressBar()
             @blockDownloadLink()
         else
             @$el.removeClass 'uploading'
-            unless @model.hasBinary() or @model.isFolder()
-                @$el.addClass 'broken'
+            @$el.toggleClass 'broken', @model.isBroken()
             @addTags()
 
 

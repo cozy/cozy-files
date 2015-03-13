@@ -1,7 +1,6 @@
 app = require 'application'
 File = require './models/file'
 FileCollection = require './collections/files'
-MergedCollection = require './lib/merged_collection'
 FolderView = require './views/folder'
 PublicFolderView = require './views/public_folder'
 
@@ -61,12 +60,9 @@ module.exports = class Router extends Backbone.Router
             $('html').append $ '<body></body>'
 
         # we generate a mixed collection with content & uploads
-        filteredUploads = app.uploadQueue.filteredByFolder folder, collection.comparator
-        mergedCollection = MergedCollection collection, filteredUploads, 'name'
-
         @folderView = @_getFolderView
             model: folder
-            collection: mergedCollection
+            collection: collection
             baseCollection: app.baseCollection
             breadcrumbs: app.breadcrumbs
             uploadQueue: app.uploadQueue

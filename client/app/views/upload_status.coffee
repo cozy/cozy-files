@@ -2,8 +2,6 @@ BaseView = require '../lib/base_view'
 File = require '../models/file'
 ProgressBar = require '../widgets/progressbar'
 
-UploadedFileView = require './uploaded_file_view'
-
 module.exports = class UploadStatusView extends BaseView
 
     id: "upload-status"
@@ -12,18 +10,22 @@ module.exports = class UploadStatusView extends BaseView
     events: ->
         'click #dismiss': 'resetCollection'
 
-    initialize: ->
-        super
+    initialize: (options) ->
+        super options
+        @uploadQueue = options.uploadQueue
+
         @listenTo @collection, 'add', @uploadCount
         @listenTo @collection, 'remove', @uploadCount
-        @listenTo @collection, 'reset', @render
-        @listenTo @collection, 'upload-progress', @progress
-        @listenTo @collection, 'upload-complete', @complete
+        @listenTo @uploadQueue, 'reset', @render
+        @listenTo @uploadQueue, 'upload-progress', @progress
+        @listenTo @uploadQueue, 'upload-complete', @complete
 
     getRenderData: ->
-        e = @collection.progress
-        value = if e then parseInt(100 * e.loadedBytes / e.totalBytes) + '%'
-        else '0 %'
+        if @collection.progress
+            {loadedBytes, totalBytes} = @collection.progress
+            value = parseInt(100 * loadedBytes / totalBytes) + '%'
+        else
+            value = '0 %'
 
         return data =
             value: value
@@ -31,26 +33,27 @@ module.exports = class UploadStatusView extends BaseView
 
     progress: (e) ->
         @$el.removeClass 'success danger warning'
-        percentage = parseInt(100 * e.loadedBytes / e.totalBytes) + '%'
+        progress = parseInt(100 * e.loadedBytes / e.totalBytes)
+        percentage =  "#{progress}%"
         @progressbar.width percentage
         @progressbarContent.text "#{t('total progress')} : #{percentage}"
 
     complete: ->
         @$('.progress').remove()
-        result = @collection.getResults()
-        if result.success > 0 or result.error > 0 or result.existing > 0
+        result = @uploadQueue.getResults()
+        if result.success > 0 or result.errorList.length > 0 \
+        or result.existingList.length > 0
             @dismiss.show()
 
             @$el.addClass result.status
-
             @$('span').text [
                 if result.success
                     t 'upload complete', smart_count: result.success
-                if result.existing.length
-                    @makeExistingSentence result.existing
+                if result.existingList.length
+                    @makeExistingSentence result.existingList
 
-                if result.error.length
-                    @makeErrorSentence result.error
+                if result.errorList.length
+                    @makeErrorSentence result.errorList
             ].join ' '
         else
             @resetCollection()
@@ -78,17 +81,21 @@ module.exports = class UploadStatusView extends BaseView
 
         return parts.join ' '
 
-    resetCollection: ->
-        @collection.reset()
+
+    resetCollection: -> @uploadQueue.reset()
+
 
     uploadCount: (e) ->
         if @collection.length > 0
             @$el.show()
             $('#content').addClass 'mt108'
+        else
+            @render()
 
-        @render() if @completed and not @collection.completed
         @counter.text @collection.length
         @counterDone.text @collection.loaded
+        @render() if @completed and not @collection.completed
+
 
     afterRender: ->
         @$el.removeClass 'success danger warning'
