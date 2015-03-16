@@ -83,21 +83,12 @@ module.exports = class SocketListener extends CozySocketListener
                 @collections.forEach (collection) =>
                     model = collection.get id
 
-                    return null if model?.isUploading()
-
-                    if model?
+                    if model? and not model.isUploading()
                         model.fetch
                             success: (fetched) =>
                                 if fetched.changedAttributes()
                                     fetched.set type: doctype
                                     @onRemoteUpdate fetched, collection
-                    else
-                        model = new @models[doctype](id: id, type: doctype)
-                        model.fetch
-                            success: (fetched) =>
-                                # set as a folder or a file
-                                fetched.set type: doctype
-                                @onRemoteCreate fetched
 
             when 'delete'
                 @collections.forEach (collection) =>

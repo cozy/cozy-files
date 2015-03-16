@@ -119,6 +119,10 @@ module.exports = class UploadQueue
         # If there is a conflict, the queue waits for the user to
         # make a decision.
         else if model.isConflict()
+            # The bind() method creates a new function that, when called, has
+            # its 'this' keyword set to the provided value (first argument),
+            # with a given sequence of arguments preceeding any provided when
+            # the new function is called.
             model.processOverwrite = @_decideOn.bind @, model, next
 
         # Otherwise, the upload starts directly.
@@ -138,7 +142,9 @@ module.exports = class UploadQueue
             done()
 
 
-    # Perform the actual persistence
+    # Perform the actual persistence by saving the model and changing
+    # uploadStatus based on response. If there is an unexpected error, it tries
+    # again 3 times before failing.
     _processSave: (model, done) ->
 
         # double check that we don't try to upload something we know will fail
@@ -146,6 +152,7 @@ module.exports = class UploadQueue
             model.save null,
                 success: (model) ->
                     model.file = null
+                    # to make sure progress is uniform, we force it at 100%
                     model.loaded = model.total
                     model.markAsUploaded()
                     done null
@@ -263,7 +270,7 @@ module.exports = class UploadQueue
                 return
 
             prefix = parent.getRepository()
-            parts = dir.split('/').filter (x) -> x # remove empty last part
+            parts = Helpers.getFolderPathParts dir
             name = parts[parts.length - 1]
             path = [prefix].concat(parts[...-1]).join '/'
 

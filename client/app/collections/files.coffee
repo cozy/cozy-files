@@ -88,7 +88,8 @@ module.exports = class FileCollection extends Backbone.Collection
                     @getFolderContent folder, ->
                         callback null, folder, collection
 
-    existingPaths: -> return @map (model) -> model.getRepository()
+    existingPaths: ->
+        return @map (model) -> model.getRepository()
 
 
     # Creates a sub collection (projection) based on the current collection
