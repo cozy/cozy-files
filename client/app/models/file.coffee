@@ -1,53 +1,126 @@
 client = require '../lib/client'
 
+###
+
+Represent a file or folder document.
+
+
+# Local state and Shared state
+There is a concept of local state and shared state in the application, it is
+handled in this class.
+
+The local state corresponds to the state of the client that is not shared
+with other clients through websockets.
+
+The shared state is shared with other clients through websockets.
+
+Both are needed in order to support various features like conflict management,
+upload cancel, or broken file detection.
+
+###
 module.exports = class File extends Backbone.Model
 
     # The breadcrumb is an array of vanilla JS objects
     # representing a parent folder.
     breadcrumb: []
 
+    # Local state. Handled through `markAs*` and `is*` methods.
+    uploadStatus: null
+
+    # Local state. Handled through `markAsErrored` method.
+    error: null
+
+    # Valid values for `uploadStatus`.
+    @VALID_STATUSES: [null, 'uploading', 'uploaded', 'errored', 'conflict']
+
     constructor: (options) ->
         doctype = options.docType?.toLowerCase()
-        if doctype?
-            options.type = if doctype is 'file' then 'file' else 'folder'
+        if doctype? and doctype in ['file', 'folder']
+            options.type = doctype
         super options
 
-        @isUploaded = true
 
-
-    # helpers
+    # Helpers. @TODO DUPLICATE OF GETREPOSITORY.
     getPath: ->
         path = @get 'path'
         path = "/#{path}" if (path.length > 0) and (path[0] isnt '/')
         name = @get 'name'
-        "#{path}/#{name}"
+        return "#{path}/#{name}"
 
     isFolder: -> return @get('type') is 'folder'
     isFile: -> return @get('type') is 'file'
     isSearch: -> return @get('type') is 'search'
     isRoot: -> return @get('id') is 'root'
 
-    # Only relevant if it's a file
-    isUploading: ->
-        @isFile() and @file? and not @isUploaded
+    hasBinary: -> return @isFile() and @get('binary')?.file?.id?
+    isBroken: -> return @isFile() and not @hasBinary() and not @get('uploading')
 
-    hasBinary: ->
-        @isFile and @get('binary')?.file?.id?
+    ###
+        Getters for the local state.
+    ###
+    isUploading: -> return @isFile() and @uploadStatus is 'uploading'
+    isUploaded: -> return @isFile() and @uploadStatus is 'uploaded'
+    isErrored: -> return @isFile() and @uploadStatus is 'errored'
+    isConflict: -> return @uploadStatus is 'conflict'
+    inUploadCycle: ->
+        return @isUploading() or @isUploaded() or @isErrored() or @isConflict()
 
+    ###
+        Setters for the local state. Semantic wrapper for _setUploadStatus.
+    ###
+    markAsUploading: -> @_setUploadStatus 'uploading'
+    markAsUploaded: -> @_setUploadStatus 'uploaded'
+    markAsConflict: -> @_setUploadStatus 'conflict'
+    markAsErrored: -> @_setUploadStatus 'errored'
+    resetStatus: -> @_setUploadStatus null
+
+    ###
+        Trigger change for each status update because Backbone only triggers
+        `change` events for model's attributes.
+        The `change` events allow the projection to be updated.
+
+        @param `status` must be in File.VALID_STATUSES
+    ###
+    _setUploadStatus: (status, error = null) ->
+        if status not in File.VALID_STATUSES
+            message = "Invalid upload status #{status} not " + \
+                      "in #{File.VALID_STATUSES}"
+            throw new Error message
+        else
+            @error = error
+            @uploadStatus = status
+            @trigger 'change', @
+
+
+    ###
+        Getter for the shared state.
+    ###
+    isServerUploading: -> return @get 'uploading'
+
+
+    # Remove server's additional information
     parse: (data) ->
         delete data.success
         return data
 
     # the repository is the model's full path (name included in the path)
     getRepository: ->
-        if @isRoot() then "" else "#{@get("path")}/#{@get("name")}"
+        if @isRoot() then "" else "#{@get('path')}/#{@get('name')}"
 
     # Overrides sync method to allow file upload (multipart request)
     # and progress events
     sync: (method, model, options) =>
 
+
         # this is a new model, let's upload it as a multipart
         if model.file
+
+            # if the file is being overwritten (update), we force
+            # the "create" method, since only the "create" action in the server
+            # can handle file upload.
+            method = 'create'
+            @id = ""
+
             formdata = new FormData()
             formdata.append 'name', model.get 'name'
             formdata.append 'path', model.get 'path'

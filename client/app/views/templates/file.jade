@@ -56,7 +56,7 @@ td
             span.deleter.fa.fa-times
 
     block actions
-      if !isUploading && !isBroken
+      if !isUploading && !isBroken && !isServerUploading
         .operations
           a.file-tags(title="#{t('tooltip tag')}")
             span.fa.fa-tag
@@ -68,11 +68,12 @@ td
               href="#{downloadUrl}",
               target="_blank", title="#{t('tooltip download')}")
             span.fa.fa-download
-          
-      else if isUploading
+
+      else if isUploading && !isServerUploading
+        // only show cancel button to the client that performs the upload.
         a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
-        
-      else
+
+      else if isBroken
         .broken-widget
           span.broken-text #{t('file broken indicator')}
           a.broken-button(title="#{t('file broken remove')}")

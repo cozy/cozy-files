@@ -88,8 +88,8 @@ module.exports = class FileCollection extends Backbone.Collection
                     @getFolderContent folder, ->
                         callback null, folder, collection
 
-    existingPaths: ->
-        @map (model) -> model.getRepository()
+    existingPaths: -> return @map (model) -> model.getRepository()
+
 
     # Creates a sub collection (projection) based on the current collection
     getSubCollection: (path) ->
@@ -98,6 +98,18 @@ module.exports = class FileCollection extends Backbone.Collection
         return new BackboneProjections.Filtered @,
                             filter: filter
                             comparator: @comparator
+
+
+    # Return a singleton representing a sub collection (projection) for
+    # files in upload cycle.
+    getFilesBeingUploaded: ->
+        unless @filesBeingUploaded?
+            @filesBeingUploaded = new BackboneProjections.Filtered @,
+                filter: (file) -> return file.inUploadCycle()
+                comparator: @comparator
+
+        return @filesBeingUploaded
+
 
     comparator: (f1, f2) ->
 
@@ -152,19 +164,20 @@ module.exports = class FileCollection extends Backbone.Collection
             return -1
 
 
-    # Returns true if a file with a similar id or a similar location (path +
-    # name) is already in the collection.
+    # Returns an existing model if a file with a similar id or a similar
+    # location (path + name) is already in the queue.
     isFileStored: (model) ->
-        isThere = false
 
-        if @get model.get 'id'
-            isThere = true
+        # first check by id
+        existingFile = @get model.get('id')
+        unless existingFile?
 
-        else
-            path = model.getPath()
+            # then check by full path
+            path = model.getRepository()
             models = @filter (currentModel) ->
-                currentModel.getPath() is path
-            isThere = models.length > 0
+                return currentModel.getRepository() is path
 
-        isThere
+            existingFile = models[0] if models.length > 0
+
+        return existingFile or null
 
