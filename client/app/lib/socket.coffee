@@ -31,18 +31,13 @@ module.exports = class SocketListener extends CozySocketListener
     # When file is remotely created, add the file only if it's not already
     # there or if the file is not uploading.
     onRemoteCreate: (model) ->
+        inCache = @isInCachedFolder model
+        alreadyInFolder = @collection.isFileStored model
 
-        # Check if model is located in current folder
-        isLocatedInFolder = @isInCachedFolder model
-
-        if isLocatedInFolder
-            isAlreadyInFolder = @collection.isFileStored model
-            isInQueue = @uploadQueue.isFileStored model
-            isAlreadyInFolder = isAlreadyInFolder or isInQueue
-            isUploading = model.get('uploading') or false
-
-            if not(isAlreadyInFolder) and not(isUploading)
-                @collection.add model, merge: true
+        # Prevent the create if the model is locally uploading because it loses
+        # its mind otherwise.
+        if inCache and not alreadyInFolder and not model.isUploading()
+            @collection.add model, merge: true
 
 
     # When a remote deletion occurs, remote it from the current file list.
@@ -54,9 +49,13 @@ module.exports = class SocketListener extends CozySocketListener
     # WHen an remote update occurs, it update the model if it's listed in the
     # current file list and if it's not uploading.
     onRemoteUpdate: (model, collection) ->
-        isUploading = model.get('uploading') or false
-        if @isInCachedFolder(model) and not(isUploading)
-            collection.add model, merge: true
+        inCache = @isInCachedFolder model
+        alreadyInFolder = @collection.isFileStored model
+
+        # Prevent the update if the model is locally uploading because it loses
+        # its mind otherwise.
+        if inCache and not alreadyInFolder and not model.isUploading()
+            @collection.add model, merge: true
 
 
     # Apply remote operation to current list. Current list contains cache of
@@ -83,19 +82,13 @@ module.exports = class SocketListener extends CozySocketListener
             when 'update'
                 @collections.forEach (collection) =>
                     model = collection.get id
-                    if model?
+
+                    if model? and not model.isUploading()
                         model.fetch
                             success: (fetched) =>
                                 if fetched.changedAttributes()
                                     fetched.set type: doctype
                                     @onRemoteUpdate fetched, collection
-                    else
-                        model = new @models[doctype](id: id, type: doctype)
-                        model.fetch
-                            success: (fetched) =>
-                                # set as a folder or a file
-                                fetched.set type: doctype
-                                @onRemoteCreate fetched
 
             when 'delete'
                 @collections.forEach (collection) =>

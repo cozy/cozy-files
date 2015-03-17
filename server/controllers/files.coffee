@@ -239,8 +239,18 @@ module.exports.create = (req, res, next) ->
             if sameFiles.length > 0
                 if overwrite
                     file = sameFiles[0]
-                    return file.updateAttributes {lastModification}, ->
+                    attributes =
+                        lastModification: lastModification
+                        size: part.byteCount
+                        mime: mime.lookup name
+                        class: getFileClass part
+                        uploading: true
+                    return file.updateAttributes attributes, ->
+                        # Ask for the data system to not run autostop
+                        # while the upload is running.
                         keepAlive()
+
+                        # Attach file in database.
                         attachBinary file
                 else
                     upload = false
@@ -266,65 +276,34 @@ module.exports.create = (req, res, next) ->
             confirmCanUpload data, req, (err) ->
                 return next err if err
 
-                # there is already a file with the same name, give up
-                if sameFiles.length > 0
-                    if overwrite
-                        file = sameFiles[0]
-                        return file.updateAttributes lastModification: now, ->
-                            keepAlive()
-                            attachBinary file
-                    else
-                        upload = false
-                        return res.send
-                            error: true
-                            code: 'EEXISTS'
-                            msg: "This file already exists"
-                        , 400
-
-                # Generate file metadata.
-                data =
-                    name: name
-                    path: normalizePath path
-                    creationDate: now
-                    lastModification: lastModification
-                    mime: mime.lookup name
-                    size: part.byteCount
-                    tags: []
-                    class: getFileClass part
-                    uploading: true
-
-                # check if the request is allowed
-                confirmCanUpload data, req, (err) ->
+                # find parent folder for updating its last modification
+                # date and applying tags to uploaded file.
+                Folder.byFullPath key: data.path, (err, parents) =>
                     return next err if err
 
-                    # find parent folder for updating its last modification
-                    # date and applying tags to uploaded file.
-                    Folder.byFullPath key: data.path, (err, parents) =>
+                    # inherit parent folder tags and update its
+                    # last modification date
+                    if parents.length > 0
+                        parent = parents[0]
+                        data.tags = parent.tags
+                        parent.lastModification = now
+                        folderParent[parent.name] = parent
+
+                    # Save file metadata
+                    File.create data, (err, newFile) =>
                         return next err if err
 
-                        # inherit parent folder tags and update its
-                        # last modification date
-                        if parents.length > 0
-                            parent = parents[0]
-                            data.tags = parent.tags
-                            parent.lastModification = now
-                            folderParent[parent.name] = parent
+                        # Ask for the data system to not run autostop
+                        # while the upload is running.
+                        keepAlive()
 
-                        # Save file metadata
-                        File.create data, (err, newFile) =>
-                            return next err if err
+                        # If user stops the upload, the file is deleted.
+                        err = new Error 'Request canceled by user'
+                        res.on 'close', ->
+                            rollback newFile, err
 
-                            # Ask for the data system to not run autostop
-                            # while the upload is running.
-                            keepAlive()
-
-                            # If user stops the upload, the file is deleted.
-                            err = new Error 'Request canceled by user'
-                            res.on 'close', ->
-                                rollback newFile, err
-
-                            # Attach file in database.
-                            attachBinary newFile
+                        # Attach file in database.
+                        attachBinary newFile
 
     form.on 'error', (err) ->
         log.error err

@@ -19,11 +19,10 @@ module.exports =
         @baseCollection = new FileCollection()
 
         # queue to allow new uploads while uploading
-        @uploadQueue = new UploadQueue()
+        @uploadQueue = new UploadQueue @baseCollection
 
         @socket = new SocketListener()
         @socket.watch @baseCollection
-        @socket.uploadQueue = @uploadQueue
 
         Router = require 'router'
         @router = new Router()

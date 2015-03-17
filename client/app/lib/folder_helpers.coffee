@@ -8,6 +8,10 @@ removeTralingSlash: (path) ->
 dirName: (path) ->
     return path.split('/')[...-1].join('/')
 
+
+getFolderPathParts: (path) ->
+    return path.split('/').filter (x) -> x # remove empty last part
+
 nestedDirs: (fileList) ->
 
     # list of folders to create
