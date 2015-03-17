@@ -28,7 +28,7 @@ module.exports = class UploadQueue
             @trigger 'upload-progress', @computeProgress()
         , 100
 
-        @asyncQueue.drain = @completeUpload
+        @asyncQueue.drain = @completeUpload.bind @
 
 
     reset: ->
@@ -99,7 +99,6 @@ module.exports = class UploadQueue
     completeUpload: =>
         window.pendingOperations.upload = 0
         @completed = true
-        @loaded = 0
         @trigger 'upload-complete'
 
 
@@ -119,11 +118,19 @@ module.exports = class UploadQueue
         # If there is a conflict, the queue waits for the user to
         # make a decision.
         else if model.isConflict()
-            # The bind() method creates a new function that, when called, has
-            # its 'this' keyword set to the provided value (first argument),
-            # with a given sequence of arguments preceeding any provided when
-            # the new function is called.
-            model.processOverwrite = @_decideOn.bind @, model, next
+
+            # Wait for user input through conflict resolution modal if it's not
+            # already done
+            if model.overwrite?
+                # The bind() method creates a new function that, when called,
+                # has its 'this' keyword set to the provided value
+                # (first argument), with a given sequence of arguments
+                # preceeding any provided when the new function is called.
+                model.processOverwrite = @_decideOn.bind @, model, next
+
+            # Or process the item if the user has made a choice
+            else
+                @_decideOn model, next, model.overwrite
 
         # Otherwise, the upload starts directly.
         else
@@ -132,7 +139,6 @@ module.exports = class UploadQueue
 
     # In case of conflict, change the queue based on user choice
     _decideOn: (model, done, choice) ->
-        model.overwrite = choice
         if choice
             model.markAsUploading()
             @_processSave model, done
@@ -233,23 +239,28 @@ module.exports = class UploadQueue
             # mark as in conflict with existing file
             else if (existingModel = @isFileStored(model))?
 
-                # update data
-                existingModel.set
-                    size: blob.size
-                    lastModification: blob.lastModifiedDate
+                # if the model is currently in the upload process (except if
+                # it's been successfully uploaded), it's not added.
+                if not existingModel.inUploadCycle() or existingModel.isUploaded()
+                    # update data
+                    existingModel.set
+                        size: blob.size
+                        lastModification: blob.lastModifiedDate
 
-                existingModel.file = blob
-                existingModel.loaded = 0
-                existingModel.total = blob.size
+                    existingModel.file = blob
+                    existingModel.loaded = 0
+                    existingModel.total = blob.size
 
-                model = existingModel
+                    model = existingModel
 
-                model.markAsConflict()
-                @trigger 'conflict', model
+                    model.markAsConflict()
+                    @trigger 'conflict', model
+                else
+                    model = null
 
-
-            @add model
-            @markPathAsUploading model
+            if model?
+                @add model
+                @markPathAsUploading model
 
             setTimeout nonBlockingLoop, 2
 

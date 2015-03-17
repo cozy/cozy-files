@@ -72,7 +72,9 @@ module.exports = class File extends Backbone.Model
     markAsUploaded: -> @_setUploadStatus 'uploaded'
     markAsConflict: -> @_setUploadStatus 'conflict'
     markAsErrored: -> @_setUploadStatus 'errored'
-    resetStatus: -> @_setUploadStatus null
+    resetStatus: ->
+        @overwrite = null
+        @_setUploadStatus null
 
     ###
         Trigger change for each status update because Backbone only triggers
@@ -90,6 +92,20 @@ module.exports = class File extends Backbone.Model
             @error = error
             @uploadStatus = status
             @trigger 'change', @
+
+
+    # Solve a conflict by either marking the model with the resolution result
+    # or resuming the queue processing.
+    solveConflict: (choice) ->
+        # if the model is already in the queue, we trigger the process to get
+        # the queue going.
+        if @processOverwrite?
+            @processOverwrite choice
+
+        # otherwise, just mark the resolution result so the queue can process
+        # the item by itself.
+        else
+            model.overwrite = choice
 
 
     ###
