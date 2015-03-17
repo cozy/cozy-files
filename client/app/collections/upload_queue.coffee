@@ -120,15 +120,15 @@ module.exports = class UploadQueue
         else if model.isConflict()
 
             # Wait for user input through conflict resolution modal if it's not
-            # already done
-            if model.overwrite?
+            # already done.
+            unless model.overwrite?
                 # The bind() method creates a new function that, when called,
                 # has its 'this' keyword set to the provided value
                 # (first argument), with a given sequence of arguments
                 # preceeding any provided when the new function is called.
                 model.processOverwrite = @_decideOn.bind @, model, next
 
-            # Or process the item if the user has made a choice
+            # Or process the item if the user has made a choice.
             else
                 @_decideOn model, next, model.overwrite
 
@@ -137,8 +137,11 @@ module.exports = class UploadQueue
             @_processSave model, next
 
 
-    # In case of conflict, change the queue based on user choice
+    # In case of conflict, change the queue based on user choice.
     _decideOn: (model, done, choice) ->
+        # Mark the model as being overwritten (or not) so it knows during upload
+        # if it must tell the server to overwrite (or not).
+        model.overwrite = choice
         if choice
             model.markAsUploading()
             @_processSave model, done
@@ -309,7 +312,7 @@ module.exports = class UploadQueue
         @uploadCollection.each (model) ->
             if model.isErrored()
                 error = model.error
-                if error.code is 'EEXISTS'
+                if error?.code is 'EEXISTS'
                     existingList.push model
                 else
                     errorList.push model

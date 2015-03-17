@@ -71,7 +71,7 @@ module.exports = class File extends Backbone.Model
     markAsUploading: -> @_setUploadStatus 'uploading'
     markAsUploaded: -> @_setUploadStatus 'uploaded'
     markAsConflict: -> @_setUploadStatus 'conflict'
-    markAsErrored: -> @_setUploadStatus 'errored'
+    markAsErrored: (error) -> @_setUploadStatus 'errored', error
     resetStatus: ->
         @overwrite = null
         @_setUploadStatus null
@@ -101,11 +101,12 @@ module.exports = class File extends Backbone.Model
         # the queue going.
         if @processOverwrite?
             @processOverwrite choice
+            @processOverwrite = null
 
         # otherwise, just mark the resolution result so the queue can process
         # the item by itself.
         else
-            model.overwrite = choice
+            @overwrite = choice
 
 
     ###
