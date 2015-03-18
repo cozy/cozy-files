@@ -179,6 +179,8 @@ module.exports = class UploadQueue
                     else if err.status is 400 and body.code is 'ESTORAGE'
                         model.markAsErrored body
 
+                    else if err.status is 0 and err.statusText is 'error'
+                        # abort by user, don't try again
 
                     # Retry if an unexpected error occurs
                     else

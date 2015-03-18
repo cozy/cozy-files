@@ -148,6 +148,7 @@ module.exports.create = (req, res, next) ->
         overwrite = fields.overwrite
         upload = true
         canceled = false
+        uploadStream = null
 
         # we have no name for this file, give up
         if not name or name is ""
@@ -189,10 +190,10 @@ module.exports.create = (req, res, next) ->
             part.pause()
             part.pipe checksum
             metadata = name: "file"
-            file.attachBinary part, metadata, (err) ->
+            uploadStream = file.attachBinary part, metadata, (err) ->
                 upload = false
-
-                return rollback file, err if err
+                # rollback if there was an error
+                return rollback file, err if err #and not canceled
 
                 # TODO move everythin below in the model.
                 checksum.end()
@@ -300,7 +301,8 @@ module.exports.create = (req, res, next) ->
                         # If user stops the upload, the file is deleted.
                         err = new Error 'Request canceled by user'
                         res.on 'close', ->
-                            rollback newFile, err
+                            log.info 'Upload request closed by user'
+                            uploadStream.abort()
 
                         # Attach file in database.
                         attachBinary newFile
