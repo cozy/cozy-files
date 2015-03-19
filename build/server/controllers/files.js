@@ -151,7 +151,7 @@ module.exports.create = function(req, res, next) {
   fields = {};
   form = new multiparty.Form();
   form.on('part', function(part) {
-    var attachBinary, canceled, err, fullPath, keepAlive, lastModification, name, now, overwrite, path, rollback, upload;
+    var attachBinary, canceled, err, fullPath, keepAlive, lastModification, name, now, overwrite, path, rollback, upload, uploadStream;
     if (part.filename == null) {
       fields[part.name] = '';
       part.on('data', function(buffer) {
@@ -165,6 +165,7 @@ module.exports.create = function(req, res, next) {
     overwrite = fields.overwrite;
     upload = true;
     canceled = false;
+    uploadStream = null;
     if (!name || name === "") {
       err = new Error("Invalid arguments: no name given");
       err.status = 400;
@@ -204,7 +205,7 @@ module.exports.create = function(req, res, next) {
       metadata = {
         name: "file"
       };
-      return file.attachBinary(part, metadata, function(err) {
+      return uploadStream = file.attachBinary(part, metadata, function(err) {
         var data;
         upload = false;
         if (err) {
@@ -250,16 +251,21 @@ module.exports.create = function(req, res, next) {
       key: fullPath
     }, (function(_this) {
       return function(err, sameFiles) {
-        var data, file;
+        var attributes, data, file;
         if (err) {
           return next(err);
         }
         if (sameFiles.length > 0) {
           if (overwrite) {
             file = sameFiles[0];
-            return file.updateAttributes({
-              lastModification: lastModification
-            }, function() {
+            attributes = {
+              lastModification: lastModification,
+              size: part.byteCount,
+              mime: mime.lookup(name),
+              "class": getFileClass(part),
+              uploading: true
+            };
+            return file.updateAttributes(attributes, function() {
               keepAlive();
               return attachBinary(file);
             });
@@ -287,67 +293,34 @@ module.exports.create = function(req, res, next) {
           if (err) {
             return next(err);
           }
-          if (sameFiles.length > 0) {
-            if (overwrite) {
-              file = sameFiles[0];
-              return file.updateAttributes({
-                lastModification: now
-              }, function() {
-                keepAlive();
-                return attachBinary(file);
-              });
-            } else {
-              upload = false;
-              return res.send({
-                error: true,
-                code: 'EEXISTS',
-                msg: "This file already exists"
-              }, 400);
-            }
-          }
-          data = {
-            name: name,
-            path: normalizePath(path),
-            creationDate: now,
-            lastModification: lastModification,
-            mime: mime.lookup(name),
-            size: part.byteCount,
-            tags: [],
-            "class": getFileClass(part),
-            uploading: true
-          };
-          return confirmCanUpload(data, req, function(err) {
-            if (err) {
-              return next(err);
-            }
-            return Folder.byFullPath({
-              key: data.path
-            }, (function(_this) {
-              return function(err, parents) {
-                var parent;
+          return Folder.byFullPath({
+            key: data.path
+          }, (function(_this) {
+            return function(err, parents) {
+              var parent;
+              if (err) {
+                return next(err);
+              }
+              if (parents.length > 0) {
+                parent = parents[0];
+                data.tags = parent.tags;
+                parent.lastModification = now;
+                folderParent[parent.name] = parent;
+              }
+              return File.create(data, function(err, newFile) {
                 if (err) {
                   return next(err);
                 }
-                if (parents.length > 0) {
-                  parent = parents[0];
-                  data.tags = parent.tags;
-                  parent.lastModification = now;
-                  folderParent[parent.name] = parent;
-                }
-                return File.create(data, function(err, newFile) {
-                  if (err) {
-                    return next(err);
-                  }
-                  keepAlive();
-                  err = new Error('Request canceled by user');
-                  res.on('close', function() {
-                    return rollback(newFile, err);
-                  });
-                  return attachBinary(newFile);
+                keepAlive();
+                err = new Error('Request canceled by user');
+                res.on('close', function() {
+                  log.info('Upload request closed by user');
+                  return uploadStream.abort();
                 });
-              };
-            })(this));
-          });
+                return attachBinary(newFile);
+              });
+            };
+          })(this));
         });
       };
     })(this));

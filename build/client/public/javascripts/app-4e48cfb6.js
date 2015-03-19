@@ -113,10 +113,9 @@ module.exports = {
     var Router;
     this.isPublic = window.location.pathname.indexOf('/public/') === 0;
     this.baseCollection = new FileCollection();
-    this.uploadQueue = new UploadQueue();
+    this.uploadQueue = new UploadQueue(this.baseCollection);
     this.socket = new SocketListener();
     this.socket.watch(this.baseCollection);
-    this.socket.uploadQueue = this.uploadQueue;
     Router = require('router');
     this.router = new Router();
     if (window.rootFolder != null) {
@@ -291,6 +290,18 @@ module.exports = FileCollection = (function(_super) {
     });
   };
 
+  FileCollection.prototype.getFilesBeingUploaded = function() {
+    if (this.filesBeingUploaded == null) {
+      this.filesBeingUploaded = new BackboneProjections.Filtered(this, {
+        filter: function(file) {
+          return file.inUploadCycle();
+        },
+        comparator: this.comparator
+      });
+    }
+    return this.filesBeingUploaded;
+  };
+
   FileCollection.prototype.comparator = function(f1, f2) {
     var e1, e2, n1, n2, sort, t1, t2;
     if (this.type == null) {
@@ -349,18 +360,18 @@ module.exports = FileCollection = (function(_super) {
   };
 
   FileCollection.prototype.isFileStored = function(model) {
-    var isThere, models, path;
-    isThere = false;
-    if (this.get(model.get('id'))) {
-      isThere = true;
-    } else {
-      path = model.getPath();
+    var existingFile, models, path;
+    existingFile = this.get(model.get('id'));
+    if (existingFile == null) {
+      path = model.getRepository();
       models = this.filter(function(currentModel) {
-        return currentModel.getPath() === path;
+        return currentModel.getRepository() === path;
       });
-      isThere = models.length > 0;
+      if (models.length > 0) {
+        existingFile = models[0];
+      }
     }
-    return isThere;
+    return existingFile || null;
   };
 
   return FileCollection;
@@ -370,44 +381,39 @@ module.exports = FileCollection = (function(_super) {
 
 ;require.register("collections/upload_queue", function(exports, require, module) {
 var File, Helpers, UploadQueue,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 File = require('../models/file');
 
 Helpers = require('../lib/folder_helpers');
 
-module.exports = UploadQueue = (function(_super) {
-  __extends(UploadQueue, _super);
-
-  function UploadQueue() {
-    this.sumProp = __bind(this.sumProp, this);
-    this.computeProgress = __bind(this.computeProgress, this);
-    this.uploadWorker = __bind(this.uploadWorker, this);
-    this.completeUpload = __bind(this.completeUpload, this);
-    this.onAdd = __bind(this.onAdd, this);
-    this.onSyncError = __bind(this.onSyncError, this);
-    this.onRemove = __bind(this.onRemove, this);
-    return UploadQueue.__super__.constructor.apply(this, arguments);
-  }
-
+module.exports = UploadQueue = (function() {
   UploadQueue.prototype.loaded = 0;
 
   UploadQueue.prototype.uploadingPaths = {};
 
-  UploadQueue.prototype.add = function(models, options) {
-    if (models != null) {
-      window.pendingOperations.upload++;
-    }
-    if (this.completed) {
-      this.reset();
-    }
-    return UploadQueue.__super__.add.call(this, models, options);
-  };
+  function UploadQueue(baseCollection) {
+    this.baseCollection = baseCollection;
+    this.sumProp = __bind(this.sumProp, this);
+    this.computeProgress = __bind(this.computeProgress, this);
+    this.uploadWorker = __bind(this.uploadWorker, this);
+    this.onSyncError = __bind(this.onSyncError, this);
+    this.completeUpload = __bind(this.completeUpload, this);
+    this.abort = __bind(this.abort, this);
+    this.uploadCollection = this.baseCollection.getFilesBeingUploaded();
+    _.extend(this, Backbone.Events);
+    this.asyncQueue = async.queue(this.uploadWorker, 5);
+    this.listenTo(this.uploadCollection, 'sync error', this.onSyncError);
+    this.listenTo(this.uploadCollection, 'progress', _.throttle((function(_this) {
+      return function() {
+        return _this.trigger('upload-progress', _this.computeProgress());
+      };
+    })(this), 100));
+    this.asyncQueue.drain = this.completeUpload.bind(this);
+  }
 
-  UploadQueue.prototype.reset = function(models, options) {
+  UploadQueue.prototype.reset = function() {
+    var collection;
     this.progress = {
       loadedFiles: 0,
       totalFiles: this.length,
@@ -418,38 +424,35 @@ module.exports = UploadQueue = (function(_super) {
     this.loaded = 0;
     this.completed = false;
     this.uploadingPaths = {};
-    return UploadQueue.__super__.reset.apply(this, arguments);
+    collection = this.uploadCollection.toArray();
+    collection.forEach(function(model) {
+      return model.resetStatus();
+    });
+    return this.trigger('reset');
   };
 
-  UploadQueue.prototype.initialize = function() {
-    this.asyncQueue = async.queue(this.uploadWorker, 5);
-    this.listenTo(this, 'add', this.onAdd);
-    this.listenTo(this, 'remove', this.onRemove);
-    this.listenTo(this, 'sync error', this.onSyncError);
-    this.listenTo(this, 'progress', _.throttle((function(_this) {
-      return function() {
-        return _this.trigger('upload-progress', _this.computeProgress());
-      };
-    })(this), 100));
-    return this.asyncQueue.drain = this.completeUpload;
+  UploadQueue.prototype.abort = function(model) {
+    model.uploadXhrRequest.abort();
+    this.remove(model);
+    if (model.isNew()) {
+      return model.destroy();
+    }
   };
 
-  UploadQueue.prototype.onRemove = function(model) {
-    return model.error = 'aborted';
+  UploadQueue.prototype.remove = function(model) {
+    this.loaded++;
+    model.resetStatus();
+    return window.pendingOperations.upload--;
   };
 
-  UploadQueue.prototype.onSyncError = function(model) {
-    var path;
-    path = model.get('path') + '/';
-    this.uploadingPaths[path]--;
-    return this.loaded++;
-  };
-
-  UploadQueue.prototype.onAdd = function(model) {
-    this.completed = false;
-    model.isUploaded = false;
+  UploadQueue.prototype.add = function(model) {
+    window.pendingOperations.upload++;
+    if (!model.isConflict()) {
+      model.markAsUploading();
+    }
+    this.baseCollection.add(model);
     if (model.get('type') === 'file') {
-      if (model.conflict) {
+      if (model.isConflict()) {
         return this.asyncQueue.push(model);
       } else {
         return this.asyncQueue.unshift(model);
@@ -464,79 +467,102 @@ module.exports = UploadQueue = (function(_super) {
   UploadQueue.prototype.completeUpload = function() {
     window.pendingOperations.upload = 0;
     this.completed = true;
-    this.loaded = 0;
     return this.trigger('upload-complete');
   };
 
-  UploadQueue.prototype.uploadWorker = function(model, callback) {
-    var processSave;
-    if (model.existing || model.error) {
-      return setTimeout(callback, 10);
-    } else {
-      processSave = function(model) {
-        if (!model.conflict || model.conflict && model.overwrite) {
-          return model.save(null, {
-            success: function(model) {
-              model.file = null;
-              model.isUploaded = true;
-              model.loaded = model.total;
-              if (!app.baseCollection.get(model.id)) {
-                app.baseCollection.add(model);
-              }
-              return callback(null);
-            },
-            error: (function(_this) {
-              return function(_, err) {
-                var body, defaultMessage, e;
-                model.file = null;
-                body = (function() {
-                  try {
-                    return JSON.parse(err.responseText);
-                  } catch (_error) {
-                    e = _error;
-                    return {
-                      msg: null
-                    };
-                  }
-                })();
-                if (err.status === 400 && body.code === 'EEXISTS') {
-                  model.existing = true;
-                  return callback(new Error(body.msg));
-                }
-                if (err.status === 400 && body.code === 'ESTORAGE') {
-                  model.error = new Error(body.msg);
-                  return callback(model.error);
-                }
-                model.tries = 1 + (model.tries || 0);
-                if (model.tries > 3) {
-                  defaultMessage = "modal error file upload";
-                  model.error = t(err.msg || defaultMessage);
-                } else {
-                  _this.asyncQueue.push(model);
-                }
-                return callback(err);
-              };
-            })(this)
-          });
-        } else {
-          return callback();
-        }
-      };
-      if (model.conflict && (model.overwrite == null)) {
-        return model.processSave = processSave.bind(this);
+  UploadQueue.prototype.onSyncError = function(model) {
+    var path;
+    path = model.get('path') + '/';
+    this.uploadingPaths[path]--;
+    return this.loaded++;
+  };
+
+  UploadQueue.prototype.uploadWorker = function(model, next) {
+    if (model.error) {
+      return setTimeout(next, 10);
+    } else if (model.isConflict()) {
+      if (model.overwrite == null) {
+        return model.processOverwrite = this._decideOn.bind(this, model, next);
       } else {
-        return processSave.call(this, model);
+        return this._decideOn(model, next, model.overwrite);
       }
+    } else {
+      return this._processSave(model, next);
+    }
+  };
+
+  UploadQueue.prototype._decideOn = function(model, done, choice) {
+    model.overwrite = choice;
+    if (choice) {
+      model.markAsUploading();
+      return this._processSave(model, done);
+    } else {
+      model.resetStatus();
+      this.remove(model);
+      return done();
+    }
+  };
+
+  UploadQueue.prototype._processSave = function(model, done) {
+    if (!model.isConflict() && !model.isErrored()) {
+      return model.save(null, {
+        success: function(model) {
+          model.file = null;
+          model.loaded = model.total;
+          model.markAsUploaded();
+          return done(null);
+        },
+        error: (function(_this) {
+          return function(_, err) {
+            var body, defaultMessage, e, error, errorKey;
+            model.file = null;
+            body = (function() {
+              try {
+                return JSON.parse(err.responseText);
+              } catch (_error) {
+                e = _error;
+                return {
+                  msg: null
+                };
+              }
+            })();
+            if (err.status === 400 && body.code === 'EEXISTS') {
+              model.markAsErrored(body);
+            } else if (err.status === 400 && body.code === 'ESTORAGE') {
+              model.markAsErrored(body);
+            } else if (err.status === 0 && err.statusText === 'error') {
+
+            } else {
+              model.tries = 1 + (model.tries || 0);
+              if (model.tries > 3) {
+                defaultMessage = "modal error file upload";
+                model.error = t(err.msg || defaultMessage);
+                errorKey = err.msg || defaultMessage;
+                error = t(errorKey);
+                model.markAsErrored(error);
+              } else {
+                _this.asyncQueue.push(model);
+              }
+            }
+            return done();
+          };
+        })(this)
+      });
+    } else {
+      return done();
     }
   };
 
   UploadQueue.prototype.addBlobs = function(blobs, folder) {
     var existingPaths, i, nonBlockingLoop;
+    if (this.completed) {
+      this.reset();
+    }
     i = 0;
     existingPaths = app.baseCollection.existingPaths();
     return (nonBlockingLoop = (function(_this) {
       return function() {
-        var blob, model, path, relPath, subDir, _ref;
+        var blob, existingModel, model, path, relPath, subDir;
         if (!(blob = blobs[i++])) {
           return;
         }
@@ -553,24 +579,34 @@ module.exports = UploadQueue = (function(_super) {
           path: path,
           lastModification: blob.lastModifiedDate
         });
+        model.file = blob;
+        model.loaded = 0;
+        model.total = blob.size;
         if (blob.size === 0 && blob.type.length === 0) {
           model.error = 'Cannot upload a folder with Firefox';
-          _this.trigger('folderError', model);
-          model.loaded = 0;
           model.total = 0;
-        } else if (_ref = model.getRepository(), __indexOf.call(existingPaths, _ref) >= 0) {
-          model.conflict = true;
-          _this.trigger('conflict', model);
-          model.file = blob;
-          model.loaded = 0;
-          model.total = blob.size;
-        } else {
-          model.file = blob;
-          model.loaded = 0;
-          model.total = blob.size;
+          model.file = null;
+          _this.trigger('folderError', model);
+        } else if ((existingModel = _this.isFileStored(model)) != null) {
+          if (!existingModel.inUploadCycle() || existingModel.isUploaded()) {
+            existingModel.set({
+              size: blob.size,
+              lastModification: blob.lastModifiedDate
+            });
+            existingModel.file = blob;
+            existingModel.loaded = 0;
+            existingModel.total = blob.size;
+            model = existingModel;
+            model.markAsConflict();
+            _this.trigger('conflict', model);
+          } else {
+            model = null;
+          }
         }
-        _this.add(model);
-        _this.markAsUploading(model);
+        if (model != null) {
+          _this.add(model);
+          _this.markPathAsUploading(model);
+        }
         return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
@@ -578,6 +614,9 @@ module.exports = UploadQueue = (function(_super) {
 
   UploadQueue.prototype.addFolderBlobs = function(blobs, parent) {
     var dirs, i, nonBlockingLoop;
+    if (this.completed) {
+      this.reset();
+    }
     dirs = Helpers.nestedDirs(blobs);
     i = 0;
     return (nonBlockingLoop = (function(_this) {
@@ -592,9 +631,7 @@ module.exports = UploadQueue = (function(_super) {
           return;
         }
         prefix = parent.getRepository();
-        parts = dir.split('/').filter(function(x) {
-          return x;
-        });
+        parts = Helpers.getFolderPathParts(dir);
         name = parts[parts.length - 1];
         path = [prefix].concat(parts.slice(0, -1)).join('/');
         folder = new File({
@@ -605,53 +642,43 @@ module.exports = UploadQueue = (function(_super) {
         folder.loaded = 0;
         folder.total = 250;
         _this.add(folder);
-        _this.markAsUploading(folder);
+        _this.markPathAsUploading(folder);
         return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
   };
 
-  UploadQueue.prototype.filteredByFolder = function(folder, comparator) {
-    var filteredUploads;
-    return filteredUploads = new BackboneProjections.Filtered(this, {
-      filter: function(file) {
-        return file.get('path') === folder.getRepository() && !file.isUploaded;
-      },
-      comparator: comparator
-    });
-  };
-
   UploadQueue.prototype.getResults = function() {
-    var error, existing, skipped, status, success;
-    error = [];
-    existing = [];
+    var errorList, existingList, status, success;
+    errorList = [];
+    existingList = [];
     success = 0;
-    skipped = 0;
-    this.each(function(model) {
-      if (model.error) {
-        console.log("Upload Error", model.getRepository(), model.error);
-        return error.push(model);
-      } else if (model.existing) {
-        return existing.push(model);
-      } else if (model.conflict && !model.overwrite) {
-        return skipped++;
+    this.uploadCollection.each(function(model) {
+      var error;
+      if (model.isErrored()) {
+        error = model.error;
+        if ((error != null ? error.code : void 0) === 'EEXISTS') {
+          existingList.push(model);
+        } else {
+          errorList.push(model);
+        }
+        return console.log("Upload Error", model.getRepository(), error);
       } else {
         return success++;
       }
     });
-    status = error.length ? 'error' : existing.length ? 'warning' : 'success';
+    status = errorList.length ? 'error' : existingList.length ? 'warning' : 'success';
     return {
       status: status,
-      error: error,
-      existing: existing,
-      success: success,
-      skipped: skipped
+      errorList: errorList,
+      existingList: existingList,
+      success: success
     };
   };
 
-  UploadQueue.prototype.markAsUploading = function(model) {
+  UploadQueue.prototype.markPathAsUploading = function(model) {
     var path;
-    path = model.get('path') + '/';
+    path = "" + (model.get('path')) + "/";
     if (this.uploadingPaths[path] == null) {
       this.uploadingPaths[path] = 0;
     }
@@ -659,7 +686,7 @@ module.exports = UploadQueue = (function(_super) {
   };
 
   UploadQueue.prototype.getNumUploadingElementsByPath = function(path) {
-    path = path + '/';
+    path = "" + path + "/";
     return _.reduce(this.uploadingPaths, function(memo, value, index) {
       if (index.indexOf(path) !== -1 || path === '') {
         return memo + value;
@@ -683,27 +710,16 @@ module.exports = UploadQueue = (function(_super) {
     iter = function(sum, model) {
       return sum + model[prop];
     };
-    return this.reduce(iter, 0);
+    return this.uploadCollection.reduce(iter, 0);
   };
 
   UploadQueue.prototype.isFileStored = function(model) {
-    var isThere, models, path;
-    isThere = false;
-    if (this.get(model.get('id'))) {
-      isThere = true;
-    } else {
-      path = model.getPath();
-      models = this.filter(function(currentModel) {
-        return currentModel.getPath() === path;
-      });
-      isThere = models.length > 0;
-    }
-    return isThere;
+    return this.baseCollection.isFileStored(model);
   };
 
   return UploadQueue;
 
-})(Backbone.Collection);
+})();
 });
 
 ;require.register("initialize", function(exports, require, module) {
@@ -849,6 +865,11 @@ module.exports = {
   dirName: function(path) {
     return path.split('/').slice(0, -1).join('/');
   },
+  getFolderPathParts: function(path) {
+    return path.split('/').filter(function(x) {
+      return x;
+    });
+  },
   nestedDirs: function(fileList) {
     var addedPath, dir, dirs, file, foldersOfPath, parent, parents, relPath, _i, _len;
     dirs = [];
@@ -888,82 +909,6 @@ module.exports = {
 };
 });
 
-;require.register("lib/merged_collection", function(exports, require, module) {
-var MergedCollection,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-module.exports = MergedCollection = function(primary, secondary, uniqAttr) {
-  var events, mixed, reset, sameAs;
-  if (uniqAttr == null) {
-    uniqAttr = 'id';
-  }
-  mixed = new Backbone.Collection([], {
-    comparator: primary.comparator
-  });
-  mixed.Primary = primary;
-  mixed.Secondary = secondary;
-  (reset = function() {
-    var ids, models;
-    models = [];
-    ids = [];
-    primary.forEach(function(model) {
-      models.push(model);
-      return ids.push(model.id);
-    });
-    secondary.forEach(function(model) {
-      var _ref;
-      if (_ref = model.id, __indexOf.call(ids, _ref) < 0) {
-        return models.push(model);
-      }
-    });
-    return mixed.reset(models);
-  })();
-  sameAs = function(model, collection) {
-    var search;
-    search = {};
-    search[uniqAttr] = model.get(uniqAttr);
-    return collection.findWhere(search);
-  };
-  events = {
-    reset: reset,
-    remove: (function(_this) {
-      return function(model, collection) {
-        var other;
-        other = collection === primary ? secondary : primary;
-        return mixed.remove(model);
-      };
-    })(this),
-    add: function(model, collection) {
-      var existing;
-      if (existing = sameAs(model, mixed)) {
-        if (collection === primary || model.conflict) {
-          mixed.remove(existing);
-          return mixed.add(model);
-        }
-      } else {
-        return mixed.add(model);
-      }
-    },
-    'change:id': function(model) {
-      var dups, toRemove;
-      dups = mixed.where({
-        id: model.id
-      });
-      if (dups.length === 2) {
-        toRemove = dups[0].collection === secondary ? 0 : 1;
-        return mixed.remove(dups[toRemove]);
-      }
-    },
-    sort: function() {
-      return mixed.sort();
-    }
-  };
-  primary.bind(events);
-  secondary.bind(events);
-  return mixed;
-};
-});
-
 ;require.register("lib/socket", function(exports, require, module) {
 var File, SocketListener, contactCollection,
   __hasProp = {}.hasOwnProperty,
@@ -994,18 +939,13 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteCreate = function(model) {
-    var isAlreadyInFolder, isInQueue, isLocatedInFolder, isUploading;
-    isLocatedInFolder = this.isInCachedFolder(model);
-    if (isLocatedInFolder) {
-      isAlreadyInFolder = this.collection.isFileStored(model);
-      isInQueue = this.uploadQueue.isFileStored(model);
-      isAlreadyInFolder = isAlreadyInFolder || isInQueue;
-      isUploading = model.get('uploading') || false;
-      if (!isAlreadyInFolder && !isUploading) {
-        return this.collection.add(model, {
-          merge: true
-        });
-      }
+    var alreadyInFolder, inCache;
+    inCache = this.isInCachedFolder(model);
+    alreadyInFolder = this.collection.isFileStored(model);
+    if (inCache && !alreadyInFolder && !model.isUploading()) {
+      return this.collection.add(model, {
+        merge: true
+      });
     }
   };
 
@@ -1016,10 +956,11 @@ module.exports = SocketListener = (function(_super) {
   };
 
   SocketListener.prototype.onRemoteUpdate = function(model, collection) {
-    var isUploading;
-    isUploading = model.get('uploading') || false;
-    if (this.isInCachedFolder(model) && !isUploading) {
-      return collection.add(model, {
+    var alreadyInFolder, inCache;
+    inCache = this.isInCachedFolder(model);
+    alreadyInFolder = this.collection.isFileStored(model);
+    if (inCache && !alreadyInFolder && !model.isUploading()) {
+      return this.collection.add(model, {
         merge: true
       });
     }
@@ -1051,7 +992,7 @@ module.exports = SocketListener = (function(_super) {
           return this.collections.forEach((function(_this) {
             return function(collection) {
               model = collection.get(id);
-              if (model != null) {
+              if ((model != null) && !model.isUploading()) {
                 return model.fetch({
                   success: function(fetched) {
                     if (fetched.changedAttributes()) {
@@ -1060,19 +1001,6 @@ module.exports = SocketListener = (function(_super) {
                       });
                       return _this.onRemoteUpdate(fetched, collection);
                     }
-                  }
-                });
-              } else {
-                model = new _this.models[doctype]({
-                  id: id,
-                  type: doctype
-                });
-                return model.fetch({
-                  success: function(fetched) {
-                    fetched.set({
-                      type: doctype
-                    });
-                    return _this.onRemoteCreate(fetched);
                   }
                 });
               }
@@ -1680,24 +1608,49 @@ module.exports = {
 var File, client,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 client = require('../lib/client');
+
+
+/*
+
+Represent a file or folder document.
+
+
+ * Local state and Shared state
+There is a concept of local state and shared state in the application, it is
+handled in this class.
+
+The local state corresponds to the state of the client that is not shared
+with other clients through websockets.
+
+The shared state is shared with other clients through websockets.
+
+Both are needed in order to support various features like conflict management,
+upload cancel, or broken file detection.
+ */
 
 module.exports = File = (function(_super) {
   __extends(File, _super);
 
   File.prototype.breadcrumb = [];
 
+  File.prototype.uploadStatus = null;
+
+  File.prototype.error = null;
+
+  File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
+
   function File(options) {
     this.sync = __bind(this.sync, this);
     var doctype, _ref;
     doctype = (_ref = options.docType) != null ? _ref.toLowerCase() : void 0;
-    if (doctype != null) {
-      options.type = doctype === 'file' ? 'file' : 'folder';
+    if ((doctype != null) && (doctype === 'file' || doctype === 'folder')) {
+      options.type = doctype;
     }
     File.__super__.constructor.call(this, options);
-    this.isUploaded = true;
   }
 
   File.prototype.getPath = function() {
@@ -1726,13 +1679,106 @@ module.exports = File = (function(_super) {
     return this.get('id') === 'root';
   };
 
-  File.prototype.isUploading = function() {
-    return this.isFile() && (this.file != null) && !this.isUploaded;
-  };
-
   File.prototype.hasBinary = function() {
     var _ref, _ref1;
-    return this.isFile && (((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0) != null);
+    return this.isFile() && (((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0) != null);
+  };
+
+  File.prototype.isBroken = function() {
+    return this.isFile() && !this.hasBinary() && !this.get('uploading');
+  };
+
+
+  /*
+      Getters for the local state.
+   */
+
+  File.prototype.isUploading = function() {
+    return this.isFile() && this.uploadStatus === 'uploading';
+  };
+
+  File.prototype.isUploaded = function() {
+    return this.isFile() && this.uploadStatus === 'uploaded';
+  };
+
+  File.prototype.isErrored = function() {
+    return this.isFile() && this.uploadStatus === 'errored';
+  };
+
+  File.prototype.isConflict = function() {
+    return this.uploadStatus === 'conflict';
+  };
+
+  File.prototype.inUploadCycle = function() {
+    return this.isUploading() || this.isUploaded() || this.isErrored() || this.isConflict();
+  };
+
+
+  /*
+      Setters for the local state. Semantic wrapper for _setUploadStatus.
+   */
+
+  File.prototype.markAsUploading = function() {
+    return this._setUploadStatus('uploading');
+  };
+
+  File.prototype.markAsUploaded = function() {
+    return this._setUploadStatus('uploaded');
+  };
+
+  File.prototype.markAsConflict = function() {
+    return this._setUploadStatus('conflict');
+  };
+
+  File.prototype.markAsErrored = function(error) {
+    return this._setUploadStatus('errored', error);
+  };
+
+  File.prototype.resetStatus = function() {
+    this.overwrite = null;
+    return this._setUploadStatus(null);
+  };
+
+
+  /*
+      Trigger change for each status update because Backbone only triggers
+      `change` events for model's attributes.
+      The `change` events allow the projection to be updated.
+  
+      @param `status` must be in File.VALID_STATUSES
+   */
+
+  File.prototype._setUploadStatus = function(status, error) {
+    var message;
+    if (error == null) {
+      error = null;
+    }
+    if (__indexOf.call(File.VALID_STATUSES, status) < 0) {
+      message = ("Invalid upload status " + status + " not ") + ("in " + File.VALID_STATUSES);
+      throw new Error(message);
+    } else {
+      this.error = error;
+      this.uploadStatus = status;
+      return this.trigger('change', this);
+    }
+  };
+
+  File.prototype.solveConflict = function(choice) {
+    if (this.processOverwrite != null) {
+      this.processOverwrite(choice);
+      return this.processOverwrite = null;
+    } else {
+      return this.overwrite = choice;
+    }
+  };
+
+
+  /*
+      Getter for the shared state.
+   */
+
+  File.prototype.isServerUploading = function() {
+    return this.get('uploading');
   };
 
   File.prototype.parse = function(data) {
@@ -1744,13 +1790,15 @@ module.exports = File = (function(_super) {
     if (this.isRoot()) {
       return "";
     } else {
-      return "" + (this.get("path")) + "/" + (this.get("name"));
+      return "" + (this.get('path')) + "/" + (this.get('name'));
     }
   };
 
   File.prototype.sync = function(method, model, options) {
     var formdata, progress;
     if (model.file) {
+      method = 'create';
+      this.id = "";
       formdata = new FormData();
       formdata.append('name', model.get('name'));
       formdata.append('path', model.get('path'));
@@ -1962,7 +2010,7 @@ module.exports = File = (function(_super) {
 });
 
 ;require.register("router", function(exports, require, module) {
-var File, FileCollection, FolderView, MergedCollection, PublicFolderView, Router, app,
+var File, FileCollection, FolderView, PublicFolderView, Router, app,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1971,8 +2019,6 @@ app = require('application');
 File = require('./models/file');
 
 FileCollection = require('./collections/files');
-
-MergedCollection = require('./lib/merged_collection');
 
 FolderView = require('./views/folder');
 
@@ -2049,7 +2095,6 @@ module.exports = Router = (function(_super) {
   };
 
   Router.prototype._renderFolderView = function(folder, collection, query) {
-    var filteredUploads, mergedCollection;
     if (query == null) {
       query = '';
     }
@@ -2057,11 +2102,9 @@ module.exports = Router = (function(_super) {
       this.folderView.destroy();
       $('html').append($('<body></body>'));
     }
-    filteredUploads = app.uploadQueue.filteredByFolder(folder, collection.comparator);
-    mergedCollection = MergedCollection(collection, filteredUploads, 'name');
     this.folderView = this._getFolderView({
       model: folder,
-      collection: mergedCollection,
+      collection: collection,
       baseCollection: app.baseCollection,
       breadcrumbs: app.breadcrumbs,
       uploadQueue: app.uploadQueue,
@@ -2454,13 +2497,10 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.getRenderData = function() {
-    var isBroken, isUploading;
-    isUploading = this.model.isUploading();
-    isBroken = (!this.model.hasBinary()) && (!this.model.isFolder());
-    isBroken = isBroken && !isUploading;
     return _.extend(FileView.__super__.getRenderData.call(this), {
-      isUploading: isUploading,
-      isBroken: isBroken,
+      isUploading: this.model.isUploading(),
+      isServerUploading: this.model.isServerUploading(),
+      isBroken: this.model.isBroken(),
       attachmentUrl: this.model.getAttachmentUrl(),
       downloadUrl: this.model.getDownloadUrl(),
       clearance: this.model.getClearance()
@@ -2472,12 +2512,9 @@ module.exports = FileView = (function(_super) {
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
     this.listenTo(this.model, 'change', this.refresh);
-    this.listenTo(this.model, 'request', (function(_this) {
-      return function() {};
-    })(this));
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
-        if (_this.model.conflict || !_this.model.isFile()) {
+        if (_this.model.isConflict() || _this.model.isFolder()) {
           return _this.render();
         }
       };
@@ -2513,15 +2550,10 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.refresh = function() {
-    var changes, date;
+    var changes;
     changes = Object.keys(this.model.changed);
     if (changes.length === 1) {
       if (changes[0] === 'tags') {
-        return;
-      }
-      if (changes[0] === 'lastModification') {
-        date = moment(this.model.changed.lastModification).calendar();
-        this.$('td.date-column-cell span').text(date);
         return;
       }
     }
@@ -2642,11 +2674,7 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onCancelUploadClicked = function() {
-    this.uploadQueue.remove(this.model, {
-      trigger: false
-    });
-    this.model.uploadXhrRequest.abort();
-    return this.remove();
+    return this.uploadQueue.abort(this.model);
   };
 
   FileView.prototype.onKeyPress = function(e) {
@@ -2677,15 +2705,13 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.afterRender = function() {
-    if (this.model.isUploading()) {
+    if (this.model.isUploading() || this.model.isServerUploading()) {
       this.$el.addClass('uploading');
       this.addProgressBar();
       this.blockDownloadLink();
     } else {
       this.$el.removeClass('uploading');
-      if (!(this.model.hasBinary() || this.model.isFolder())) {
-        this.$el.addClass('broken');
-      }
+      this.$el.toggleClass('broken', this.model.isBroken());
       this.addTags();
     }
     this.hideLoading();
@@ -2953,8 +2979,7 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.resolveConflict = function(model, done) {
     if (this.conflictRememberedChoice != null) {
-      model.overwrite = this.conflictRememberedChoice;
-      model.processSave(model);
+      model.solveConflict(this.conflictRememberedChoice);
       return done();
     } else {
       return new ModalConflict(model, (function(_this) {
@@ -2962,8 +2987,7 @@ module.exports = FolderView = (function(_super) {
           if (rememberChoice != null) {
             _this.conflictRememberedChoice = rememberChoice;
           }
-          model.overwrite = choice;
-          model.processSave(model);
+          model.solveConflict(choice);
           return done();
         };
       })(this));
@@ -3024,7 +3048,8 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.renderUploadStatus = function() {
     this.uploadStatus = new UploadStatusView({
-      collection: this.uploadQueue
+      collection: this.uploadQueue.uploadCollection,
+      uploadQueue: this.uploadQueue
     });
     return this.uploadStatus.render().$el.appendTo(this.$('#upload-status-container'));
   };
@@ -4039,7 +4064,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4113,15 +4138,15 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 }).call(this);
 
 buf.push("</ul>");
-if ( !isUploading && !isBroken)
+if ( !isUploading && !isBroken && !isServerUploading)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
 }
-else if ( isUploading)
+else if ( isUploading && !isServerUploading)
 {
-buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
+buf.push("<!-- only show cancel button to the client that performs the upload.--><a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
 }
-else
+else if ( isBroken)
 {
 buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
@@ -4254,7 +4279,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
@@ -4328,15 +4353,15 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
 }).call(this);
 
 buf.push("</ul>");
-if ( !isUploading && !isBroken)
+if ( !isUploading && !isBroken && !isServerUploading)
 {
 buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
 }
-else if ( isUploading)
+else if ( isUploading && !isServerUploading)
 {
-buf.push("<a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
+buf.push("<!-- only show cancel button to the client that performs the upload.--><a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
 }
-else
+else if ( isBroken)
 {
 buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
@@ -4556,7 +4581,7 @@ if (typeof define === 'function' && define.amd) {
 });
 
 ;require.register("views/upload_status", function(exports, require, module) {
-var BaseView, File, ProgressBar, UploadStatusView, UploadedFileView,
+var BaseView, File, ProgressBar, UploadStatusView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -4565,8 +4590,6 @@ BaseView = require('../lib/base_view');
 File = require('../models/file');
 
 ProgressBar = require('../widgets/progressbar');
-
-UploadedFileView = require('./uploaded_file_view');
 
 module.exports = UploadStatusView = (function(_super) {
   __extends(UploadStatusView, _super);
@@ -4585,19 +4608,24 @@ module.exports = UploadStatusView = (function(_super) {
     };
   };
 
-  UploadStatusView.prototype.initialize = function() {
-    UploadStatusView.__super__.initialize.apply(this, arguments);
+  UploadStatusView.prototype.initialize = function(options) {
+    UploadStatusView.__super__.initialize.call(this, options);
+    this.uploadQueue = options.uploadQueue;
     this.listenTo(this.collection, 'add', this.uploadCount);
     this.listenTo(this.collection, 'remove', this.uploadCount);
-    this.listenTo(this.collection, 'reset', this.render);
-    this.listenTo(this.collection, 'upload-progress', this.progress);
-    return this.listenTo(this.collection, 'upload-complete', this.complete);
+    this.listenTo(this.uploadQueue, 'reset', this.render);
+    this.listenTo(this.uploadQueue, 'upload-progress', this.progress);
+    return this.listenTo(this.uploadQueue, 'upload-complete', this.complete);
   };
 
   UploadStatusView.prototype.getRenderData = function() {
-    var data, e, value;
-    e = this.collection.progress;
-    value = e ? parseInt(100 * e.loadedBytes / e.totalBytes) + '%' : '0 %';
+    var data, loadedBytes, totalBytes, value, _ref;
+    if (this.collection.progress) {
+      _ref = this.collection.progress, loadedBytes = _ref.loadedBytes, totalBytes = _ref.totalBytes;
+      value = parseInt(100 * loadedBytes / totalBytes) + '%';
+    } else {
+      value = '0 %';
+    }
     return data = {
       value: value,
       collection: this.collection
@@ -4605,9 +4633,10 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   UploadStatusView.prototype.progress = function(e) {
-    var percentage;
+    var percentage, progress;
     this.$el.removeClass('success danger warning');
-    percentage = parseInt(100 * e.loadedBytes / e.totalBytes) + '%';
+    progress = parseInt(100 * e.loadedBytes / e.totalBytes);
+    percentage = "" + progress + "%";
     this.progressbar.width(percentage);
     return this.progressbarContent.text("" + (t('total progress')) + " : " + percentage);
   };
@@ -4615,14 +4644,14 @@ module.exports = UploadStatusView = (function(_super) {
   UploadStatusView.prototype.complete = function() {
     var result;
     this.$('.progress').remove();
-    result = this.collection.getResults();
-    if (result.success > 0 || result.error > 0 || result.existing > 0) {
+    result = this.uploadQueue.getResults();
+    if (result.success > 0 || result.errorList.length > 0 || result.existingList.length > 0) {
       this.dismiss.show();
       this.$el.addClass(result.status);
       return this.$('span').text([
         result.success ? t('upload complete', {
           smart_count: result.success
-        }) : void 0, result.existing.length ? this.makeExistingSentence(result.existing) : void 0, result.error.length ? this.makeErrorSentence(result.error) : void 0
+        }) : void 0, result.existingList.length ? this.makeExistingSentence(result.existingList) : void 0, result.errorList.length ? this.makeErrorSentence(result.errorList) : void 0
       ].join(' '));
     } else {
       return this.resetCollection();
@@ -4665,19 +4694,21 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   UploadStatusView.prototype.resetCollection = function() {
-    return this.collection.reset();
+    return this.uploadQueue.reset();
   };
 
   UploadStatusView.prototype.uploadCount = function(e) {
     if (this.collection.length > 0) {
       this.$el.show();
       $('#content').addClass('mt108');
-    }
-    if (this.completed && !this.collection.completed) {
+    } else {
       this.render();
     }
     this.counter.text(this.collection.length);
-    return this.counterDone.text(this.collection.loaded);
+    this.counterDone.text(this.collection.loaded);
+    if (this.completed && !this.collection.completed) {
+      return this.render();
+    }
   };
 
   UploadStatusView.prototype.afterRender = function() {
@@ -4699,61 +4730,6 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   return UploadStatusView;
-
-})(BaseView);
-});
-
-;require.register("views/uploaded_file_view", function(exports, require, module) {
-var BaseView, ProgressBar, UploadedFileView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-ProgressBar = require('../widgets/progressbar');
-
-BaseView = require('../lib/base_view');
-
-module.exports = UploadedFileView = (function(_super) {
-  __extends(UploadedFileView, _super);
-
-  function UploadedFileView() {
-    return UploadedFileView.__super__.constructor.apply(this, arguments);
-  }
-
-  UploadedFileView.prototype.className = 'upload-progress-item';
-
-  UploadedFileView.prototype.initialize = function(options) {
-    UploadedFileView.__super__.initialize.call(this, options);
-    this.isDone = false;
-    return this.listenTo(this.model, 'sync', (function(_this) {
-      return function() {
-        _this.isDone = true;
-        return _this.render();
-      };
-    })(this));
-  };
-
-  UploadedFileView.prototype.template = function() {
-    var content;
-    content = $("<div class=\"progress-name\">\n    <span class=\"name\">" + (this.model.get('name')) + "</span>\n</div>");
-    if (this.model.error) {
-      content.append("<span class=\"error\"> : " + this.model.error + "</span>");
-    } else if (this.isDone || this.model.isUploaded) {
-      content.append("<span class=\"success\">" + (t('upload success')) + "</span>");
-    } else {
-      content.append(new ProgressBar({
-        model: this.model
-      }).render().$el);
-    }
-    return content;
-    return {
-      destroy: function() {
-        this.stopListening(this.model);
-        return UploadedFileView.__super__.template.call(this);
-      }
-    };
-  };
-
-  return UploadedFileView;
 
 })(BaseView);
 });
