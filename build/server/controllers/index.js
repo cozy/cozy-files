@@ -19,7 +19,7 @@ module.exports.main = function(req, res, next) {
         return next(err);
       } else {
         locale = results[0], tags = results[1];
-        return res.render('index.jade', {
+        return res.render("index", {
           imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + (tags.join(',').replace('\"', '')) + "\".split(',');"
         });
       }

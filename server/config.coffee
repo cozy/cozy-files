@@ -1,6 +1,7 @@
 path = require 'path'
 americano = require 'americano'
 errorHandler = require './middlewares/errors'
+getTemplateExt = require './helpers/get_template_ext'
 
 staticMiddleware = americano.static path.resolve(__dirname, '../client/public'),
             maxAge: 86400000
@@ -21,8 +22,13 @@ GB = 1024 * 1024 * 1024
 config =
     common:
         set:
-            'view engine': 'jade'
+            'view engine': getTemplateExt()
             'views': path.resolve __dirname, 'views'
+
+        engine:
+            js: (path, locales, callback) ->
+                callback null, require(path)(locales)
+
         use: [
             americano.bodyParser()
             staticMiddleware

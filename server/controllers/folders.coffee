@@ -1,3 +1,4 @@
+path = require 'path'
 jade = require 'jade'
 async = require 'async'
 archiver = require 'archiver'
@@ -11,15 +12,11 @@ Folder = require '../models/folder'
 File = require '../models/file'
 cozydb = require 'cozydb'
 
-publicfoldertemplate = require('path').join __dirname, '../views/publicfolder.jade'
-template = require('path').join __dirname, '../views/index.jade'
-
 KB = 1024
 MB = KB * KB
 
 
 ## Helpers ##
-
 
 module.exports.fetch = (req, res, next, id) ->
     Folder.request 'all', key: id, (err, folder) ->
@@ -557,8 +554,7 @@ module.exports.publicList = (req, res, next) ->
                 """
 
                 try
-                    html = jade.renderFile template, {imports}
-                    res.send html
+                    res.render 'index', {imports}
                 catch err
                     errortemplate err
     else
