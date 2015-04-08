@@ -103,6 +103,24 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
 task 'tests', 'Run tests for client and server', (opts) ->
     testsServer opts, -> testsClient opts, -> process.exit 0
 
+
+buildJade = ->
+    jade = require 'jade'
+    srcPath = './build/server/views'
+    buildFolder = (folderPath) ->
+        for file in fs.readdirSync(folderPath)
+            elemPath = "#{folderPath}/#{file}"
+            unless fs.lstatSync(elemPath).isDirectory()
+                template = fs.readFileSync elemPath, 'utf8'
+                output = "var jade = require('jade/runtime');\n"
+                output += "module.exports = " + jade.compileClient template, filename: elemPath
+                name = file.replace '.jade', '.js'
+                fs.writeFileSync "#{folderPath}/#{name}", output
+            else
+                buildFolder elemPath
+    buildFolder srcPath
+
+
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
     logger.info "Start compilation..."
@@ -115,7 +133,10 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "cp ./server/views/404_build.jade client/app/assets/404.jade && " + \
               "cd client/ && brunch build --production && cd .. && " + \
               "rm client/app/assets/*.jade && " + \
+              "rm build/server/views/*.js && " + \
+              "rm build/server/views/*/*.js && " + \
               "mv build/client/public/*.jade build/server/views/ && " + \
+              "rm -rf build/server/views/*_build.jade && " + \
               "coffee -cb --output build/client/app/locales client/app/locales"
 
     exec command, (err, stdout, stderr) ->
@@ -123,5 +144,7 @@ task 'build', 'Build CoffeeScript to Javascript', ->
             logger.error "An error has occurred while compiling:\n" + err
             process.exit 1
         else
-            logger.info "Compilation succeeded."
-            process.exit 0
+            buildJade()
+            exec "rm -rf build/server/views/*.jade && rm -rf build/server/views/*/*.jade", ->
+                logger.info "Compilation succeeded."
+                process.exit 0

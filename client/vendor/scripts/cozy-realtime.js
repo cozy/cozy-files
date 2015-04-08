@@ -54,14 +54,17 @@
       }
 
       pathToSocketIO = "/" + path + "/socket.io";
-      socket = io.connect(url, {
-        'path': pathToSocketIO
+      this.socket = io(url, {
+        path: pathToSocketIO,
+        reconnectionDelayMax: 60000,
+        reconectionDelay: 2000,
+        reconnectionAttempts: 3
       });
       _ref = this.events;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         event = _ref[_i];
-        _results.push(socket.on(event, this.callbackFactory(event)));
+        _results.push(this.socket.on(event, this.callbackFactory(event)));
       }
       return _results;
     };

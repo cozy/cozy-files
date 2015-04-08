@@ -85,7 +85,7 @@ module.exports = class FolderView extends BaseView
         # if the user has selected the remember choice option
         # it is not asked again
         if @conflictRememberedChoice?
-            model.processOverwrite @conflictRememberedChoice
+            model.solveConflict @conflictRememberedChoice
             done()
         else
             # Ask the user his choice about overwriting the file
@@ -95,9 +95,7 @@ module.exports = class FolderView extends BaseView
                 if rememberChoice?
                     @conflictRememberedChoice = rememberChoice
 
-                # if users selected overwrite, start the upload
-                # (and therefore unlocks the upload queue)
-                model.processOverwrite choice
+                model.solveConflict choice
 
                 done()
 

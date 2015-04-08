@@ -10,7 +10,7 @@ module.exports.main = (req, res, next) ->
         if err then next err
         else
             [locale, tags] = results
-            res.render 'index.jade', imports: """
+            res.render "index", imports: """
                 window.locale = "#{locale}";
                 window.tags = "#{tags.join(',').replace('\"', '')}".split(',');
             """

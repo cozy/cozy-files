@@ -28,7 +28,7 @@ module.exports = class UploadQueue
             @trigger 'upload-progress', @computeProgress()
         , 100
 
-        @asyncQueue.drain = @completeUpload
+        @asyncQueue.drain = @completeUpload.bind @
 
 
     reset: ->
@@ -99,7 +99,6 @@ module.exports = class UploadQueue
     completeUpload: =>
         window.pendingOperations.upload = 0
         @completed = true
-        @loaded = 0
         @trigger 'upload-complete'
 
 
@@ -119,15 +118,29 @@ module.exports = class UploadQueue
         # If there is a conflict, the queue waits for the user to
         # make a decision.
         else if model.isConflict()
-            model.processOverwrite = @_decideOn.bind @, model, next
+
+            # Wait for user input through conflict resolution modal if it's not
+            # already done.
+            unless model.overwrite?
+                # The bind() method creates a new function that, when called,
+                # has its 'this' keyword set to the provided value
+                # (first argument), with a given sequence of arguments
+                # preceeding any provided when the new function is called.
+                model.processOverwrite = @_decideOn.bind @, model, next
+
+            # Or process the item if the user has made a choice.
+            else
+                @_decideOn model, next, model.overwrite
 
         # Otherwise, the upload starts directly.
         else
             @_processSave model, next
 
 
-    # In case of conflict, change the queue based on user choice
+    # In case of conflict, change the queue based on user choice.
     _decideOn: (model, done, choice) ->
+        # Mark the model as being overwritten (or not) so it knows during upload
+        # if it must tell the server to overwrite (or not).
         model.overwrite = choice
         if choice
             model.markAsUploading()
@@ -138,7 +151,9 @@ module.exports = class UploadQueue
             done()
 
 
-    # Perform the actual persistence
+    # Perform the actual persistence by saving the model and changing
+    # uploadStatus based on response. If there is an unexpected error, it tries
+    # again 3 times before failing.
     _processSave: (model, done) ->
 
         # double check that we don't try to upload something we know will fail
@@ -146,6 +161,7 @@ module.exports = class UploadQueue
             model.save null,
                 success: (model) ->
                     model.file = null
+                    # to make sure progress is uniform, we force it at 100%
                     model.loaded = model.total
                     model.markAsUploaded()
                     done null
@@ -163,6 +179,8 @@ module.exports = class UploadQueue
                     else if err.status is 400 and body.code is 'ESTORAGE'
                         model.markAsErrored body
 
+                    else if err.status is 0 and err.statusText is 'error'
+                        # abort by user, don't try again
 
                     # Retry if an unexpected error occurs
                     else
@@ -226,23 +244,28 @@ module.exports = class UploadQueue
             # mark as in conflict with existing file
             else if (existingModel = @isFileStored(model))?
 
-                # update data
-                existingModel.set
-                    size: blob.size
-                    lastModification: blob.lastModifiedDate
+                # if the model is currently in the upload process (except if
+                # it's been successfully uploaded), it's not added.
+                if not existingModel.inUploadCycle() or existingModel.isUploaded()
+                    # update data
+                    existingModel.set
+                        size: blob.size
+                        lastModification: blob.lastModifiedDate
 
-                existingModel.file = blob
-                existingModel.loaded = 0
-                existingModel.total = blob.size
+                    existingModel.file = blob
+                    existingModel.loaded = 0
+                    existingModel.total = blob.size
 
-                model = existingModel
+                    model = existingModel
 
-                model.markAsConflict()
-                @trigger 'conflict', model
+                    model.markAsConflict()
+                    @trigger 'conflict', model
+                else
+                    model = null
 
-
-            @add model
-            @markPathAsUploading model
+            if model?
+                @add model
+                @markPathAsUploading model
 
             setTimeout nonBlockingLoop, 2
 
@@ -263,7 +286,7 @@ module.exports = class UploadQueue
                 return
 
             prefix = parent.getRepository()
-            parts = dir.split('/').filter (x) -> x # remove empty last part
+            parts = Helpers.getFolderPathParts dir
             name = parts[parts.length - 1]
             path = [prefix].concat(parts[...-1]).join '/'
 
@@ -291,7 +314,7 @@ module.exports = class UploadQueue
         @uploadCollection.each (model) ->
             if model.isErrored()
                 error = model.error
-                if error.code is 'EEXISTS'
+                if error?.code is 'EEXISTS'
                     existingList.push model
                 else
                     errorList.push model
