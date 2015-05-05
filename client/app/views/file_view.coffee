@@ -113,9 +113,11 @@ module.exports = class FileView extends BaseView
         @uploadQueue = options.uploadQueue
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'sync error', =>
-            # for overwritten files, render entirely to show
-            #  modification date and type
-            @render() if @model.isConflict() or @model.isFolder()
+            # For overwritten files, render entirely to show
+            # modification date and type. Render folders unless they are in
+            # an errored state.
+            if @model.isConflict() or (@model.isFolder() and not @isErrored)
+                @render()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -153,10 +155,18 @@ module.exports = class FileView extends BaseView
         @render()
 
 
-    displayError: (msg) ->
-        @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
-        if msg is false then @errorField.hide()
-        else @errorField.text msg
+    displayError: (message) ->
+
+        cancelButton =  @$ '.file-edit-cancel'
+        @errorField ?= $('<span class="error">').insertAfter cancelButton
+
+        if message isnt false
+            @errorField.text message
+            @errorField.show()
+            @isErrored = true
+        else
+            @errorField.hide()
+            @isErrored = false
 
 
     onTagClicked: ->
@@ -219,18 +229,54 @@ module.exports = class FileView extends BaseView
 
         if name and name isnt ""
             @$el.removeClass 'edit-mode'
+
+            # Show the loading indicator.
             @showLoading()
+
+            # Hide the previous error in case there was one.
+            @displayError false
+
+            # Prevent re-submit/cancel during the save request.
+            @undelegateEvents()
+
+            # Mark submit/cancel buttons as disabled during the request.
+            @$('a.btn').addClass 'disabled'
 
             @model.save name: name,
                 wait: true,
                 success: (data) =>
+
+                    # Hide the loading indicator.
                     @hideLoading()
+
+                    # Re-enable events handling for the view.
+                    @delegateEvents()
+
+                    # Render will remove the edit form, and display the folder
+                    # properly.
                     @render()
+
                 error: (model, err) =>
+
+                    # Hide the loading indicator.
                     @hideLoading()
+
+                    # Re-enable submit/cancel buttons for future edit.
+                    @$('a.btn').removeClass 'disabled'
+                    @delegateEvents()
+
+                    # Focus the input field to allow the user to edit
+                    # immediately.
                     @$('.file-edit-name').focus()
-                    @displayError if err.status is 400 then t 'modal error in use'
-                    else t 'modal error rename'
+
+                    # Customize the error if status is 400, which means the file
+                    # or the folder already exists.
+                    if err.status is 400
+                        message = t 'modal error in use'
+                    else
+                        message = t 'modal error rename'
+
+                    @displayError message
 
         else
             @displayError t("modal error empty name")
