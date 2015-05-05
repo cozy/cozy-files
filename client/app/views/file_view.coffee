@@ -238,8 +238,14 @@ module.exports = class FileView extends BaseView
 
     onCancelClicked: ->
         @$el.removeClass 'edit-mode'
-        if @model.isNew() then @model.destroy()
-        else @render()
+
+        # If it's a new folder, cancel should stop the creation.
+        if @model.isNew()
+            @model.destroy()
+
+        # Otherwise, the edition mode is just disabled.
+        else
+            @render()
 
 
     # Cancel current upload. Then display a notification that the upload has
@@ -249,10 +255,10 @@ module.exports = class FileView extends BaseView
 
 
     onKeyPress: (e) =>
-        if e.keyCode is 13
+        if e.keyCode is 13 # ENTER key
             @onSaveClicked()
-        else if e.keyCode is 27
-            @render()
+        else if e.keyCode is 27 # ESCAPE key
+            @onCancelClicked()
 
 
     onSelectChanged: (event) ->
