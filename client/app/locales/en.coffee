@@ -184,6 +184,8 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "share confirm save"              : """
         The changes you made to the permissions will not be saved. Is that what you want ?
     """
+    "mail not sent"                   : "Mail not sent"
+    "postfix error"                   : "Mail not sent. Can you check your postfix server ?"
     "yes forgot"                      : "Back"
     "no forgot"                       : "It's ok"
     "perm"                            : "can "

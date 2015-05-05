@@ -184,6 +184,8 @@ Merkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.
     "share confirm save"              : """
         Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?
     """
+    "mail not sent"                   : "Mail not sent"
+    "postfix error"                   : "Postfix error"
     "yes forgot"                      : "Zurück"
     "no forgot"                       : "es ist ok"
     "perm"                            : "Kann "
