@@ -227,7 +227,12 @@ module.exports = class FileView extends BaseView
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
-        if name and name isnt ""
+        # If the name has not changed, reset the view state.
+        if name and name is @model.get('name')
+            @onCancelClicked()
+
+        # If the input is not empty, start the update process.
+        else if name and name isnt ""
             @$el.removeClass 'edit-mode'
 
             # Show the loading indicator.
@@ -278,6 +283,7 @@ module.exports = class FileView extends BaseView
 
                     @displayError message
 
+        # If the input is empty, show an error.
         else
             @displayError t("modal error empty name")
 
