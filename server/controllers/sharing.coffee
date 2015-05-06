@@ -10,6 +10,8 @@ localization = require '../lib/localization_manager'
 templatefile = require('path').join __dirname, '../views/sharemail.jade'
 mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 
+CozyInstance = require("cozydb").api.CozyInstance
+
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
@@ -28,6 +30,15 @@ clearanceCtl = clearance.controller
             callback null, localization.t 'email sharing subject',
                                 displayName: displayName
                                 name: name
+
+module.exports.getPublicUrl = (req, res, next) ->
+    CozyInstance.first (err, instance) ->
+        if err
+            next err
+        else if not instance?.url?
+            next "Url isn't defined"
+        else
+            res.send url: "https://#{instance.domain}/public/files/", 200
 
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->

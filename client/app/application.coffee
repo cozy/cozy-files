@@ -3,6 +3,7 @@ UploadQueue = require './collections/upload_queue'
 File = require './models/file'
 SocketListener = require '../lib/socket'
 FolderView = require './views/folder'
+client = require './lib/client'
 
 ###
 Initialize the model and start the actual code
@@ -45,9 +46,16 @@ module.exports =
         @baseCollection.add @root
 
         # for easy debugging in browser (and dirty tricks)
-        window.app = @
+        client.get 'publicUrl', (err, body) =>
+            if err?
+                url = "#{window.location.origin}/public/files/"
+            else
+                url = body.url
+            @domain = url
+            window.app = @
 
-        Backbone.history.start()
+            Backbone.history.start()
 
-        # Makes this object immuable.
-        Object.freeze this if typeof Object.freeze is 'function'
+            # Makes this object immuable.
+            Object.freeze this if typeof Object.freeze is 'function'
+
