@@ -113,9 +113,11 @@ module.exports = class FileView extends BaseView
         @uploadQueue = options.uploadQueue
         @listenTo @model, 'change', @refresh
         @listenTo @model, 'sync error', =>
-            # for overwritten files, render entirely to show
-            #  modification date and type
-            @render() if @model.isConflict() or @model.isFolder()
+            # For overwritten files, render entirely to show
+            # modification date and type. Render folders unless they are in
+            # an errored state.
+            if @model.isConflict() or (@model.isFolder() and not @isErrored)
+                @render()
 
         @listenTo @model, 'toggle-select', @onToggleSelect
 
@@ -153,10 +155,18 @@ module.exports = class FileView extends BaseView
         @render()
 
 
-    displayError: (msg) ->
-        @errorField ?= $('<span class="error">').insertAfter @$('.file-edit-cancel')
-        if msg is false then @errorField.hide()
-        else @errorField.text msg
+    displayError: (message) ->
+
+        cancelButton =  @$ '.file-edit-cancel'
+        @errorField ?= $('<span class="error">').insertAfter cancelButton
+
+        if message isnt false
+            @errorField.text message
+            @errorField.show()
+            @isErrored = true
+        else
+            @errorField.hide()
+            @isErrored = false
 
 
     onTagClicked: ->
@@ -217,29 +227,91 @@ module.exports = class FileView extends BaseView
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
-        if name and name isnt ""
+        # If the name has not changed, reset the view state.
+        if name and name is @model.get('name')
+            @onCancelClicked()
+
+        # If the input is not empty, start the update process.
+        else if name and name isnt ""
             @$el.removeClass 'edit-mode'
+
+            # Show the loading indicator.
             @showLoading()
+
+            # Hide the previous error in case there was one.
+            @displayError false
+
+            # Prevent re-submit/cancel during the save request.
+            @undelegateEvents()
+
+            # Mark submit/cancel buttons as disabled during the request.
+            @$('a.btn').addClass 'disabled'
+
+            # Pause the realtime during the request, because sometimes the
+            # realtime notification is received and processed by the client,
+            # before the request's response to the `save` request. It leads to
+            # a duplication of the model (two models with the exact same
+            # attributes), and as a result, in the UI.
+            options = ignoreMySocketNotification: true
+            window.app.socket.pause @model, null, options
 
             @model.save name: name,
                 wait: true,
                 success: (data) =>
-                    @hideLoading()
-                    @render()
-                error: (model, err) =>
-                    @hideLoading()
-                    @$('.file-edit-name').focus()
-                    @displayError if err.status is 400 then t 'modal error in use'
-                    else t 'modal error rename'
 
+                    # Resume the realtime, now the response has been received.
+                    window.app.socket.resume @model, null, options
+
+                    # Hide the loading indicator.
+                    @hideLoading()
+
+                    # Re-enable events handling for the view.
+                    @delegateEvents()
+
+                    # Render will remove the edit form, and display the folder
+                    # properly.
+                    @render()
+
+                error: (model, err) =>
+
+                    # Resume the realtime, now the response has been received.
+                    window.app.socket.resume @model, null, options
+
+                    # Hide the loading indicator.
+                    @hideLoading()
+
+                    # Re-enable submit/cancel buttons for future edit.
+                    @$('a.btn').removeClass 'disabled'
+                    @delegateEvents()
+
+                    # Focus the input field to allow the user to edit
+                    # immediately.
+                    @$('.file-edit-name').focus()
+
+                    # Customize the error if status is 400, which means the file
+                    # or the folder already exists.
+                    if err.status is 400
+                        message = t 'modal error in use'
+                    else
+                        message = t 'modal error rename'
+
+                    @displayError message
+
+        # If the input is empty, show an error.
         else
             @displayError t("modal error empty name")
 
 
     onCancelClicked: ->
         @$el.removeClass 'edit-mode'
-        if @model.isNew() then @model.destroy()
-        else @render()
+
+        # If it's a new folder, cancel should stop the creation.
+        if @model.isNew()
+            @model.destroy()
+
+        # Otherwise, the edition mode is just disabled.
+        else
+            @render()
 
 
     # Cancel current upload. Then display a notification that the upload has
@@ -249,10 +321,10 @@ module.exports = class FileView extends BaseView
 
 
     onKeyPress: (e) =>
-        if e.keyCode is 13
+        if e.keyCode is 13 # ENTER key
             @onSaveClicked()
-        else if e.keyCode is 27
-            @render()
+        else if e.keyCode is 27 # ESCAPE key
+            @onCancelClicked()
 
 
     onSelectChanged: (event) ->
