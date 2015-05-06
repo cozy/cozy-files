@@ -71,12 +71,12 @@ LocalizationManager = (function() {
 
   LocalizationManager.prototype.getEmailTemplate = function(name) {
     var filePath, templatefile;
-    name = name.replace('.jade', '');
     filePath = "../views/" + this.polyglot.currentLocale + "/" + name;
     templatefile = require('path').join(__dirname, filePath);
     if (ext === 'jade') {
       return jade.compile(fs.readFileSync(templatefile, 'utf8'));
     } else {
+      templatefile.replace('.jade', '.js');
       return require(templatefile);
     }
   };

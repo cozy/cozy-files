@@ -7,8 +7,8 @@ async = require 'async'
 
 localization = require '../lib/localization_manager'
 
-templatefile = require('path').join __dirname, '../views/sharemail'
-mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail'
+templatefile = require('path').join __dirname, '../views/sharemail.jade'
+mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->

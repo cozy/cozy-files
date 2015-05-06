@@ -38,12 +38,12 @@ class LocalizationManager
     t: (key, params = {}) -> return @polyglot?.t key, params
 
     getEmailTemplate: (name) ->
-        name = name.replace('.jade', '');
         filePath = "../views/#{@polyglot.currentLocale}/#{name}"
         templatefile = require('path').join __dirname, filePath
         if ext is 'jade'
             return jade.compile fs.readFileSync templatefile, 'utf8'
         else
+            templatefile.replace('.jade', '.js')
             return require(templatefile)
 
     # for template localization
