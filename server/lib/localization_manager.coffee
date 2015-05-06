@@ -43,7 +43,7 @@ class LocalizationManager
         if ext is 'jade'
             return jade.compile fs.readFileSync templatefile, 'utf8'
         else
-            templatefile.replace('.jade', '.js')
+            templatefile = templatefile.replace('jade', 'js')
             return require(templatefile)
 
     # for template localization

@@ -194,7 +194,6 @@ module.exports = class FolderView extends BaseView
                 name: ''
                 type: 'folder'
                 path: @model.getRepository()
-            @newFolder.type = 'folder'
 
             @baseCollection.add @newFolder
             view = @filesList.views[@newFolder.cid]
