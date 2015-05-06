@@ -3,7 +3,6 @@ UploadQueue = require './collections/upload_queue'
 File = require './models/file'
 SocketListener = require '../lib/socket'
 FolderView = require './views/folder'
-client = require './lib/client'
 
 ###
 Initialize the model and start the actual code

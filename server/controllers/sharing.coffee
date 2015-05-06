@@ -10,8 +10,6 @@ localization = require '../lib/localization_manager'
 templatefile = require('path').join __dirname, '../views/sharemail.jade'
 mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 
-CozyInstance = require("cozydb").api.CozyInstance
-
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         options.type = options.doc.docType.toLowerCase()
