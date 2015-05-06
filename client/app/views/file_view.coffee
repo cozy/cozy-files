@@ -247,9 +247,20 @@ module.exports = class FileView extends BaseView
             # Mark submit/cancel buttons as disabled during the request.
             @$('a.btn').addClass 'disabled'
 
+            # Pause the realtime during the request, because sometimes the
+            # realtime notification is received and processed by the client,
+            # before the request's response to the `save` request. It leads to
+            # a duplication of the model (two models with the exact same
+            # attributes), and as a result, in the UI.
+            options = ignoreMySocketNotification: true
+            window.app.socket.pause @model, null, options
+
             @model.save name: name,
                 wait: true,
                 success: (data) =>
+
+                    # Resume the realtime, now the response has been received.
+                    window.app.socket.resume @model, null, options
 
                     # Hide the loading indicator.
                     @hideLoading()
@@ -262,6 +273,9 @@ module.exports = class FileView extends BaseView
                     @render()
 
                 error: (model, err) =>
+
+                    # Resume the realtime, now the response has been received.
+                    window.app.socket.resume @model, null, options
 
                     # Hide the loading indicator.
                     @hideLoading()
