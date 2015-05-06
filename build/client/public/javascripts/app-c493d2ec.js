@@ -2683,7 +2683,7 @@ module.exports = FileView = (function(_super) {
     this.listenTo(this.model, 'change', this.refresh);
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
-        if (_this.model.isConflict() || _this.model.isFolder()) {
+        if (_this.model.isConflict() || (_this.model.isFolder() && !_this.isErrored)) {
           return _this.render();
         }
       };
@@ -2729,14 +2729,19 @@ module.exports = FileView = (function(_super) {
     return this.render();
   };
 
-  FileView.prototype.displayError = function(msg) {
+  FileView.prototype.displayError = function(message) {
+    var cancelButton;
+    cancelButton = this.$('.file-edit-cancel');
     if (this.errorField == null) {
-      this.errorField = $('<span class="error">').insertAfter(this.$('.file-edit-cancel'));
+      this.errorField = $('<span class="error">').insertAfter(cancelButton);
     }
-    if (msg === false) {
-      return this.errorField.hide();
+    if (message !== false) {
+      this.errorField.text(message);
+      this.errorField.show();
+      return this.isErrored = true;
     } else {
-      return this.errorField.text(msg);
+      this.errorField.hide();
+      return this.isErrored = false;
     }
   };
 
@@ -2805,26 +2810,46 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onSaveClicked = function() {
-    var name;
+    var name, options;
     name = this.$('.file-edit-name').val();
-    if (name && name !== "") {
+    if (name && name === this.model.get('name')) {
+      return this.onCancelClicked();
+    } else if (name && name !== "") {
       this.$el.removeClass('edit-mode');
       this.showLoading();
+      this.displayError(false);
+      this.undelegateEvents();
+      this.$('a.btn').addClass('disabled');
+      options = {
+        ignoreMySocketNotification: true
+      };
+      window.app.socket.pause(this.model, null, options);
       return this.model.save({
         name: name
       }, {
         wait: true,
         success: (function(_this) {
           return function(data) {
+            window.app.socket.resume(_this.model, null, options);
             _this.hideLoading();
+            _this.delegateEvents();
             return _this.render();
           };
         })(this),
         error: (function(_this) {
           return function(model, err) {
+            var message;
+            window.app.socket.resume(_this.model, null, options);
             _this.hideLoading();
+            _this.$('a.btn').removeClass('disabled');
+            _this.delegateEvents();
             _this.$('.file-edit-name').focus();
-            return _this.displayError(err.status === 400 ? t('modal error in use') : t('modal error rename'));
+            if (err.status === 400) {
+              message = t('modal error in use');
+            } else {
+              message = t('modal error rename');
+            }
+            return _this.displayError(message);
           };
         })(this)
       });
@@ -2850,7 +2875,7 @@ module.exports = FileView = (function(_super) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
     } else if (e.keyCode === 27) {
-      return this.render();
+      return this.onCancelClicked();
     }
   };
 
@@ -3261,7 +3286,6 @@ module.exports = FolderView = (function(_super) {
           path: this.model.getRepository()
         });
       }
-      this.newFolder.type = 'folder';
       this.baseCollection.add(this.newFolder);
       view = this.filesList.views[this.newFolder.cid];
       view.onEditClicked(t("new folder"));
