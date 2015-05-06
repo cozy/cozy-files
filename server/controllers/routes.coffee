@@ -60,8 +60,6 @@ module.exports =
         post: folders.searchContent
 
     # clearance
-    'publicUrl':
-        get: sharing.getPublicUrl
     'shareid':
         param: sharing.fetch
     'clearance/contacts':

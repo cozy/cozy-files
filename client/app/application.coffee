@@ -44,18 +44,11 @@ module.exports =
                 name: t 'root folder name'
                 type: "folder"
         @baseCollection.add @root
-
         # for easy debugging in browser (and dirty tricks)
-        client.get 'publicUrl', (err, body) =>
-            if err?
-                url = "#{window.location.origin}/public/files/"
-            else
-                url = body.url
-            @domain = url
-            window.app = @
+        window.app = @
 
-            Backbone.history.start()
+        Backbone.history.start()
 
-            # Makes this object immuable.
-            Object.freeze this if typeof Object.freeze is 'function'
+        # Makes this object immuable.
+        Object.freeze this if typeof Object.freeze is 'function'
 

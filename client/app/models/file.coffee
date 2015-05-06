@@ -186,7 +186,6 @@ module.exports = class File extends Backbone.Model
         if @isFile()
             name = encodeURIComponent @get 'name'
             link = "#{link}/attach/#{name}"
-        console.log link
         return link
 
     # Only relevant if model is a folder

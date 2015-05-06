@@ -5,12 +5,18 @@ module.exports.main = (req, res, next) ->
     async.parallel [
         (cb) -> cozydb.api.getCozyLocale cb
         (cb) -> cozydb.api.getCozyTags cb
+        (cb) -> cozydb.api.getCozyInstance cb
     ], (err, results) =>
 
         if err then next err
         else
-            [locale, tags] = results
+            [locale, tags, instance] = results
+            if instance?.domain?
+                domain = "https://#{instance.domain}/public/files/"
+            else
+                domain = false
             res.render "index", imports: """
                 window.locale = "#{locale}";
                 window.tags = "#{tags.join(',').replace('\"', '')}".split(',');
+                window.domain = "#{domain}";
             """

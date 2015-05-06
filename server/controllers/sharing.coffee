@@ -31,15 +31,6 @@ clearanceCtl = clearance.controller
                                 displayName: displayName
                                 name: name
 
-module.exports.getPublicUrl = (req, res, next) ->
-    CozyInstance.first (err, instance) ->
-        if err
-            next err
-        else if not instance?.url?
-            next "Url isn't defined"
-        else
-            res.send url: "https://#{instance.domain}/public/files/", 200
-
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->
     async.parallel [
