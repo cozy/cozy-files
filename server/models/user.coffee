@@ -1,5 +1,11 @@
 cozydb = require 'cozydb'
 
+
+hideEmail = (email) ->
+    email.split('@')[0]
+        .replace '.', ' '
+        .replace '-', ' '
+
 module.exports.getDisplayName = (callback) ->
     cozydb.api.getCozyUser (err, user) ->
         if user?

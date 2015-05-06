@@ -76,7 +76,8 @@ LocalizationManager = (function() {
     if (ext === 'jade') {
       return jade.compile(fs.readFileSync(templatefile, 'utf8'));
     } else {
-      return templatefile;
+      templatefile = templatefile.replace('jade', 'js');
+      return require(templatefile);
     }
   };
 
