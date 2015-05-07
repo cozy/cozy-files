@@ -21,7 +21,7 @@ module.exports.main = function(req, res, next) {
         return next(err);
       } else {
         locale = results[0], tags = results[1], instance = results[2];
-        if ((instance != null ? instance.domain : void 0) != null) {
+        if (((instance != null ? instance.domain : void 0) != null) && instance.domain !== 'domain.not.set') {
           domain = "https://" + instance.domain + "/public/files/";
         } else {
           domain = false;

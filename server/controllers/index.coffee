@@ -11,7 +11,7 @@ module.exports.main = (req, res, next) ->
         if err then next err
         else
             [locale, tags, instance] = results
-            if instance?.domain?
+            if instance?.domain? and instance.domain isnt 'domain.not.set'
                 domain = "https://#{instance.domain}/public/files/"
             else
                 domain = false
