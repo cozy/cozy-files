@@ -13,6 +13,7 @@ module.exports =
     "modal error get folders"   : "Une erreur s'est produite en récupérant les dossiers du serveur"
     "modal error get content"   : "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur"
     "modal error empty name"    : "Le nom ne peut pas être vide"
+    "modal error no data"       : "Pas de noms et de dossier à envoyer"
     "modal error file invalid"  : "Le fichier ne parait pas être valide"
     'modal error firefox dragdrop folder': """
 Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin
@@ -139,6 +140,7 @@ Chrome et Safari.
     "files"                     : "fichiers"
     "element"                   : "%{smart_count} élément |||| %{smart_count} éléments"
     "no file in folder"         : "Ce dossier est vide."
+    "no file in search"         : "Votre recherche ne correspond à aucun document."
 
     "enable notifications": "Activer les notifications"
     "disable notifications": "Désactiver les notifications"
@@ -151,12 +153,11 @@ Chrome et Safari.
      # clearance modal
     "also have access"                : "Ces personnes ont également accès, car elles ont accès à un dossier parent"
     "cancel"                          : "Annuler"
-    "copy paste link"                 : "Pour donner accès à votre contact envoyez-lui ce lien : "
+    "copy paste link"                 : "Pour donner accès à votre contact envoyez-lui ce lien :"
     "details"                         : "Détails"
     "inherited from"                  : "hérité de"
     "modal question folder shareable" : "Choisissez le mode de partage pour ce dossier"
     "modal shared folder custom msg"  : "Entrez un email et appuyez sur Entrée"
-    "modal shared folder link msg"    : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
     "modal question file shareable"   : "Choisissez le mode de partage pour ce fichier"
     "modal shared file custom msg"    : "Entrez un email et appuyez sur Entrée"
     "modal shared file link msg"      : "Envoyez ce lien pour qu'elles puissent accéder à ce dossier"
@@ -171,7 +172,7 @@ Chrome et Safari.
     "see link"                        : "Voir le lien"
     "sharing"                         : "Partage"
     "revoke"                          : "Révoquer la permission"
-    "send mails question"             : "Envoyer un email de notification à : "
+    "send mails question"             : "Envoyer un email de notification à :"
     "modal send mails"                : "Envoyer une notification"
     "forced public"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé."
     "forced shared"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :"
@@ -196,15 +197,15 @@ Chrome et Safari.
     "move": "Déplacer"
     'tooltip move': "Déplacer l'élément dans un autre dossier."
     "moving...": "Déplacement en cours…"
-    "move element to": "Déplacer l'élément vers "
+    "move element to": "Déplacer l'élément vers"
     "error occured canceling move": "Une erreur est survenue en annulant le déplacement."
     "error occured while moving element": "Une erreur est survenue en déplaçant l'élément."
-    "file successfully moved to": 'Fichier déplacé avec succès vers '
+    "file successfully moved to": 'Fichier déplacé avec succès vers'
 
     'plugin modal close': 'Fermer'
 
     # Bulk move modal
     'moving selected elements': 'Déplacer des éléments'
-    'move elements to': "Déplacer les éléments vers "
-    "elements successfully moved to": 'Eléments déplacés avec succès vers '
+    'move elements to': "Déplacer les éléments vers"
+    "elements successfully moved to": 'Eléments déplacés avec succès vers'
     'close': 'Fermer'
