@@ -43,7 +43,6 @@ module.exports =
                 name: t 'root folder name'
                 type: "folder"
         @baseCollection.add @root
-
         # for easy debugging in browser (and dirty tricks)
         window.app = @
 
@@ -51,3 +50,4 @@ module.exports =
 
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'
+

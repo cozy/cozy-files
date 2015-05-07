@@ -37,6 +37,7 @@ module.exports = class File extends Backbone.Model
         doctype = options.docType?.toLowerCase()
         if doctype? and doctype in ['file', 'folder']
             options.type = doctype
+
         super options
 
 
@@ -181,11 +182,10 @@ module.exports = class File extends Backbone.Model
         return url + toAppend + key
 
     getPublicURL: (key) ->
-        link = "#{window.location.origin}/public/files/#{@urlRoot()}#{@id}"
+        link = "#{app.domain}#{@urlRoot()}#{@id}"
         if @isFile()
             name = encodeURIComponent @get 'name'
             link = "#{link}/attach/#{name}"
-
         return link
 
     # Only relevant if model is a folder
