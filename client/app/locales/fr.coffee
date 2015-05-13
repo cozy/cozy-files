@@ -183,6 +183,8 @@ Chrome et Safari.
     "share confirm save"              : """
         Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
     """
+    "mail not sent"                   : "Le mail n'a pas pu être envoyé"
+    "postfix error"                   : "Le mail n'a pas pu être envoyé. Veuillez vérifier votre seveur postfix."
     "yes forgot"                      : "Retour"
     "no forgot"                       : "Ok"
     "perm"                            : "peut "

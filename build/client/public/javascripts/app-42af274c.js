@@ -1,59 +1,42 @@
-(function() {
+(function(/*! Brunch !*/) {
   'use strict';
 
-  var globals = typeof window === 'undefined' ? global : window;
+  var globals = typeof window !== 'undefined' ? window : global;
   if (typeof globals.require === 'function') return;
 
   var modules = {};
   var cache = {};
-  var has = ({}).hasOwnProperty;
 
-  var aliases = {};
-
-  var endsWith = function(str, suffix) {
-    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+  var has = function(object, name) {
+    return ({}).hasOwnProperty.call(object, name);
   };
 
-  var unalias = function(alias, loaderPath) {
-    var start = 0;
-    if (loaderPath) {
-      if (loaderPath.indexOf('components/' === 0)) {
-        start = 'components/'.length;
-      }
-      if (loaderPath.indexOf('/', start) > 0) {
-        loaderPath = loaderPath.substring(start, loaderPath.indexOf('/', start));
+  var expand = function(root, name) {
+    var results = [], parts, part;
+    if (/^\.\.?(\/|$)/.test(name)) {
+      parts = [root, name].join('/').split('/');
+    } else {
+      parts = name.split('/');
+    }
+    for (var i = 0, length = parts.length; i < length; i++) {
+      part = parts[i];
+      if (part === '..') {
+        results.pop();
+      } else if (part !== '.' && part !== '') {
+        results.push(part);
       }
     }
-    var result = aliases[alias + '/index.js'] || aliases[loaderPath + '/deps/' + alias + '/index.js'];
-    if (result) {
-      return 'components/' + result.substring(0, result.length - '.js'.length);
-    }
-    return alias;
+    return results.join('/');
   };
 
-  var expand = (function() {
-    var reg = /^\.\.?(\/|$)/;
-    return function(root, name) {
-      var results = [], parts, part;
-      parts = (reg.test(name) ? root + '/' + name : name).split('/');
-      for (var i = 0, length = parts.length; i < length; i++) {
-        part = parts[i];
-        if (part === '..') {
-          results.pop();
-        } else if (part !== '.' && part !== '') {
-          results.push(part);
-        }
-      }
-      return results.join('/');
-    };
-  })();
   var dirname = function(path) {
     return path.split('/').slice(0, -1).join('/');
   };
 
   var localRequire = function(path) {
     return function(name) {
-      var absolute = expand(dirname(path), name);
+      var dir = dirname(path);
+      var absolute = expand(dir, name);
       return globals.require(absolute, path);
     };
   };
@@ -68,26 +51,21 @@
   var require = function(name, loaderPath) {
     var path = expand(name, '.');
     if (loaderPath == null) loaderPath = '/';
-    path = unalias(name, loaderPath);
 
-    if (has.call(cache, path)) return cache[path].exports;
-    if (has.call(modules, path)) return initModule(path, modules[path]);
+    if (has(cache, path)) return cache[path].exports;
+    if (has(modules, path)) return initModule(path, modules[path]);
 
     var dirIndex = expand(path, './index');
-    if (has.call(cache, dirIndex)) return cache[dirIndex].exports;
-    if (has.call(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
+    if (has(cache, dirIndex)) return cache[dirIndex].exports;
+    if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
     throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
   };
 
-  require.alias = function(from, to) {
-    aliases[to] = from;
-  };
-
-  require.register = require.define = function(bundle, fn) {
+  var define = function(bundle, fn) {
     if (typeof bundle === 'object') {
       for (var key in bundle) {
-        if (has.call(bundle, key)) {
+        if (has(bundle, key)) {
           modules[key] = bundle[key];
         }
       }
@@ -96,18 +74,21 @@
     }
   };
 
-  require.list = function() {
+  var list = function() {
     var result = [];
     for (var item in modules) {
-      if (has.call(modules, item)) {
+      if (has(modules, item)) {
         result.push(item);
       }
     }
     return result;
   };
 
-  require.brunch = true;
   globals.require = require;
+  globals.require.define = define;
+  globals.require.register = define;
+  globals.require.list = list;
+  globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
 var File, FileCollection, FolderView, SocketListener, UploadQueue;
@@ -1344,6 +1325,8 @@ module.exports = {
   "confirm": "Bestätigen",
   "share forgot add": "Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken",
   "share confirm save": "Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?",
+  "mail not sent": "Mail not sent",
+  "postfix error": "Postfix error",
   "yes forgot": "Zurück",
   "no forgot": "es ist ok",
   "perm": "Kann ",
@@ -1494,6 +1477,8 @@ module.exports = {
   "confirm": "Confirm",
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
+  "mail not sent": "Mail not sent",
+  "postfix error": "Mail not sent. Can you check your postfix server ?",
   "yes forgot": "Back",
   "no forgot": "It's ok",
   "perm": "can ",
@@ -1643,6 +1628,8 @@ module.exports = {
   "confirm": "Confirmer",
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
   "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
+  "mail not sent": "Le mail n'a pas pu être envoyé",
+  "postfix error": "Le mail n'a pas pu être envoyé. Veuillez vérifier votre seveur postfix.",
   "yes forgot": "Retour",
   "no forgot": "Ok",
   "perm": "peut ",
@@ -2683,7 +2670,7 @@ module.exports = FileView = (function(_super) {
     this.listenTo(this.model, 'change', this.refresh);
     this.listenTo(this.model, 'sync error', (function(_this) {
       return function() {
-        if (_this.model.isConflict() || _this.model.isFolder()) {
+        if (_this.model.isConflict() || (_this.model.isFolder() && !_this.isErrored)) {
           return _this.render();
         }
       };
@@ -2729,14 +2716,19 @@ module.exports = FileView = (function(_super) {
     return this.render();
   };
 
-  FileView.prototype.displayError = function(msg) {
+  FileView.prototype.displayError = function(message) {
+    var cancelButton;
+    cancelButton = this.$('.file-edit-cancel');
     if (this.errorField == null) {
-      this.errorField = $('<span class="error">').insertAfter(this.$('.file-edit-cancel'));
+      this.errorField = $('<span class="error">').insertAfter(cancelButton);
     }
-    if (msg === false) {
-      return this.errorField.hide();
+    if (message !== false) {
+      this.errorField.text(message);
+      this.errorField.show();
+      return this.isErrored = true;
     } else {
-      return this.errorField.text(msg);
+      this.errorField.hide();
+      return this.isErrored = false;
     }
   };
 
@@ -2805,26 +2797,46 @@ module.exports = FileView = (function(_super) {
   };
 
   FileView.prototype.onSaveClicked = function() {
-    var name;
+    var name, options;
     name = this.$('.file-edit-name').val();
-    if (name && name !== "") {
+    if (name && name === this.model.get('name')) {
+      return this.onCancelClicked();
+    } else if (name && name !== "") {
       this.$el.removeClass('edit-mode');
       this.showLoading();
+      this.displayError(false);
+      this.undelegateEvents();
+      this.$('a.btn').addClass('disabled');
+      options = {
+        ignoreMySocketNotification: true
+      };
+      window.app.socket.pause(this.model, null, options);
       return this.model.save({
         name: name
       }, {
         wait: true,
         success: (function(_this) {
           return function(data) {
+            window.app.socket.resume(_this.model, null, options);
             _this.hideLoading();
+            _this.delegateEvents();
             return _this.render();
           };
         })(this),
         error: (function(_this) {
           return function(model, err) {
+            var message;
+            window.app.socket.resume(_this.model, null, options);
             _this.hideLoading();
+            _this.$('a.btn').removeClass('disabled');
+            _this.delegateEvents();
             _this.$('.file-edit-name').focus();
-            return _this.displayError(err.status === 400 ? t('modal error in use') : t('modal error rename'));
+            if (err.status === 400) {
+              message = t('modal error in use');
+            } else {
+              message = t('modal error rename');
+            }
+            return _this.displayError(message);
           };
         })(this)
       });
@@ -2850,7 +2862,7 @@ module.exports = FileView = (function(_super) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
     } else if (e.keyCode === 27) {
-      return this.render();
+      return this.onCancelClicked();
     }
   };
 
@@ -3261,7 +3273,6 @@ module.exports = FolderView = (function(_super) {
           path: this.model.getRepository()
         });
       }
-      this.newFolder.type = 'folder';
       this.baseCollection.add(this.newFolder);
       view = this.filesList.views[this.newFolder.cid];
       view.onEditClicked(t("new folder"));

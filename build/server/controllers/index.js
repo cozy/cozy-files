@@ -11,16 +11,23 @@ module.exports.main = function(req, res, next) {
       return cozydb.api.getCozyLocale(cb);
     }, function(cb) {
       return cozydb.api.getCozyTags(cb);
+    }, function(cb) {
+      return cozydb.api.getCozyInstance(cb);
     }
   ], (function(_this) {
     return function(err, results) {
-      var locale, tags;
+      var domain, instance, locale, tags;
       if (err) {
         return next(err);
       } else {
-        locale = results[0], tags = results[1];
+        locale = results[0], tags = results[1], instance = results[2];
+        if (((instance != null ? instance.domain : void 0) != null) && instance.domain !== 'domain.not.set') {
+          domain = "https://" + instance.domain + "/public/files/";
+        } else {
+          domain = false;
+        }
         return res.render("index", {
-          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + (tags.join(',').replace('\"', '')) + "\".split(',');"
+          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + (tags.join(',').replace('\"', '')) + "\".split(',');\nwindow.domain = \"" + domain + "\";"
         });
       }
     };

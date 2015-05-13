@@ -3,6 +3,11 @@ app = require 'application'
 $ ->
     jQuery.event.props.push 'dataTransfer'
 
+    if window.domain is "false"
+        app.domain = "#{window.location.origin}/public/files/"
+    else
+        app.domain = window.domain
+
     locale = window.locale or "en" # default locale
     moment.lang locale
 
