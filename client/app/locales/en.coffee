@@ -185,7 +185,8 @@ feature, it's available in Chromium, Chrome and Safari browsers.
         The changes you made to the permissions will not be saved. Is that what you want ?
     """
     "mail not sent"                   : "Mail not sent"
-    "postfix error"                   : "Mail not sent. Can you check your postfix server ?"
+    "postfix error"                   : """ Mail not sent. Are you sure mail address is correct ? \n
+                                            Problem can also be due to a bad configuration of your postfix server."""
     "yes forgot"                      : "Back"
     "no forgot"                       : "It's ok"
     "perm"                            : "can "

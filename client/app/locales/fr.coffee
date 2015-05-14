@@ -183,7 +183,9 @@ Chrome et Safari.
         Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
     """
     "mail not sent"                   : "Le mail n'a pas pu être envoyé"
-    "postfix error"                   : "Le mail n'a pas pu être envoyé. Veuillez vérifier votre seveur postfix."
+    "postfix error"                   : """ Le mail n'a pas pu être envoyé. 
+                                            Etes-vous sûre de l'adresse mail ajoutée ?
+                                            Ce problème peut également être due à une mauvaise configuration de votre seveur postfix."""
     "yes forgot"                      : "Retour"
     "no forgot"                       : "Ok"
     "perm"                            : "peut "
