@@ -22,7 +22,14 @@ module.exports.main = function(req, res, next) {
       } else {
         locale = results[0], tags = results[1], instance = results[2];
         if (((instance != null ? instance.domain : void 0) != null) && instance.domain !== 'domain.not.set') {
-          domain = "https://" + instance.domain + "/public/files/";
+          domain = instance.domain;
+          if (domain.indexOf('https') === -1) {
+            domain = "https://" + domain;
+          }
+          if (domain.slice('-1') === "/") {
+            domain = domain.substring(0, domain.length - 1);
+          }
+          domain = domain + "/public/files/";
         } else {
           domain = false;
         }
