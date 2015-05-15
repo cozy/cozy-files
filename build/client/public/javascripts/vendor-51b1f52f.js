@@ -10069,7 +10069,7 @@ module.exports = CozyClearanceModal = (function(superClass) {
   };
 
   CozyClearanceModal.prototype.makePrivate = function() {
-    if (!isPrivateClearance()) {
+    if (this.isPublicClearance()) {
       this.lastClearance = this.model.get('clearance');
       this.model.set({
         clearance: []
