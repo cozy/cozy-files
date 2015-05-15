@@ -126,7 +126,7 @@ module.exports = {
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
   "mail not sent": "Mail not sent",
-  "postfix error": "Mail not sent. Can you check your postfix server ?",
+  "postfix error": " Mail not sent.\nAre you sure adresse mail is correct ?\n\nProblem can also be due to bad configuration of postfix server ?",
   "yes forgot": "Back",
   "no forgot": "It's ok",
   "perm": "can ",
