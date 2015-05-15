@@ -12,7 +12,13 @@ module.exports.main = (req, res, next) ->
         else
             [locale, tags, instance] = results
             if instance?.domain? and instance.domain isnt 'domain.not.set'
-                domain = "https://#{instance.domain}/public/files/"
+                # Parse domain
+                domain = instance.domain
+                if domain.indexOf('https') is -1
+                    domain = "https://#{domain}"
+                if domain.slice('-1') is "/"
+                    domain = domain.substring 0, domain.length-1
+                domain = domain + "/public/files/"
             else
                 domain = false
             res.render "index", imports: """

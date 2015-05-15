@@ -183,7 +183,10 @@ Chrome et Safari.
         Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
     """
     "mail not sent"                   : "Le mail n'a pas pu être envoyé"
-    "postfix error"                   : "Le mail n'a pas pu être envoyé. Veuillez vérifier votre seveur postfix."
+    "postfix error"                   : """ Le mail n'a pas pu être envoyé. 
+                                            Vérifiez que les adresses de tous les destinataires sont valides
+                                            et que votre Cozy est bien configuré pour envoyer des messages.
+                                            """
     "yes forgot"                      : "Retour"
     "no forgot"                       : "Ok"
     "perm"                            : "peut "
