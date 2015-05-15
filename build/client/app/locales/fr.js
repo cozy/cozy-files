@@ -125,7 +125,7 @@ module.exports = {
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
   "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
   "mail not sent": "Le mail n'a pas pu être envoyé",
-  "postfix error": "Le mail n'a pas pu être envoyé. Veuillez vérifier votre seveur postfix.",
+  "postfix error": " Le mail n'a pas pu être envoyé. \nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
   "yes forgot": "Retour",
   "no forgot": "Ok",
   "perm": "peut ",
