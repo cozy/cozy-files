@@ -227,6 +227,9 @@ module.exports = class FileView extends BaseView
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
+        # Prevent empty names (with spaces only).
+        name = name?.trim()
+
         # If the name has not changed, reset the view state.
         if name and name is @model.get('name')
             @onCancelClicked()
