@@ -227,6 +227,9 @@ module.exports = class FileView extends BaseView
     onSaveClicked: ->
         name = @$('.file-edit-name').val()
 
+        # Prevent empty names (with spaces only).
+        name = name?.trim()
+
         # If the name has not changed, reset the view state.
         if name and name is @model.get('name')
             @onCancelClicked()
@@ -389,7 +392,7 @@ module.exports = class FileView extends BaseView
     showLoading: ->
         @$('.icon-zone .fa').addClass 'hidden'
         @$('.icon-zone .selector-wrapper').addClass 'hidden'
-        @$('.spinholder').show()
+        @$('.spinholder').css 'display', 'inline-block'
 
 
     # Hide loading spinner.

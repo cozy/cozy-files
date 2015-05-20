@@ -1,42 +1,59 @@
-(function(/*! Brunch !*/) {
+(function() {
   'use strict';
 
-  var globals = typeof window !== 'undefined' ? window : global;
+  var globals = typeof window === 'undefined' ? global : window;
   if (typeof globals.require === 'function') return;
 
   var modules = {};
   var cache = {};
+  var has = ({}).hasOwnProperty;
 
-  var has = function(object, name) {
-    return ({}).hasOwnProperty.call(object, name);
+  var aliases = {};
+
+  var endsWith = function(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
   };
 
-  var expand = function(root, name) {
-    var results = [], parts, part;
-    if (/^\.\.?(\/|$)/.test(name)) {
-      parts = [root, name].join('/').split('/');
-    } else {
-      parts = name.split('/');
-    }
-    for (var i = 0, length = parts.length; i < length; i++) {
-      part = parts[i];
-      if (part === '..') {
-        results.pop();
-      } else if (part !== '.' && part !== '') {
-        results.push(part);
+  var unalias = function(alias, loaderPath) {
+    var start = 0;
+    if (loaderPath) {
+      if (loaderPath.indexOf('components/' === 0)) {
+        start = 'components/'.length;
+      }
+      if (loaderPath.indexOf('/', start) > 0) {
+        loaderPath = loaderPath.substring(start, loaderPath.indexOf('/', start));
       }
     }
-    return results.join('/');
+    var result = aliases[alias + '/index.js'] || aliases[loaderPath + '/deps/' + alias + '/index.js'];
+    if (result) {
+      return 'components/' + result.substring(0, result.length - '.js'.length);
+    }
+    return alias;
   };
 
+  var expand = (function() {
+    var reg = /^\.\.?(\/|$)/;
+    return function(root, name) {
+      var results = [], parts, part;
+      parts = (reg.test(name) ? root + '/' + name : name).split('/');
+      for (var i = 0, length = parts.length; i < length; i++) {
+        part = parts[i];
+        if (part === '..') {
+          results.pop();
+        } else if (part !== '.' && part !== '') {
+          results.push(part);
+        }
+      }
+      return results.join('/');
+    };
+  })();
   var dirname = function(path) {
     return path.split('/').slice(0, -1).join('/');
   };
 
   var localRequire = function(path) {
     return function(name) {
-      var dir = dirname(path);
-      var absolute = expand(dir, name);
+      var absolute = expand(dirname(path), name);
       return globals.require(absolute, path);
     };
   };
@@ -51,21 +68,26 @@
   var require = function(name, loaderPath) {
     var path = expand(name, '.');
     if (loaderPath == null) loaderPath = '/';
+    path = unalias(name, loaderPath);
 
-    if (has(cache, path)) return cache[path].exports;
-    if (has(modules, path)) return initModule(path, modules[path]);
+    if (has.call(cache, path)) return cache[path].exports;
+    if (has.call(modules, path)) return initModule(path, modules[path]);
 
     var dirIndex = expand(path, './index');
-    if (has(cache, dirIndex)) return cache[dirIndex].exports;
-    if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
+    if (has.call(cache, dirIndex)) return cache[dirIndex].exports;
+    if (has.call(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
     throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
   };
 
-  var define = function(bundle, fn) {
+  require.alias = function(from, to) {
+    aliases[to] = from;
+  };
+
+  require.register = require.define = function(bundle, fn) {
     if (typeof bundle === 'object') {
       for (var key in bundle) {
-        if (has(bundle, key)) {
+        if (has.call(bundle, key)) {
           modules[key] = bundle[key];
         }
       }
@@ -74,21 +96,18 @@
     }
   };
 
-  var list = function() {
+  require.list = function() {
     var result = [];
     for (var item in modules) {
-      if (has(modules, item)) {
+      if (has.call(modules, item)) {
         result.push(item);
       }
     }
     return result;
   };
 
+  require.brunch = true;
   globals.require = require;
-  globals.require.define = define;
-  globals.require.register = define;
-  globals.require.list = list;
-  globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
 var File, FileCollection, FolderView, SocketListener, UploadQueue;
@@ -1507,6 +1526,155 @@ module.exports = {
 };
 });
 
+;require.register("locales/es", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Archivo estropeado",
+  "file broken remove": "Suprimir el archivo estropeado",
+  "or": "o",
+  "modal error": "Error",
+  "modal ok": "Ok",
+  "modal error get files": "Se produjo un error al recuperar los archivos del servidor",
+  "modal error get folders": "Se produjo un error al recuperar los dossiers del servidor",
+  "modal error get content": "Se produjo un error al recuperar del servidor el contenido del dossier \"%{folderName}\"",
+  "modal error empty name": "La casilla del nombre no puede estar vacía",
+  "modal error file invalid": "El archivo no parece válido",
+  "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+  "root folder name": "root",
+  "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
+  "breadcrumbs search title": "Buscar",
+  "modal error file exists": "Lo siento, un archivo o un dossier tiene ya el mismo nombre",
+  "modal error size": "Lo siento, usted no dispone de espacio suficiente de almacenamiento",
+  "modal error file upload": "No se ha podido enviar el archivo al servidor",
+  "modal error folder create": "No se ha podido crear la carpeta",
+  "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
+  "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
+  "upload running": "Una descarga está en curso. No cierre su navegador.",
+  "modal are you sure": "¿Está usted seguro(a)?",
+  "modal delete msg": "Suprimir es definitivo",
+  "modal delete ok": "Suprimir",
+  "modal cancel": "anular",
+  "modal delete error": "anular",
+  "modal error in use": "Ese nombre ya se ha utilizado",
+  "modal error rename": "No se ha podido modificar el nombre",
+  "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
+  "tag": "etiqueta",
+  "file edit save": "Guardar",
+  "file edit cancel": "anular",
+  "tooltip delete": "Suprimir",
+  "tooltip edit": "Renombrar",
+  "tooltip download": "Descargar",
+  "tooltip share": "Compartir",
+  "tooltip tag": "Etiqueta",
+  "and x files": "y %{smart_count} archivo ||||\ny %{smart_count} archivos",
+  "already exists": "ya existen.",
+  "failed to upload": "no se ha podido enviar al servidor.",
+  "upload complete": "Un archivo cargado con éxito.||||\n%{smart_count} archivos cargados con éxito.",
+  "chrome error dragdrop title": "Algunos archivos no se tendrán en cuenta",
+  "chrome error dragdrop content": "A causa de un bug de Chrome, el archivo siguiente : %{files} será\nignorado pués su nombre tiene un acento marcado. Añádalo haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla. ||||\nA causa de un bug de Chrome, los archivos siguientes : %{files} serán\n ignorados pués sus nombres tienen un acento marcado. Añádalos haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla.",
+  "chrome error submit": "Ok",
+  "upload caption": "Añadir un archivo",
+  "upload msg": "Arrastrar archivos o hacer clic aquí para seleccionar los archivos que quiere poner en línea.",
+  "upload msg selected": "Usted ha seleccionado %{smart_count} archivo, haga clic en Añadir para cargarlo.||||\nUsted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarlos.",
+  "upload close": "Cerrar",
+  "upload send": "Añadir",
+  "upload button": "Cargar un archivo",
+  "upload success": "¡Descarga completa exitosa!",
+  "upload end button": "Cerrar",
+  "total progress": "en curso...",
+  "new folder caption": "Añadir una carpeta",
+  "new folder msg": "Crear una carpeta de nombre:",
+  "new folder close": "Cerrar",
+  "new folder send": "Crear una Carpeta",
+  "new folder button": "Crear una carpeta",
+  "new folder": "nueva carpeta",
+  "download all": "Descargar la selección",
+  "move all": "Desplazar la selección",
+  "remove all": "Suprimir la selección",
+  "drop message": "Pegar aquí sus archivos para añadirlos",
+  "upload folder msg": "Cargar una carpeta",
+  "upload folder separator": "o",
+  "overwrite modal title": "Ya existe un archivo",
+  "overwrite modal content": "¿Quiere usted sobrescribir \"%{fileName}\"?",
+  "overwrite modal remember label": "Aplique esta decisión a todos los conflictos",
+  "overwrite modal yes button": "Sobreescribir",
+  "overwrite modal no button": "Ignorar",
+  "folder": "Carpeta",
+  "image": "Imagen",
+  "document": "Documento",
+  "music": "Música",
+  "video": "Video",
+  "yes": "Si",
+  "no": "No",
+  "ok": "Ok",
+  "name": "Nombre",
+  "type": "Tipo",
+  "size": "Tamaño",
+  "date": "Última modificación",
+  "download": "Descargar todos los archivos",
+  "MB": "Mo",
+  "KB": "Ko",
+  "B": "o",
+  "files": "archivos",
+  "element": "%{smart_count} elemento |||| %{smart_count} elementos",
+  "no file in folder": "Esta carpeta está vacía.",
+  "no file in search": "No se ha encontrado un documento que corresponda.",
+  "enable notifications": "Activar las notificaciones",
+  "disable notifications": "Desactivar las notificaciones",
+  "notifications enabled": "Notificaciones activadas",
+  "notifications disabled": "Notificaciones desactivadas",
+  "open folder": "Abrir la carpeta",
+  "download file": "Consultar el archivo",
+  "also have access": "Esas personas tienen igualmente acceso, ya que pueden acceder a un dossier padre",
+  "cancel": "Anular",
+  "copy paste link": "Para que su contacto pueda acceder, enviarle este enlace : ",
+  "details": "Detalles",
+  "inherited from": "heredado de",
+  "modal question folder shareable": "Escoger la manera de compartir esta carpeta",
+  "modal shared folder custom msg": "Escribir el correo electrónico y pulsar en Enter",
+  "modal shared public link msg": "Enviar este enlace para que puedan acceder a esta carpeta:",
+  "modal shared with people msg": "Permitir acceder a unos contactos seleccionados. Escribir sus correos electrónicos o el nombre en la casilla y pulsar Enter (se les enviará un mensaje cuando usted cierre esta ventana):",
+  "modal send mails": "Enviar una notificación",
+  "modal question file shareable": "Escoger  la manera de compartir este archivo",
+  "modal shared file custom msg": "Escriba el correo electrónico y pulsar en Enter",
+  "modal shared file link msg": "Enviar este enlace para que puedan acceder a este archivo",
+  "only you can see": "Sólo usted puede acceder a este recurso.",
+  "public": "Público",
+  "private": "Privado",
+  "shared": "Compartido",
+  "share": "Compartir",
+  "save": "Guardar",
+  "see link": "Ver el enlace",
+  "send mails question": "Enviar una notificación por correo electrónico a:",
+  "sharing": "Compartiendo",
+  "revoke": "Revocar",
+  "forced public": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido.",
+  "forced shared": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :",
+  "confirm": "Confirmar",
+  "share forgot add": "Parece que a usted se le ha olvidado pulsar el botón Añadir",
+  "share confirm save": "Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?",
+  "yes forgot": "Atrás",
+  "no forgot": "Ok",
+  "perm": "puede ",
+  "perm r file": "cargar este archivo",
+  "perm r folder": "navegar en la carpeta",
+  "perm rw folder": "navegar en la carpeta y cargar archivos",
+  "change notif": "Desplazar",
+  "send email hint": "Se notificará por correo electrónico cuando se guarde.",
+  "move": "Desplazar",
+  "tooltip move": "Desplazar el elemento a otra carpeta.",
+  "moving...": "Desplazamiento en curso...",
+  "move element to": "Desplazar el elemento a",
+  "error occured canceling move": "Se produjo un error al anular el desplazamiento.",
+  "error occured while moving element": "Se produjo un error al desplazar el elemento.",
+  "file successfully moved to": "Archivos desplazados con éxito a",
+  "plugin modal close": "Cerrar",
+  "moving selected elements": "Desplazando los elementos seleccionados",
+  "move elements to": "Desplazar los elementos a",
+  "elements successfully moved to": "Elementos desplazados con éxito a",
+  "close": "Cerrar"
+};
+});
+
 ;require.register("locales/fr", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Fichier cassé",
@@ -1518,6 +1686,7 @@ module.exports = {
   "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
   "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
   "modal error empty name": "Le nom ne peut pas être vide",
+  "modal error no data": "Pas de noms et de dossier à envoyer",
   "modal error file invalid": "Le fichier ne parait pas être valide",
   'modal error firefox dragdrop folder': "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
   "root folder name": "racine",
@@ -1598,6 +1767,7 @@ module.exports = {
   "files": "fichiers",
   "element": "%{smart_count} élément |||| %{smart_count} éléments",
   "no file in folder": "Ce dossier est vide.",
+  "no file in search": "Votre recherche ne correspond à aucun document.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
   "notifications enabled": "Notifications activées",
@@ -1606,12 +1776,11 @@ module.exports = {
   "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
   "cancel": "Annuler",
-  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien : ",
+  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien :",
   "details": "Détails",
   "inherited from": "hérité de",
   "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
   "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
-  "modal shared folder link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
   "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
   "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
   "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
@@ -1626,7 +1795,7 @@ module.exports = {
   "see link": "Voir le lien",
   "sharing": "Partage",
   "revoke": "Révoquer la permission",
-  "send mails question": "Envoyer un email de notification à : ",
+  "send mails question": "Envoyer un email de notification à :",
   "modal send mails": "Envoyer une notification",
   "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
   "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
@@ -1646,14 +1815,14 @@ module.exports = {
   "move": "Déplacer",
   'tooltip move': "Déplacer l'élément dans un autre dossier.",
   "moving...": "Déplacement en cours…",
-  "move element to": "Déplacer l'élément vers ",
+  "move element to": "Déplacer l'élément vers",
   "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
   "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
-  "file successfully moved to": 'Fichier déplacé avec succès vers ',
+  "file successfully moved to": 'Fichier déplacé avec succès vers',
   'plugin modal close': 'Fermer',
   'moving selected elements': 'Déplacer des éléments',
-  'move elements to': "Déplacer les éléments vers ",
-  "elements successfully moved to": 'Eléments déplacés avec succès vers ',
+  'move elements to': "Déplacer les éléments vers",
+  "elements successfully moved to": 'Eléments déplacés avec succès vers',
   'close': 'Fermer'
 };
 });
