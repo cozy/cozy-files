@@ -111,5 +111,5 @@ module.exports = class UploadStatusView extends BaseView
         else
             $('#content').addClass 'mt108'
 
-        if @collection.completed then @complete()
+        if @uploadQueue.completed then @complete()
 
