@@ -35,14 +35,11 @@ module.exports = class UploadQueue
         # sets the progress to 0% so next upload initial progress is 0% instead
         # of 100%
         @progress =
-            loadedFiles: 0
-            totalFiles: @length
             loadedBytes: 0
             totalBytes: @sumProp 'total'
 
         window.pendingOperations.upload = 0
 
-        @loaded = 0
         @completed = false
         @uploadingPaths = {}
 
@@ -63,7 +60,6 @@ module.exports = class UploadQueue
 
     # Remove a model from the upload queue
     remove: (model) ->
-        @loaded++
         model.resetStatus()
         window.pendingOperations.upload--
 
@@ -106,7 +102,6 @@ module.exports = class UploadQueue
     onSyncError: (model) =>
         path = model.get('path') + '/'
         @uploadingPaths[path]--
-        @loaded++
 
 
     # Process each element from the queue
@@ -118,7 +113,6 @@ module.exports = class UploadQueue
         # If there is a conflict, the queue waits for the user to
         # make a decision.
         else if model.isConflict()
-
             # Wait for user input through conflict resolution modal if it's not
             # already done.
             unless model.overwrite?
@@ -172,7 +166,8 @@ module.exports = class UploadQueue
 
                     # This case may occur when two clients upload a file
                     # with the same name at the same time in the same
-                    # folder. Thus we just show a warning
+                    # folder. It can also accur when uploading an existing
+                    # folder.
                     if err.status is 400 and body.code is 'EEXISTS'
                         model.markAsErrored body
 
@@ -363,8 +358,6 @@ module.exports = class UploadQueue
     # Recalculate progress
     computeProgress: =>
         return @progress =
-            loadedFiles: @loaded
-            totalFiles: @length
             loadedBytes: @sumProp 'loaded'
             totalBytes: @sumProp 'total'
 
