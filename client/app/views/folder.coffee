@@ -514,5 +514,5 @@ module.exports = class FolderView extends BaseView
 
     # Display an error when the user tries to upload a folder in Firefox.
     onMozFolderError: =>
-        Modal.error t 'modal error firefox dragdrop folder'
+        Modal.error t('modal error firefox dragdrop folder')
 

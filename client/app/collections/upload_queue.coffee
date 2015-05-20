@@ -232,14 +232,17 @@ module.exports = class UploadQueue
             model.loaded = 0
             model.total = blob.size
 
-            # mark as errored if it's a folder
+            # In Firefox, folders are empty files without mime type, so an error
+            # is triggered to the user.
+            # In all browsers, empty files without a mime type are unfortunately
+            # caught by this condition, resulting in an error. See #209.
             if blob.size is 0 and blob.type.length is 0
-                model.error = 'Cannot upload a folder with Firefox'
-                # since there is an error, the progressbar cannot compute
-                # the progress if those properties are not set
-                model.total = 0
-                model.file = null
-                @trigger 'folderError', model
+
+                # The element should not be added to the queue
+                model = null
+
+                # Let the view know something went wrong.
+                @trigger 'folderError'
 
             # mark as in conflict with existing file
             else if (existingModel = @isFileStored(model))?
@@ -261,7 +264,9 @@ module.exports = class UploadQueue
                     model.markAsConflict()
                     @trigger 'conflict', model
                 else
+                    # Prevent the file from being added to the queue.
                     model = null
+
 
             if model?
                 @add model
