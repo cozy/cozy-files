@@ -30,8 +30,7 @@ module.exports = class FolderView extends BaseView
         'change #uploader': 'onFilesSelected'
         'change #folder-uploader': 'onDirectorySelected'
 
-        'change #select-all': 'onSelectAllChanged'
-        'change input.selector': 'onSelectChanged'
+        'click #select-all': 'onSelectAllChanged'
 
         'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
@@ -123,6 +122,7 @@ module.exports = class FolderView extends BaseView
         query: @query
         zipUrl: @model.getZipURL()
 
+
     afterRender: ->
         @uploadButton = @$ '#button-upload-new-file'
 
@@ -154,6 +154,7 @@ module.exports = class FolderView extends BaseView
             model: @model
             collection: @collection
             uploadQueue: @uploadQueue
+            numSelectedElements: @getSelectedElements().length
             isSearchMode: @model.get('type') is "search"
 
         @filesList.render()
@@ -380,22 +381,18 @@ module.exports = class FolderView extends BaseView
         Select elements management
     ###
     onSelectAllChanged: (event) ->
-        isChecked = $(event.target).is ':checked'
-        @$('input.selector').prop 'checked', isChecked
-        @collection.forEach (element) ->
-            element.isSelected = isChecked
-            element.trigger 'toggle-select'
+        isChecked = @getSelectedElements().length is @collection.size()
+        @collection.forEach (model) ->
+            model.setSelectedViewState not isChecked
 
-        @toggleFolderActions isChecked
-
-    onSelectChanged: -> @toggleFolderActions()
 
     # Gets the number of selected elements from the collection
     getSelectedElements: ->
-        return @collection.filter (element) -> return element.isSelected
+        return @collection.filter (model) -> return model.isViewSelected()
+
 
     # we don't show the same actions wether there are selected elements or not
-    toggleFolderActions: (force=false) ->
+    toggleFolderActions: ->
         selectedElements = @getSelectedElements()
 
         if selectedElements.length > 0
@@ -420,13 +417,18 @@ module.exports = class FolderView extends BaseView
         # Check if all checkbox should be selected. It is selected
         # when it's forced or when collection length == amount of selected
         # files
-        if force is true
-            @$('input#select-all').prop 'checked', true
-        else if @collection.size() is 0
-            @$('input#select-all').prop 'checked', false
+        if selectedElements.length is 0 or @collection.size() is 0
+            @$('#select-all i').removeClass 'fa-minus-square-o'
+            @$('#select-all i').removeClass 'fa-check-square-o'
+            @$('#select-all i').addClass 'fa-square-o'
+        else if selectedElements.length is @collection.size()
+            @$('#select-all i').removeClass 'fa-square-o'
+            @$('#select-all i').removeClass 'fa-minus-square-o'
+            @$('#select-all i').addClass 'fa-check-square-o'
         else
-            shouldChecked = selectedElements.length is @collection.size()
-            @$('input#select-all').prop 'checked', shouldChecked
+            @$('#select-all i').removeClass 'fa-square-o'
+            @$('#select-all i').removeClass 'fa-check-square-o'
+            @$('#select-all i').addClass 'fa-minus-square-o'
 
     ###
         Bulk actions management

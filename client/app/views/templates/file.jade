@@ -10,7 +10,11 @@ td
         .caption
           span.icon-zone
             div.selector-wrapper
-              input.selector(type="checkbox")
+              button
+                if isViewSelected
+                  i.fa.fa-check-square-o
+                else
+                  i.fa.fa-square-o
 
           div.link-wrapper.btn-link
             div.spinholder
@@ -30,7 +34,11 @@ td
         .caption(data-file-url="#{attachmentUrl}")
           span.icon-zone
             div.selector-wrapper
-              input.selector(type="checkbox")
+              button
+                if isViewSelected
+                  i.fa.fa-check-square-o
+                else
+                  i.fa.fa-square-o
 
           div.link-wrapper.btn-link
             div.spinholder
