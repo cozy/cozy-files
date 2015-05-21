@@ -19,6 +19,8 @@ Mozilla Firefox doesn't support folder uploading. If you need this
 feature, it's available in Chromium, Chrome and Safari browsers.
 """
 
+    "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder."
+
     "root folder name"          : "root"
 
     "confirmation reload"      : "An operation is in progress, are you sure you want to reload the page?"
@@ -186,7 +188,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     """
     "mail not sent"                   : "Mail not sent"
     "postfix error"                   : """ Mail not sent.
-                                            Can you check that all recipient adresses are correct 
+                                            Can you check that all recipient adresses are correct
                                             and that your Cozy is well configured to send messages ?
                                         """
     "yes forgot"                      : "Back"

@@ -275,34 +275,48 @@ module.exports = class UploadQueue
 
         dirs = Helpers.nestedDirs blobs
         i = 0
+        isConflict = false
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop
-            unless dir = dirs[i++]
-                # folders will be created
-                # we can safely add files to bottom of queue
-                blobs = _.filter blobs, (blob) -> blob.name not in ['.', '..']
-                @addBlobs blobs, parent
-                return
+            dir = dirs[i++]
+            unless dir
 
-            prefix = parent.getRepository()
-            parts = Helpers.getFolderPathParts dir
-            name = parts[parts.length - 1]
-            path = [prefix].concat(parts[...-1]).join '/'
+                # Only add the files if there are no conflict.
+                unless isConflict
+                    # Folders will be created, files can safely be added at the
+                    # end of the queue.
+                    blobs = _.filter blobs, (blob) ->
+                        return blob.name not in ['.', '..']
+                    @addBlobs blobs, parent
 
-            folder = new File
-                type: "folder"
-                name: name
-                path: path
+            else
+                prefix = parent.getRepository()
+                parts = Helpers.getFolderPathParts dir
+                name = parts[parts.length - 1]
+                path = [prefix].concat(parts[...-1]).join '/'
 
-            folder.loaded = 0
-            folder.total = 250 # ~ size of the query
+                folder = new File
+                    type: "folder"
+                    name: name
+                    path: path
 
-            # add folder to be saved
-            @add folder
-            @markPathAsUploading folder
+                folder.loaded = 0
+                folder.total = 250 # ~ size of the query
 
-            setTimeout nonBlockingLoop, 2
+                # If the folder already exists, nothing is done because
+                # the overwrite management is not good in that case.
+                if (existingModel = @isFileStored(folder))?
+                    # This will end the nonBlockingLoop.
+                    i = dirs.length
+                    isConflict = true
+                    @trigger 'existingFolderError', existingModel
+                else
+                    # Add folder to be saved to the queue.
+                    @add folder
+                    @markPathAsUploading folder
+
+                setTimeout nonBlockingLoop, 2
 
 
     # Export usable stats about the upload

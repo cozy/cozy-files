@@ -77,6 +77,7 @@ module.exports = class FolderView extends BaseView
         # upload queue
         @listenTo @uploadQueue, 'conflict', @conflictQueue.push
         @listenTo @uploadQueue, 'folderError', @onMozFolderError
+        @listenTo @uploadQueue, 'existingFolderError', @onExistingFolderError
 
         return this
 
@@ -515,4 +516,10 @@ module.exports = class FolderView extends BaseView
     # Display an error when the user tries to upload a folder in Firefox.
     onMozFolderError: =>
         Modal.error t('modal error firefox dragdrop folder')
+
+
+    # Display an error when the user tries to drag and drop an existing folder.
+    onExistingFolderError: (model) ->
+        Modal.error t('modal error existing folder', name: model.get('name'))
+
 
