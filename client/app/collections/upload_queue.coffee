@@ -153,11 +153,16 @@ module.exports = class UploadQueue
         # double check that we don't try to upload something we know will fail
         if not model.isConflict() and not model.isErrored()
             model.save null,
-                success: (model) ->
+                success: (model) =>
                     model.file = null
-                    # to make sure progress is uniform, we force it at 100%
+                    # To make sure progress is uniform, we force it at 100%.
                     model.loaded = model.total
                     model.markAsUploaded()
+
+                    # Update the upload paths so folders now when they don't
+                    # have upload inside them anymore.
+                    @unmarkPathAsUploading model
+
                     done null
                 error: (_, err) =>
                     model.file = null
@@ -344,15 +349,24 @@ module.exports = class UploadQueue
         return {status, errorList, existingList, success}
 
 
-    # Keep track of models being uploaded by path
+    # Keep track of models being uploaded by path.
     markPathAsUploading: (model) ->
-        # appending a / prevents conflict with elements
-        # having the same prefix in their names
+        # Appending a / prevents conflict with elements
+        # having the same prefix in their names.
         path = "#{model.get 'path'}/"
         unless @uploadingPaths[path]?
             @uploadingPaths[path] = 0
 
         @uploadingPaths[path]++
+
+
+    # Remove the mark on the folder.
+    unmarkPathAsUploading: (model) ->
+        # Appending a / prevents conflict with elements
+        # having the same prefix in their names.
+        path = "#{model.get 'path'}/"
+
+        @uploadingPaths[path]--
 
 
     # Return the number of children elements being uploading for a given path
