@@ -390,14 +390,11 @@ module.exports = class FileView extends BaseView
 
     # Show loading spinner.
     showLoading: ->
-        @$('.icon-zone .fa').addClass 'hidden'
-        @$('.icon-zone .selector-wrapper').addClass 'hidden'
+        @$('.link-wrapper .fa').addClass 'hidden'
         @$('.spinholder').css 'display', 'inline-block'
 
 
     # Hide loading spinner.
     hideLoading: ->
-        @$('.icon-zone .fa').removeClass 'hidden'
-        @$('.icon-zone .selector-wrapper').removeClass 'hidden'
+        @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-
