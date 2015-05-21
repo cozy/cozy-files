@@ -15,6 +15,7 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
+        'click': 'onLineClicked'
         'click a.file-tags': 'onTagClicked'
         'click a.file-delete': 'onDeleteClicked'
         'click a.file-share': 'onShareClicked'
@@ -321,6 +322,38 @@ module.exports = class FileView extends BaseView
     # been canceled for two seconds before removing the whole file line.
     onCancelUploadClicked: ->
         @uploadQueue.abort @model
+
+
+    # When a line is clicked, it should mark the item as selected, unless the
+    # user clicked a button.
+    onLineClicked: (event) ->
+
+        # List of selectors that will prevent the selection if they, or one
+        # of their children, are clicked.
+        forbiddenSelectors = [
+            '.operations'
+            '.tags'
+            '.link-wrapper'
+            'a.file-edit-save'
+            'a.file-edit-cancel'
+            'span.error'
+        ]
+
+        # Map them to an actual DOM element.
+        forbiddenElements = forbiddenSelectors.map (selector) =>
+            return @$(selector)[0]
+
+        # For each forbidden element, check if it, or one of its children, has
+        # been clicked.
+        results = forbiddenElements.filter (element) ->
+            return element == event.target or $.contains(element, event.target)
+
+        # If none of the forbidden elements has been clicked, we can select the
+        # checkbox.
+        if results.length is 0
+            # Simulate a click, so it can be caught by other views managing the
+            # selection.
+            @$('input.selector').click()
 
 
     onKeyPress: (e) =>
