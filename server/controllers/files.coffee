@@ -54,12 +54,10 @@ module.exports.getAttachment = (req, res, next) ->
 
     # Prevent server from stopping if the download is very slow.
     isDownloading = true
-    keepAlive = ->
+    do keepAlive = ->
         if isDownloading
             feed.publish 'usage.application', 'files'
             setTimeout keepAlive, 60 * 1000
-
-    keepAlive()
 
     # Configure headers so clients know they should read and not download.
     encodedFileName = encodeURIComponent req.file.name
@@ -79,12 +77,11 @@ module.exports.downloadAttachment = (req, res, next) ->
 
     # Prevent server from stopping if the download is very slow.
     isDownloading = true
-    keepAlive = ->
+    do keepAlive = ->
         if isDownloading
             feed.publish 'usage.application', 'files'
             setTimeout keepAlive, 60 * 1000
 
-    keepAlive()
 
     # Configure headers so clients know they should download, and that they
     # can make up the file name.
