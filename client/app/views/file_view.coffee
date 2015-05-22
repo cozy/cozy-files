@@ -384,11 +384,19 @@ module.exports = class FileView extends BaseView
         if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
             @addProgressBar()
-            @blockDownloadLink()
+            @blockNameLink()
+            @blockNameClick()
         else
             @$el.removeClass 'uploading'
             @$el.toggleClass 'broken', @model.isBroken()
             @addTags()
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        if @model.isNew()
+            @blockNameLink()
 
 
         @hideLoading()
@@ -418,6 +426,11 @@ module.exports = class FileView extends BaseView
     # Make download link inactive.
     blockDownloadLink: ->
         @$('a.caption.btn').click (event) -> event.preventDefault()
+
+
+    # Make name link inactive.
+    blockNameLink: ->
+        @$('.link-wrapper > a').click (event) -> event.preventDefault()
 
 
     # Show loading spinner.
