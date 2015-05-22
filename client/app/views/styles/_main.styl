@@ -300,6 +300,10 @@ div#affixbar
         border-radius 10px
         margin 0 2.5px
 
+    // If two or more icons are used, they should be separated by a small margin.
+    #button-bulk-move span.fa:not(:first-of-type)
+        margin-left 5px
+
 #uploader
     cursor: pointer
 
@@ -527,6 +531,19 @@ table#table-items
             display: none
 
 
+
+        button#select-all
+            border none
+            background transparent
+            width 20px
+            margin 0 10px 0 0
+            padding 0
+
+            i.fa
+                font-size 16px
+                margin 0
+
+
 tr.folder-row
 
     .file-path
@@ -571,11 +588,6 @@ tr.folder-row
     &.selected > td
         background lightblue + 70% !important
 
-    &.selected
-        .icon-zone
-            .fa
-                display: none
-
     td
         vertical-align: baseline
 
@@ -595,6 +607,7 @@ tr.folder-row
 
     // the filename
     .caption
+        display inline-block
         font-size: 16px
         font-family: 'Source Sans Pro', sans-serif
         padding: 0
@@ -602,46 +615,51 @@ tr.folder-row
         margin-right: 10px
 
         .selector-wrapper
-            display: inline
-            padding-top: 4px
+            display inline
+            padding-top 4px
 
-            input[type=checkbox]
-                display none
+            button
+                border none
+                background transparent
                 width 20px
-                margin 0 15px 0 0
-                cursor pointer
-                &:checked
-                    display inline-block
-                &:checked + .fa
-                    display none
+                margin 0 10px 0 0
+                padding 0
+
+                i.fa
+                    margin 0
 
         .icon-zone:hover
-            .fa
-                display: none
             .spinholder
-                display: none
-            input[type=checkbox]
-                display: inline
+                display none
 
         .fa-users
         .fa-share-alt
         .fa-globe
-            position: absolute
-            top: 12px
-            left: -3px
-            font-size: 12px
+            position absolute
+            top 10px
+            left -3px
+            font-size 12px
+            z-index 10
 
 
-    .caption:hover
-        color: orange - 10%
-        border: 1px solid transparent
-        text-decoration: none
+        .link-wrapper
+            display inline-block
+            &:hover
+                color orange - 10%
+                border 0
+                text-decoration none
+
+                // Override default behaviour
+                a
+                    color orange - 10%
+
 
     .spinholder
         vertical-align: top
-        display: inline
-        margin: 0
-        padding: 0 18px 0 5px
+        display none
+        margin 0
+        padding 0 20px 0 0
+        width 15px
 
     // the toolbox - delete, rename, etc
     .operations
@@ -714,8 +732,8 @@ tr.folder-row
                 box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
 
     i.fa
-        margin: 0px 15px 0 0
-        width: 20px
+        margin 0 5px 0 0
+        width 15px
 
     .icon
         font-size: 14px

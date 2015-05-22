@@ -92,15 +92,12 @@ module.exports = class UploadStatusView extends BaseView
         else
             @render()
 
-        @counter.text @collection.length
-        @counterDone.text @collection.loaded
         @render() if @completed and not @collection.completed
 
 
     afterRender: ->
         @$el.removeClass 'success danger warning'
-        @counter = @$ '.counter'
-        @counterDone = @$ '.counter-done'
+
         @progressbar = @$ '.progress-bar-info'
         @progressbarContent = @$ '.progress-bar-content'
         @dismiss = @$('#dismiss').hide()

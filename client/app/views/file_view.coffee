@@ -15,6 +15,7 @@ module.exports = class FileView extends BaseView
     templateSearch : require './templates/file_search'
 
     events:
+        'click': 'onLineClicked'
         'click a.file-tags': 'onTagClicked'
         'click a.file-delete': 'onDeleteClicked'
         'click a.file-share': 'onShareClicked'
@@ -26,6 +27,7 @@ module.exports = class FileView extends BaseView
         'click a.broken-button': 'onDeleteClicked'
         'keydown input.file-edit-name': 'onKeyPress'
         'change input.selector': 'onSelectChanged'
+        'click div.selector-wrapper button': 'onSelectClicked'
 
     mimeClasses:
         'application/octet-stream'      : 'fa-file-o'
@@ -106,6 +108,7 @@ module.exports = class FileView extends BaseView
             attachmentUrl: @model.getAttachmentUrl()
             downloadUrl: @model.getDownloadUrl()
             clearance: @model.getClearance()
+            isViewSelected: @model.isViewSelected()
 
 
     initialize: (options) ->
@@ -323,6 +326,39 @@ module.exports = class FileView extends BaseView
         @uploadQueue.abort @model
 
 
+    # When a line is clicked, it should mark the item as selected, unless the
+    # user clicked a button.
+    onLineClicked: (event) ->
+
+        # List of selectors that will prevent the selection if they, or one
+        # of their children, are clicked.
+        forbiddenSelectors = [
+            '.operations'
+            '.tags'
+            '.link-wrapper'
+            'a.file-edit-save'
+            'a.file-edit-cancel'
+            'span.error'
+            '.selector-wrapper'
+        ]
+
+        # Map them to an actual DOM element.
+        forbiddenElements = forbiddenSelectors.map (selector) =>
+            return @$(selector)?[0] or null
+
+        # For each forbidden element, check if it, or one of its children, has
+        # been clicked.
+        results = forbiddenElements.filter (element) ->
+            return element? and
+                (element is event.target or $.contains(element, event.target))
+
+        # If none of the forbidden elements has been clicked, we can select the
+        # checkbox.
+        if results.length is 0
+            isShiftPressed = event.shiftKey or false
+            @model.toggleViewSelected isShiftPressed
+
+
     onKeyPress: (e) =>
         if e.keyCode is 13 # ENTER key
             @onSaveClicked()
@@ -330,22 +366,21 @@ module.exports = class FileView extends BaseView
             @onCancelClicked()
 
 
-    onSelectChanged: (event) ->
-        isChecked = $(event.target).is ':checked'
-        @$el.toggleClass 'selected', isChecked
-        @model.isSelected = isChecked
-
-        @onToggleSelect()
-        return true
+    onSelectClicked: (event) ->
+        isShiftPressed = event.shiftKey or false
+        @model.toggleViewSelected isShiftPressed
 
 
     onToggleSelect: ->
-        @$el.toggleClass 'selected', @model.isSelected
-        @$('input.selector').prop 'checked', @model.isSelected
-        if @model.isSelected
-            @$('.file-move, .file-delete').addClass 'hidden'
+        isViewSelected = @model.isViewSelected()
+        @$el.toggleClass 'selected', isViewSelected
+
+        if isViewSelected
+            @$('.selector-wrapper i').removeClass 'fa-square-o'
+            @$('.selector-wrapper i').addClass 'fa-check-square-o'
         else
-            @$('.file-move, .file-delete').removeClass 'hidden'
+            @$('.selector-wrapper i').removeClass 'fa-check-square-o'
+            @$('.selector-wrapper i').addClass 'fa-square-o'
 
 
     afterRender: ->
@@ -353,10 +388,18 @@ module.exports = class FileView extends BaseView
             @$el.addClass 'uploading'
             @addProgressBar()
             @blockDownloadLink()
+            @blockNameLink()
         else
             @$el.removeClass 'uploading'
             @$el.toggleClass 'broken', @model.isBroken()
             @addTags()
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        if @model.isNew()
+            @blockNameLink()
 
 
         @hideLoading()
@@ -388,16 +431,18 @@ module.exports = class FileView extends BaseView
         @$('a.caption.btn').click (event) -> event.preventDefault()
 
 
+    # Make name link inactive.
+    blockNameLink: ->
+        @$('.link-wrapper > a').click (event) -> event.preventDefault()
+
+
     # Show loading spinner.
     showLoading: ->
-        @$('.icon-zone .fa').addClass 'hidden'
-        @$('.icon-zone .selector-wrapper').addClass 'hidden'
+        @$('.link-wrapper .fa').addClass 'hidden'
         @$('.spinholder').css 'display', 'inline-block'
 
 
     # Hide loading spinner.
     hideLoading: ->
-        @$('.icon-zone .fa').removeClass 'hidden'
-        @$('.icon-zone .selector-wrapper').removeClass 'hidden'
+        @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-

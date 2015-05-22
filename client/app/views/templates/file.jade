@@ -7,47 +7,62 @@ td
 
     block title
       if model.type == 'folder'
-        .caption.btn.btn-link
+        .caption
           span.icon-zone
+            div.selector-wrapper
+              button
+                if isViewSelected
+                  i.fa.fa-check-square-o
+                else
+                  i.fa.fa-square-o
+
+          div.link-wrapper.btn-link
             div.spinholder
               img(src="images/spinner.svg")
-            div.selector-wrapper
-              input.selector(type="checkbox")
             if clearance == 'public'
-              span.fa.fa-globe
               i.fa.fa-folder
+                span.fa.fa-globe
             else if clearance && clearance.length > 0
-              span.fa.fa-globe
               i.fa.fa-folder-o
+                span.fa.fa-globe
             else
               i.fa.fa-folder
-          a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
-            span
-              | #{model.name}
+            a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
+              span= model.name
+
       else if model.type == 'file'
-        .caption.btn.btn-link(data-file-url="#{attachmentUrl}")
+        .caption(data-file-url="#{attachmentUrl}")
           span.icon-zone
+            div.selector-wrapper
+              button
+                if isViewSelected
+                  i.fa.fa-check-square-o
+                else
+                  i.fa.fa-square-o
+
+          div.link-wrapper.btn-link
             div.spinholder
               img(src="images/spinner.svg")
-            if clearance == 'public'
-              span.fa.fa-globe
-            else if clearance && clearance.length > 0
-              span.fa.fa-globe
-            div.selector-wrapper
-              input.selector(type="checkbox")
             if model.mime && this.mimeClasses[model.mime]
               i(class="fa #{this.mimeClasses[model.mime]}")
+                if clearance == 'public'
+                  span.fa.fa-globe
+                else if clearance && clearance.length > 0
+                  span.fa.fa-globe
             else
               i.fa.fa-file-o
-          if !isBroken
-              a.btn-link(
-                href="#{attachmentUrl}",
-                title="#{t('download file')}", target="_blank")
-                  span
-                    | #{model.name}
-          else
-            span.file-name
-              | #{model.name}
+                if clearance == 'public'
+                  span.fa.fa-globe
+                else if clearance && clearance.length > 0
+                  span.fa.fa-globe
+            if !isBroken
+                a.btn-link(
+                  href="#{attachmentUrl}",
+                  title="#{t('download file')}", target="_blank")
+                    span
+                      | #{model.name}
+            else
+              span.file-name= model.name
 
     block tags
       ul.tags

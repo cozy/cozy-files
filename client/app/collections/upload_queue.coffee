@@ -35,14 +35,11 @@ module.exports = class UploadQueue
         # sets the progress to 0% so next upload initial progress is 0% instead
         # of 100%
         @progress =
-            loadedFiles: 0
-            totalFiles: @length
             loadedBytes: 0
             totalBytes: @sumProp 'total'
 
         window.pendingOperations.upload = 0
 
-        @loaded = 0
         @completed = false
         @uploadingPaths = {}
 
@@ -63,7 +60,6 @@ module.exports = class UploadQueue
 
     # Remove a model from the upload queue
     remove: (model) ->
-        @loaded++
         model.resetStatus()
         window.pendingOperations.upload--
 
@@ -106,7 +102,6 @@ module.exports = class UploadQueue
     onSyncError: (model) =>
         path = model.get('path') + '/'
         @uploadingPaths[path]--
-        @loaded++
 
 
     # Process each element from the queue
@@ -118,7 +113,6 @@ module.exports = class UploadQueue
         # If there is a conflict, the queue waits for the user to
         # make a decision.
         else if model.isConflict()
-
             # Wait for user input through conflict resolution modal if it's not
             # already done.
             unless model.overwrite?
@@ -159,11 +153,16 @@ module.exports = class UploadQueue
         # double check that we don't try to upload something we know will fail
         if not model.isConflict() and not model.isErrored()
             model.save null,
-                success: (model) ->
+                success: (model) =>
                     model.file = null
-                    # to make sure progress is uniform, we force it at 100%
+                    # To make sure progress is uniform, we force it at 100%.
                     model.loaded = model.total
                     model.markAsUploaded()
+
+                    # Update the upload paths so folders now when they don't
+                    # have upload inside them anymore.
+                    @unmarkPathAsUploading model
+
                     done null
                 error: (_, err) =>
                     model.file = null
@@ -172,7 +171,8 @@ module.exports = class UploadQueue
 
                     # This case may occur when two clients upload a file
                     # with the same name at the same time in the same
-                    # folder. Thus we just show a warning
+                    # folder. It can also accur when uploading an existing
+                    # folder.
                     if err.status is 400 and body.code is 'EEXISTS'
                         model.markAsErrored body
 
@@ -280,34 +280,48 @@ module.exports = class UploadQueue
 
         dirs = Helpers.nestedDirs blobs
         i = 0
+        isConflict = false
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop
-            unless dir = dirs[i++]
-                # folders will be created
-                # we can safely add files to bottom of queue
-                blobs = _.filter blobs, (blob) -> blob.name not in ['.', '..']
-                @addBlobs blobs, parent
-                return
+            dir = dirs[i++]
+            unless dir
 
-            prefix = parent.getRepository()
-            parts = Helpers.getFolderPathParts dir
-            name = parts[parts.length - 1]
-            path = [prefix].concat(parts[...-1]).join '/'
+                # Only add the files if there are no conflict.
+                unless isConflict
+                    # Folders will be created, files can safely be added at the
+                    # end of the queue.
+                    blobs = _.filter blobs, (blob) ->
+                        return blob.name not in ['.', '..']
+                    @addBlobs blobs, parent
 
-            folder = new File
-                type: "folder"
-                name: name
-                path: path
+            else
+                prefix = parent.getRepository()
+                parts = Helpers.getFolderPathParts dir
+                name = parts[parts.length - 1]
+                path = [prefix].concat(parts[...-1]).join '/'
 
-            folder.loaded = 0
-            folder.total = 250 # ~ size of the query
+                folder = new File
+                    type: "folder"
+                    name: name
+                    path: path
 
-            # add folder to be saved
-            @add folder
-            @markPathAsUploading folder
+                folder.loaded = 0
+                folder.total = 250 # ~ size of the query
 
-            setTimeout nonBlockingLoop, 2
+                # If the folder already exists, nothing is done because
+                # the overwrite management is not good in that case.
+                if (existingModel = @isFileStored(folder))?
+                    # This will end the nonBlockingLoop.
+                    i = dirs.length
+                    isConflict = true
+                    @trigger 'existingFolderError', existingModel
+                else
+                    # Add folder to be saved to the queue.
+                    @add folder
+                    @markPathAsUploading folder
+
+                setTimeout nonBlockingLoop, 2
 
 
     # Export usable stats about the upload
@@ -335,15 +349,24 @@ module.exports = class UploadQueue
         return {status, errorList, existingList, success}
 
 
-    # Keep track of models being uploaded by path
+    # Keep track of models being uploaded by path.
     markPathAsUploading: (model) ->
-        # appending a / prevents conflict with elements
-        # having the same prefix in their names
+        # Appending a / prevents conflict with elements
+        # having the same prefix in their names.
         path = "#{model.get 'path'}/"
         unless @uploadingPaths[path]?
             @uploadingPaths[path] = 0
 
         @uploadingPaths[path]++
+
+
+    # Remove the mark on the folder.
+    unmarkPathAsUploading: (model) ->
+        # Appending a / prevents conflict with elements
+        # having the same prefix in their names.
+        path = "#{model.get 'path'}/"
+
+        @uploadingPaths[path]--
 
 
     # Return the number of children elements being uploading for a given path
@@ -363,8 +386,6 @@ module.exports = class UploadQueue
     # Recalculate progress
     computeProgress: =>
         return @progress =
-            loadedFiles: @loaded
-            totalFiles: @length
             loadedBytes: @sumProp 'loaded'
             totalBytes: @sumProp 'total'
 

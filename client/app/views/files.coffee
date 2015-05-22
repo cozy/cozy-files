@@ -25,9 +25,18 @@ module.exports = class FilesView extends ViewCollection
             isSearchMode: options.isSearchMode
             uploadQueue: options.uploadQueue
 
+        @numSelectedElements = options.numSelectedElements
+
         @chevron = order: @collection.order, type: @collection.type
 
         @listenTo @collection, 'add remove', @updateNbFiles
+
+
+    getRenderData: ->
+        _.extend super(),
+            numSelectedElements: @numSelectedElements
+            numElements: @collection.size()
+
 
     afterRender: ->
         super()

@@ -5,7 +5,7 @@ client = require '../lib/client'
 Represent a file or folder document.
 
 
-# Local state and Shared state
+# Local state and Shared state.
 There is a concept of local state and shared state in the application, it is
 handled in this class.
 
@@ -17,6 +17,9 @@ The shared state is shared with other clients through websockets.
 Both are needed in order to support various features like conflict management,
 upload cancel, or broken file detection.
 
+# View state.
+The state "selected" is only relevant into the view, but it's handy to manage
+it in the model.
 ###
 module.exports = class File extends Backbone.Model
 
@@ -29,6 +32,9 @@ module.exports = class File extends Backbone.Model
 
     # Local state. Handled through `markAsErrored` method.
     error: null
+
+    # View state. Handled through *viewSelected
+    viewSelected: false
 
     # Valid values for `uploadStatus`.
     @VALID_STATUSES: [null, 'uploading', 'uploaded', 'errored', 'conflict']
@@ -113,7 +119,25 @@ module.exports = class File extends Backbone.Model
     ###
         Getter for the shared state.
     ###
-    isServerUploading: -> return @get 'uploading'
+    isServerUploading: -> return @get('uploading') and not @inUploadCycle()
+
+
+
+    ###
+        Manage view state.
+        The state "selected" is only relevant into the view, but it's handy
+        to manage it in the model.
+    ###
+    isViewSelected: -> return @viewSelected
+
+
+    toggleViewSelected: (isShiftPressed = false) ->
+        @setSelectedViewState not @isViewSelected(), isShiftPressed
+
+
+    setSelectedViewState: (viewSelected, isShiftPressed = false) ->
+        @viewSelected = viewSelected
+        @trigger 'toggle-select', isShiftPressed
 
 
     # Remove server's additional information
