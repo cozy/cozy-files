@@ -392,8 +392,14 @@ module.exports = class FolderView extends BaseView
 
 
     # we don't show the same actions wether there are selected elements or not
-    toggleFolderActions: ->
+    toggleFolderActions: (isShiftPressed) ->
+
         selectedElements = @getSelectedElements()
+
+        # If shift key is hold, the user wants to select multiple elements in
+        # one click.
+        if isShiftPressed
+            @handleSelectWithShift()
 
         if selectedElements.length > 0
             @$('#share-state').hide()
@@ -414,6 +420,7 @@ module.exports = class FolderView extends BaseView
                 @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
+
         # Check if all checkbox should be selected. It is selected
         # when it's forced or when collection length == amount of selected
         # files
@@ -429,6 +436,31 @@ module.exports = class FolderView extends BaseView
             @$('#select-all i').removeClass 'fa-square-o'
             @$('#select-all i').removeClass 'fa-check-square-o'
             @$('#select-all i').addClass 'fa-minus-square-o'
+
+
+    # Handle the selection of multiple items within a range.
+    handleSelectWithShift: ->
+        selectedElements = @getSelectedElements()
+
+        # There must be at least two items to be able to select items between
+        # them.
+        if selectedElements.length >= 2
+
+            # Define the range within items will be selected.
+            firstSelected = selectedElements[0]
+            lastSelected = selectedElements[selectedElements.length - 1]
+            firstSelectedIndex = @collection.indexOf firstSelected
+            lastSelectedIndex = @collection.indexOf lastSelected
+
+            @collection
+                # Get the items to select.
+                .filter (model, index) ->
+                    return firstSelectedIndex < index < lastSelectedIndex and
+                           not model.isViewSelected()
+
+                # Select them.
+                .forEach (model) -> model.toggleViewSelected()
+
 
     ###
         Bulk actions management

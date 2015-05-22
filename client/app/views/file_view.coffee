@@ -355,7 +355,8 @@ module.exports = class FileView extends BaseView
         # If none of the forbidden elements has been clicked, we can select the
         # checkbox.
         if results.length is 0
-            @model.toggleViewSelected()
+            isShiftPressed = event.shiftKey or false
+            @model.toggleViewSelected isShiftPressed
 
 
     onKeyPress: (e) =>
@@ -365,7 +366,9 @@ module.exports = class FileView extends BaseView
             @onCancelClicked()
 
 
-    onSelectClicked: -> @model.toggleViewSelected()
+    onSelectClicked: (event) ->
+        isShiftPressed = event.shiftKey or false
+        @model.toggleViewSelected isShiftPressed
 
 
     onToggleSelect: ->
@@ -384,8 +387,8 @@ module.exports = class FileView extends BaseView
         if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
             @addProgressBar()
+            @blockDownloadLink()
             @blockNameLink()
-            @blockNameClick()
         else
             @$el.removeClass 'uploading'
             @$el.toggleClass 'broken', @model.isBroken()
