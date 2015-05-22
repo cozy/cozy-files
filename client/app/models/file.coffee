@@ -119,7 +119,7 @@ module.exports = class File extends Backbone.Model
     ###
         Getter for the shared state.
     ###
-    isServerUploading: -> return @get 'uploading'
+    isServerUploading: -> return @get('uploading') and not @inUploadCycle()
 
 
 
