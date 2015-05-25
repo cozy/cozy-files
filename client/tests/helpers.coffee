@@ -43,7 +43,7 @@ module.exports = (casper, utils) -> helpers =
         casper.click "#{helpers.getElementSelectorByName folderName} a.btn-link"
         casper.waitForUrl /#folders\/[a-z0-9]+/
         casper.waitForSelector 'tr.folder-row'
-        casper.wait 500
+        casper.wait 2500
 
     openShareModalByName: (elementName) ->
         selector = helpers.getElementSelectorByName elementName
