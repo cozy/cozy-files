@@ -6,8 +6,8 @@ casper.options.viewportSize = width: 1280, height: 800
 
 firstElement = "tr.folder-row:first-of-type"
 elementIcon = "#{firstElement} .fa.fa-folder"
-elementCheckbox = "#{firstElement} input.selector"
-allCheckedInList = "tr.folder-row input.selector:checked"
+elementCheckbox = "#{firstElement} .selector-wrapper button"
+allCheckedInList = "tr.folder-row .selector-wrapper button .fa-check-square-o"
 
 casper.test.begin 'Bulk actions - select all', (test) ->
 
@@ -19,44 +19,24 @@ casper.test.begin 'Bulk actions - select all', (test) ->
         test.assertNotVisible '#button-bulk-move', "'Move all' button shouldn't be visible"
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
 
-        test.assertVisible 'input#select-all', 'The select all button should be visible'
+        test.assertVisible 'button#select-all', 'The select all button should be visible'
 
-    casper.thenClick 'input#select-all'
+    casper.thenClick 'button#select-all'
 
     casper.waitUntilVisible '#button-bulk-move, #button-bulk-remove', ->
 
-        test.assertEval -> return __utils__.findOne('input#select-all').checked
+        test.assertVisible 'button#select-all i.fa-check-square-o', "Checked icon should be visible"
         test.assertVisible '#button-bulk-move', "'Move all' button should be visible"
         test.assertVisible '#button-bulk-remove', "'Remove all' button should be visible"
 
-    casper.thenClick 'input#select-all'
+    casper.thenClick 'button#select-all'
 
     casper.waitWhileVisible '#button-bulk-move, #button-bulk-remove', ->
-        test.assertEval -> return not __utils__.findOne('input#select-all').checked
+        test.assertVisible 'button#select-all i.fa-square-o', "Checked icon should be visible"
         test.assertNotVisible '#button-bulk-move', "'Move all' button shouldn't be visible"
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
 
     casper.run -> test.done()
-
-
-casper.test.begin 'Bulk actions - checkbox toggle display on mouseover/out', (test) ->
-
-    casper.start 'http://localhost:9121', ->
-        test.assertExist 'tr.folder-row', 'There should be elements in the list'
-        test.assertNotVisible 'input.selector', "No checkbox should be visible"
-
-    casper.then -> @mouse.move elementIcon
-
-    casper.waitUntilVisible elementCheckbox, ->
-        test.assertVisible elementCheckbox, "The checkbox should be visible"
-
-    casper.then -> @mouse.move 0, 0
-
-    casper.waitWhileVisible elementCheckbox, ->
-        test.assertNotVisible elementCheckbox, "The checkbox shouldn't be visible"
-
-    casper.run  -> test.done()
-
 
 casper.test.begin 'Bulk actions - select one item', (test) ->
 
@@ -64,7 +44,6 @@ casper.test.begin 'Bulk actions - select one item', (test) ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
         test.assertNotVisible '#button-bulk-move', "'Move all' button shouldn't be visible"
         test.assertNotVisible '#button-bulk-remove', "'Remove all' button shouldn't be visible"
-        test.assertNotVisible 'input.selector', "No checkbox should be visible"
         test.assertElementCount allCheckedInList, 0, "No checkbox should be checked"
 
     casper.thenClick elementCheckbox
@@ -72,6 +51,7 @@ casper.test.begin 'Bulk actions - select one item', (test) ->
     casper.waitUntilVisible '#button-bulk-move, #button-bulk-remove', ->
         test.assertVisible '#button-bulk-move', "'Move all' button should be visible"
         test.assertVisible '#button-bulk-remove', "'Remove all' button should be visible"
+        test.assertVisible 'button#select-all i.fa-minus-square-o', "Crossed icon should be visible"
 
     casper.run  -> test.done()
 
@@ -80,18 +60,18 @@ casper.test.begin 'Bulk actions - selecting 3 items doesnt check the "select-all
 
     casper.start 'http://localhost:9121', ->
         test.assertExist 'tr.folder-row', 'There should be elements in the list'
-        test.assertExist 'input#select-all', 'The select all button should be visible'
+        test.assertExist 'button#select-all', 'The select all button should be visible'
         test.assertElementCount allCheckedInList, 0, "No checkbox should be checked"
 
     casper.then ->
         for i in [1..2] by 1
-            @click ".folder-row:nth-of-type(#{i}) input.selector"
+            @click ".folder-row:nth-of-type(#{i}) .selector-wrapper button"
 
-    casper.then -> test.assertDoesntExist '#select-all:checked', "'Select all' checkbox shouldn't be checked"
+    casper.then -> test.assertVisible 'button#select-all i.fa-minus-square-o', "'Select all' checkbox shouldn't be checked"
 
-    casper.thenClick ".folder-row:nth-of-type(3) input.selector"
+    casper.thenClick ".folder-row:nth-of-type(3) .selector-wrapper button"
 
-    casper.then -> test.assertDoesntExist '#select-all:checked', "'Select all' checkbox shouldn't be checked"
+    casper.then -> test.assertVisible 'button#select-all i.fa-minus-square-o', "'Select all' checkbox shouldn't be checked"
 
     casper.run -> test.done()
 
@@ -108,20 +88,17 @@ casper.test.begin 'Bulk actions - selecting all items when there are least than 
 
     casper.then ->
 
-        test.assertExist 'input#select-all', 'The select all button should be visible'
+        test.assertExist 'button#select-all', 'The select all button should be visible'
         test.assertElementCount allCheckedInList, 0, "No checkbox should be checked"
 
         itemsNum = @evaluate ->
             return __utils__.findAll("tr.folder-row").length
-
         test.assert (0 < itemsNum < 3), "There should be strictly between 1 and 3 items"
 
-    casper.thenClick "input#select-all"
+    casper.thenClick "button#select-all"
 
     casper.then ->
-        test.assertEvaluate ->
-            return __utils__.findOne('#select-all').checked
-        , "The select-all checkbox should be checked"
+        test.assertVisible 'button#select-all i.fa-check-square-o', 'The select-all checkbox should be checked'
 
     casper.run -> test.done()
 
@@ -147,7 +124,7 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
             movedElementsNum > 0,
             "There should must be at least one item")
 
-        @click "input#select-all"
+        @click "button#select-all"
 
     casper.thenClick '#button-bulk-move'
 
@@ -168,6 +145,8 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
 
     casper.thenClick 'button#modal-dialog-yes'
 
+    casper.wait 10000
+
     casper.waitUntilVisible '#moved-infos button.cancel-move-btn', ->
         test.assertEval ->
             return __utils__.findAll("tr.folder-row").length is 0
@@ -182,6 +161,8 @@ casper.test.begin 'Bulk actions - move all files to a folder', (test) ->
         , "The select-all checkbox should not be checked (non regression #178)"
 
     casper.thenClick '#moved-infos button.cancel-move-btn'
+
+    casper.wait 10000
 
     casper.waitWhileVisible '.modal-dialog, .modal-backdrop', ->
 
@@ -210,7 +191,7 @@ casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
         movedElementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
         test.assert movedElementsNum > 0, "There should must be at least one item"
 
-        @click "input#select-all"
+        @click "button#select-all"
 
     casper.thenClick '#button-bulk-remove'
 
@@ -221,10 +202,10 @@ casper.test.begin 'Bulk actions - remove all files of a folder', (test) ->
     casper.thenClick 'button#modal-dialog-yes'
 
     # waits for all items to be deleted (it can be long)
-    casper.waitWhileVisible 'tr.folder-row', null, null, 30000
+    casper.waitWhileVisible 'tr.folder-row', null, null, 60000
 
     # waits for all the requests to be effectively processed
-    casper.wait 5000, ->
+    casper.wait 30000, ->
         elementsNum = @evaluate -> return __utils__.findAll("tr.folder-row").length
         test.assert elementsNum is 0, "There shouldn't be any element left"
 
