@@ -97,33 +97,33 @@ a
     position: relative
 
     &.btn-cozy
-        background-color: basecolor
-        border-color: basecolor
-        font-family: 'Source Sans Pro', sans-serif
-        color: white
+        background-color basecolor
+        border-color basecolor
+        font-family 'Source Sans Pro', sans-serif
+        color white
 
         .caret
-            border-top-color: white
-            border-bottom-color: white
+            border-top-color white
+            border-bottom-color white
 
         &:hover
-            background-color: actioncolor
-            border-color: actioncolor
+            background-color actioncolor
+            border-color actioncolor
 
     &.btn-cozy.toggled
         box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
-        background-color: basecolor - 10%
+        background-color basecolor - 10%
 
         &:hover
-            background-color: actioncolor - 10%
+            background-color actioncolor - 10%
 
     &.btn-cozy-contrast
-        background-color: contrastcolor - 10%
-        border-color: contrastcolor - 10%
-        color: white
+        background-color contrastcolor - 10%
+        border-color contrastcolor - 10%
+        color white
 
         &:hover
-            background-color: actioncolor
+            background-color actioncolor
             border-color: actioncolor
 
 
@@ -131,28 +131,28 @@ a
 
 input
     border: 1px solid #ccc
-    color: #33
+    color: #333
 
 input:focus
     color: #333
     border-color: basecolor
 
 ::selection
-    background: actioncolor - 10%
-    color: white
+    background actioncolor - 10%
+    color white
 ::-moz-selection
-    background: actioncolor - 10%
-    color: white
+    background actioncolor - 10%
+    color white
 
 input#search-box
-    height: 35px
-    font-size: 16px
-    margin-left: 5px
-    padding-left: 25px
-    width: 200px
-    background-image: url("../images/iconmonstr-magnifier-icon-18.png")
-    background-repeat: no-repeat
-    background-position: 5px 8px
+    height 35px
+    font-size 16px
+    margin-left 5px
+    padding-left 25px
+    width 200px
+    background-image url("../images/iconmonstr-magnifier-icon-18.png")
+    background-repeat no-repeat
+    background-position 5px 8px
 
     &:focus
       outline none
@@ -535,47 +535,50 @@ table#table-items
         button#select-all
             border none
             background transparent
-            width 20px
-            margin 0 10px 0 0
+            width 15px
+            margin 0 15px 0 0
             padding 0
 
             i.fa
                 font-size 16px
                 margin 0
 
+// override bootstrap styles
+.table-hover > tbody > tr:hover > td
+    background lightorange + 50%
 
 tr.folder-row
 
     .file-path
-        color: darkcolor
-        font-family: 'Source Sans Pro', sans-serif
-        margin-bottom: 0
-        margin-left: 3px
+        color darkcolor
+        font-family 'Source Sans Pro', sans-serif
+        margin-bottom 0
+        margin-left 3px
 
     &:hover
-        color: mediumcolor-contrast
+        color mediumcolor-contrast
 
         .operations
-            display: inline
+            display inline
 
     &:hover, &.pseudohover
         .tags input
-            visibility: visible
+            visibility visible
 
     &.edit-mode
         .tags
-                display: none
+                display none
 
         .spinholder
-                display: none
+                display none
 
         .caption
                 .icon-zone
                     .fa
-                        display: inline
+                        display inline
 
                     .fa-folder-o
-                            position: relative
+                            position relative
                             top: -3px
 
                 .icon-zone:hover
@@ -653,6 +656,9 @@ tr.folder-row
                 a
                     color orange - 10%
 
+                    &:focus
+                        color white
+
 
     .spinholder
         vertical-align: top
@@ -700,39 +706,39 @@ tr.folder-row
                 visibility: visible
 
         li.tag
-            display: inline-block
-            border: 1px solid lightgray
-            border-radius: 6px
-            padding: 0.2em 0.5em 0.2em 0.5em
-            margin-top: 0px
-            margin-right: 5px
-            border: 1px solid transparent
-            border-radius: 0
-            background-color: blue + 90%
-            cursor: pointer
-            font-family: 'Maven Pro', sans-serif
-            color: blue - 40%
-            user-select: none
+            display inline-block
+            border 1px solid lightgray
+            border-radius 6px
+            padding 0.2em 0.5em 0.2em 0.5em
+            margin-top 0px
+            margin-right 5px
+            border 1px solid transparent
+            border-radius 0
+            background-color blue + 90%
+            cursor pointer
+            font-family 'Maven Pro', sans-serif
+            color blue - 40%
+            user-select none
 
             .deleter
-                cursor: pointer
-                font-size: 10px
-                transform: translate(0px, -1px)
+                cursor pointer
+                font-size 10px
+                transform translate(0px, -1px)
                 &:hover
-                    color: orange - 40%
+                    color orange - 40%
 
             &:hover
-                border: 1px solid orange
-                background-color: orange + 90%
-                color: orange - 40%
+                border 1px solid orange
+                background-color orange + 90%
+                color orange - 40%
 
             &:focus
             &:active
-                border: 1px solid blue
-                box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+                border 1px solid blue
+                box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
 
     i.fa
-        margin 0 5px 0 0
+        margin 0 15px 0 0
         width 15px
 
     .icon
@@ -740,7 +746,7 @@ tr.folder-row
 
     &:hover .operations
         a
-            color: lightgray
+            color: lightblue - 30%
 
         a:hover
             color: orange
@@ -782,10 +788,10 @@ tr.folder-row.broken
 // Move widget
 
 .move-widget
-    padding: 10px 10px 10px 35px
+    padding 10px 10px 10px 35px
 
     .btn
-        padding: 2px 10px
+        padding 2px 10px
 
     select
         min-width 150px
@@ -794,36 +800,37 @@ tr.folder-row.broken
         max-width 100%
 
 #moved-infos
-    margin-top: 5px
-    padding-left: 35px
-    color: #333
+    margin-top 5px
+    padding-left 35px
+    color #333
 
 .file-edit-name
-    min-width: 150px
+    min-width 150px
 
-tr.folder-row td span.caption.caption-edit margin: 0
-    padding: 0
-    float: left
+tr.folder-row td span.caption.caption-edit  
+    margin 0
+    padding 0
+    float left
 
     input.file-edit-name
-        border: 1px solid blue
-        outline: 0
+        border 1px solid blue
+        outline 0
 
         &:hover
-            border: 1px solid orange
-            color: #333
+            border 1px solid orange
+            color #333
 
         &:active
         &:focus
-            border: 1px solid blue
+            border 1px solid blue
 
 tr.folder-row td input.caption
-    margin-left: 5px
-    margin-top: 2px
+    margin-left 5px
+    margin-top 2px
 
 .file-edit-save
 .file-edit-cancel
-    margin-top: 0px
+    margin-top 0px
 
 .file-edit-save.disabled
     background grey
@@ -884,12 +891,12 @@ tr.folder-row
     font-style: italic
 
 #content
-    background: white
-    padding-bottom: 10px
-    margin-top: 56px
+    background white
+    padding-bottom 10px
+    margin-top 56px
 
 #content.mt108
-    margin-top: 108px
+    margin-top 108px
 
 #files
     // margin-top 60px
