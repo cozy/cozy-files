@@ -8,14 +8,6 @@ td
     block title
       if model.type == 'folder'
         .caption
-          span.icon-zone
-            div.selector-wrapper
-              button
-                if isViewSelected
-                  i.fa.fa-check-square-o
-                else
-                  i.fa.fa-square-o
-
           div.link-wrapper.btn-link
             div.spinholder
               img(src="images/spinner.svg")
@@ -32,14 +24,6 @@ td
 
       else if model.type == 'file'
         .caption(data-file-url="#{attachmentUrl}")
-          span.icon-zone
-            div.selector-wrapper
-              button
-                if isViewSelected
-                  i.fa.fa-check-square-o
-                else
-                  i.fa.fa-square-o
-
           div.link-wrapper.btn-link
             div.spinholder
               img(src="images/spinner.svg")
