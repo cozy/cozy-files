@@ -4523,20 +4523,11 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,isViewSelected = locals_.isViewSelected,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><button>");
-if ( isViewSelected)
-{
-buf.push("<i class=\"fa fa-check-square-o\"></i>");
-}
-else
-{
-buf.push("<i class=\"fa fa-square-o\"></i>");
-}
-buf.push("</button></div></span><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
@@ -4553,16 +4544,7 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><button>");
-if ( isViewSelected)
-{
-buf.push("<i class=\"fa fa-check-square-o\"></i>");
-}
-else
-{
-buf.push("<i class=\"fa fa-square-o\"></i>");
-}
-buf.push("</button></div></span><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
 buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
@@ -4764,20 +4746,11 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,isViewSelected = locals_.isViewSelected,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
+var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><button>");
-if ( isViewSelected)
-{
-buf.push("<i class=\"fa fa-check-square-o\"></i>");
-}
-else
-{
-buf.push("<i class=\"fa fa-square-o\"></i>");
-}
-buf.push("</button></div></span><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
@@ -4794,16 +4767,7 @@ buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) 
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><span class=\"icon-zone\"><div class=\"selector-wrapper\"><button>");
-if ( isViewSelected)
-{
-buf.push("<i class=\"fa fa-check-square-o\"></i>");
-}
-else
-{
-buf.push("<i class=\"fa fa-square-o\"></i>");
-}
-buf.push("</button></div></span><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
 buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
