@@ -307,7 +307,7 @@ module.exports.findContent = (req, res, next) ->
                 # Retrieves the folders and inject the inherited clearance
                 (cb) -> Folder.byFolder key: key, (err, folders) ->
                     # if it's a request from a guest, we limit the results
-                    unless isPublic
+                    if isPublic
                         Folder.injectInheritedClearance folders, cb
                     else
                         cb null, folders
@@ -315,7 +315,7 @@ module.exports.findContent = (req, res, next) ->
                 # Retrieves the files and inject the inherited clearance
                 (cb) -> File.byFolder key: key, (err, files) ->
                     # if it's a request from a guest, we limit the results
-                    unless isPublic
+                    if isPublic
                         File.injectInheritedClearance files, cb
                     else
                         cb null, files
