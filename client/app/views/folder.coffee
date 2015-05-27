@@ -392,7 +392,8 @@ module.exports = class FolderView extends BaseView
 
 
     # we don't show the same actions wether there are selected elements or not
-    toggleFolderActions: (isShiftPressed) ->
+    toggleFolderActions: (event) ->
+        {isShiftPressed} = event
 
         selectedElements = @getSelectedElements()
 
