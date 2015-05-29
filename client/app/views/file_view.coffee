@@ -14,21 +14,6 @@ module.exports = class FileView extends BaseView
     templateEdit   : require './templates/file_edit'
     templateSearch : require './templates/file_search'
 
-    events:
-        'click': 'onLineClicked'
-        'click a.file-tags': 'onTagClicked'
-        'click a.file-delete': 'onDeleteClicked'
-        'click a.file-share': 'onShareClicked'
-        'click a.file-edit': 'onEditClicked'
-        'click a.file-edit-save': 'onSaveClicked'
-        'click a.file-edit-cancel': 'onCancelClicked'
-        'click a.cancel-upload-button': 'onCancelUploadClicked'
-        'click a.file-move': 'onMoveClicked'
-        'click a.broken-button': 'onDeleteClicked'
-        'keydown input.file-edit-name': 'onKeyPress'
-        'change input.selector': 'onSelectChanged'
-        'click div.selector-wrapper button': 'onSelectClicked'
-
     mimeClasses:
         'application/octet-stream'      : 'fa-file-o'
         'application/x-binary'          : 'fa-file'
@@ -114,15 +99,6 @@ module.exports = class FileView extends BaseView
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
         @uploadQueue = options.uploadQueue
-        @listenTo @model, 'change', @refresh
-        @listenTo @model, 'sync error', =>
-            # For overwritten files, render entirely to show
-            # modification date and type. Render folders unless they are in
-            # an errored state.
-            if @model.isConflict() or (@model.isFolder() and not @isErrored)
-                @render()
-
-        @listenTo @model, 'toggle-select', @onToggleSelect
 
         # prevent contacts loading in shared area
         unless app.isPublic
@@ -135,16 +111,30 @@ module.exports = class FileView extends BaseView
             numUploadChildren = @uploadQueue.getNumUploadingElementsByPath path
             @hasUploadingChildren = numUploadChildren > 0
 
-            @listenTo @uploadQueue, 'add remove reset', =>
-                hasItems = @uploadQueue.getNumUploadingElementsByPath(path) > 0
-                if hasItems and not @$('.spinholder').is ':visible'
-                    @showLoading()
-                else if not hasItems and @$('.spinholder').is ':visible'
-                    @hideLoading()
 
-            @listenTo @uploadQueue, 'upload-complete', =>
-                @hasUploadingChildren = false
+    onUploadComplete: ->
+        if @model.isFolder()
+            @hasUploadingChildren = false
+            @hideLoading()
+
+
+    onCollectionChanged: ->
+        if @model.isFolder()
+            path = @model.getRepository()
+
+            hasItems = @uploadQueue.getNumUploadingElementsByPath(path) > 0
+            if hasItems and not @$('.spinholder').is ':visible'
+                @showLoading()
+            else if not hasItems and @$('.spinholder').is ':visible'
                 @hideLoading()
+
+
+    onSyncError: ->
+        # For overwritten files, render entirely to show
+        # modification date and type. Render folders unless they are in
+        # an errored state.
+        if @model.isConflict() or (@model.isFolder() and not @isErrored)
+            @render()
 
 
     refresh: ->
@@ -354,7 +344,7 @@ module.exports = class FileView extends BaseView
 
         # If none of the forbidden elements has been clicked, we can select the
         # checkbox.
-        if results.length is 0
+        if results.length is 0 and not @$el.hasClass('edit-mode')
             isShiftPressed = event.shiftKey or false
             @model.toggleViewSelected isShiftPressed
 
@@ -384,6 +374,9 @@ module.exports = class FileView extends BaseView
 
 
     afterRender: ->
+
+        @$el.data 'cid', @model.cid
+
         if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
             @addProgressBar()

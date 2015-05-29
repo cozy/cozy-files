@@ -101,17 +101,6 @@ module.exports = class FileCollection extends Backbone.Collection
                             comparator: @comparator
 
 
-    # Return a singleton representing a sub collection (projection) for
-    # files in upload cycle.
-    getFilesBeingUploaded: ->
-        unless @filesBeingUploaded?
-            @filesBeingUploaded = new BackboneProjections.Filtered @,
-                filter: (file) -> return file.inUploadCycle()
-                comparator: @comparator
-
-        return @filesBeingUploaded
-
-
     comparator: (f1, f2) ->
 
         # default values

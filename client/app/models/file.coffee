@@ -137,7 +137,7 @@ module.exports = class File extends Backbone.Model
 
     setSelectedViewState: (viewSelected, isShiftPressed = false) ->
         @viewSelected = viewSelected
-        @trigger 'toggle-select', isShiftPressed
+        @trigger 'toggle-select', cid: @cid, isShiftPressed: isShiftPressed
 
 
     # Remove server's additional information
