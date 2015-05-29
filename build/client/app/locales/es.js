@@ -11,6 +11,7 @@ module.exports = {
   "modal error empty name": "La casilla del nombre no puede estar vacía",
   "modal error file invalid": "El archivo no parece válido",
   "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
   "root folder name": "root",
   "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
   "breadcrumbs search title": "Buscar",

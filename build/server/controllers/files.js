@@ -70,16 +70,42 @@ sendBinary = baseController.sendBinary({
 });
 
 module.exports.getAttachment = function(req, res, next) {
-  var encodedFileName;
+  var encodedFileName, isDownloading, keepAlive;
+  isDownloading = true;
+  (keepAlive = function() {
+    if (isDownloading) {
+      feed.publish('usage.application', 'files');
+      return setTimeout(keepAlive, 60 * 1000);
+    }
+  })();
   encodedFileName = encodeURIComponent(req.file.name);
   res.setHeader('Content-Disposition', "inline; filename*=UTF8''" + encodedFileName);
+  res.on('close', function() {
+    return isDownloading = false;
+  });
+  res.on('finish', function() {
+    return isDownloading = false;
+  });
   return sendBinary(req, res, next);
 };
 
 module.exports.downloadAttachment = function(req, res, next) {
-  var encodedFileName;
+  var encodedFileName, isDownloading, keepAlive;
+  isDownloading = true;
+  (keepAlive = function() {
+    if (isDownloading) {
+      feed.publish('usage.application', 'files');
+      return setTimeout(keepAlive, 60 * 1000);
+    }
+  })();
   encodedFileName = encodeURIComponent(req.file.name);
   res.setHeader('Content-Disposition', "attachment; filename*=UTF8''" + encodedFileName);
+  res.on('close', function() {
+    return isDownloading = false;
+  });
+  res.on('finish', function() {
+    return isDownloading = false;
+  });
   return sendBinary(req, res, next);
 };
 

@@ -19,6 +19,8 @@ Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses
 Merkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.
 """
 
+    "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier."
+
     "root folder name"          : "root"
 
     "confirmation reload"      : "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?"
@@ -74,10 +76,10 @@ Merkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.
 
     "chrome error dragdrop title": "Dateien werden ignoriert"
     "chrome error dragdrop content": """
-        Druch einen Bug in Chrome, wird die folgende Datei: %{files} 
+        Druch einen Bug in Chrome, wird die folgende Datei: %{files}
         aufgrund eines Akzent im Namen ignoriert. Sie können diese mit
         der Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||
-        Druch einen Bug in Chrome, werden die folgenden Dateien: %{files} 
+        Druch einen Bug in Chrome, werden die folgenden Dateien: %{files}
         aufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit
         der Schaltfläche oben rechts im Bild weiterhin hinzufügen.
     """

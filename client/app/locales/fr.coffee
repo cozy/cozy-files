@@ -20,6 +20,7 @@ Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin
 de cette fonctionnalité, elle est disponible avec les navigateurs Chromium,
 Chrome et Safari.
 """
+    "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier."
 
     "root folder name"          : "racine"
 
@@ -184,7 +185,7 @@ Chrome et Safari.
         Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
     """
     "mail not sent"                   : "Le mail n'a pas pu être envoyé"
-    "postfix error"                   : """ Le mail n'a pas pu être envoyé. 
+    "postfix error"                   : """ Le mail n'a pas pu être envoyé.
                                             Vérifiez que les adresses de tous les destinataires sont valides
                                             et que votre Cozy est bien configuré pour envoyer des messages.
                                             """

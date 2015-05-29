@@ -49,11 +49,12 @@
                   if isPublic
                       a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy-contrast
                         span.label #{t("download all")}&nbsp;
-                        span.fa.fa-arrow-down.icon-white
+                        span.fa.fa-download.icon-white
                   else
                       a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy
-                        span.fa.fa-arrow-down
+                        span.fa.fa-download
                   a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
+                    span.fa.fa-file
                     span.fa.fa-arrow-right
                   a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy
                     span.fa.fa-trash-o

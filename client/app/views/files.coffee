@@ -18,6 +18,20 @@ module.exports = class FilesView extends ViewCollection
         'click #up-lastModification'   : 'onChangeOrder'
         'click #down-lastModification' : 'onChangeOrder'
 
+        # Event delegation.
+        'click a.file-tags': (e) -> @viewProxy 'onTagClicked', e
+        'click a.file-delete': (e) -> @viewProxy 'onDeleteClicked', e
+        'click a.file-share': (e) -> @viewProxy 'onShareClicked', e
+        'click a.file-edit': (e) -> @viewProxy 'onEditClicked', e
+        'click a.file-edit-save': (e) -> @viewProxy 'onSaveClicked', e
+        'click a.file-edit-cancel': (e) -> @viewProxy 'onCancelClicked', e
+        'click a.cancel-upload-button': (e) -> @viewProxy 'onCancelUploadClicked', e
+        'click a.file-move': (e) -> @viewProxy 'onMoveClicked', e
+        'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
+        'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
+        'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
+        'click tr.folder-row': (e) -> @viewProxy 'onLineClicked', e
+
     initialize: (options) ->
         super options
 
@@ -25,14 +39,59 @@ module.exports = class FilesView extends ViewCollection
             isSearchMode: options.isSearchMode
             uploadQueue: options.uploadQueue
 
+        @numSelectedElements = options.numSelectedElements
+
         @chevron = order: @collection.order, type: @collection.type
 
         @listenTo @collection, 'add remove', @updateNbFiles
+
+        # Event delegation.
+        @listenTo @collection, 'change', _.partial(@viewProxy, 'refresh')
+        @listenTo @collection, 'sync error', _.partial(@viewProxy, 'onSyncError')
+        @listenTo @collection, 'toggle-select', _.partial(@viewProxy, 'onToggleSelect')
+        @listenTo @collection, 'add remove reset',  _.partial(@viewProxy, 'onCollectionChanged')
+        @listenTo @collection, 'upload-complete',  _.partial(@viewProxy, 'onUploadComplete')
+
+
+    getRenderData: ->
+        _.extend super(),
+            numSelectedElements: @numSelectedElements
+            numElements: @collection.size()
+
 
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
         @updateNbFiles()
+
+
+    # Manage event delegation. Events are listen to on the collection level,
+    # then the callback are called on the view that originally triggered them.
+    #
+    # * `methodName` is the method that will be called on the View.
+    # * `object` can be a File model or a DOMElement within FileView.$el
+    viewProxy: (methodName, object) ->
+
+        # Get view's cid. Views are indexed by cid. Object can be a File model
+        # or a DOMElement within FileView.$el.
+        if object.cid?
+            cid = object.cid
+        else
+            cid = @$(object.target).parents('tr').data 'cid'
+
+            unless cid?
+                cid = @$(object.currentTarget).data 'cid'
+
+        # Get the view.
+        view = _.find @views, (view) -> view.model.cid is cid
+
+        # In case of deletion, view may not exist anymore.
+        if view?
+            # Call `methodName` on the related view.
+            args = [].splice.call arguments, 1
+            view[methodName].apply view, args
+
+
 
     updateNbFiles: ->
         nbElements = @collection.length

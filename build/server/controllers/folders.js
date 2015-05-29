@@ -428,7 +428,7 @@ module.exports.findContent = function(req, res, next) {
           return Folder.byFolder({
             key: key
           }, function(err, folders) {
-            if (!isPublic) {
+            if (isPublic) {
               return Folder.injectInheritedClearance(folders, cb);
             } else {
               return cb(null, folders);
@@ -438,7 +438,7 @@ module.exports.findContent = function(req, res, next) {
           return File.byFolder({
             key: key
           }, function(err, files) {
-            if (!isPublic) {
+            if (isPublic) {
               return File.injectInheritedClearance(files, cb);
             } else {
               return cb(null, files);

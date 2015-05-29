@@ -309,18 +309,6 @@ module.exports = FileCollection = (function(_super) {
     });
   };
 
-  FileCollection.prototype.getFilesBeingUploaded = function() {
-    if (this.filesBeingUploaded == null) {
-      this.filesBeingUploaded = new BackboneProjections.Filtered(this, {
-        filter: function(file) {
-          return file.inUploadCycle();
-        },
-        comparator: this.comparator
-      });
-    }
-    return this.filesBeingUploaded;
-  };
-
   FileCollection.prototype.comparator = function(f1, f2) {
     var e1, e2, n1, n2, sort, t1, t2;
     if (this.type == null) {
@@ -419,7 +407,7 @@ module.exports = UploadQueue = (function() {
     this.onSyncError = __bind(this.onSyncError, this);
     this.completeUpload = __bind(this.completeUpload, this);
     this.abort = __bind(this.abort, this);
-    this.uploadCollection = this.baseCollection.getFilesBeingUploaded();
+    this.uploadCollection = new Backbone.Collection();
     _.extend(this, Backbone.Events);
     this.asyncQueue = async.queue(this.uploadWorker, 5);
     this.listenTo(this.uploadCollection, 'sync error', this.onSyncError);
@@ -434,19 +422,19 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype.reset = function() {
     var collection;
     this.progress = {
-      loadedFiles: 0,
-      totalFiles: this.length,
       loadedBytes: 0,
       totalBytes: this.sumProp('total')
     };
     window.pendingOperations.upload = 0;
-    this.loaded = 0;
     this.completed = false;
     this.uploadingPaths = {};
     collection = this.uploadCollection.toArray();
-    collection.forEach(function(model) {
-      return model.resetStatus();
-    });
+    collection.forEach((function(_this) {
+      return function(model) {
+        _this.uploadCollection.remove(model);
+        return model.resetStatus();
+      };
+    })(this));
     return this.trigger('reset');
   };
 
@@ -459,7 +447,6 @@ module.exports = UploadQueue = (function() {
   };
 
   UploadQueue.prototype.remove = function(model) {
-    this.loaded++;
     model.resetStatus();
     return window.pendingOperations.upload--;
   };
@@ -470,6 +457,7 @@ module.exports = UploadQueue = (function() {
       model.markAsUploading();
     }
     this.baseCollection.add(model);
+    this.uploadCollection.add(model);
     if (model.get('type') === 'file') {
       if (model.isConflict()) {
         return this.asyncQueue.push(model);
@@ -492,8 +480,7 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype.onSyncError = function(model) {
     var path;
     path = model.get('path') + '/';
-    this.uploadingPaths[path]--;
-    return this.loaded++;
+    return this.uploadingPaths[path]--;
   };
 
   UploadQueue.prototype.uploadWorker = function(model, next) {
@@ -525,12 +512,15 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype._processSave = function(model, done) {
     if (!model.isConflict() && !model.isErrored()) {
       return model.save(null, {
-        success: function(model) {
-          model.file = null;
-          model.loaded = model.total;
-          model.markAsUploaded();
-          return done(null);
-        },
+        success: (function(_this) {
+          return function(model) {
+            model.file = null;
+            model.loaded = model.total;
+            model.markAsUploaded();
+            _this.unmarkPathAsUploading(model);
+            return done(null);
+          };
+        })(this),
         error: (function(_this) {
           return function(_, err) {
             var body, defaultMessage, e, error, errorKey;
@@ -602,10 +592,8 @@ module.exports = UploadQueue = (function() {
         model.loaded = 0;
         model.total = blob.size;
         if (blob.size === 0 && blob.type.length === 0) {
-          model.error = 'Cannot upload a folder with Firefox';
-          model.total = 0;
-          model.file = null;
-          _this.trigger('folderError', model);
+          model = null;
+          _this.trigger('folderError');
         } else if ((existingModel = _this.isFileStored(model)) != null) {
           if (!existingModel.inUploadCycle() || existingModel.isUploaded()) {
             existingModel.set({
@@ -632,37 +620,47 @@ module.exports = UploadQueue = (function() {
   };
 
   UploadQueue.prototype.addFolderBlobs = function(blobs, parent) {
-    var dirs, i, nonBlockingLoop;
+    var dirs, i, isConflict, nonBlockingLoop;
     if (this.completed) {
       this.reset();
     }
     dirs = Helpers.nestedDirs(blobs);
     i = 0;
+    isConflict = false;
     return (nonBlockingLoop = (function(_this) {
       return function() {
-        var dir, folder, name, parts, path, prefix;
-        if (!(dir = dirs[i++])) {
-          blobs = _.filter(blobs, function(blob) {
-            var _ref;
-            return (_ref = blob.name) !== '.' && _ref !== '..';
+        var dir, existingModel, folder, name, parts, path, prefix;
+        dir = dirs[i++];
+        if (!dir) {
+          if (!isConflict) {
+            blobs = _.filter(blobs, function(blob) {
+              var _ref;
+              return (_ref = blob.name) !== '.' && _ref !== '..';
+            });
+            return _this.addBlobs(blobs, parent);
+          }
+        } else {
+          prefix = parent.getRepository();
+          parts = Helpers.getFolderPathParts(dir);
+          name = parts[parts.length - 1];
+          path = [prefix].concat(parts.slice(0, -1)).join('/');
+          folder = new File({
+            type: "folder",
+            name: name,
+            path: path
           });
-          _this.addBlobs(blobs, parent);
-          return;
+          folder.loaded = 0;
+          folder.total = 250;
+          if ((existingModel = _this.isFileStored(folder)) != null) {
+            i = dirs.length;
+            isConflict = true;
+            _this.trigger('existingFolderError', existingModel);
+          } else {
+            _this.add(folder);
+            _this.markPathAsUploading(folder);
+          }
+          return setTimeout(nonBlockingLoop, 2);
         }
-        prefix = parent.getRepository();
-        parts = Helpers.getFolderPathParts(dir);
-        name = parts[parts.length - 1];
-        path = [prefix].concat(parts.slice(0, -1)).join('/');
-        folder = new File({
-          type: "folder",
-          name: name,
-          path: path
-        });
-        folder.loaded = 0;
-        folder.total = 250;
-        _this.add(folder);
-        _this.markPathAsUploading(folder);
-        return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
   };
@@ -704,6 +702,12 @@ module.exports = UploadQueue = (function() {
     return this.uploadingPaths[path]++;
   };
 
+  UploadQueue.prototype.unmarkPathAsUploading = function(model) {
+    var path;
+    path = "" + (model.get('path')) + "/";
+    return this.uploadingPaths[path]--;
+  };
+
   UploadQueue.prototype.getNumUploadingElementsByPath = function(path) {
     path = "" + path + "/";
     return _.reduce(this.uploadingPaths, function(memo, value, index) {
@@ -717,8 +721,6 @@ module.exports = UploadQueue = (function() {
 
   UploadQueue.prototype.computeProgress = function() {
     return this.progress = {
-      loadedFiles: this.loaded,
-      totalFiles: this.length,
       loadedBytes: this.sumProp('loaded'),
       totalBytes: this.sumProp('total')
     };
@@ -1235,6 +1237,7 @@ module.exports = {
   "modal error empty name": "Der Name kann nicht lerr sein",
   "modal error file invalid": "es scheint eine gültige Datei zu sein",
   'modal error firefox dragdrop folder': "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
+  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "root",
   "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
   "breadcrumbs search title": "Suche",
@@ -1267,7 +1270,7 @@ module.exports = {
   "failed to upload": "kann nicht zum Server gesendet werden.",
   "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
   "chrome error dragdrop title": "Dateien werden ignoriert",
-  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files} \naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files} \naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
+  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files}\naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files}\naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
   "chrome error submit": "Ok",
   "upload caption": "Neue Datei hochladen",
   "upload msg": "Ziehen Sie die Dateien oder klicken Sie hier zum auswählen.",
@@ -1387,6 +1390,7 @@ module.exports = {
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
   'modal error firefox dragdrop folder': "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
+  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
   "root folder name": "root",
   "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Search",
@@ -1502,7 +1506,7 @@ module.exports = {
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
   "mail not sent": "Mail not sent",
-  "postfix error": " Mail not sent.\nCan you check that all recipient adresses are correct \nand that your Cozy is well configured to send messages ?",
+  "postfix error": " Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
   "yes forgot": "Back",
   "no forgot": "It's ok",
   "perm": "can ",
@@ -1539,6 +1543,7 @@ module.exports = {
   "modal error empty name": "La casilla del nombre no puede estar vacía",
   "modal error file invalid": "El archivo no parece válido",
   "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
   "root folder name": "root",
   "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
   "breadcrumbs search title": "Buscar",
@@ -1689,6 +1694,7 @@ module.exports = {
   "modal error no data": "Pas de noms et de dossier à envoyer",
   "modal error file invalid": "Le fichier ne parait pas être valide",
   'modal error firefox dragdrop folder': "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
+  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "racine",
   "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
   "breadcrumbs search title": "Recherche",
@@ -1803,7 +1809,7 @@ module.exports = {
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
   "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
   "mail not sent": "Le mail n'a pas pu être envoyé",
-  "postfix error": " Le mail n'a pas pu être envoyé. \nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
+  "postfix error": " Le mail n'a pas pu être envoyé.\nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
   "yes forgot": "Retour",
   "no forgot": "Ok",
   "perm": "peut ",
@@ -1949,7 +1955,7 @@ client = require('../lib/client');
 Represent a file or folder document.
 
 
- * Local state and Shared state
+ * Local state and Shared state.
 There is a concept of local state and shared state in the application, it is
 handled in this class.
 
@@ -1960,6 +1966,10 @@ The shared state is shared with other clients through websockets.
 
 Both are needed in order to support various features like conflict management,
 upload cancel, or broken file detection.
+
+ * View state.
+The state "selected" is only relevant into the view, but it's handy to manage
+it in the model.
  */
 
 module.exports = File = (function(_super) {
@@ -1970,6 +1980,8 @@ module.exports = File = (function(_super) {
   File.prototype.uploadStatus = null;
 
   File.prototype.error = null;
+
+  File.prototype.viewSelected = false;
 
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
@@ -2108,7 +2120,36 @@ module.exports = File = (function(_super) {
    */
 
   File.prototype.isServerUploading = function() {
-    return this.get('uploading');
+    return this.get('uploading') && !this.inUploadCycle();
+  };
+
+
+  /*
+      Manage view state.
+      The state "selected" is only relevant into the view, but it's handy
+      to manage it in the model.
+   */
+
+  File.prototype.isViewSelected = function() {
+    return this.viewSelected;
+  };
+
+  File.prototype.toggleViewSelected = function(isShiftPressed) {
+    if (isShiftPressed == null) {
+      isShiftPressed = false;
+    }
+    return this.setSelectedViewState(!this.isViewSelected(), isShiftPressed);
+  };
+
+  File.prototype.setSelectedViewState = function(viewSelected, isShiftPressed) {
+    if (isShiftPressed == null) {
+      isShiftPressed = false;
+    }
+    this.viewSelected = viewSelected;
+    return this.trigger('toggle-select', {
+      cid: this.cid,
+      isShiftPressed: isShiftPressed
+    });
   };
 
   File.prototype.parse = function(data) {
@@ -2740,20 +2781,6 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.templateSearch = require('./templates/file_search');
 
-  FileView.prototype.events = {
-    'click a.file-tags': 'onTagClicked',
-    'click a.file-delete': 'onDeleteClicked',
-    'click a.file-share': 'onShareClicked',
-    'click a.file-edit': 'onEditClicked',
-    'click a.file-edit-save': 'onSaveClicked',
-    'click a.file-edit-cancel': 'onCancelClicked',
-    'click a.cancel-upload-button': 'onCancelUploadClicked',
-    'click a.file-move': 'onMoveClicked',
-    'click a.broken-button': 'onDeleteClicked',
-    'keydown input.file-edit-name': 'onKeyPress',
-    'change input.selector': 'onSelectChanged'
-  };
-
   FileView.prototype.mimeClasses = {
     'application/octet-stream': 'fa-file-o',
     'application/x-binary': 'fa-file',
@@ -2833,7 +2860,8 @@ module.exports = FileView = (function(_super) {
       isBroken: this.model.isBroken(),
       attachmentUrl: this.model.getAttachmentUrl(),
       downloadUrl: this.model.getDownloadUrl(),
-      clearance: this.model.getClearance()
+      clearance: this.model.getClearance(),
+      isViewSelected: this.model.isViewSelected()
     });
   };
 
@@ -2841,15 +2869,6 @@ module.exports = FileView = (function(_super) {
     var numUploadChildren, path;
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
-    this.listenTo(this.model, 'change', this.refresh);
-    this.listenTo(this.model, 'sync error', (function(_this) {
-      return function() {
-        if (_this.model.isConflict() || (_this.model.isFolder() && !_this.isErrored)) {
-          return _this.render();
-        }
-      };
-    })(this));
-    this.listenTo(this.model, 'toggle-select', this.onToggleSelect);
     if (!app.isPublic) {
       if (ModalShareView == null) {
         ModalShareView = require("./modal_share");
@@ -2858,24 +2877,33 @@ module.exports = FileView = (function(_super) {
     if (this.model.isFolder()) {
       path = this.model.getRepository();
       numUploadChildren = this.uploadQueue.getNumUploadingElementsByPath(path);
-      this.hasUploadingChildren = numUploadChildren > 0;
-      this.listenTo(this.uploadQueue, 'add remove reset', (function(_this) {
-        return function() {
-          var hasItems;
-          hasItems = _this.uploadQueue.getNumUploadingElementsByPath(path) > 0;
-          if (hasItems && !_this.$('.spinholder').is(':visible')) {
-            return _this.showLoading();
-          } else if (!hasItems && _this.$('.spinholder').is(':visible')) {
-            return _this.hideLoading();
-          }
-        };
-      })(this));
-      return this.listenTo(this.uploadQueue, 'upload-complete', (function(_this) {
-        return function() {
-          _this.hasUploadingChildren = false;
-          return _this.hideLoading();
-        };
-      })(this));
+      return this.hasUploadingChildren = numUploadChildren > 0;
+    }
+  };
+
+  FileView.prototype.onUploadComplete = function() {
+    if (this.model.isFolder()) {
+      this.hasUploadingChildren = false;
+      return this.hideLoading();
+    }
+  };
+
+  FileView.prototype.onCollectionChanged = function() {
+    var hasItems, path;
+    if (this.model.isFolder()) {
+      path = this.model.getRepository();
+      hasItems = this.uploadQueue.getNumUploadingElementsByPath(path) > 0;
+      if (hasItems && !this.$('.spinholder').is(':visible')) {
+        return this.showLoading();
+      } else if (!hasItems && this.$('.spinholder').is(':visible')) {
+        return this.hideLoading();
+      }
+    }
+  };
+
+  FileView.prototype.onSyncError = function() {
+    if (this.model.isConflict() || (this.model.isFolder() && !this.isErrored)) {
+      return this.render();
     }
   };
 
@@ -2973,6 +3001,7 @@ module.exports = FileView = (function(_super) {
   FileView.prototype.onSaveClicked = function() {
     var name, options;
     name = this.$('.file-edit-name').val();
+    name = name != null ? name.trim() : void 0;
     if (name && name === this.model.get('name')) {
       return this.onCancelClicked();
     } else if (name && name !== "") {
@@ -3032,6 +3061,24 @@ module.exports = FileView = (function(_super) {
     return this.uploadQueue.abort(this.model);
   };
 
+  FileView.prototype.onLineClicked = function(event) {
+    var forbiddenElements, forbiddenSelectors, isShiftPressed, results;
+    forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
+    forbiddenElements = forbiddenSelectors.map((function(_this) {
+      return function(selector) {
+        var _ref;
+        return ((_ref = _this.$(selector)) != null ? _ref[0] : void 0) || null;
+      };
+    })(this));
+    results = forbiddenElements.filter(function(element) {
+      return (element != null) && (element === event.target || $.contains(element, event.target));
+    });
+    if (results.length === 0 && !this.$el.hasClass('edit-mode')) {
+      isShiftPressed = event.shiftKey || false;
+      return this.model.toggleViewSelected(isShiftPressed);
+    }
+  };
+
   FileView.prototype.onKeyPress = function(e) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
@@ -3040,34 +3087,39 @@ module.exports = FileView = (function(_super) {
     }
   };
 
-  FileView.prototype.onSelectChanged = function(event) {
-    var isChecked;
-    isChecked = $(event.target).is(':checked');
-    this.$el.toggleClass('selected', isChecked);
-    this.model.isSelected = isChecked;
-    this.onToggleSelect();
-    return true;
+  FileView.prototype.onSelectClicked = function(event) {
+    var isShiftPressed;
+    isShiftPressed = event.shiftKey || false;
+    return this.model.toggleViewSelected(isShiftPressed);
   };
 
   FileView.prototype.onToggleSelect = function() {
-    this.$el.toggleClass('selected', this.model.isSelected);
-    this.$('input.selector').prop('checked', this.model.isSelected);
-    if (this.model.isSelected) {
-      return this.$('.file-move, .file-delete').addClass('hidden');
+    var isViewSelected;
+    isViewSelected = this.model.isViewSelected();
+    this.$el.toggleClass('selected', isViewSelected);
+    if (isViewSelected) {
+      this.$('.selector-wrapper i').removeClass('fa-square-o');
+      return this.$('.selector-wrapper i').addClass('fa-check-square-o');
     } else {
-      return this.$('.file-move, .file-delete').removeClass('hidden');
+      this.$('.selector-wrapper i').removeClass('fa-check-square-o');
+      return this.$('.selector-wrapper i').addClass('fa-square-o');
     }
   };
 
   FileView.prototype.afterRender = function() {
+    this.$el.data('cid', this.model.cid);
     if (this.model.isUploading() || this.model.isServerUploading()) {
       this.$el.addClass('uploading');
       this.addProgressBar();
       this.blockDownloadLink();
+      this.blockNameLink();
     } else {
       this.$el.removeClass('uploading');
       this.$el.toggleClass('broken', this.model.isBroken());
       this.addTags();
+    }
+    if (this.model.isNew()) {
+      this.blockNameLink();
     }
     this.hideLoading();
     if (this.hasUploadingChildren) {
@@ -3102,15 +3154,19 @@ module.exports = FileView = (function(_super) {
     });
   };
 
+  FileView.prototype.blockNameLink = function() {
+    return this.$('.link-wrapper > a').click(function(event) {
+      return event.preventDefault();
+    });
+  };
+
   FileView.prototype.showLoading = function() {
-    this.$('.icon-zone .fa').addClass('hidden');
-    this.$('.icon-zone .selector-wrapper').addClass('hidden');
-    return this.$('.spinholder').show();
+    this.$('.link-wrapper .fa').addClass('hidden');
+    return this.$('.spinholder').css('display', 'inline-block');
   };
 
   FileView.prototype.hideLoading = function() {
-    this.$('.icon-zone .fa').removeClass('hidden');
-    this.$('.icon-zone .selector-wrapper').removeClass('hidden');
+    this.$('.link-wrapper .fa').removeClass('hidden');
     return this.$('.spinholder').hide();
   };
 
@@ -3151,7 +3207,43 @@ module.exports = FilesView = (function(_super) {
     'click #up-size': 'onChangeOrder',
     'click #down-size': 'onChangeOrder',
     'click #up-lastModification': 'onChangeOrder',
-    'click #down-lastModification': 'onChangeOrder'
+    'click #down-lastModification': 'onChangeOrder',
+    'click a.file-tags': function(e) {
+      return this.viewProxy('onTagClicked', e);
+    },
+    'click a.file-delete': function(e) {
+      return this.viewProxy('onDeleteClicked', e);
+    },
+    'click a.file-share': function(e) {
+      return this.viewProxy('onShareClicked', e);
+    },
+    'click a.file-edit': function(e) {
+      return this.viewProxy('onEditClicked', e);
+    },
+    'click a.file-edit-save': function(e) {
+      return this.viewProxy('onSaveClicked', e);
+    },
+    'click a.file-edit-cancel': function(e) {
+      return this.viewProxy('onCancelClicked', e);
+    },
+    'click a.cancel-upload-button': function(e) {
+      return this.viewProxy('onCancelUploadClicked', e);
+    },
+    'click a.file-move': function(e) {
+      return this.viewProxy('onMoveClicked', e);
+    },
+    'click a.broken-button': function(e) {
+      return this.viewProxy('onDeleteClicked', e);
+    },
+    'keydown input.file-edit-name': function(e) {
+      return this.viewProxy('onKeyPress', e);
+    },
+    'click div.selector-wrapper button': function(e) {
+      return this.viewProxy('onSelectClicked', e);
+    },
+    'click tr.folder-row': function(e) {
+      return this.viewProxy('onLineClicked', e);
+    }
   };
 
   FilesView.prototype.initialize = function(options) {
@@ -3162,17 +3254,49 @@ module.exports = FilesView = (function(_super) {
         uploadQueue: options.uploadQueue
       };
     };
+    this.numSelectedElements = options.numSelectedElements;
     this.chevron = {
       order: this.collection.order,
       type: this.collection.type
     };
-    return this.listenTo(this.collection, 'add remove', this.updateNbFiles);
+    this.listenTo(this.collection, 'add remove', this.updateNbFiles);
+    this.listenTo(this.collection, 'change', _.partial(this.viewProxy, 'refresh'));
+    this.listenTo(this.collection, 'sync error', _.partial(this.viewProxy, 'onSyncError'));
+    this.listenTo(this.collection, 'toggle-select', _.partial(this.viewProxy, 'onToggleSelect'));
+    this.listenTo(this.collection, 'add remove reset', _.partial(this.viewProxy, 'onCollectionChanged'));
+    return this.listenTo(this.collection, 'upload-complete', _.partial(this.viewProxy, 'onUploadComplete'));
+  };
+
+  FilesView.prototype.getRenderData = function() {
+    return _.extend(FilesView.__super__.getRenderData.call(this), {
+      numSelectedElements: this.numSelectedElements,
+      numElements: this.collection.size()
+    });
   };
 
   FilesView.prototype.afterRender = function() {
     FilesView.__super__.afterRender.call(this);
     this.displayChevron(this.chevron.order, this.chevron.type);
     return this.updateNbFiles();
+  };
+
+  FilesView.prototype.viewProxy = function(methodName, object) {
+    var args, cid, view;
+    if (object.cid != null) {
+      cid = object.cid;
+    } else {
+      cid = this.$(object.target).parents('tr').data('cid');
+      if (cid == null) {
+        cid = this.$(object.currentTarget).data('cid');
+      }
+    }
+    view = _.find(this.views, function(view) {
+      return view.model.cid === cid;
+    });
+    if (view != null) {
+      args = [].splice.call(arguments, 1);
+      return view[methodName].apply(view, args);
+    }
   };
 
   FilesView.prototype.updateNbFiles = function() {
@@ -3292,8 +3416,7 @@ module.exports = FolderView = (function(_super) {
       'click #download-link': 'onDownloadAsZipClicked',
       'change #uploader': 'onFilesSelected',
       'change #folder-uploader': 'onDirectorySelected',
-      'change #select-all': 'onSelectAllChanged',
-      'change input.selector': 'onSelectChanged',
+      'click #select-all': 'onSelectAllChanged',
       'click #button-bulk-download': 'bulkDownload',
       'click #button-bulk-remove': 'bulkRemove',
       'click #button-bulk-move': 'bulkMove',
@@ -3329,6 +3452,7 @@ module.exports = FolderView = (function(_super) {
     })(this);
     this.listenTo(this.uploadQueue, 'conflict', this.conflictQueue.push);
     this.listenTo(this.uploadQueue, 'folderError', this.onMozFolderError);
+    this.listenTo(this.uploadQueue, 'existingFolderError', this.onExistingFolderError);
     return this;
   };
 
@@ -3396,6 +3520,7 @@ module.exports = FolderView = (function(_super) {
       model: this.model,
       collection: this.collection,
       uploadQueue: this.uploadQueue,
+      numSelectedElements: this.getSelectedElements().length,
       isSearchMode: this.model.get('type') === "search"
     });
     return this.filesList.render();
@@ -3661,31 +3786,25 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.onSelectAllChanged = function(event) {
     var isChecked;
-    isChecked = $(event.target).is(':checked');
-    this.$('input.selector').prop('checked', isChecked);
-    this.collection.forEach(function(element) {
-      element.isSelected = isChecked;
-      return element.trigger('toggle-select');
+    isChecked = this.getSelectedElements().length === this.collection.size();
+    return this.collection.forEach(function(model) {
+      return model.setSelectedViewState(!isChecked);
     });
-    return this.toggleFolderActions(isChecked);
-  };
-
-  FolderView.prototype.onSelectChanged = function() {
-    return this.toggleFolderActions();
   };
 
   FolderView.prototype.getSelectedElements = function() {
-    return this.collection.filter(function(element) {
-      return element.isSelected;
+    return this.collection.filter(function(model) {
+      return model.isViewSelected();
     });
   };
 
-  FolderView.prototype.toggleFolderActions = function(force) {
-    var clearance, selectedElements, shouldChecked, _ref;
-    if (force == null) {
-      force = false;
-    }
+  FolderView.prototype.toggleFolderActions = function(event) {
+    var clearance, isShiftPressed, selectedElements, _ref;
+    isShiftPressed = event.isShiftPressed;
     selectedElements = this.getSelectedElements();
+    if (isShiftPressed) {
+      this.handleSelectWithShift();
+    }
     if (selectedElements.length > 0) {
       this.$('#share-state').hide();
       this.$('#upload-btngroup').hide();
@@ -3707,13 +3826,34 @@ module.exports = FolderView = (function(_super) {
       }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    if (force === true) {
-      return this.$('input#select-all').prop('checked', true);
-    } else if (this.collection.size() === 0) {
-      return this.$('input#select-all').prop('checked', false);
+    if (selectedElements.length === 0 || this.collection.size() === 0) {
+      this.$('#select-all i').removeClass('fa-minus-square-o');
+      this.$('#select-all i').removeClass('fa-check-square-o');
+      return this.$('#select-all i').addClass('fa-square-o');
+    } else if (selectedElements.length === this.collection.size()) {
+      this.$('#select-all i').removeClass('fa-square-o');
+      this.$('#select-all i').removeClass('fa-minus-square-o');
+      return this.$('#select-all i').addClass('fa-check-square-o');
     } else {
-      shouldChecked = selectedElements.length === this.collection.size();
-      return this.$('input#select-all').prop('checked', shouldChecked);
+      this.$('#select-all i').removeClass('fa-square-o');
+      this.$('#select-all i').removeClass('fa-check-square-o');
+      return this.$('#select-all i').addClass('fa-minus-square-o');
+    }
+  };
+
+  FolderView.prototype.handleSelectWithShift = function() {
+    var firstSelected, firstSelectedIndex, lastSelected, lastSelectedIndex, selectedElements;
+    selectedElements = this.getSelectedElements();
+    if (selectedElements.length >= 2) {
+      firstSelected = selectedElements[0];
+      lastSelected = selectedElements[selectedElements.length - 1];
+      firstSelectedIndex = this.collection.indexOf(firstSelected);
+      lastSelectedIndex = this.collection.indexOf(lastSelected);
+      return this.collection.filter(function(model, index) {
+        return (firstSelectedIndex < index && index < lastSelectedIndex) && !model.isViewSelected();
+      }).forEach(function(model) {
+        return model.toggleViewSelected();
+      });
     }
   };
 
@@ -3813,6 +3953,12 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.onMozFolderError = function() {
     return Modal.error(t('modal error firefox dragdrop folder'));
+  };
+
+  FolderView.prototype.onExistingFolderError = function(model) {
+    return Modal.error(t('modal error existing folder', {
+      name: model.get('name')
+    }));
   };
 
   return FolderView;
@@ -4422,24 +4568,27 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder-o\"><span class=\"fa fa-globe\"></span></i>");
 }
 else
 {
 buf.push("<i class=\"fa fa-folder\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4448,25 +4597,30 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+buf.push("</i>");
 }
 else
 {
-buf.push("<i class=\"fa fa-file-o\"></i>");
+buf.push("<i class=\"fa fa-file-o\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</span>");
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+buf.push("</i>");
+}
 if ( !isBroken)
 {
 buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div>");
+buf.push("</div></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -4637,24 +4791,27 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder-o\"><span class=\"fa fa-globe\"></span></i>");
 }
 else
 {
 buf.push("<i class=\"fa fa-folder\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4663,25 +4820,30 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+buf.push("</i>");
 }
 else
 {
-buf.push("<i class=\"fa fa-file-o\"></i>");
+buf.push("<i class=\"fa fa-file-o\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</span>");
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+buf.push("</i>");
+}
 if ( !isBroken)
 {
 buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div>");
+buf.push("</div></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -4757,8 +4919,21 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model;
-buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><input id=\"select-all\" type=\"checkbox\"/><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-name\" class=\"btn fa fa-chevron-up unactive\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"fa fa-chevron-down btn unactive\"></a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up unactive\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-class\" class=\"fa fa-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-lastModification\" class=\"btn fa fa-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
+var locals_ = (locals || {}),numSelectedElements = locals_.numSelectedElements,numElements = locals_.numElements,model = locals_.model;
+buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><button id=\"select-all\">");
+if ( numSelectedElements == 0 || numElements == 0)
+{
+buf.push("<i class=\"fa fa-square-o\"></i>");
+}
+else if ( numSelectedElements == numElements)
+{
+buf.push("<i class=\"fa fa-check-square-o\"></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-minus-square-o\"></i>");
+}
+buf.push("</button><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-name\" class=\"btn fa fa-chevron-up unactive\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"fa fa-chevron-down btn unactive\"></a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up unactive\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-class\" class=\"fa fa-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-lastModification\" class=\"btn fa fa-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
 if ( model.type == 'search')
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in search')) == null ? '' : jade_interp)) + "");
@@ -4815,13 +4990,13 @@ buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><sp
 buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\">");
 if ( isPublic)
 {
-buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy-contrast\"><span class=\"label\">" + (jade.escape((jade_interp = t("download all")) == null ? '' : jade_interp)) + "&nbsp;</span><span class=\"fa fa-arrow-down icon-white\"></span></a>");
+buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy-contrast\"><span class=\"label\">" + (jade.escape((jade_interp = t("download all")) == null ? '' : jade_interp)) + "&nbsp;</span><span class=\"fa fa-download icon-white\"></span></a>");
 }
 else
 {
-buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy\"><span class=\"fa fa-arrow-down\"></span></a>");
+buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy\"><span class=\"fa fa-download\"></span></a>");
 }
-buf.push("<a id=\"button-bulk-move\"" + (jade.attr("title", "" + (t('move all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-arrow-right\"></span></a><a id=\"button-bulk-remove\"" + (jade.attr("title", "" + (t('remove all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-trash-o\"></span></a></div></div>");
+buf.push("<a id=\"button-bulk-move\"" + (jade.attr("title", "" + (t('move all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-file\"></span><span class=\"fa fa-arrow-right\"></span></a><a id=\"button-bulk-remove\"" + (jade.attr("title", "" + (t('remove all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-trash-o\"></span></a></div></div>");
 if ( isPublic && hasPublicKey)
 {
 if ( areNotificationsEnabled)
@@ -5058,8 +5233,6 @@ module.exports = UploadStatusView = (function(_super) {
     } else {
       this.render();
     }
-    this.counter.text(this.collection.length);
-    this.counterDone.text(this.collection.loaded);
     if (this.completed && !this.collection.completed) {
       return this.render();
     }
@@ -5067,8 +5240,6 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.afterRender = function() {
     this.$el.removeClass('success danger warning');
-    this.counter = this.$('.counter');
-    this.counterDone = this.$('.counter-done');
     this.progressbar = this.$('.progress-bar-info');
     this.progressbarContent = this.$('.progress-bar-content');
     this.dismiss = this.$('#dismiss').hide();
@@ -5078,7 +5249,7 @@ module.exports = UploadStatusView = (function(_super) {
     } else {
       $('#content').addClass('mt108');
     }
-    if (this.collection.completed) {
+    if (this.uploadQueue.completed) {
       return this.complete();
     }
   };
