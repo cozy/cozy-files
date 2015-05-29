@@ -85,9 +85,11 @@ module.exports = class FilesView extends ViewCollection
         # Get the view.
         view = _.find @views, (view) -> view.model.cid is cid
 
-        # Call `methodName` on the related view.
-        args = [].splice.call arguments, 1
-        view[methodName].apply view, args
+        # In case of deletion, view may not exist anymore.
+        if view?
+            # Call `methodName` on the related view.
+            args = [].splice.call arguments, 1
+            view[methodName].apply view, args
 
 
 
