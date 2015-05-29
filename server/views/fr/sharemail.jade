@@ -5,24 +5,31 @@ html
     meta(http-equiv="Content-Type", content="text/html; charset=UTF-8")
 
   body
-    table(cellspacing="0", style="border-radius: 5px; border: 5px solid #34A6FF; margin: auto; width: 75%; padding: 20px 20px 10px 20px")
+    table(cellpadding="0" cellspacing="0" border="0", style="padding:1.5em 0.5em; background-color: #F4F4F4; font-family: Helvetica,Arial,Verdana,sans-serif; color: #333; font-size: 0.9em; line-height: 1.6;")
       tr
-        th(style="color: #34A6FF; font-size: 20px") #{displayName} a partagé le #{localization.t(type)} "#{doc.name}" avec vous !
-      tr
-        td(style="padding: 45px 0; text-align: center; font-size: 18px")
-          a(href=url, style="background: #34A6FF; color: #fff; padding: 8px; border-radius: 5px; text-decoration: none;")
-            | #{localization.t('link ' + type + ' content')}.
-      if type == 'folder'
-        tr
-          td
-            | Vous pouvez :
-            ul
-              li Consulter les fichiers de ce dossier
-              if type == 'folder' && rule.perm == 'rw'
-                li Ajouter des fichiers au dossier
-              li Vous abonner aux notifications de changement de ce dossier
-      tr
-        td(style="text-align: right; font-size: 12px; padding-top: 10px;")
-          | Envoyé depuis le&nbsp;
-          a(href="http://cozy.io", style="color: #34A6FF;") Cozy
-          | &nbsp;de #{displayName}.
+        td
+          table(cellpadding="0" cellspacing="0" border="0", style="margin: auto; width: 100%; max-width: 600px; background-color: #FFF; border-radius: 8px; border: 1px solid #DDD;")
+            tr
+              th(style="background-color: #F4F4F4; border-radius: 8px 8px 0 0; border-bottom: 1px solid #DDD;")
+                img(src="http://cozy.io/assets/images/cozy-logo-gradient.svg" width="63" height="48" style="padding: 12px 0; margin: auto;")
+            tr
+              td(style="padding: 1.5em;") #{displayName} (#{displayEmail}) a partagé le "#{doc.name}" #{localization.t(type)} avec vous via Cozy Cloud.
+            tr
+              td(style="padding: 0.5em 1.5em; width: 100%;")
+                a(href=url, style="display: block; width: 60%; margin: 0 auto; padding: 1.2em 2em; background-color: #34A6FF; border-radius: 5px; color: #FFF; text-decoration: none; text-align: center; font-size: 1em; font-weight: bold; cursor:pointer;")
+                  | #{localization.t('link ' + type + ' content')}.
+            if type == 'folder'
+              tr
+                td(style="padding: 1.5em; color: #999;")
+                  | Vous pouvez:
+                  ul(style="margin: 0;")
+                    li Télécharger les fichiers de ce dossier
+                    if type == 'folder' && rule.perm == 'rw'
+                      li Ajouter des fichiers à ce dossier
+                    li Vous abonner aux notifications de changement de ce dossier
+      tr(style="padding-top: 10px; text-align: center; font-size: 0.85em; font-style: italic; color: #999;")
+        td
+          p
+            | Envoyé depuis le&nbsp;
+            a(href="http://cozy.io", style="color: #34A6FF; text-decoration: none;") Cozy de #{displayName}
+            | .
