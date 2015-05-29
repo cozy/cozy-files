@@ -16,7 +16,12 @@ module.exports = class UploadQueue
 
 
     constructor: (@baseCollection) ->
-        @uploadCollection = @baseCollection.getFilesBeingUploaded()
+
+        # Create a collection for elements to be processed by the queue. This
+        # information is not based on the base collection for performance
+        # reasons (it doesn't have to be updated each time a big folder is
+        # loaded.)
+        @uploadCollection = new Backbone.Collection()
 
 
         # Backbone.Events is a mixin, not a "class" you can extend.
@@ -43,11 +48,13 @@ module.exports = class UploadQueue
         @completed = false
         @uploadingPaths = {}
 
-        # copy the collection because resetStatus triggers change events which
+        # Copy the collection because resetStatus triggers `change` events which
         # updates the uploadCollection, resulting in elements not being
-        # processed in the loop
+        # processed by the loop (the iterator breaks).
         collection = @uploadCollection.toArray()
-        collection.forEach (model) -> model.resetStatus()
+        collection.forEach (model) =>
+            @uploadCollection.remove model
+            model.resetStatus()
 
         @trigger 'reset'
 
@@ -72,8 +79,11 @@ module.exports = class UploadQueue
         # don't override conflict status
         model.markAsUploading() unless model.isConflict()
 
-        # if the model is not new, it don't add it
+        # Add the model to the base collection so it can be added in the list.
         @baseCollection.add model
+
+        # Add the model to the upload queue so it can be processed.
+        @uploadCollection.add model
 
         # Files at the end, folders at the beginning
         if model.get('type') is 'file'
