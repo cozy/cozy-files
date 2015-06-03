@@ -13,14 +13,11 @@ mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         # Use async to retrieve all wanted informations
-        async.parallel [
-            (cb) -> User.getDisplayName (err, name) -> cb null, name
-            (cb) -> User.getEmail (err, email) -> cb null, email
-        ], (err, results) ->
-            [name, email]        = results
+        User.getUserInfo (err, user) ->
             options.type         = options.doc.docType.toLowerCase()
-            options.displayName  = name or localization.t 'default user name'
-            options.displayEmail = email
+            options.displayName  = user.name \
+                                   or localization.t 'default user name'
+            options.displayEmail = user.email
             options.localization = localization
 
             callback null, mailTemplate options
