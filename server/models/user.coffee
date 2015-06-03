@@ -20,3 +20,14 @@ module.exports.getDisplayName = (callback) ->
             callback null, name
         else
             callback null, null
+
+
+module.exports.getEmail = (callback) ->
+    cozydb.api.getCozyUser (err, user) ->
+        if user?
+            callback null, user.email
+        else
+            # FIXME: Why the hell do we returns err == null if we cannot get a
+            # valid user? (copied from L22)
+            # In the meantime, I suggest we, at least, returns {user: undefined}
+            callback {user: undefined}
