@@ -21,7 +21,7 @@ html(style="height:100%;")
                   tr
                     td(style="padding: 0.5em 1.5em 2em; width: 100%;")
                       a(href=url, style="display: block; width: 60%; margin: 0 auto; padding: 1.2em 2em; background-color: #34A6FF; border-radius: 5px; color: #FFF; text-decoration: none; text-align: center; font-size: 1em; font-weight: bold; cursor:pointer;")
-                        | View #{localization.t(type}
+                        | View #{localization.t(type)}
                   if type == 'folder'
                     tr
                       td(style="padding: 0em 1.5em 1.5em; color: #999;")
@@ -34,6 +34,6 @@ html(style="height:100%;")
             tr(style="padding-top: 10px; text-align: center; font-size: 0.85em; font-style: italic; color: #999;")
               td
                 p
-                  | Sent from
+                  | Sent from&nbsp;
                   a(href="http://cozy.io", style="color: #34A6FF; text-decoration: none;") #{displayName}'s Cozy
                   | .
