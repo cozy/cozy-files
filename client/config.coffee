@@ -14,7 +14,7 @@ exports.config =
                 before: [
                     'vendor/scripts/jquery-1.9.1.js'
                     'vendor/scripts/underscore-1.4.4.js'
-                    'vendor/scripts/backbone-1.0.0.js'
+                    'vendor/scripts/backbone-1.1.2.js'
                     'vendor/scripts/spin.js'
                 ].concat(glob.sync 'vendor/plugins/**/*.js')
 
