@@ -137,6 +137,9 @@ module.exports = class FileView extends BaseView
             @elementLastModificationDate.html lastModification
 
 
+        @afterRender()
+
+
     onUploadComplete: ->
         if @model.isFolder()
             @hasUploadingChildren = false
