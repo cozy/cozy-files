@@ -72,44 +72,10 @@ module.exports = class FilesView extends BaseView #ViewCollection
         @displayChevron @chevron.order, @chevron.type
         @updateNbFiles()
 
-        POOL_SIZE = 100
-        pool = []
+        # Pool of views that matches the buffer of elements of LongList.
+        @pool = []
 
-
-        onRowsMoved = (rowsToDecorate) =>
-            startPoint = performance.now()
-            for row, index in rowsToDecorate
-                if row.el
-
-                    rank = row.rank
-
-                    if row.el.view?
-                        model = @collection.at rank
-
-                        if model
-                            model.rank = rank
-                            view = row.el.view
-                            view.model = model
-                            view.reDecorate()
-                        else
-                            console.log 'error, model not found', row
-                    else
-                        model = @collection.at rank
-                        model.rank = rank
-                        options = _.extend {}, {model}, @itemViewOptions()
-                        view = new FileView options
-                        view.el = row.el
-                        view.$el = $ view.el
-                        view.render()
-
-                        row.el.view = view
-                        pool.push view
-
-                    #row.el.textContent = "row #{row.rank}"
-
-            console.log "decorate #{rowsToDecorate.length} elements", performance.now() - startPoint
-            return true
-
+        # LongList options.
         options =
             # unit used for the dimensions (px,em or rem)
             DIMENSIONS_UNIT : 'px' #'em'
@@ -134,9 +100,48 @@ module.exports = class FilesView extends BaseView #ViewCollection
             # refresh is delayed to the nex throttle
             MAX_SPEED       : 2.5
 
+        # DOM element the LongList will be bound to.
         viewPortElement = @$(@collectionEl)[0]
-        @list = new LongList viewPortElement, options, onRowsMoved
+
+        # Initialize the list.
+        @list = new LongList viewPortElement, options, @onRowsMoved.bind(@)
         @list.initRows @collection.length
+
+
+    # Handler called when the list must update.
+    onRowsMoved: (rowsToDecorate) ->
+        startPoint = performance.now()
+
+        for row, index in rowsToDecorate
+            if row.el
+
+                rank = row.rank
+
+                if row.el.view?
+                    model = @collection.at rank
+
+                    if model
+                        model.rank = rank
+                        view = row.el.view
+                        view.model = model
+                        view.reDecorate()
+                    else
+                        console.log 'error, model not found', row
+                else
+                    model = @collection.at rank
+                    model.rank = rank
+                    options = _.extend {}, {model}, @itemViewOptions()
+                    view = new FileView options
+                    view.el = row.el
+                    view.$el = $ view.el
+                    view.render()
+
+                    row.el.view = view
+                    @pool.push view
+
+        duration = performance.now() - startPoint
+        console.log "Decorated #{rowsToDecorate.length} elements", duration
+        return true
 
 
     # Manage event delegation. Events are listen to on the collection level,
@@ -151,7 +156,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if object.cid?
             cid = object.cid
         else
-            cid = @$(object.target).parents('tr').data 'cid'
+            cid = @$(object.target).parents('li').data 'cid'
 
             unless cid?
                 cid = @$(object.currentTarget).data 'cid'
@@ -165,6 +170,8 @@ module.exports = class FilesView extends BaseView #ViewCollection
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
             view[methodName].apply view, args
+        else
+            console.log "view not found"
 
 
 
