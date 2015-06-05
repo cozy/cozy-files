@@ -162,7 +162,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
                 cid = @$(object.currentTarget).data 'cid'
 
         # Get the view.
-        view = _.find @views, (view) -> view.model.cid is cid
+        view = _.find @pool, (view) -> view.model.cid is cid
 
         # In case of deletion, view may not exist anymore.
         # If model isn't attached to a view in the pool, it is not found.
@@ -171,7 +171,6 @@ module.exports = class FilesView extends BaseView #ViewCollection
             args = [].splice.call arguments, 1
             view[methodName].apply view, args
         else
-            console.log "view not found"
 
 
 
