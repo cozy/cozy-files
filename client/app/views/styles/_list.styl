@@ -1,0 +1,227 @@
+@import 'nib'
+@import '_colors'
+
+
+// File table
+
+
+// Layout
+#files
+    display flex
+    flex-direction column
+
+    [role="grid"]
+        flex 1
+
+    footer
+        margin-top auto
+
+
+    [role="rowheader"]
+    .long-list-row
+        display flex
+
+        // First column
+        .extensible-column
+            flex 1
+
+        // Second and third column
+        .size-column-cell
+        .type-column-cell
+            width 100px
+
+        // Last column
+        .date-column-cell
+            width 190px
+
+
+        // Center vertically all cell elements.
+        [role="gridcell"]
+            display flex
+            *
+                flex 1
+                margin auto 0
+                display inline-block
+
+            // Toggle operations icon's visibility on hover.
+            &.extensible-column
+
+                .spinholder
+                .operations
+                    display none
+
+                &:hover .operations
+                    display inline-block
+
+
+    [role="columnheader"]
+        #down-name
+        #down-size
+        #down-class
+        #down-lastModification
+            display none
+
+
+// Styles
+#files
+
+    // List's header.
+    [role="rowheader"]
+        min-height 40px
+        padding 0 8px
+
+        button#select-all
+            border none
+            background transparent
+            width 15px
+            margin 0 15px 0 0
+            padding 0
+
+            i.fa
+                font-size 16px
+
+        .unactive
+            opacity 0.5
+
+    // List of elements.
+    [role="grid"]
+        list-style-type none
+        padding 0
+        margin-bottom 10px
+
+
+        // Specific column styles
+        .type-column-cell
+        .size-column-cell
+        .date-column-cell
+            color gray
+
+        .date-column-cell
+            text-align left
+
+            &:first-letter
+                text-transform capitalize
+
+        // Generic row styles
+        .long-list-row
+            min-height 40px
+            padding 0 8px
+            border-top 1px solid #ddd
+
+            &:hover
+                background lightorange + 50%
+
+            [role="gridcell"]
+
+
+                // Icon.
+                i.fa
+                    margin 0 15px 0 0
+                    width 15px
+
+                    // Icon's share state.
+                    .fa-users
+                    .fa-globe
+                        position absolute
+                        top 10px
+                        left -3px
+                        font-size 12px
+                        z-index 10
+
+                // Spinner.
+                .spinholder
+                    vertical-align top
+                    display none
+                    margin 0 15px 0 0
+                    width 15px
+
+                // Link to element.
+                .caption
+                    font-size 16px
+                    font-family 'Source Sans Pro', sans-serif
+                    padding 0
+                    margin-left 0px
+                    margin-right 10px
+
+                    // Rank is a temporary information to work on the list.
+                    span + span
+                        margin-left 5px
+
+                // Displayed in search results.
+                .file-path
+                    color darkcolor
+                    font-family 'Source Sans Pro', sans-serif
+                    margin-bottom 0
+                    margin-left 3px
+
+                // Tags list.
+                .tags
+                    margin 0
+                    padding 0
+                    margin-top 5px
+                    display inline-block
+                    border none
+                    font-size 1.3rem
+
+                    input
+                        visibility hidden
+                        padding-left 5px
+                        width 100px
+
+                        &:focus
+                            visibility visible
+
+                    li.tag
+                        display inline-block
+                        border 1px solid lightgray
+                        border-radius 6px
+                        padding 0.2em 0.5em 0.2em 0.5em
+                        margin-top 0px
+                        margin-right 5px
+                        border 1px solid transparent
+                        border-radius 0
+                        background-color blue + 90%
+                        cursor pointer
+                        font-family 'Maven Pro', sans-serif
+                        color blue - 40%
+                        user-select none
+
+                        .deleter
+                            cursor pointer
+                            font-size 10px
+                            transform translate(0px, -1px)
+                            &:hover
+                                color orange - 40%
+
+                        &:hover
+                            border 1px solid orange
+                            background-color orange + 90%
+                            color orange - 40%
+
+                        &:focus
+                        &:active
+                            border 1px solid blue
+                            box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+
+                // List of operations.
+                .operations
+                    font-size 16px
+                    margin 0
+                    padding 0
+                    display none
+
+                    a
+                        padding-left 10px
+                        color blue
+
+                        span:hover
+                        i:hover
+                            color orange
+
+                    a:hover
+                        color orange
+
+#files footer
+    color gray
+    font-style italic
+    text-align center
