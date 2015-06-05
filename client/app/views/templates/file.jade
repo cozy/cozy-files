@@ -1,4 +1,4 @@
-td
+div.extensible-column(role="gridcell")
 
   block file-path
     // empty by default
@@ -21,6 +21,7 @@ td
               i.fa.fa-folder
             a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
               span= model.name
+              span RANK=#{rank}
 
       else if model.type == 'file'
         .caption(data-file-url="#{attachmentUrl}")
@@ -43,10 +44,11 @@ td
                 a.btn-link(
                   href="#{attachmentUrl}",
                   title="#{t('download file')}", target="_blank")
-                    span
-                      | #{model.name}
+                    span= model.name
+                    span RANK=#{rank}
             else
               span.file-name= model.name
+              span RANK=#{rank}
 
     block tags
       ul.tags
@@ -78,17 +80,17 @@ td
           a.broken-button(title="#{t('file broken remove')}")
               span.fa.fa-trash
 
-td.size-column-cell
+div.size-column-cell(role="gridcell")
   if model.type == 'file'
     - options = {base: 2}
     span #{filesize(model.size || 0, options)}
 
-td.type-column-cell
+div.type-column-cell(role="gridcell")
   if model.type == 'folder'
     span.pull-left #{t('folder')}
   else
     span.pull-left #{t(model.class)}
 
-td.date-column-cell
+div.date-column-cell(role="gridcell")
   if model.lastModification
     span #{moment(model.lastModification).calendar()}

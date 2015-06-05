@@ -1,7 +1,9 @@
-ViewCollection = require '../lib/view_collection'
+#ViewCollection = require '../lib/view_collection'
+BaseView = require '../lib/base_view'
 FileView = require './file_view'
+LongList = require '../lib/long-list-rows'
 
-module.exports = class FilesView extends ViewCollection
+module.exports = class FilesView extends BaseView #ViewCollection
     template: require './templates/files'
     el: '#files'
 
@@ -59,10 +61,81 @@ module.exports = class FilesView extends ViewCollection
             numElements: @collection.size()
 
 
+    beforeRender: ->
+        super()
+        @startPoint = performance.now()
+
+
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
         @updateNbFiles()
+
+        POOL_SIZE = 100
+        pool = []
+
+
+        onRowsMoved = (rowsToDecorate) =>
+            startPoint = performance.now()
+            for row, index in rowsToDecorate
+                if row.el
+
+                    rank = row.rank
+
+                    if row.el.view?
+                        model = @collection.at rank
+
+                        if model
+                            model.rank = rank
+                            view = row.el.view
+                            view.model = model
+                            view.reDecorate()
+                        else
+                            console.log 'error, model not found', row
+                    else
+                        model = @collection.at rank
+                        model.rank = rank
+                        options = _.extend {}, {model}, @itemViewOptions()
+                        view = new FileView options
+                        view.el = row.el
+                        view.$el = $ view.el
+                        view.render()
+
+                        row.el.view = view
+                        pool.push view
+
+                    #row.el.textContent = "row #{row.rank}"
+
+            console.log "decorate #{rowsToDecorate.length} elements", performance.now() - startPoint
+            return true
+
+        options =
+            # unit used for the dimensions (px,em or rem)
+            DIMENSIONS_UNIT : 'px' #'em'
+
+            # Height reserved for each row (unit defined by DIMENSIONS_UNIT)
+            ROW_HEIGHT      : 40 #2
+
+            # number of "screens" before and after the viewport
+            # (ex : 1.5 => 1+2*1.5=4 screens always ready)
+            BUFFER_COEF   : 3
+
+            # number of "screens" before and after the viewport corresponding to
+            # the safe zone. The Safe Zone is the rows where viewport can go
+            # without trigering the movement of the buffer.
+            # Must be smaller than BUFFER_COEFF
+            SAFE_ZONE_COEF  : 1
+
+            # minimum duration between two refresh after scroll (ms)
+            THROTTLE        : 50
+
+            # max number of viewport height by seconds : beyond this speed the
+            # refresh is delayed to the nex throttle
+            MAX_SPEED       : 2.5
+
+        viewPortElement = @$(@collectionEl)[0]
+        @list = new LongList viewPortElement, options, onRowsMoved
+        @list.initRows @collection.length
 
 
     # Manage event delegation. Events are listen to on the collection level,
@@ -86,6 +159,7 @@ module.exports = class FilesView extends ViewCollection
         view = _.find @views, (view) -> view.model.cid is cid
 
         # In case of deletion, view may not exist anymore.
+        # If model isn't attached to a view in the pool, it is not found.
         if view?
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1

@@ -1,34 +1,41 @@
-table#table-items.table.table-hover
-  thead
-    tr.table-headers
-      td
-        button#select-all
-          if numSelectedElements == 0 || numElements == 0
-            i.fa.fa-square-o
-          else if numSelectedElements == numElements
-            i.fa.fa-check-square-o
-          else
-            i.fa.fa-minus-square-o
+// List's header.
+div(role="rowheader")
+  div.extensible-column(role="columnheader")
+    button#select-all
+      if numSelectedElements == 0 || numElements == 0
+        i.fa.fa-square-o
+      else if numSelectedElements == numElements
+        i.fa.fa-check-square-o
+      else
+        i.fa.fa-minus-square-o
 
-        span= t('name')
-        a#down-name.btn.fa.fa-chevron-down.unactive
-        a#up-name.btn.fa.fa-chevron-up.unactive
-      td.size-column-cell
-        span= t('size')
-        a#down-size.fa.fa-chevron-down.btn.unactive
-        a#up-size.unactive.btn.fa.fa-chevron-up.unactive
-      td.type-column-cell
-        span= t('type')
-        a#down-class.btn.fa.fa-chevron-down.unactive
-        a#up-class.fa.fa-chevron-up.btn.unactive
-      td.date-column-cell
-        span= t('date')
-        a#down-lastModification.btn.fa.fa-chevron-down.unactive
-        a#up-lastModification.btn.fa.fa-chevron-up.unactive
-  tbody#table-items-body
+    span= t('name')
+    a#down-name.btn.fa.fa-chevron-down.unactive
+    a#up-name.btn.fa.fa-chevron-up.unactive
 
-p.footer#file-amount-indicator
-p.footer#no-files-indicator
+  div.size-column-cell(role="columnheader")
+    span= t('size')
+    a#down-size.fa.fa-chevron-down.btn.unactive
+    a#up-size.unactive.btn.fa.fa-chevron-up.unactive
+
+  div.type-column-cell(role="columnheader")
+    span= t('type')
+    a#down-class.btn.fa.fa-chevron-down.unactive
+    a#up-class.fa.fa-chevron-up.btn.unactive
+
+  div.date-column-cell(role="columnheader")
+    span= t('date')
+    a#down-lastModification.btn.fa.fa-chevron-down.unactive
+    a#up-lastModification.btn.fa.fa-chevron-up.unactive
+
+
+// List of elements.
+ul#table-items-body(role="grid")
+
+
+// Footer.
+footer#file-amount-indicator
+footer#no-files-indicator
   if model.type == 'search'
     | #{t('no file in search')}
   else

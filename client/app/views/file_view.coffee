@@ -9,7 +9,8 @@ client = require "../lib/client"
 module.exports = class FileView extends BaseView
 
     className      : 'folder-row'
-    tagName        : 'tr'
+    tagName        : 'div'
+    attributes     : role: 'row'
     templateNormal : require './templates/file'
     templateEdit   : require './templates/file_edit'
     templateSearch : require './templates/file_search'
@@ -87,6 +88,7 @@ module.exports = class FileView extends BaseView
 
     getRenderData: ->
         _.extend super(),
+            rank: @model.rank # temporary data to help debugging.
             isUploading: @model.isUploading()
             isServerUploading: @model.isServerUploading()
             isBroken: @model.isBroken()
@@ -104,12 +106,35 @@ module.exports = class FileView extends BaseView
         unless app.isPublic
             ModalShareView ?= require "./modal_share"
 
+
+    beforeRender: ->
         # If the model is a folder, we listen to the upload queue to enable or
         # disable the "something is being uploaded in my tree" indicator
         if @model.isFolder()
             path = @model.getRepository()
             numUploadChildren = @uploadQueue.getNumUploadingElementsByPath path
             @hasUploadingChildren = numUploadChildren > 0
+
+    reDecorate: ->
+        @beforeRender()
+
+        renderData = @getRenderData()
+        @elementLink.attr 'href', renderData.downloadUrl
+        @elementName[0].html renderData.model.name
+        @elementName[1].html "RANK=#{renderData.rank}"
+
+        if @model.isFile()
+            size = renderData.model.size or 0
+            size = filesize size, base: 2
+            @elementSize.html size
+
+        type = if @model.isFolder() then 'folder' else renderData.model.class
+        @elementType.html t(type)
+
+        {lastModification} = renderData.model.lastModification
+        if lastModification
+            lastModification = moment(lastModification).calendar()
+            @elementLastModificationDate.html lastModification
 
 
     onUploadComplete: ->
@@ -374,6 +399,12 @@ module.exports = class FileView extends BaseView
 
 
     afterRender: ->
+
+        @elementLink = @$ 'a.btn-link'
+        @elementName = @elementLink.find 'span'
+        @elementSize = @$ '.size-column-cell span'
+        @elementType = @$ '.type-column-cell span'
+        @elementLastModificationDate = @$ '.date-column-cell span'
 
         @$el.data 'cid', @model.cid
 
