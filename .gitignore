@@ -6,3 +6,5 @@
 *.swp
 *.log
 *.transifex.coffee
+
+/test/fixtures/big-folder/

@@ -85,16 +85,16 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
             # number of "screens" before and after the viewport
             # (ex : 1.5 => 1+2*1.5=4 screens always ready)
-            BUFFER_COEF   : 3
+            BUFFER_COEF   : 4
 
             # number of "screens" before and after the viewport corresponding to
             # the safe zone. The Safe Zone is the rows where viewport can go
             # without trigering the movement of the buffer.
             # Must be smaller than BUFFER_COEFF
-            SAFE_ZONE_COEF  : 1
+            SAFE_ZONE_COEF  : 3
 
             # minimum duration between two refresh after scroll (ms)
-            THROTTLE        : 50
+            THROTTLE        : 150
 
             # max number of viewport height by seconds : beyond this speed the
             # refresh is delayed to the nex throttle

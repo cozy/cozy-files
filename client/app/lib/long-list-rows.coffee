@@ -436,11 +436,8 @@ module.exports = class LongListRows
                 #     console.log "viewport goind DOWN but remain in =", nToMove,
                 #                 "rows to move down after targetRk=", targetRk
 
-
-
-            console.log '======_adaptBuffer==ending='
-            console.log 'bufr', bufr
-            console.log '======_adaptBuffer==ended======='
+            if nToMove > 0
+                console.log '======_adaptBuffer=========', nToMove, 'moved rows'
 
         @_adaptBuffer = _adaptBuffer
 

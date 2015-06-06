@@ -121,28 +121,29 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = numUploadChildren > 0
 
     reDecorate: ->
+        # console.log "reDecorate"
         @beforeRender()
 
         renderData = @getRenderData()
         @elementLink.attr 'href', renderData.downloadUrl
-        @elementName[0].html renderData.model.name
-        @elementName[1].html "RANK=#{renderData.rank}"
+        @elementName[0].textContent = renderData.model.name
+        @elementName[1].textContent = "RANK=#{renderData.rank}"
 
         if @model.isFile()
             size = renderData.model.size or 0
             size = filesize size, base: 2
-            @elementSize.html size
+            @elementSize.textContent = size
 
         type = if @model.isFolder() then 'folder' else renderData.model.class
-        @elementType.html t(type)
+        @elementType.textContent = t(type)
 
         {lastModification} = renderData.model.lastModification
         if lastModification
             lastModification = moment(lastModification).calendar()
-            @elementLastModificationDate.html lastModification
+            @elementLastModificationDate.textContent = lastModification
+        # TODO : if there is no lastModification, we should erase the current value
 
-
-        @afterRender()
+        @afterReDecorate()
 
 
     onUploadComplete: ->
@@ -440,6 +441,41 @@ module.exports = class FileView extends BaseView
         @showLoading() if @hasUploadingChildren
 
 
+
+    afterReDecorate: ->
+
+        # @elementLink = @$ 'a.btn-link'
+        # @elementName = @elementLink.find 'span'
+        # @elementSize = @$ '.size-column-cell span'
+        # @elementType = @$ '.type-column-cell span'
+        # @elementLastModificationDate = @$ '.date-column-cell span'
+
+        @$el.data 'cid', @model.cid # TODO : usefull in redecorate ?
+
+        if @model.isUploading() or @model.isServerUploading()
+            @$el.addClass 'uploading'
+            @addProgressBar()
+            @blockDownloadLink()
+            @blockNameLink()
+        else
+            @$el.removeClass 'uploading'
+            @$el.toggleClass 'broken', @model.isBroken()
+            @updateTags()
+            if @model.get('tags').length
+                @addTags()
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        if @model.isNew()
+            @blockNameLink()
+
+        # TODO : avoid or adapt to an update operation
+        @hideLoading()
+        @showLoading() if @hasUploadingChildren
+
+
     # add and display progress bar.
     addProgressBar: ->
         @$('.type-column-cell').remove()
@@ -458,6 +494,12 @@ module.exports = class FileView extends BaseView
             model: @model
         @tags.render()
         @tags.hideInput()
+
+
+    # TODO : be more clever :-)
+    updateTags: ()->
+        if @model.get('tags').length
+            @addTags()
 
 
     # Make download link inactive.
