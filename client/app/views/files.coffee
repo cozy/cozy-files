@@ -30,6 +30,7 @@ module.exports = class FilesView extends ViewCollection
         'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
         'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
         'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
+        'click i.fa-image': (e) -> @viewProxy 'onSelectClicked', e
         'click tr.folder-row': (e) -> @viewProxy 'onLineClicked', e
 
     initialize: (options) ->
