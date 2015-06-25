@@ -1,16 +1,12 @@
-BaseView = require '../lib/base_view'
-ModalView = require "./modal"
+BaseView       = require '../lib/base_view'
+ModalView      = require "./modal"
 ModalShareView = null
-TagsView = require "../widgets/tags"
-ProgressBar = require '../widgets/progressbar'
-
-client = require "../lib/client"
+TagsView       = require "../widgets/tags"
+ProgressBar    = require '../widgets/progressbar'
+client         = require "../lib/client"
 
 module.exports = class FileView extends BaseView
 
-    className      : 'folder-row'
-    tagName        : 'div'
-    attributes     : role: 'row'
     templateNormal : require './templates/file'
     templateEdit   : require './templates/file_edit'
     templateSearch : require './templates/file_search'
@@ -121,7 +117,7 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = numUploadChildren > 0
 
     reDecorate: ->
-        # console.log "reDecorate"
+        console.log "redecorate"
         @beforeRender()
 
         renderData = @getRenderData()
@@ -355,7 +351,7 @@ module.exports = class FileView extends BaseView
     # When a line is clicked, it should mark the item as selected, unless the
     # user clicked a button.
     onLineClicked: (event) ->
-
+        console.log 'onLineClicked'
         # List of selectors that will prevent the selection if they, or one
         # of their children, are clicked.
         forbiddenSelectors = [
@@ -417,7 +413,8 @@ module.exports = class FileView extends BaseView
         @elementType = @$ '.type-column-cell span'
         @elementLastModificationDate = @$ '.date-column-cell span'
 
-        @$el.data 'cid', @model.cid
+        @$el.data('cid', @model.cid) # link between the element and the model
+        @$el.addClass('itemRow')
 
         if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
@@ -436,21 +433,13 @@ module.exports = class FileView extends BaseView
         if @model.isNew()
             @blockNameLink()
 
-
         @hideLoading()
         @showLoading() if @hasUploadingChildren
 
 
 
     afterReDecorate: ->
-
-        # @elementLink = @$ 'a.btn-link'
-        # @elementName = @elementLink.find 'span'
-        # @elementSize = @$ '.size-column-cell span'
-        # @elementType = @$ '.type-column-cell span'
-        # @elementLastModificationDate = @$ '.date-column-cell span'
-
-        @$el.data 'cid', @model.cid # TODO : usefull in redecorate ?
+        @$el.data 'cid', @model.cid # link between the element and the model
 
         if @model.isUploading() or @model.isServerUploading()
             @$el.addClass 'uploading'
@@ -462,7 +451,7 @@ module.exports = class FileView extends BaseView
             @$el.toggleClass 'broken', @model.isBroken()
             @updateTags()
             if @model.get('tags').length
-                @addTags()
+                @addTags() #todo : updateTags or hideTags
 
         # When folders are drag and drop, they can be clicked before being
         # actually created, resulting in an error. Folders don't rely

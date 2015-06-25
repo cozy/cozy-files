@@ -1,7 +1,8 @@
 FileCollection = require './collections/files'
-UploadQueue = require './collections/upload_queue'
-File = require './models/file'
+UploadQueue    = require './collections/upload_queue'
+File           = require './models/file'
 SocketListener = require '../lib/socket'
+
 
 ###
 Initialize the model and start the actual code

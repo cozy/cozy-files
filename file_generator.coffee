@@ -45,7 +45,7 @@ finally
 ###*
  * CREATE FILES
 ###
-for i in [0..numberOfFilesToCreate] by 1
+for i in [0..numberOfFilesToCreate-1] by 1
     # rank = if i < 10 then "0#{i}" else i
     rkTXT = Array(7 - "#{i}".length).join('0') + i
     filename = "test-#{rkTXT}"

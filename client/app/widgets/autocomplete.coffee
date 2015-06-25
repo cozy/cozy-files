@@ -30,7 +30,7 @@ module.exports = class Autocomplete extends BaseView
         e.stopPropagation()
         @unbindCancel = true
 
-        @input.parents('.folder-row').addClass 'pseudohover'
+        @input.parents('.itemRow').addClass 'pseudohover'
         @input.focus()
 
 
@@ -111,7 +111,7 @@ module.exports = class Autocomplete extends BaseView
         return if @unbindCancel or not @input
         @input.off 'keydown', @onInputKeyDown
         @input.off 'blur', @delayedUnbind
-        @input.parents('.folder-row').removeClass 'pseudohover'
+        @input.parents('.itemRow').removeClass 'pseudohover'
         @input.val ''
         @$target = null
         @$el.hide()

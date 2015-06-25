@@ -59,7 +59,6 @@ module.exports = class FolderView extends BaseView
 
         # refresh folder action buttons after bulk actions
         @listenTo @baseCollection, 'toggle-select', @toggleFolderActions
-        @listenTo @baseCollection, 'remove', @toggleFolderActions
         @listenTo @collection, 'remove', @toggleFolderActions
 
         # when clearance is saved, we update the share button's icon
@@ -482,18 +481,54 @@ module.exports = class FolderView extends BaseView
         Bulk actions management
     ###
     bulkRemove: ->
-        new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
-            if confirm
-                window.pendingOperations.deletion++
-                async.eachSeries @getSelectedElements(), (element, cb) ->
-                    element.destroy
-                        success: -> setTimeout cb, 200
-                        error: -> setTimeout cb, 200
-                , (err) ->
-                    window.pendingOperations.deletion--
-                    if err?
-                        Modal.error t("modal delete error")
-                        console.log err
+        # TODO : add the confirmation modal (commented for ease of tests)
+        # new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
+        #     if confirm
+                selectedElements = @getSelectedElements()
+                window.pendingOperations.deletion += selectedElements.length
+                # we manage ourself the remove of all the models of the
+                # collection instead of removing one by one after each
+                # model.destroy of the sync serie
+                for model in selectedElements
+                    console.log 'toto', model
+                    @collection.remove(model)
+                # asynchronous destroy of the models
+                console.log 'ASYNC MODEL.destroy()'
+                async.filter(
+                    selectedElements
+                    , (model, cb) =>
+                        model.destroy
+                            success: (model,response) ->
+                                # BIN À PRIORI RIEN À FAIRE ?
+                                # setTimeout ()->
+                                #     cb(model,response)
+                                # , 200
+                                window.pendingOperations.deletion--
+                                cb(false)
+                            error: (model) =>
+                                # the deletion has not been done on the server
+                                # we re-integrate the model in the collection
+                                window.pendingOperations.deletion--
+                                cb(true)
+                                # increase the file counter ? géré par filesView ?
+                            # we manage ourself the remove of all the models
+                            # instead of removing one by one after each
+                            # model.destroy of the sync serie
+                            silent: false
+                            wait  : false
+
+                    , (undeletedModels) =>
+                        if undeletedModels.length > 0
+                            console.log "bulkRemove callback : #{undeletedModels.length} deletion(s) failed", undeletedModels
+                            Modal.error undeletedModels.length + t("modal delete error")
+                            sortedModelsInError = _.sortBy(
+                                undeletedModels
+                                , (model)-> return model.rank
+                            )
+                            for model in sortedModelsInError
+                                @collection.add(model)
+                )
+
 
     bulkMove: ->
         new ModalBulkMove
