@@ -43,7 +43,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "modal delete msg"          : "Deleting cannot be undone"
     "modal delete ok"           : "Delete"
     "modal cancel"              : "cancel"
-    "modal delete error"        : "cancel"
+    "modal delete error"        : " deletions failed, corresponding files & folders are re-integrated."
 
     "modal error in use"        : "Name already in use"
     "modal error rename"        : "Name could not be changed"

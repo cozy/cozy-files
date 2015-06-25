@@ -32,7 +32,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
         'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
         'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
-        'click tr.folder-row': (e) -> @viewProxy 'onLineClicked', e
+        'click li.itemRow': (e) -> @viewProxy 'onLineClicked', e
 
     initialize: (options) ->
         super options
@@ -45,7 +45,8 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         @chevron = order: @collection.order, type: @collection.type
 
-        @listenTo @collection, 'add remove', @updateNbFiles
+        @listenTo @collection, 'add', @addFile
+        @listenTo @collection, 'remove', @removeFile
 
         # Event delegation.
         @listenTo @collection, 'change', _.partial(@viewProxy, 'refresh')
@@ -53,6 +54,19 @@ module.exports = class FilesView extends BaseView #ViewCollection
         @listenTo @collection, 'toggle-select', _.partial(@viewProxy, 'onToggleSelect')
         @listenTo @collection, 'add remove reset',  _.partial(@viewProxy, 'onCollectionChanged')
         @listenTo @collection, 'upload-complete',  _.partial(@viewProxy, 'onUploadComplete')
+
+
+
+    addFile: (model, collection, options) ->
+        @longList.addRow(collection.indexOf(model))
+        @updateNbFiles()
+        console.log 'files.addFile', model
+
+
+    removeFile: (model, collection, options) ->
+        console.log 'files.removeFile', model
+        @longList.removeRow(options.index)
+        @updateNbFiles()
 
 
     getRenderData: ->
@@ -99,12 +113,16 @@ module.exports = class FilesView extends BaseView #ViewCollection
             # refresh is delayed to the nex throttle
             MAX_SPEED       : 2.5
 
+            # call back when a row of the buffer is moved and must be completly
+            # redecorated
+            onRowsMovedCB   : @onRowsMoved.bind(@)
+
         # DOM element the LongList will be bound to.
         viewPortElement = @$(@collectionEl)[0]
 
         # Initialize the list.
-        @list = new LongList viewPortElement, options, @onRowsMoved.bind(@)
-        @list.initRows @collection.length
+        @longList = new LongList viewPortElement, options
+        @longList.initRows @collection.length
 
 
     # Handler called when the list must update.
@@ -113,12 +131,9 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         for row, index in rowsToDecorate
             if row.el
-
                 rank = row.rank
-
                 if row.el.view?
                     model = @collection.at rank
-
                     if model
                         model.rank = rank
                         view = row.el.view
@@ -139,7 +154,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
                     @pool.push view
 
         duration = performance.now() - startPoint
-        console.log "Decorated #{rowsToDecorate.length} elements", duration
+        # console.log "Decorated #{rowsToDecorate.length} elements", duration
         return true
 
 

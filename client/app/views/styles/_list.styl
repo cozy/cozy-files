@@ -102,120 +102,122 @@
             &:first-letter
                 text-transform capitalize
 
-        // Generic row styles
-        .long-list-row
-            min-height 40px
-            padding 0 8px
-            border-top 1px solid #ddd
+    // Generic row styles
+    .itemRow
+        // min-height 40px
+        padding 0 8px
+        border-top 1px solid #ddd
 
-            &:hover
-                background lightorange + 50%
+        &:hover
+            background lightorange + 50%
 
-            [role="gridcell"]
+        &.selected
+            background lightblue + 70%
 
+        [role="gridcell"]
 
-                // Icon.
-                i.fa
-                    margin 0 15px 0 0
-                    width 15px
+            // Icon.
+            i.fa
+                margin 0 15px 0 0
+                width 15px
 
-                    // Icon's share state.
-                    .fa-users
-                    .fa-globe
-                        position absolute
-                        top 10px
-                        left -3px
-                        font-size 12px
-                        z-index 10
+                // Icon's share state.
+                .fa-users
+                .fa-globe
+                    position absolute
+                    top 10px
+                    left -3px
+                    font-size 12px
+                    z-index 10
 
-                // Spinner.
-                .spinholder
-                    vertical-align top
-                    display none
-                    margin 0 15px 0 0
-                    width 15px
+            // Spinner.
+            .spinholder
+                vertical-align top
+                display none
+                margin 0 15px 0 0
+                width 15px
 
-                // Link to element.
-                .caption
-                    font-size 16px
-                    font-family 'Source Sans Pro', sans-serif
-                    padding 0
-                    margin-left 0px
-                    margin-right 10px
+            // Link to element.
+            .caption
+                font-size 16px
+                font-family 'Source Sans Pro', sans-serif
+                padding 0
+                margin-left 0px
+                margin-right 10px
 
-                    // Rank is a temporary information to work on the list.
-                    span + span
-                        margin-left 5px
+                // Rank is a temporary information to work on the list.
+                span + span
+                    margin-left 5px
 
-                // Displayed in search results.
-                .file-path
-                    color darkcolor
-                    font-family 'Source Sans Pro', sans-serif
-                    margin-bottom 0
-                    margin-left 3px
+            // Displayed in search results.
+            .file-path
+                color darkcolor
+                font-family 'Source Sans Pro', sans-serif
+                margin-bottom 0
+                margin-left 3px
 
-                // Tags list.
-                .tags
-                    margin 0
-                    padding 0
-                    margin-top 5px
+            // Tags list.
+            .tags
+                margin 0
+                padding 0
+                margin-top 5px
+                display inline-block
+                border none
+                font-size 1.3rem
+
+                input
+                    padding-left 5px
+                    width 100px
+
+                li.tag
                     display inline-block
-                    border none
-                    font-size 1.3rem
+                    border 1px solid lightgray
+                    border-radius 6px
+                    padding 0.2em 0.5em 0.2em 0.5em
+                    margin-top 0px
+                    margin-right 5px
+                    border 1px solid transparent
+                    border-radius 0
+                    background-color blue + 90%
+                    cursor pointer
+                    font-family 'Maven Pro', sans-serif
+                    color blue - 40%
+                    user-select none
 
-                    input
-                        padding-left 5px
-                        width 100px
-
-                    li.tag
-                        display inline-block
-                        border 1px solid lightgray
-                        border-radius 6px
-                        padding 0.2em 0.5em 0.2em 0.5em
-                        margin-top 0px
-                        margin-right 5px
-                        border 1px solid transparent
-                        border-radius 0
-                        background-color blue + 90%
+                    .deleter
                         cursor pointer
-                        font-family 'Maven Pro', sans-serif
-                        color blue - 40%
-                        user-select none
-
-                        .deleter
-                            cursor pointer
-                            font-size 10px
-                            transform translate(0px, -1px)
-                            &:hover
-                                color orange - 40%
-
+                        font-size 10px
+                        transform translate(0px, -1px)
                         &:hover
-                            border 1px solid orange
-                            background-color orange + 90%
                             color orange - 40%
 
-                        &:focus
-                        &:active
-                            border 1px solid blue
-                            box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+                    &:hover
+                        border 1px solid orange
+                        background-color orange + 90%
+                        color orange - 40%
 
-                // List of operations.
-                .operations
-                    font-size 16px
-                    margin 0
-                    padding 0
-                    display none
+                    &:focus
+                    &:active
+                        border 1px solid blue
+                        box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
 
-                    a
-                        padding-left 10px
-                        color blue
+            // List of operations.
+            .operations
+                font-size 16px
+                margin 0
+                padding 0
+                display none
 
-                        span:hover
-                        i:hover
-                            color orange
+                a
+                    padding-left 10px
+                    color blue
 
-                    a:hover
+                    span:hover
+                    i:hover
                         color orange
+
+                a:hover
+                    color orange
 
 #files footer
     color gray
