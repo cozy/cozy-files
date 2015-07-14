@@ -51,19 +51,49 @@ sendBinary = baseController.sendBinary
     filename: 'file'
 
 module.exports.getAttachment = (req, res, next) ->
-    # Configure headers
+
+    # Prevent server from stopping if the download is very slow.
+    isDownloading = true
+    do keepAlive = ->
+        if isDownloading
+            feed.publish 'usage.application', 'files'
+            setTimeout keepAlive, 60 * 1000
+
+    # Configure headers so clients know they should read and not download.
     encodedFileName = encodeURIComponent req.file.name
     res.setHeader 'Content-Disposition', """
         inline; filename*=UTF8''#{encodedFileName}
     """
+
+    # Tell when the download is over in order to stop the keepAlive mechanism.
+    res.on 'close', -> isDownloading = false
+    res.on 'finish', -> isDownloading = false
+
     sendBinary req, res, next
+
 
 # Perform download as a traditional attachment.
 module.exports.downloadAttachment = (req, res, next) ->
+
+    # Prevent server from stopping if the download is very slow.
+    isDownloading = true
+    do keepAlive = ->
+        if isDownloading
+            feed.publish 'usage.application', 'files'
+            setTimeout keepAlive, 60 * 1000
+
+
+    # Configure headers so clients know they should download, and that they
+    # can make up the file name.
     encodedFileName = encodeURIComponent req.file.name
     res.setHeader 'Content-Disposition', """
         attachment; filename*=UTF8''#{encodedFileName}
     """
+
+    # Tell when the download is over in order to stop the keepAlive mechanism.
+    res.on 'close', -> isDownloading = false
+    res.on 'finish', -> isDownloading = false
+
     sendBinary req, res, next
 
 

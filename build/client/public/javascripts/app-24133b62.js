@@ -1,42 +1,59 @@
-(function(/*! Brunch !*/) {
+(function() {
   'use strict';
 
-  var globals = typeof window !== 'undefined' ? window : global;
+  var globals = typeof window === 'undefined' ? global : window;
   if (typeof globals.require === 'function') return;
 
   var modules = {};
   var cache = {};
+  var has = ({}).hasOwnProperty;
 
-  var has = function(object, name) {
-    return ({}).hasOwnProperty.call(object, name);
+  var aliases = {};
+
+  var endsWith = function(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
   };
 
-  var expand = function(root, name) {
-    var results = [], parts, part;
-    if (/^\.\.?(\/|$)/.test(name)) {
-      parts = [root, name].join('/').split('/');
-    } else {
-      parts = name.split('/');
-    }
-    for (var i = 0, length = parts.length; i < length; i++) {
-      part = parts[i];
-      if (part === '..') {
-        results.pop();
-      } else if (part !== '.' && part !== '') {
-        results.push(part);
+  var unalias = function(alias, loaderPath) {
+    var start = 0;
+    if (loaderPath) {
+      if (loaderPath.indexOf('components/' === 0)) {
+        start = 'components/'.length;
+      }
+      if (loaderPath.indexOf('/', start) > 0) {
+        loaderPath = loaderPath.substring(start, loaderPath.indexOf('/', start));
       }
     }
-    return results.join('/');
+    var result = aliases[alias + '/index.js'] || aliases[loaderPath + '/deps/' + alias + '/index.js'];
+    if (result) {
+      return 'components/' + result.substring(0, result.length - '.js'.length);
+    }
+    return alias;
   };
 
+  var expand = (function() {
+    var reg = /^\.\.?(\/|$)/;
+    return function(root, name) {
+      var results = [], parts, part;
+      parts = (reg.test(name) ? root + '/' + name : name).split('/');
+      for (var i = 0, length = parts.length; i < length; i++) {
+        part = parts[i];
+        if (part === '..') {
+          results.pop();
+        } else if (part !== '.' && part !== '') {
+          results.push(part);
+        }
+      }
+      return results.join('/');
+    };
+  })();
   var dirname = function(path) {
     return path.split('/').slice(0, -1).join('/');
   };
 
   var localRequire = function(path) {
     return function(name) {
-      var dir = dirname(path);
-      var absolute = expand(dir, name);
+      var absolute = expand(dirname(path), name);
       return globals.require(absolute, path);
     };
   };
@@ -51,21 +68,26 @@
   var require = function(name, loaderPath) {
     var path = expand(name, '.');
     if (loaderPath == null) loaderPath = '/';
+    path = unalias(name, loaderPath);
 
-    if (has(cache, path)) return cache[path].exports;
-    if (has(modules, path)) return initModule(path, modules[path]);
+    if (has.call(cache, path)) return cache[path].exports;
+    if (has.call(modules, path)) return initModule(path, modules[path]);
 
     var dirIndex = expand(path, './index');
-    if (has(cache, dirIndex)) return cache[dirIndex].exports;
-    if (has(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
+    if (has.call(cache, dirIndex)) return cache[dirIndex].exports;
+    if (has.call(modules, dirIndex)) return initModule(dirIndex, modules[dirIndex]);
 
     throw new Error('Cannot find module "' + name + '" from '+ '"' + loaderPath + '"');
   };
 
-  var define = function(bundle, fn) {
+  require.alias = function(from, to) {
+    aliases[to] = from;
+  };
+
+  require.register = require.define = function(bundle, fn) {
     if (typeof bundle === 'object') {
       for (var key in bundle) {
-        if (has(bundle, key)) {
+        if (has.call(bundle, key)) {
           modules[key] = bundle[key];
         }
       }
@@ -74,21 +96,18 @@
     }
   };
 
-  var list = function() {
+  require.list = function() {
     var result = [];
     for (var item in modules) {
-      if (has(modules, item)) {
+      if (has.call(modules, item)) {
         result.push(item);
       }
     }
     return result;
   };
 
+  require.brunch = true;
   globals.require = require;
-  globals.require.define = define;
-  globals.require.register = define;
-  globals.require.list = list;
-  globals.require.brunch = true;
 })();
 require.register("application", function(exports, require, module) {
 var File, FileCollection, FolderView, SocketListener, UploadQueue;
@@ -290,18 +309,6 @@ module.exports = FileCollection = (function(_super) {
     });
   };
 
-  FileCollection.prototype.getFilesBeingUploaded = function() {
-    if (this.filesBeingUploaded == null) {
-      this.filesBeingUploaded = new BackboneProjections.Filtered(this, {
-        filter: function(file) {
-          return file.inUploadCycle();
-        },
-        comparator: this.comparator
-      });
-    }
-    return this.filesBeingUploaded;
-  };
-
   FileCollection.prototype.comparator = function(f1, f2) {
     var e1, e2, n1, n2, sort, t1, t2;
     if (this.type == null) {
@@ -400,7 +407,7 @@ module.exports = UploadQueue = (function() {
     this.onSyncError = __bind(this.onSyncError, this);
     this.completeUpload = __bind(this.completeUpload, this);
     this.abort = __bind(this.abort, this);
-    this.uploadCollection = this.baseCollection.getFilesBeingUploaded();
+    this.uploadCollection = new Backbone.Collection();
     _.extend(this, Backbone.Events);
     this.asyncQueue = async.queue(this.uploadWorker, 5);
     this.listenTo(this.uploadCollection, 'sync error', this.onSyncError);
@@ -415,19 +422,19 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype.reset = function() {
     var collection;
     this.progress = {
-      loadedFiles: 0,
-      totalFiles: this.length,
       loadedBytes: 0,
       totalBytes: this.sumProp('total')
     };
     window.pendingOperations.upload = 0;
-    this.loaded = 0;
     this.completed = false;
     this.uploadingPaths = {};
     collection = this.uploadCollection.toArray();
-    collection.forEach(function(model) {
-      return model.resetStatus();
-    });
+    collection.forEach((function(_this) {
+      return function(model) {
+        _this.uploadCollection.remove(model);
+        return model.resetStatus();
+      };
+    })(this));
     return this.trigger('reset');
   };
 
@@ -440,7 +447,6 @@ module.exports = UploadQueue = (function() {
   };
 
   UploadQueue.prototype.remove = function(model) {
-    this.loaded++;
     model.resetStatus();
     return window.pendingOperations.upload--;
   };
@@ -451,6 +457,7 @@ module.exports = UploadQueue = (function() {
       model.markAsUploading();
     }
     this.baseCollection.add(model);
+    this.uploadCollection.add(model);
     if (model.get('type') === 'file') {
       if (model.isConflict()) {
         return this.asyncQueue.push(model);
@@ -473,8 +480,7 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype.onSyncError = function(model) {
     var path;
     path = model.get('path') + '/';
-    this.uploadingPaths[path]--;
-    return this.loaded++;
+    return this.uploadingPaths[path]--;
   };
 
   UploadQueue.prototype.uploadWorker = function(model, next) {
@@ -506,12 +512,15 @@ module.exports = UploadQueue = (function() {
   UploadQueue.prototype._processSave = function(model, done) {
     if (!model.isConflict() && !model.isErrored()) {
       return model.save(null, {
-        success: function(model) {
-          model.file = null;
-          model.loaded = model.total;
-          model.markAsUploaded();
-          return done(null);
-        },
+        success: (function(_this) {
+          return function(model) {
+            model.file = null;
+            model.loaded = model.total;
+            model.markAsUploaded();
+            _this.unmarkPathAsUploading(model);
+            return done(null);
+          };
+        })(this),
         error: (function(_this) {
           return function(_, err) {
             var body, defaultMessage, e, error, errorKey;
@@ -583,10 +592,8 @@ module.exports = UploadQueue = (function() {
         model.loaded = 0;
         model.total = blob.size;
         if (blob.size === 0 && blob.type.length === 0) {
-          model.error = 'Cannot upload a folder with Firefox';
-          model.total = 0;
-          model.file = null;
-          _this.trigger('folderError', model);
+          model = null;
+          _this.trigger('folderError');
         } else if ((existingModel = _this.isFileStored(model)) != null) {
           if (!existingModel.inUploadCycle() || existingModel.isUploaded()) {
             existingModel.set({
@@ -613,37 +620,47 @@ module.exports = UploadQueue = (function() {
   };
 
   UploadQueue.prototype.addFolderBlobs = function(blobs, parent) {
-    var dirs, i, nonBlockingLoop;
+    var dirs, i, isConflict, nonBlockingLoop;
     if (this.completed) {
       this.reset();
     }
     dirs = Helpers.nestedDirs(blobs);
     i = 0;
+    isConflict = false;
     return (nonBlockingLoop = (function(_this) {
       return function() {
-        var dir, folder, name, parts, path, prefix;
-        if (!(dir = dirs[i++])) {
-          blobs = _.filter(blobs, function(blob) {
-            var _ref;
-            return (_ref = blob.name) !== '.' && _ref !== '..';
+        var dir, existingModel, folder, name, parts, path, prefix;
+        dir = dirs[i++];
+        if (!dir) {
+          if (!isConflict) {
+            blobs = _.filter(blobs, function(blob) {
+              var _ref;
+              return (_ref = blob.name) !== '.' && _ref !== '..';
+            });
+            return _this.addBlobs(blobs, parent);
+          }
+        } else {
+          prefix = parent.getRepository();
+          parts = Helpers.getFolderPathParts(dir);
+          name = parts[parts.length - 1];
+          path = [prefix].concat(parts.slice(0, -1)).join('/');
+          folder = new File({
+            type: "folder",
+            name: name,
+            path: path
           });
-          _this.addBlobs(blobs, parent);
-          return;
+          folder.loaded = 0;
+          folder.total = 250;
+          if ((existingModel = _this.isFileStored(folder)) != null) {
+            i = dirs.length;
+            isConflict = true;
+            _this.trigger('existingFolderError', existingModel);
+          } else {
+            _this.add(folder);
+            _this.markPathAsUploading(folder);
+          }
+          return setTimeout(nonBlockingLoop, 2);
         }
-        prefix = parent.getRepository();
-        parts = Helpers.getFolderPathParts(dir);
-        name = parts[parts.length - 1];
-        path = [prefix].concat(parts.slice(0, -1)).join('/');
-        folder = new File({
-          type: "folder",
-          name: name,
-          path: path
-        });
-        folder.loaded = 0;
-        folder.total = 250;
-        _this.add(folder);
-        _this.markPathAsUploading(folder);
-        return setTimeout(nonBlockingLoop, 2);
       };
     })(this))();
   };
@@ -685,6 +702,12 @@ module.exports = UploadQueue = (function() {
     return this.uploadingPaths[path]++;
   };
 
+  UploadQueue.prototype.unmarkPathAsUploading = function(model) {
+    var path;
+    path = "" + (model.get('path')) + "/";
+    return this.uploadingPaths[path]--;
+  };
+
   UploadQueue.prototype.getNumUploadingElementsByPath = function(path) {
     path = "" + path + "/";
     return _.reduce(this.uploadingPaths, function(memo, value, index) {
@@ -698,8 +721,6 @@ module.exports = UploadQueue = (function() {
 
   UploadQueue.prototype.computeProgress = function() {
     return this.progress = {
-      loadedFiles: this.loaded,
-      totalFiles: this.length,
       loadedBytes: this.sumProp('loaded'),
       totalBytes: this.sumProp('total')
     };
@@ -1216,6 +1237,7 @@ module.exports = {
   "modal error empty name": "Der Name kann nicht lerr sein",
   "modal error file invalid": "es scheint eine gültige Datei zu sein",
   'modal error firefox dragdrop folder': "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
+  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "root",
   "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
   "breadcrumbs search title": "Suche",
@@ -1248,7 +1270,7 @@ module.exports = {
   "failed to upload": "kann nicht zum Server gesendet werden.",
   "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
   "chrome error dragdrop title": "Dateien werden ignoriert",
-  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files} \naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files} \naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
+  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files}\naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files}\naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
   "chrome error submit": "Ok",
   "upload caption": "Neue Datei hochladen",
   "upload msg": "Ziehen Sie die Dateien oder klicken Sie hier zum auswählen.",
@@ -1355,6 +1377,155 @@ module.exports = {
 };
 });
 
+;require.register("locales/de.transifex", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Abgebrochene Datei",
+  "file broken remove": "Abgebrochene Datei entfernen",
+  "or": "oder",
+  "modal error": "Fehler",
+  "modal ok": "OK",
+  "modal error get files": "Fehler beim Holen von Dateien vom Server",
+  "modal error get folders": "Fehler beim Holen von Ordnern vom Server",
+  "modal error get content": "Ein Fehler ist aufgetreten während dem abholen des Inhalts von Ordner \"%{folderName}\" vom Server",
+  "modal error empty name": "Name kann nicht leer sein",
+  "modal error file invalid": "es scheint eine gültige Datei zu sein",
+  "modal error firefox dragdrop folder": "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
+  "root folder name": "root",
+  "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
+  "breadcrumbs search title": "Suche",
+  "modal error file exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
+  "modal error size": "Entschuldigung, es steht nicht genug Speicherplatz zur Verfügung",
+  "modal error file upload": "Datei konnte nicht zum Server gesendet werden",
+  "modal error folder create": "Ordner konnte nicht erstellt werden",
+  "modal error folder exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
+  "modal error zip empty folder": "Ein leerer Ordner kann nicht als ZIP herunter geladen werden.",
+  "upload running": "Hochladen ist noch aktiv. Schließen Sie nicht den Browser",
+  "modal are you sure": "Sind Sie sicher?",
+  "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
+  "modal delete ok": "Löschen",
+  "modal cancel": "Abbrechen",
+  "modal delete error": "Abbrechen",
+  "modal error in use": "Name ist schon in Gebrauch",
+  "modal error rename": "Name kann nicht geändert werden",
+  "modal error no data": "Kein Name und kein Ordner zum hochladen",
+  "tag": "Tag",
+  "file edit save": "Speichern",
+  "file edit cancel": "Abbrechen",
+  "tooltip delete": "Löschen",
+  "tooltip edit": "Umbennen",
+  "tooltip download": "Herunterladen",
+  "tooltip share": "Teilen",
+  "tooltip tag": "Tag",
+  "and x files": "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
+  "already exists": "Existiert bereit.",
+  "failed to upload": "kann nicht zum Server gesendet werden.",
+  "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
+  "chrome error dragdrop title": "Dateien werden ignoriert",
+  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files} \naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files} \naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
+  "chrome error submit": "Ok",
+  "upload caption": "Neue Datei hochladen",
+  "upload msg": "Ziehen Sie die Dateien oder klicken Sie hier zum auswählen.",
+  "upload msg selected": "Sie haben die Datei %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen. ||||\nSie haben die Dateien %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen..",
+  "upload close": "Schließen",
+  "upload send": "Hinzufügen",
+  "upload button": "Eine Datei hochladen",
+  "upload success": "Hochladen erfolgreich beendet!",
+  "upload end button": "Schließen",
+  "total progress": "wird ausgeführt…",
+  "new folder caption": "Neuen Ordner hinzufügen",
+  "new folder msg": "Ordner mit folgendem Namen erstellen:",
+  "new folder close": "Schließen",
+  "new folder send": "Ordner erstellen",
+  "new folder button": "Neuen Ordner erstellen",
+  "new folder": "Neuer Ordner",
+  "download all": "Auswahl herunterladen",
+  "move all": "Auswahl verschieben",
+  "remove all": "Auswahl löschen",
+  "drop message": "Legen Sie Ihre Dateien hier ab um sich automatisch hinzuzufügen",
+  "upload folder msg": "Einen Ordner hochladen",
+  "upload folder separator": "oder",
+  "overwrite modal title": "Eine Datei existiert bereist",
+  "overwrite modal content": "Möchten Sie \"%{fileName}\" überschreiben?",
+  "overwrite modal remember label": "Bestätigen Sie diese Entscheidung für alle Konflikte",
+  "overwrite modal yes button": "Überschreiben",
+  "overwrite modal no button": "Auslassen",
+  "folder": "Ordner",
+  "image": "Bild",
+  "document": "Dokument",
+  "music": "Musik",
+  "video": "Video",
+  "yes": "Ja",
+  "no": "Nein",
+  "ok": "Ok",
+  "name": "Name",
+  "type": "Typ",
+  "size": "Größe",
+  "date": "Letzte Aktualisierung",
+  "download": "Alles Herunterladen",
+  "MB": "MB",
+  "KB": "KB",
+  "B": "B",
+  "files": "Dateien",
+  "element": "%{smart_count} Element |||| %{smart_count} Elemente",
+  "no file in folder": "Dieser Ordner is leer.",
+  "no file in search": "Ihre Suche ergabe keine Übereinstimmung mit Dokumenten.",
+  "enable notifications": "Mitteilungen freigeben",
+  "disable notifications": "Mitteilungen sperrem",
+  "notifications enabled": "Mitteilungen freigegeben",
+  "notifications disabled": "Mitteilungen gesperrt",
+  "open folder": "Ordner öffnen",
+  "download file": "Datei betrachten",
+  "also have access": "Diese Leute haben ebenso Zugriff, da Sie Zugriff zum übergeordnet Ordner haben",
+  "cancel": "Abbrechen",
+  "copy paste link": "Um Ihrem Kontakt Zugriff zu geben, senden Sie Ihr/Ihm den Link unten:",
+  "details": "Details",
+  "inherited from": "geerbt von",
+  "modal question folder shareable": "Wählen Sie Teilen Modus für diesen Ordner",
+  "modal shared folder custom msg": "E-Mail eintragen und Enter drücken",
+  "modal shared public link msg": "Senden Sie diesen Link um Leuten Zugriff zu diesem Ordner zu gewähren:",
+  "modal shared with people msg": "Geben Sie einer Auswahl von Leuten Zugriff. Tippen Sie Ihre E-Mail oder Namen in das Feld und drücken Enter (eine E-Mail wird versandt mit schliessen des Fensters):",
+  "modal send mails": "Mitteilung senden",
+  "modal question file shareable": "Wählen Sie Teilen Modus für diese Datei",
+  "modal shared file custom msg": "E-Mail eintragen und Enter drücken",
+  "modal shared file link msg": "Senden Sie diesen Link um Leuten Zugriff zu dieser Datei zu gewähren",
+  "only you can see": "Nur Sie haben Zugriff auf diese Resource",
+  "public": "Public",
+  "private": "Private",
+  "shared": "Shared",
+  "share": "Teilen",
+  "save": "Sicher",
+  "see link": "Siehe Link",
+  "send mails question": "Sende Mitteilungs E-Mail zu to:",
+  "sharing": "Teilen",
+  "revoke": "Absagen",
+  "forced public": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird.",
+  "forced shared": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird. Hier ist die Lsite der Gäste mit Zugriff:",
+  "confirm": "Bestätigen",
+  "share forgot add": "Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken",
+  "share confirm save": "Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?",
+  "yes forgot": "Zurück",
+  "no forgot": "es ist ok",
+  "perm": "Kann",
+  "perm r file": "Diese Datei herunterladen",
+  "perm r folder": "Diesen Ordner durchblättern",
+  "perm rw folder": "Dateien durchblättern und hochladen",
+  "change notif": "Diesen Kasten anwählen um benachrichtigt zu werden, wenn eine Kontakt\neine Datei zu diesem Ordner hinzufügt.",
+  "send email hint": "Mitteilungs E-Mails werden einmalig beim Speichern gesendet",
+  "move": "Verschieben",
+  "tooltip move": "Element zu einem anderen Ordner verschieben.",
+  "moving...": "Verschieben...",
+  "move element to": "Elment verschieben zu",
+  "error occured canceling move": "Ein Fehler ist während dem abbrechen des Verschiebens aufgetreten.",
+  "error occured while moving element": "Ein Fehler ist während dem Verschieben eines Elements aufgetreten",
+  "file successfully moved to": "Datei erfolgreich verschoben zu",
+  "plugin modal close": "Schließen",
+  "moving selected elements": "Ausgewählte Elemente verschieben",
+  "move elements to": "Elemente verschieben zu",
+  "elements successfully moved to": "Elemente erfolgreich verschoben zu",
+  "close": "Schließen"
+};
+});
+
 ;require.register("locales/en", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Broken file",
@@ -1368,6 +1539,7 @@ module.exports = {
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
   'modal error firefox dragdrop folder': "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
+  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
   "root folder name": "root",
   "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
   "breadcrumbs search title": "Search",
@@ -1483,7 +1655,7 @@ module.exports = {
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
   "mail not sent": "Mail not sent",
-  "postfix error": " Mail not sent.\nCan you check that all recipient adresses are correct \nand that your Cozy is well configured to send messages ?",
+  "postfix error": " Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
   "yes forgot": "Back",
   "no forgot": "It's ok",
   "perm": "can ",
@@ -1507,6 +1679,454 @@ module.exports = {
 };
 });
 
+;require.register("locales/en.transifex", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Broken file",
+  "file broken remove": "Remove broken file",
+  "or": "or",
+  "modal error": "Error",
+  "modal ok": "OK",
+  "modal error get files": "Error getting files from server",
+  "modal error get folders": "Error getting folders from server",
+  "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
+  "modal error empty name": "Name can't be empty",
+  "modal error file invalid": "doesn't seem to be a valid file",
+  "modal error firefox dragdrop folder": "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
+  "root folder name": "root",
+  "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
+  "breadcrumbs search title": "Search",
+  "modal error file exists": "Sorry, a file or folder having this name already exists",
+  "modal error size": "Sorry, you haven't enough storage space",
+  "modal error file upload": "File could not be sent to server",
+  "modal error folder create": "Folder could not be created",
+  "modal error folder exists": "Sorry, a file or folder having this name already exists",
+  "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
+  "upload running": "Upload is progress. Do not close your browser",
+  "modal are you sure": "Are you sure ?",
+  "modal delete msg": "Deleting cannot be undone",
+  "modal delete ok": "Delete",
+  "modal cancel": "cancel",
+  "modal delete error": "cancel",
+  "modal error in use": "Name already in use",
+  "modal error rename": "Name could not be changed",
+  "modal error no data": "No name and no folder to upload",
+  "tag": "tag",
+  "file edit save": "Save",
+  "file edit cancel": "cancel",
+  "tooltip delete": "Delete",
+  "tooltip edit": "Rename",
+  "tooltip download": "Download",
+  "tooltip share": "Share",
+  "tooltip tag": "Tag",
+  "and x files": "and %{smart_count} other file ||||\nand %{smart_count} other files",
+  "already exists": "already exists.",
+  "failed to upload": "could not be sent to server.",
+  "upload complete": "One file successfully uploaded. ||||\n%{smart_count} files successfully uploaded.",
+  "chrome error dragdrop title": "Files are going to be ignored",
+  "chrome error dragdrop content": "Due to a bug in Chrome, the following file: %{files} is going to be\nignored because it has an accent in its name. You can still add\nit by using the button on the top right of your screen. ||||\nDue to a bug in Chrome, the following files: %{files} are going to be\nignored because they have an accent in their name. You can still add\nthem by using the button on the top right of your screen.",
+  "chrome error submit": "Ok",
+  "upload caption": "Upload a new file",
+  "upload msg": "Drag files or click here to choose files.",
+  "upload msg selected": "You have selected %{smart_count} file, click Add to upload it. ||||\nYou have selected %{smart_count} files, click Add to upload them.",
+  "upload close": "Close",
+  "upload send": "Add",
+  "upload button": "Upload a file",
+  "upload success": "Upload successfuly completed!",
+  "upload end button": "Close",
+  "total progress": "in progress…",
+  "new folder caption": "Add a new folder",
+  "new folder msg": "Create a folder named:",
+  "new folder close": "Close",
+  "new folder send": "Create Folder",
+  "new folder button": "Create a new folder",
+  "new folder": "new folder",
+  "download all": "Download the selection",
+  "move all": "Move the selection",
+  "remove all": "Remove the selection",
+  "drop message": "Drop your files here to automatically add them",
+  "upload folder msg": "Upload a folder",
+  "upload folder separator": "or",
+  "overwrite modal title": "A file already exist",
+  "overwrite modal content": "Do you want to overwrite \"%{fileName}\"?",
+  "overwrite modal remember label": "Apply this decision to all conflicts",
+  "overwrite modal yes button": "Overwrite",
+  "overwrite modal no button": "Skip",
+  "folder": "Folder",
+  "image": "Image",
+  "document": "Document",
+  "music": "Music",
+  "video": "Video",
+  "yes": "Yes",
+  "no": "No",
+  "ok": "Ok",
+  "name": "Name",
+  "type": "Type",
+  "size": "Size",
+  "date": "Last update",
+  "download": "Download all",
+  "MB": "MB",
+  "KB": "KB",
+  "B": "B",
+  "files": "files",
+  "element": "%{smart_count} element |||| %{smart_count} elements",
+  "no file in folder": "This folder is empty.",
+  "no file in search": "Your search did not match any documents.",
+  "enable notifications": "Enable notifications",
+  "disable notifications": "Disable notifications",
+  "notifications enabled": "Notifications enabled",
+  "notifications disabled": "Notifications disabled",
+  "open folder": "Open the folder",
+  "download file": "View the file",
+  "also have access": "These people also have access, because they have access to a parent folder",
+  "cancel": "Cancel",
+  "copy paste link": "To give access to your contact send him/her the link below:",
+  "details": "Details",
+  "inherited from": "inherited from",
+  "modal question folder shareable": "Select share mode for this folder",
+  "modal shared folder custom msg": "Enter email and press enter",
+  "modal shared public link msg": "Send this link to let people access this folder:",
+  "modal shared with people msg": "Give access to a selection of contacts. Type their emails or name in the field and press enter (an email will be sent to them when you will close this window):",
+  "modal send mails": "Send a notification",
+  "modal question file shareable": "Select share mode for this file",
+  "modal shared file custom msg": "Enter email and press enter",
+  "modal shared file link msg": "Send this link to let people access this file",
+  "only you can see": "Only you can access this resource",
+  "public": "Public",
+  "private": "Private",
+  "shared": "Shared",
+  "share": "Share",
+  "save": "Save",
+  "see link": "See link",
+  "send mails question": "Send a notification email to:",
+  "sharing": "Sharing",
+  "revoke": "Revoke",
+  "forced public": "The current file/folder is shared because one of its parent folders is shared.",
+  "forced shared": "The current file/folder is shared because one of its parent folders is shared. Here is the list of guests who can access it:",
+  "confirm": "Confirm",
+  "share forgot add": "Looks like you forgot to click the Add button",
+  "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
+  "yes forgot": "Back",
+  "no forgot": "It's ok",
+  "perm": "can",
+  "perm r file": "download this file",
+  "perm r folder": "browse this folder",
+  "perm rw folder": "browse and upload files",
+  "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
+  "send email hint": "Notification emails will be sent one time on save",
+  "move": "Move",
+  "tooltip move": "Move element to another folder.",
+  "moving...": "Moving...",
+  "move element to": "Move element to",
+  "error occured canceling move": "An error occured while canceling move.",
+  "error occured while moving element": "An error occured while moving element",
+  "file successfully moved to": "File successfully moved to",
+  "plugin modal close": "Close",
+  "moving selected elements": "Moving selected elements",
+  "move elements to": "Move elements to",
+  "elements successfully moved to": "Elements successfully moved to",
+  "close": "Close"
+};
+});
+
+;require.register("locales/es", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Archivo estropeado",
+  "file broken remove": "Suprimir el archivo estropeado",
+  "or": "o",
+  "modal error": "Error",
+  "modal ok": "Ok",
+  "modal error get files": "Se produjo un error al recuperar los archivos del servidor",
+  "modal error get folders": "Se produjo un error al recuperar los dossiers del servidor",
+  "modal error get content": "Se produjo un error al recuperar del servidor el contenido del dossier \"%{folderName}\"",
+  "modal error empty name": "La casilla del nombre no puede estar vacía",
+  "modal error file invalid": "El archivo no parece válido",
+  "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
+  "root folder name": "root",
+  "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
+  "breadcrumbs search title": "Buscar",
+  "modal error file exists": "Lo siento, un archivo o un dossier tiene ya el mismo nombre",
+  "modal error size": "Lo siento, usted no dispone de espacio suficiente de almacenamiento",
+  "modal error file upload": "No se ha podido enviar el archivo al servidor",
+  "modal error folder create": "No se ha podido crear la carpeta",
+  "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
+  "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
+  "upload running": "Una descarga está en curso. No cierre su navegador.",
+  "modal are you sure": "¿Está usted seguro(a)?",
+  "modal delete msg": "Suprimir es definitivo",
+  "modal delete ok": "Suprimir",
+  "modal cancel": "anular",
+  "modal delete error": "anular",
+  "modal error in use": "Ese nombre ya se ha utilizado",
+  "modal error rename": "No se ha podido modificar el nombre",
+  "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
+  "tag": "etiqueta",
+  "file edit save": "Guardar",
+  "file edit cancel": "anular",
+  "tooltip delete": "Suprimir",
+  "tooltip edit": "Renombrar",
+  "tooltip download": "Descargar",
+  "tooltip share": "Compartir",
+  "tooltip tag": "Etiqueta",
+  "and x files": "y %{smart_count} archivo ||||\ny %{smart_count} archivos",
+  "already exists": "ya existen.",
+  "failed to upload": "no se ha podido enviar al servidor.",
+  "upload complete": "Un archivo cargado con éxito.||||\n%{smart_count} archivos cargados con éxito.",
+  "chrome error dragdrop title": "Algunos archivos no se tendrán en cuenta",
+  "chrome error dragdrop content": "A causa de un bug de Chrome, el archivo siguiente : %{files} será\nignorado pués su nombre tiene un acento marcado. Añádalo haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla. ||||\nA causa de un bug de Chrome, los archivos siguientes : %{files} serán\n ignorados pués sus nombres tienen un acento marcado. Añádalos haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla.",
+  "chrome error submit": "Ok",
+  "upload caption": "Añadir un archivo",
+  "upload msg": "Arrastrar archivos o hacer clic aquí para seleccionar los archivos que quiere poner en línea.",
+  "upload msg selected": "Usted ha seleccionado %{smart_count} archivo, haga clic en Añadir para cargarlo.||||\nUsted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarlos.",
+  "upload close": "Cerrar",
+  "upload send": "Añadir",
+  "upload button": "Cargar un archivo",
+  "upload success": "¡Descarga completa exitosa!",
+  "upload end button": "Cerrar",
+  "total progress": "en curso...",
+  "new folder caption": "Añadir una carpeta",
+  "new folder msg": "Crear una carpeta de nombre:",
+  "new folder close": "Cerrar",
+  "new folder send": "Crear una Carpeta",
+  "new folder button": "Crear una carpeta",
+  "new folder": "nueva carpeta",
+  "download all": "Descargar la selección",
+  "move all": "Desplazar la selección",
+  "remove all": "Suprimir la selección",
+  "drop message": "Pegar aquí sus archivos para añadirlos",
+  "upload folder msg": "Cargar una carpeta",
+  "upload folder separator": "o",
+  "overwrite modal title": "Ya existe un archivo",
+  "overwrite modal content": "¿Quiere usted sobrescribir \"%{fileName}\"?",
+  "overwrite modal remember label": "Aplique esta decisión a todos los conflictos",
+  "overwrite modal yes button": "Sobreescribir",
+  "overwrite modal no button": "Ignorar",
+  "folder": "Carpeta",
+  "image": "Imagen",
+  "document": "Documento",
+  "music": "Música",
+  "video": "Video",
+  "yes": "Si",
+  "no": "No",
+  "ok": "Ok",
+  "name": "Nombre",
+  "type": "Tipo",
+  "size": "Tamaño",
+  "date": "Última modificación",
+  "download": "Descargar todos los archivos",
+  "MB": "Mo",
+  "KB": "Ko",
+  "B": "o",
+  "files": "archivos",
+  "element": "%{smart_count} elemento |||| %{smart_count} elementos",
+  "no file in folder": "Esta carpeta está vacía.",
+  "no file in search": "No se ha encontrado un documento que corresponda.",
+  "enable notifications": "Activar las notificaciones",
+  "disable notifications": "Desactivar las notificaciones",
+  "notifications enabled": "Notificaciones activadas",
+  "notifications disabled": "Notificaciones desactivadas",
+  "open folder": "Abrir la carpeta",
+  "download file": "Consultar el archivo",
+  "also have access": "Esas personas tienen igualmente acceso, ya que pueden acceder a un dossier padre",
+  "cancel": "Anular",
+  "copy paste link": "Para que su contacto pueda acceder, enviarle este enlace : ",
+  "details": "Detalles",
+  "inherited from": "heredado de",
+  "modal question folder shareable": "Escoger la manera de compartir esta carpeta",
+  "modal shared folder custom msg": "Escribir el correo electrónico y pulsar en Enter",
+  "modal shared public link msg": "Enviar este enlace para que puedan acceder a esta carpeta:",
+  "modal shared with people msg": "Permitir acceder a unos contactos seleccionados. Escribir sus correos electrónicos o el nombre en la casilla y pulsar Enter (se les enviará un mensaje cuando usted cierre esta ventana):",
+  "modal send mails": "Enviar una notificación",
+  "modal question file shareable": "Escoger  la manera de compartir este archivo",
+  "modal shared file custom msg": "Escriba el correo electrónico y pulsar en Enter",
+  "modal shared file link msg": "Enviar este enlace para que puedan acceder a este archivo",
+  "only you can see": "Sólo usted puede acceder a este recurso.",
+  "public": "Público",
+  "private": "Privado",
+  "shared": "Compartido",
+  "share": "Compartir",
+  "save": "Guardar",
+  "see link": "Ver el enlace",
+  "send mails question": "Enviar una notificación por correo electrónico a:",
+  "sharing": "Compartiendo",
+  "revoke": "Revocar",
+  "forced public": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido.",
+  "forced shared": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :",
+  "confirm": "Confirmar",
+  "share forgot add": "Parece que a usted se le ha olvidado pulsar el botón Añadir",
+  "share confirm save": "Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?",
+  "yes forgot": "Atrás",
+  "no forgot": "Ok",
+  "perm": "puede ",
+  "perm r file": "cargar este archivo",
+  "perm r folder": "navegar en la carpeta",
+  "perm rw folder": "navegar en la carpeta y cargar archivos",
+  "change notif": "Desplazar",
+  "send email hint": "Se notificará por correo electrónico cuando se guarde.",
+  "move": "Desplazar",
+  "tooltip move": "Desplazar el elemento a otra carpeta.",
+  "moving...": "Desplazamiento en curso...",
+  "move element to": "Desplazar el elemento a",
+  "error occured canceling move": "Se produjo un error al anular el desplazamiento.",
+  "error occured while moving element": "Se produjo un error al desplazar el elemento.",
+  "file successfully moved to": "Archivos desplazados con éxito a",
+  "plugin modal close": "Cerrar",
+  "moving selected elements": "Desplazando los elementos seleccionados",
+  "move elements to": "Desplazar los elementos a",
+  "elements successfully moved to": "Elementos desplazados con éxito a",
+  "close": "Cerrar"
+};
+});
+
+;require.register("locales/es.transifex", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Archivo estropeado",
+  "file broken remove": "Suprimir el archivo estropeado",
+  "or": "o",
+  "modal error": "Error",
+  "modal ok": "Ok",
+  "modal error get files": "Se produjo un error al recuperar los archivos del servidor",
+  "modal error get folders": "Se produjo un error al recuperar los dossiers del servidor",
+  "modal error get content": "Se produjo un error al recuperar del servidor el contenido del dossier \"%{folderName}\"",
+  "modal error empty name": "La casilla del nombre no puede estar vacía",
+  "modal error file invalid": "El archivo no parece válido",
+  "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+  "root folder name": "root",
+  "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
+  "breadcrumbs search title": "Buscar",
+  "modal error file exists": "Lo siento, un archivo o un dossier tiene ya el mismo nombre",
+  "modal error size": "Lo siento, usted no dispone de espacio suficiente de almacenamiento",
+  "modal error file upload": "No se ha podido enviar el archivo al servidor",
+  "modal error folder create": "No se ha podido crear la carpeta",
+  "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
+  "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
+  "upload running": "Una descarga está en curso. No cierre su navegador.",
+  "modal are you sure": "¿Está usted seguro(a)?",
+  "modal delete msg": "Suprimir es definitivo",
+  "modal delete ok": "Suprimir",
+  "modal cancel": "anular",
+  "modal delete error": "anular",
+  "modal error in use": "Ese nombre ya se ha utilizado",
+  "modal error rename": "No se ha podido modificar el nombre",
+  "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
+  "tag": "etiqueta",
+  "file edit save": "Guardar",
+  "file edit cancel": "anular",
+  "tooltip delete": "Suprimir",
+  "tooltip edit": "Renombrar",
+  "tooltip download": "Descargar",
+  "tooltip share": "Compartir",
+  "tooltip tag": "Etiqueta",
+  "and x files": "y %{smart_count} archivo ||||\ny %{smart_count} archivos",
+  "already exists": "ya existen.",
+  "failed to upload": "no se ha podido enviar al servidor.",
+  "upload complete": "Un archivo cargado con éxito.||||\n%{smart_count} archivos cargados con éxito.",
+  "chrome error dragdrop title": "Algunos archivos no se tendrán en cuenta",
+  "chrome error dragdrop content": "A causa de un bug de Chrome, el archivo siguiente : %{files} será\nignorado pués su nombre tiene un acento marcado. Añádalo haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla. ||||\nA causa de un bug de Chrome, los archivos siguientes : %{files} serán\n ignorados pués sus nombres tienen un acento marcado. Añádalos haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla.",
+  "chrome error submit": "Ok",
+  "upload caption": "Añadir un archivo",
+  "upload msg": "Arrastrar archivos o hacer clic aquí para seleccionar los archivos que quiere poner en línea.",
+  "upload msg selected": "Usted ha seleccionado %{smart_count} archivo, haga clic en Añadir para cargarlo.||||\nUsted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarlos.",
+  "upload close": "Cerrar",
+  "upload send": "Añadir",
+  "upload button": "Cargar un archivo",
+  "upload success": "¡Descarga completa exitosa!",
+  "upload end button": "Cerrar",
+  "total progress": "en curso...",
+  "new folder caption": "Añadir una carpeta",
+  "new folder msg": "Crear una carpeta de nombre:",
+  "new folder close": "Cerrar",
+  "new folder send": "Crear una Carpeta",
+  "new folder button": "Crear una carpeta",
+  "new folder": "nueva carpeta",
+  "download all": "Descargar la selección",
+  "move all": "Desplazar la selección",
+  "remove all": "Suprimir la selección",
+  "drop message": "Pegar aquí sus archivos para añadirlos",
+  "upload folder msg": "Cargar una carpeta",
+  "upload folder separator": "o",
+  "overwrite modal title": "Ya existe un archivo",
+  "overwrite modal content": "¿Quiere usted sobrescribir \"%{fileName}\"?",
+  "overwrite modal remember label": "Aplique esta decisión a todos los conflictos",
+  "overwrite modal yes button": "Sobreescribir",
+  "overwrite modal no button": "Ignorar",
+  "folder": "Carpeta",
+  "image": "Imagen",
+  "document": "Documento",
+  "music": "Música",
+  "video": "Video",
+  "yes": "Si",
+  "no": "No",
+  "ok": "Ok",
+  "name": "Nombre",
+  "type": "Tipo",
+  "size": "Tamaño",
+  "date": "Última modificación",
+  "download": "Descargar todos los archivos",
+  "MB": "Mo",
+  "KB": "Ko",
+  "B": "o",
+  "files": "archivos",
+  "element": "%{smart_count} elemento |||| %{smart_count} elementos",
+  "no file in folder": "Esta carpeta está vacía.",
+  "no file in search": "No se ha encontrado un documento que corresponda.",
+  "enable notifications": "Activar las notificaciones",
+  "disable notifications": "Desactivar las notificaciones",
+  "notifications enabled": "Notificaciones activadas",
+  "notifications disabled": "Notificaciones desactivadas",
+  "open folder": "Abrir la carpeta",
+  "download file": "Consultar el archivo",
+  "also have access": "Esas personas tienen igualmente acceso, ya que pueden acceder a un dossier padre",
+  "cancel": "Anular",
+  "copy paste link": "Para que su contacto pueda acceder, enviarle este enlace : ",
+  "details": "Detalles",
+  "inherited from": "heredado de",
+  "modal question folder shareable": "Escoger la manera de compartir esta carpeta",
+  "modal shared folder custom msg": "Escribir el correo electrónico y pulsar en Enter",
+  "modal shared public link msg": "Enviar este enlace para que puedan acceder a esta carpeta:",
+  "modal shared with people msg": "Permitir acceder a unos contactos seleccionados. Escribir sus correos electrónicos o el nombre en la casilla y pulsar Enter (se les enviará un mensaje cuando usted cierre esta ventana):",
+  "modal send mails": "Enviar una notificación",
+  "modal question file shareable": "Escoger  la manera de compartir este archivo",
+  "modal shared file custom msg": "Escriba el correo electrónico y pulsar en Enter",
+  "modal shared file link msg": "Enviar este enlace para que puedan acceder a este archivo",
+  "only you can see": "Sólo usted puede acceder a este recurso.",
+  "public": "Público",
+  "private": "Privado",
+  "shared": "Compartido",
+  "share": "Compartir",
+  "save": "Guardar",
+  "see link": "Ver el enlace",
+  "send mails question": "Enviar una notificación por correo electrónico a:",
+  "sharing": "Compartiendo",
+  "revoke": "Revocar",
+  "forced public": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido.",
+  "forced shared": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :",
+  "confirm": "Confirmar",
+  "share forgot add": "Parece que a usted se le ha olvidado pulsar el botón Añadir",
+  "share confirm save": "Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?",
+  "yes forgot": "Atrás",
+  "no forgot": "Ok",
+  "perm": "puede",
+  "perm r file": "cargar este archivo",
+  "perm r folder": "navegar en la carpeta",
+  "perm rw folder": "navegar en la carpeta y cargar archivos",
+  "change notif": "Desplazar",
+  "send email hint": "Se notificará por correo electrónico cuando se guarde.",
+  "move": "Desplazar",
+  "tooltip move": "Desplazar el elemento a otra carpeta.",
+  "moving...": "Desplazamiento en curso...",
+  "move element to": "Desplazar el elemento a",
+  "error occured canceling move": "Se produjo un error al anular el desplazamiento.",
+  "error occured while moving element": "Se produjo un error al desplazar el elemento.",
+  "file successfully moved to": "Archivos desplazados con éxito a",
+  "plugin modal close": "Cerrar",
+  "moving selected elements": "Desplazando los elementos seleccionados",
+  "move elements to": "Desplazar los elementos a",
+  "elements successfully moved to": "Elementos desplazados con éxito a",
+  "close": "Cerrar"
+};
+});
+
 ;require.register("locales/fr", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Fichier cassé",
@@ -1518,8 +2138,10 @@ module.exports = {
   "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
   "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
   "modal error empty name": "Le nom ne peut pas être vide",
+  "modal error no data": "Pas de noms et de dossier à envoyer",
   "modal error file invalid": "Le fichier ne parait pas être valide",
   'modal error firefox dragdrop folder': "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
+  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "racine",
   "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
   "breadcrumbs search title": "Recherche",
@@ -1598,6 +2220,7 @@ module.exports = {
   "files": "fichiers",
   "element": "%{smart_count} élément |||| %{smart_count} éléments",
   "no file in folder": "Ce dossier est vide.",
+  "no file in search": "Votre recherche ne correspond à aucun document.",
   "enable notifications": "Activer les notifications",
   "disable notifications": "Désactiver les notifications",
   "notifications enabled": "Notifications activées",
@@ -1606,12 +2229,11 @@ module.exports = {
   "download file": "Consulter le fichier",
   "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
   "cancel": "Annuler",
-  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien : ",
+  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien :",
   "details": "Détails",
   "inherited from": "hérité de",
   "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
   "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
-  "modal shared folder link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
   "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
   "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
   "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
@@ -1626,7 +2248,7 @@ module.exports = {
   "see link": "Voir le lien",
   "sharing": "Partage",
   "revoke": "Révoquer la permission",
-  "send mails question": "Envoyer un email de notification à : ",
+  "send mails question": "Envoyer un email de notification à :",
   "modal send mails": "Envoyer une notification",
   "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
   "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
@@ -1634,7 +2256,7 @@ module.exports = {
   "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
   "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
   "mail not sent": "Le mail n'a pas pu être envoyé",
-  "postfix error": " Le mail n'a pas pu être envoyé. \nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
+  "postfix error": " Le mail n'a pas pu être envoyé.\nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
   "yes forgot": "Retour",
   "no forgot": "Ok",
   "perm": "peut ",
@@ -1646,15 +2268,164 @@ module.exports = {
   "move": "Déplacer",
   'tooltip move': "Déplacer l'élément dans un autre dossier.",
   "moving...": "Déplacement en cours…",
-  "move element to": "Déplacer l'élément vers ",
+  "move element to": "Déplacer l'élément vers",
   "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
   "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
-  "file successfully moved to": 'Fichier déplacé avec succès vers ',
+  "file successfully moved to": 'Fichier déplacé avec succès vers',
   'plugin modal close': 'Fermer',
   'moving selected elements': 'Déplacer des éléments',
-  'move elements to': "Déplacer les éléments vers ",
-  "elements successfully moved to": 'Eléments déplacés avec succès vers ',
+  'move elements to': "Déplacer les éléments vers",
+  "elements successfully moved to": 'Eléments déplacés avec succès vers',
   'close': 'Fermer'
+};
+});
+
+;require.register("locales/fr.transifex", function(exports, require, module) {
+module.exports = {
+  "file broken indicator": "Fichier cassé",
+  "file broken remove": "Supprimer le fichier cassé",
+  "or": "ou",
+  "modal error": "Erreur",
+  "modal ok": "OK",
+  "modal error get files": "Une erreur s'est produite en récupérant les fichiers du serveur",
+  "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
+  "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
+  "modal error empty name": "Le nom du dossier ne peut pas être vide",
+  "modal error file invalid": "Le fichier ne parait pas être valide",
+  "modal error firefox dragdrop folder": "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
+  "root folder name": "racine",
+  "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
+  "breadcrumbs search title": "Recherche",
+  "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+  "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
+  "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
+  "modal error folder create": "Le dossier n'a pas pu être créé",
+  "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+  "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
+  "upload running": "Upload en cours. Ne quittez pas votre navigateur.",
+  "modal are you sure": "Êtes-vous sûr(e) ?",
+  "modal delete msg": "La suppression ne pourra pas être annulée",
+  "modal delete ok": "Supprimer",
+  "modal cancel": "Annuler",
+  "modal delete error": "Annuler",
+  "modal error in use": "Ce nom est déjà utilisé",
+  "modal error rename": "Le nom n'a pas pu être modifié",
+  "modal error no data": "Pas de noms et de dossier à envoyer",
+  "tag": "étiquette",
+  "file edit save": "Sauvegarder",
+  "file edit cancel": "Annuler",
+  "tooltip delete": "Supprimer",
+  "tooltip edit": "Renommer",
+  "tooltip download": "Télécharger",
+  "tooltip share": "Partager",
+  "tooltip tag": "Etiquette",
+  "and x files": "et un autre fichier ||||\net %{smart_count} autres fichiers",
+  "already exists": "existent déjà.",
+  "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
+  "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
+  "chrome error dragdrop title": "Des fichiers vont être ignorés",
+  "chrome error dragdrop content": "À cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez-les en cliquant sur\nle bouton en haut à droite de votre écran. ||||\nÀ cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez-le en cliquant sur\nle bouton en haut à droite de votre écran.",
+  "chrome error submit": "Ok",
+  "upload caption": "Ajouter des fichiers",
+  "upload msg": "Faites glisser des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
+  "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
+  "upload close": "Annuler",
+  "upload send": "Ajouter",
+  "upload button": "Ajouter un fichier",
+  "upload success": "Ajouté avec succès !",
+  "upload end button": "Fermer",
+  "total progress": "Progression",
+  "new folder caption": "Créer un nouveau dossier",
+  "new folder msg": "Entrer le nom du dossier :",
+  "new folder close": "Annuler",
+  "new folder send": "Créer",
+  "new folder button": "Créer un nouveau dossier",
+  "new folder": "nouveau dossier",
+  "download all": "Télécharger la sélection",
+  "move all": "Déplacer la sélection",
+  "remove all": "Supprimer la sélection",
+  "drop message": "Déposez ici vos fichiers pour les ajouter",
+  "upload folder msg": "Mettre en ligne un dossier",
+  "upload folder separator": "ou",
+  "overwrite modal title": "Un fichier existe déjà",
+  "overwrite modal content": "Voulez-vous écraser \"%{fileName}\" ?",
+  "overwrite modal remember label": "Appliquer cette décision à tous les conflits",
+  "overwrite modal yes button": "Écraser",
+  "overwrite modal no button": "Ignorer",
+  "folder": "Dossier",
+  "image": "Image",
+  "document": "Document",
+  "music": "Musique",
+  "video": "Vidéo",
+  "yes": "Oui",
+  "no": "Non",
+  "ok": "Ok",
+  "name": "Nom",
+  "type": "Type",
+  "size": "Taille",
+  "date": "Dernière modification",
+  "download": "Télécharger tous les fichiers",
+  "MB": "Mo",
+  "KB": "Ko",
+  "B": "o",
+  "files": "fichiers",
+  "element": "%{smart_count} élément |||| %{smart_count} éléments",
+  "no file in folder": "Ce dossier est vide.",
+  "no file in search": "Votre recherche ne correspond à aucun document.",
+  "enable notifications": "Activer les notifications",
+  "disable notifications": "Désactiver les notifications",
+  "notifications enabled": "Notifications activées",
+  "notifications disabled": "Notifications désactivées",
+  "open folder": "Ouvrir le dossier",
+  "download file": "Consulter le fichier",
+  "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
+  "cancel": "Annuler",
+  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien :",
+  "details": "Détails",
+  "inherited from": "hérité de",
+  "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
+  "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
+  "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier:",
+  "modal shared with people msg": "Invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé) :",
+  "modal send mails": "Envoyer une notification",
+  "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
+  "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
+  "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
+  "only you can see": "Vous seul(e) pouvez accéder à cette ressource.",
+  "public": "Public",
+  "private": "Privé",
+  "shared": "Partagé",
+  "share": "Partager",
+  "save": "Sauvegarder",
+  "see link": "Voir le lien",
+  "send mails question": "Envoyer un email de notification à :",
+  "sharing": "Partage",
+  "revoke": "Révoquer la permission",
+  "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
+  "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
+  "confirm": "Confirmer",
+  "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Add",
+  "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
+  "yes forgot": "Retour",
+  "no forgot": "Ok",
+  "perm": "peut",
+  "perm r file": "consulter ce fichier",
+  "perm r folder": "parcourir ce dossier",
+  "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
+  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
+  "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
+  "move": "Déplacer",
+  "tooltip move": "Déplacer l'élément dans un autre dossier.",
+  "moving...": "Déplacement en cours…",
+  "move element to": "Déplacer l'élément vers",
+  "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
+  "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
+  "file successfully moved to": "Fichier déplacé avec succès vers",
+  "plugin modal close": "Fermer",
+  "moving selected elements": "Déplacer des éléments",
+  "move elements to": "Déplacer les éléments vers",
+  "elements successfully moved to": "Eléments déplacés avec succès vers",
+  "close": "Fermer"
 };
 });
 
@@ -1780,7 +2551,7 @@ client = require('../lib/client');
 Represent a file or folder document.
 
 
- * Local state and Shared state
+ * Local state and Shared state.
 There is a concept of local state and shared state in the application, it is
 handled in this class.
 
@@ -1791,6 +2562,10 @@ The shared state is shared with other clients through websockets.
 
 Both are needed in order to support various features like conflict management,
 upload cancel, or broken file detection.
+
+ * View state.
+The state "selected" is only relevant into the view, but it's handy to manage
+it in the model.
  */
 
 module.exports = File = (function(_super) {
@@ -1801,6 +2576,8 @@ module.exports = File = (function(_super) {
   File.prototype.uploadStatus = null;
 
   File.prototype.error = null;
+
+  File.prototype.viewSelected = false;
 
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
@@ -1939,7 +2716,36 @@ module.exports = File = (function(_super) {
    */
 
   File.prototype.isServerUploading = function() {
-    return this.get('uploading');
+    return this.get('uploading') && !this.inUploadCycle();
+  };
+
+
+  /*
+      Manage view state.
+      The state "selected" is only relevant into the view, but it's handy
+      to manage it in the model.
+   */
+
+  File.prototype.isViewSelected = function() {
+    return this.viewSelected;
+  };
+
+  File.prototype.toggleViewSelected = function(isShiftPressed) {
+    if (isShiftPressed == null) {
+      isShiftPressed = false;
+    }
+    return this.setSelectedViewState(!this.isViewSelected(), isShiftPressed);
+  };
+
+  File.prototype.setSelectedViewState = function(viewSelected, isShiftPressed) {
+    if (isShiftPressed == null) {
+      isShiftPressed = false;
+    }
+    this.viewSelected = viewSelected;
+    return this.trigger('toggle-select', {
+      cid: this.cid,
+      isShiftPressed: isShiftPressed
+    });
   };
 
   File.prototype.parse = function(data) {
@@ -2571,20 +3377,6 @@ module.exports = FileView = (function(_super) {
 
   FileView.prototype.templateSearch = require('./templates/file_search');
 
-  FileView.prototype.events = {
-    'click a.file-tags': 'onTagClicked',
-    'click a.file-delete': 'onDeleteClicked',
-    'click a.file-share': 'onShareClicked',
-    'click a.file-edit': 'onEditClicked',
-    'click a.file-edit-save': 'onSaveClicked',
-    'click a.file-edit-cancel': 'onCancelClicked',
-    'click a.cancel-upload-button': 'onCancelUploadClicked',
-    'click a.file-move': 'onMoveClicked',
-    'click a.broken-button': 'onDeleteClicked',
-    'keydown input.file-edit-name': 'onKeyPress',
-    'change input.selector': 'onSelectChanged'
-  };
-
   FileView.prototype.mimeClasses = {
     'application/octet-stream': 'fa-file-o',
     'application/x-binary': 'fa-file',
@@ -2664,7 +3456,8 @@ module.exports = FileView = (function(_super) {
       isBroken: this.model.isBroken(),
       attachmentUrl: this.model.getAttachmentUrl(),
       downloadUrl: this.model.getDownloadUrl(),
-      clearance: this.model.getClearance()
+      clearance: this.model.getClearance(),
+      isViewSelected: this.model.isViewSelected()
     });
   };
 
@@ -2672,15 +3465,6 @@ module.exports = FileView = (function(_super) {
     var numUploadChildren, path;
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
-    this.listenTo(this.model, 'change', this.refresh);
-    this.listenTo(this.model, 'sync error', (function(_this) {
-      return function() {
-        if (_this.model.isConflict() || (_this.model.isFolder() && !_this.isErrored)) {
-          return _this.render();
-        }
-      };
-    })(this));
-    this.listenTo(this.model, 'toggle-select', this.onToggleSelect);
     if (!app.isPublic) {
       if (ModalShareView == null) {
         ModalShareView = require("./modal_share");
@@ -2689,24 +3473,33 @@ module.exports = FileView = (function(_super) {
     if (this.model.isFolder()) {
       path = this.model.getRepository();
       numUploadChildren = this.uploadQueue.getNumUploadingElementsByPath(path);
-      this.hasUploadingChildren = numUploadChildren > 0;
-      this.listenTo(this.uploadQueue, 'add remove reset', (function(_this) {
-        return function() {
-          var hasItems;
-          hasItems = _this.uploadQueue.getNumUploadingElementsByPath(path) > 0;
-          if (hasItems && !_this.$('.spinholder').is(':visible')) {
-            return _this.showLoading();
-          } else if (!hasItems && _this.$('.spinholder').is(':visible')) {
-            return _this.hideLoading();
-          }
-        };
-      })(this));
-      return this.listenTo(this.uploadQueue, 'upload-complete', (function(_this) {
-        return function() {
-          _this.hasUploadingChildren = false;
-          return _this.hideLoading();
-        };
-      })(this));
+      return this.hasUploadingChildren = numUploadChildren > 0;
+    }
+  };
+
+  FileView.prototype.onUploadComplete = function() {
+    if (this.model.isFolder()) {
+      this.hasUploadingChildren = false;
+      return this.hideLoading();
+    }
+  };
+
+  FileView.prototype.onCollectionChanged = function() {
+    var hasItems, path;
+    if (this.model.isFolder()) {
+      path = this.model.getRepository();
+      hasItems = this.uploadQueue.getNumUploadingElementsByPath(path) > 0;
+      if (hasItems && !this.$('.spinholder').is(':visible')) {
+        return this.showLoading();
+      } else if (!hasItems && this.$('.spinholder').is(':visible')) {
+        return this.hideLoading();
+      }
+    }
+  };
+
+  FileView.prototype.onSyncError = function() {
+    if (this.model.isConflict() || (this.model.isFolder() && !this.isErrored)) {
+      return this.render();
     }
   };
 
@@ -2804,6 +3597,7 @@ module.exports = FileView = (function(_super) {
   FileView.prototype.onSaveClicked = function() {
     var name, options;
     name = this.$('.file-edit-name').val();
+    name = name != null ? name.trim() : void 0;
     if (name && name === this.model.get('name')) {
       return this.onCancelClicked();
     } else if (name && name !== "") {
@@ -2863,6 +3657,24 @@ module.exports = FileView = (function(_super) {
     return this.uploadQueue.abort(this.model);
   };
 
+  FileView.prototype.onLineClicked = function(event) {
+    var forbiddenElements, forbiddenSelectors, isShiftPressed, results;
+    forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
+    forbiddenElements = forbiddenSelectors.map((function(_this) {
+      return function(selector) {
+        var _ref;
+        return ((_ref = _this.$(selector)) != null ? _ref[0] : void 0) || null;
+      };
+    })(this));
+    results = forbiddenElements.filter(function(element) {
+      return (element != null) && (element === event.target || $.contains(element, event.target));
+    });
+    if (results.length === 0 && !this.$el.hasClass('edit-mode')) {
+      isShiftPressed = event.shiftKey || false;
+      return this.model.toggleViewSelected(isShiftPressed);
+    }
+  };
+
   FileView.prototype.onKeyPress = function(e) {
     if (e.keyCode === 13) {
       return this.onSaveClicked();
@@ -2871,34 +3683,39 @@ module.exports = FileView = (function(_super) {
     }
   };
 
-  FileView.prototype.onSelectChanged = function(event) {
-    var isChecked;
-    isChecked = $(event.target).is(':checked');
-    this.$el.toggleClass('selected', isChecked);
-    this.model.isSelected = isChecked;
-    this.onToggleSelect();
-    return true;
+  FileView.prototype.onSelectClicked = function(event) {
+    var isShiftPressed;
+    isShiftPressed = event.shiftKey || false;
+    return this.model.toggleViewSelected(isShiftPressed);
   };
 
   FileView.prototype.onToggleSelect = function() {
-    this.$el.toggleClass('selected', this.model.isSelected);
-    this.$('input.selector').prop('checked', this.model.isSelected);
-    if (this.model.isSelected) {
-      return this.$('.file-move, .file-delete').addClass('hidden');
+    var isViewSelected;
+    isViewSelected = this.model.isViewSelected();
+    this.$el.toggleClass('selected', isViewSelected);
+    if (isViewSelected) {
+      this.$('.selector-wrapper i').removeClass('fa-square-o');
+      return this.$('.selector-wrapper i').addClass('fa-check-square-o');
     } else {
-      return this.$('.file-move, .file-delete').removeClass('hidden');
+      this.$('.selector-wrapper i').removeClass('fa-check-square-o');
+      return this.$('.selector-wrapper i').addClass('fa-square-o');
     }
   };
 
   FileView.prototype.afterRender = function() {
+    this.$el.data('cid', this.model.cid);
     if (this.model.isUploading() || this.model.isServerUploading()) {
       this.$el.addClass('uploading');
       this.addProgressBar();
       this.blockDownloadLink();
+      this.blockNameLink();
     } else {
       this.$el.removeClass('uploading');
       this.$el.toggleClass('broken', this.model.isBroken());
       this.addTags();
+    }
+    if (this.model.isNew()) {
+      this.blockNameLink();
     }
     this.hideLoading();
     if (this.hasUploadingChildren) {
@@ -2933,15 +3750,19 @@ module.exports = FileView = (function(_super) {
     });
   };
 
+  FileView.prototype.blockNameLink = function() {
+    return this.$('.link-wrapper > a').click(function(event) {
+      return event.preventDefault();
+    });
+  };
+
   FileView.prototype.showLoading = function() {
-    this.$('.icon-zone .fa').addClass('hidden');
-    this.$('.icon-zone .selector-wrapper').addClass('hidden');
-    return this.$('.spinholder').show();
+    this.$('.link-wrapper .fa').addClass('hidden');
+    return this.$('.spinholder').css('display', 'inline-block');
   };
 
   FileView.prototype.hideLoading = function() {
-    this.$('.icon-zone .fa').removeClass('hidden');
-    this.$('.icon-zone .selector-wrapper').removeClass('hidden');
+    this.$('.link-wrapper .fa').removeClass('hidden');
     return this.$('.spinholder').hide();
   };
 
@@ -2982,7 +3803,46 @@ module.exports = FilesView = (function(_super) {
     'click #up-size': 'onChangeOrder',
     'click #down-size': 'onChangeOrder',
     'click #up-lastModification': 'onChangeOrder',
-    'click #down-lastModification': 'onChangeOrder'
+    'click #down-lastModification': 'onChangeOrder',
+    'click a.file-tags': function(e) {
+      return this.viewProxy('onTagClicked', e);
+    },
+    'click a.file-delete': function(e) {
+      return this.viewProxy('onDeleteClicked', e);
+    },
+    'click a.file-share': function(e) {
+      return this.viewProxy('onShareClicked', e);
+    },
+    'click a.file-edit': function(e) {
+      return this.viewProxy('onEditClicked', e);
+    },
+    'click a.file-edit-save': function(e) {
+      return this.viewProxy('onSaveClicked', e);
+    },
+    'click a.file-edit-cancel': function(e) {
+      return this.viewProxy('onCancelClicked', e);
+    },
+    'click a.cancel-upload-button': function(e) {
+      return this.viewProxy('onCancelUploadClicked', e);
+    },
+    'click a.file-move': function(e) {
+      return this.viewProxy('onMoveClicked', e);
+    },
+    'click a.broken-button': function(e) {
+      return this.viewProxy('onDeleteClicked', e);
+    },
+    'keydown input.file-edit-name': function(e) {
+      return this.viewProxy('onKeyPress', e);
+    },
+    'click div.selector-wrapper button': function(e) {
+      return this.viewProxy('onSelectClicked', e);
+    },
+    'click div.link-wrapper i.fa': function(e) {
+      return this.viewProxy('onSelectClicked', e);
+    },
+    'click tr.folder-row': function(e) {
+      return this.viewProxy('onLineClicked', e);
+    }
   };
 
   FilesView.prototype.initialize = function(options) {
@@ -2993,17 +3853,49 @@ module.exports = FilesView = (function(_super) {
         uploadQueue: options.uploadQueue
       };
     };
+    this.numSelectedElements = options.numSelectedElements;
     this.chevron = {
       order: this.collection.order,
       type: this.collection.type
     };
-    return this.listenTo(this.collection, 'add remove', this.updateNbFiles);
+    this.listenTo(this.collection, 'add remove', this.updateNbFiles);
+    this.listenTo(this.collection, 'change', _.partial(this.viewProxy, 'refresh'));
+    this.listenTo(this.collection, 'sync error', _.partial(this.viewProxy, 'onSyncError'));
+    this.listenTo(this.collection, 'toggle-select', _.partial(this.viewProxy, 'onToggleSelect'));
+    this.listenTo(this.collection, 'add remove reset', _.partial(this.viewProxy, 'onCollectionChanged'));
+    return this.listenTo(this.collection, 'upload-complete', _.partial(this.viewProxy, 'onUploadComplete'));
+  };
+
+  FilesView.prototype.getRenderData = function() {
+    return _.extend(FilesView.__super__.getRenderData.call(this), {
+      numSelectedElements: this.numSelectedElements,
+      numElements: this.collection.size()
+    });
   };
 
   FilesView.prototype.afterRender = function() {
     FilesView.__super__.afterRender.call(this);
     this.displayChevron(this.chevron.order, this.chevron.type);
     return this.updateNbFiles();
+  };
+
+  FilesView.prototype.viewProxy = function(methodName, object) {
+    var args, cid, view;
+    if (object.cid != null) {
+      cid = object.cid;
+    } else {
+      cid = this.$(object.target).parents('tr').data('cid');
+      if (cid == null) {
+        cid = this.$(object.currentTarget).data('cid');
+      }
+    }
+    view = _.find(this.views, function(view) {
+      return view.model.cid === cid;
+    });
+    if (view != null) {
+      args = [].splice.call(arguments, 1);
+      return view[methodName].apply(view, args);
+    }
   };
 
   FilesView.prototype.updateNbFiles = function() {
@@ -3123,8 +4015,7 @@ module.exports = FolderView = (function(_super) {
       'click #download-link': 'onDownloadAsZipClicked',
       'change #uploader': 'onFilesSelected',
       'change #folder-uploader': 'onDirectorySelected',
-      'change #select-all': 'onSelectAllChanged',
-      'change input.selector': 'onSelectChanged',
+      'click #select-all': 'onSelectAllChanged',
       'click #button-bulk-download': 'bulkDownload',
       'click #button-bulk-remove': 'bulkRemove',
       'click #button-bulk-move': 'bulkMove',
@@ -3160,6 +4051,7 @@ module.exports = FolderView = (function(_super) {
     })(this);
     this.listenTo(this.uploadQueue, 'conflict', this.conflictQueue.push);
     this.listenTo(this.uploadQueue, 'folderError', this.onMozFolderError);
+    this.listenTo(this.uploadQueue, 'existingFolderError', this.onExistingFolderError);
     return this;
   };
 
@@ -3227,6 +4119,7 @@ module.exports = FolderView = (function(_super) {
       model: this.model,
       collection: this.collection,
       uploadQueue: this.uploadQueue,
+      numSelectedElements: this.getSelectedElements().length,
       isSearchMode: this.model.get('type') === "search"
     });
     return this.filesList.render();
@@ -3492,31 +4385,25 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.onSelectAllChanged = function(event) {
     var isChecked;
-    isChecked = $(event.target).is(':checked');
-    this.$('input.selector').prop('checked', isChecked);
-    this.collection.forEach(function(element) {
-      element.isSelected = isChecked;
-      return element.trigger('toggle-select');
+    isChecked = this.getSelectedElements().length === this.collection.size();
+    return this.collection.forEach(function(model) {
+      return model.setSelectedViewState(!isChecked);
     });
-    return this.toggleFolderActions(isChecked);
-  };
-
-  FolderView.prototype.onSelectChanged = function() {
-    return this.toggleFolderActions();
   };
 
   FolderView.prototype.getSelectedElements = function() {
-    return this.collection.filter(function(element) {
-      return element.isSelected;
+    return this.collection.filter(function(model) {
+      return model.isViewSelected();
     });
   };
 
-  FolderView.prototype.toggleFolderActions = function(force) {
-    var clearance, selectedElements, shouldChecked, _ref;
-    if (force == null) {
-      force = false;
-    }
+  FolderView.prototype.toggleFolderActions = function(event) {
+    var clearance, isShiftPressed, selectedElements, _ref;
+    isShiftPressed = event.isShiftPressed;
     selectedElements = this.getSelectedElements();
+    if (isShiftPressed) {
+      this.handleSelectWithShift();
+    }
     if (selectedElements.length > 0) {
       this.$('#share-state').hide();
       this.$('#upload-btngroup').hide();
@@ -3538,13 +4425,34 @@ module.exports = FolderView = (function(_super) {
       }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
-    if (force === true) {
-      return this.$('input#select-all').prop('checked', true);
-    } else if (this.collection.size() === 0) {
-      return this.$('input#select-all').prop('checked', false);
+    if (selectedElements.length === 0 || this.collection.size() === 0) {
+      this.$('#select-all i').removeClass('fa-minus-square-o');
+      this.$('#select-all i').removeClass('fa-check-square-o');
+      return this.$('#select-all i').addClass('fa-square-o');
+    } else if (selectedElements.length === this.collection.size()) {
+      this.$('#select-all i').removeClass('fa-square-o');
+      this.$('#select-all i').removeClass('fa-minus-square-o');
+      return this.$('#select-all i').addClass('fa-check-square-o');
     } else {
-      shouldChecked = selectedElements.length === this.collection.size();
-      return this.$('input#select-all').prop('checked', shouldChecked);
+      this.$('#select-all i').removeClass('fa-square-o');
+      this.$('#select-all i').removeClass('fa-check-square-o');
+      return this.$('#select-all i').addClass('fa-minus-square-o');
+    }
+  };
+
+  FolderView.prototype.handleSelectWithShift = function() {
+    var firstSelected, firstSelectedIndex, lastSelected, lastSelectedIndex, selectedElements;
+    selectedElements = this.getSelectedElements();
+    if (selectedElements.length >= 2) {
+      firstSelected = selectedElements[0];
+      lastSelected = selectedElements[selectedElements.length - 1];
+      firstSelectedIndex = this.collection.indexOf(firstSelected);
+      lastSelectedIndex = this.collection.indexOf(lastSelected);
+      return this.collection.filter(function(model, index) {
+        return (firstSelectedIndex < index && index < lastSelectedIndex) && !model.isViewSelected();
+      }).forEach(function(model) {
+        return model.toggleViewSelected();
+      });
     }
   };
 
@@ -3644,6 +4552,12 @@ module.exports = FolderView = (function(_super) {
 
   FolderView.prototype.onMozFolderError = function() {
     return Modal.error(t('modal error firefox dragdrop folder'));
+  };
+
+  FolderView.prototype.onExistingFolderError = function(model) {
+    return Modal.error(t('modal error existing folder', {
+      name: model.get('name')
+    }));
   };
 
   return FolderView;
@@ -4253,24 +5167,27 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder-o\"><span class=\"fa fa-globe\"></span></i>");
 }
 else
 {
 buf.push("<i class=\"fa fa-folder\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4279,25 +5196,30 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+buf.push("</i>");
 }
 else
 {
-buf.push("<i class=\"fa fa-file-o\"></i>");
+buf.push("<i class=\"fa fa-file-o\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</span>");
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+buf.push("</i>");
+}
 if ( !isBroken)
 {
 buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div>");
+buf.push("</div></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -4468,24 +5390,27 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
+buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder\"><span class=\"fa fa-globe\"></span></i>");
 }
 else if ( clearance && clearance.length > 0)
 {
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"fa fa-folder-o\"></i>");
+buf.push("<i class=\"fa fa-folder-o\"><span class=\"fa fa-globe\"></span></i>");
 }
 else
 {
 buf.push("<i class=\"fa fa-folder\"></i>");
 }
-buf.push("</span><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a></div>");
+buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption btn btn-link\"><span class=\"icon-zone\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+if ( model.mime && this.mimeClasses[model.mime])
+{
+buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -4494,25 +5419,30 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("<div class=\"selector-wrapper\"><input type=\"checkbox\" class=\"selector\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["fa " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+buf.push("</i>");
 }
 else
 {
-buf.push("<i class=\"fa fa-file-o\"></i>");
+buf.push("<i class=\"fa fa-file-o\">");
+if ( clearance == 'public')
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</span>");
+else if ( clearance && clearance.length > 0)
+{
+buf.push("<span class=\"fa fa-globe\"></span>");
+}
+buf.push("</i>");
+}
 if ( !isBroken)
 {
 buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div>");
+buf.push("</div></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -4588,8 +5518,21 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model;
-buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><input id=\"select-all\" type=\"checkbox\"/><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-name\" class=\"btn fa fa-chevron-up unactive\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"fa fa-chevron-down btn unactive\"></a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up unactive\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-class\" class=\"fa fa-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-lastModification\" class=\"btn fa fa-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
+var locals_ = (locals || {}),numSelectedElements = locals_.numSelectedElements,numElements = locals_.numElements,model = locals_.model;
+buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><button id=\"select-all\">");
+if ( numSelectedElements == 0 || numElements == 0)
+{
+buf.push("<i class=\"fa fa-square-o\"></i>");
+}
+else if ( numSelectedElements == numElements)
+{
+buf.push("<i class=\"fa fa-check-square-o\"></i>");
+}
+else
+{
+buf.push("<i class=\"fa fa-minus-square-o\"></i>");
+}
+buf.push("</button><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-name\" class=\"btn fa fa-chevron-up unactive\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"fa fa-chevron-down btn unactive\"></a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up unactive\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-class\" class=\"fa fa-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-lastModification\" class=\"btn fa fa-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
 if ( model.type == 'search')
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in search')) == null ? '' : jade_interp)) + "");
@@ -4646,13 +5589,13 @@ buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><sp
 buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\">");
 if ( isPublic)
 {
-buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy-contrast\"><span class=\"label\">" + (jade.escape((jade_interp = t("download all")) == null ? '' : jade_interp)) + "&nbsp;</span><span class=\"fa fa-arrow-down icon-white\"></span></a>");
+buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy-contrast\"><span class=\"label\">" + (jade.escape((jade_interp = t("download all")) == null ? '' : jade_interp)) + "&nbsp;</span><span class=\"fa fa-download icon-white\"></span></a>");
 }
 else
 {
-buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy\"><span class=\"fa fa-arrow-down\"></span></a>");
+buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy\"><span class=\"fa fa-download\"></span></a>");
 }
-buf.push("<a id=\"button-bulk-move\"" + (jade.attr("title", "" + (t('move all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-arrow-right\"></span></a><a id=\"button-bulk-remove\"" + (jade.attr("title", "" + (t('remove all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-trash-o\"></span></a></div></div>");
+buf.push("<a id=\"button-bulk-move\"" + (jade.attr("title", "" + (t('move all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-file\"></span><span class=\"fa fa-arrow-right\"></span></a><a id=\"button-bulk-remove\"" + (jade.attr("title", "" + (t('remove all')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy\"><span class=\"fa fa-trash-o\"></span></a></div></div>");
 if ( isPublic && hasPublicKey)
 {
 if ( areNotificationsEnabled)
@@ -4889,8 +5832,6 @@ module.exports = UploadStatusView = (function(_super) {
     } else {
       this.render();
     }
-    this.counter.text(this.collection.length);
-    this.counterDone.text(this.collection.loaded);
     if (this.completed && !this.collection.completed) {
       return this.render();
     }
@@ -4898,8 +5839,6 @@ module.exports = UploadStatusView = (function(_super) {
 
   UploadStatusView.prototype.afterRender = function() {
     this.$el.removeClass('success danger warning');
-    this.counter = this.$('.counter');
-    this.counterDone = this.$('.counter-done');
     this.progressbar = this.$('.progress-bar-info');
     this.progressbarContent = this.$('.progress-bar-content');
     this.dismiss = this.$('#dismiss').hide();
@@ -4909,7 +5848,7 @@ module.exports = UploadStatusView = (function(_super) {
     } else {
       $('#content').addClass('mt108');
     }
-    if (this.collection.completed) {
+    if (this.uploadQueue.completed) {
       return this.complete();
     }
   };

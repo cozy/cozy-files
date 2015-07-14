@@ -12,13 +12,16 @@ mailTemplate = notiftemplate = localization.getEmailTemplate 'sharemail.jade'
 
 clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
-        options.type = options.doc.docType.toLowerCase()
-        User.getDisplayName (err, displayName) ->
-            options.displayName = displayName or \
-                                  localization.t 'default user name'
-
+        # Use async to retrieve all wanted informations
+        User.getUserInfo (err, user) ->
+            options.type         = options.doc.docType.toLowerCase()
+            options.displayName  = user.name \
+                                   or localization.t 'default user name'
+            options.displayEmail = user.email
             options.localization = localization
+
             callback null, mailTemplate options
+
 
     mailSubject: (options, callback) ->
         type = options.doc.docType.toLowerCase()
@@ -28,6 +31,7 @@ clearanceCtl = clearance.controller
             callback null, localization.t 'email sharing subject',
                                 displayName: displayName
                                 name: name
+
 
 # fetch file or folder, put it in req.doc
 module.exports.fetch = (req, res, next, id) ->

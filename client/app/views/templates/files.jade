@@ -2,7 +2,14 @@ table#table-items.table.table-hover
   thead
     tr.table-headers
       td
-        input#select-all(type="checkbox")
+        button#select-all
+          if numSelectedElements == 0 || numElements == 0
+            i.fa.fa-square-o
+          else if numSelectedElements == numElements
+            i.fa.fa-check-square-o
+          else
+            i.fa.fa-minus-square-o
+
         span= t('name')
         a#down-name.btn.fa.fa-chevron-down.unactive
         a#up-name.btn.fa.fa-chevron-up.unactive
