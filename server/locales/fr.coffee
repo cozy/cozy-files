@@ -6,6 +6,8 @@ module.exports =
     "notification new file": "%{who} a ajouté le fichier %{fileName} dans le dossier %{folderName}"
     "file": "fichier"
     "folder": "dossier"
+    "view file": "Afficher le fichier"
+    "view folder": "Parcourir le dossier"
     "link file content": "Cliquez ici pour voir ce fichier"
     "link folder content": "Cliquez ici pour naviguer dans ce dossier"
 

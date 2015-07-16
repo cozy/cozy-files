@@ -19,6 +19,7 @@ clearanceCtl = clearance.controller
                                    or localization.t 'default user name'
             options.displayEmail = user.email
             options.localization = localization
+            options.displayLabel = localization.t "view #{options.type}"
 
             callback null, mailTemplate options
 
