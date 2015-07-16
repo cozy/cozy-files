@@ -203,7 +203,7 @@ module.exports = class FileView extends BaseView
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
-        else if document.selection && document.selection.createRange
+        else if document.selection and document.selection.createRange
             # IE Branch...
             input.select()
             range = document.selection.createRange()

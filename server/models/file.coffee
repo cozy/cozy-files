@@ -49,7 +49,7 @@ File.injectInheritedClearance = (files, callback) ->
 # * Create a binary Document and attach file to it.
 # * Index file name for better search
 # * Remove temporary created file.
-File.createNewFile = (data, file, callback) =>
+File.createNewFile = (data, file, callback) ->
     upload = true
     attachBinary = (newFile) ->
 
@@ -74,16 +74,16 @@ File.createNewFile = (data, file, callback) =>
     # the "autostop" feature of the controller. It could occurs if the file is
     # too long to upload. The controller could think that the application is
     # unactive.
-    keepAlive = () =>
+    keepAlive = ->
         if upload
             feed.publish 'usage.application', 'files'
-            setTimeout () =>
+            setTimeout ->
                 keepAlive()
             , 60*1000
 
     # Create file document then attach file stream as binary to that file
     # document.
-    File.create data, (err, newFile) =>
+    File.create data, (err, newFile) ->
         if err
             callback new Error "Server error while creating file; #{err}"
         else
@@ -132,7 +132,7 @@ File::getInheritedClearance = (callback) ->
         callback null, inherited
 
 File::updateParentModifDate = (callback) ->
-    Folder.byFullPath key: @path, (err, parents) =>
+    Folder.byFullPath key: @path, (err, parents) ->
         if err
             callback err
         else if parents.length > 0

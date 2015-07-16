@@ -11,7 +11,7 @@ class LocalizationManager
     polyglot: null
 
     # should be run when app starts
-    initialize: (callback = () ->) ->
+    initialize: (callback = ->) ->
         @retrieveLocale (err, locale) =>
             if err?
                 @polyglot = @getPolyglotByLocale null

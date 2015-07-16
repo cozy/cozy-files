@@ -23,7 +23,7 @@ nestedDirs: (fileList) ->
     # make an object with keys paths, values nest level
     # from each files we build the tree to recreate it
     for file in fileList
-        relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath
+        relPath = file.relativePath or file.mozRelativePath or file.webkitRelativePath
         parents = relPath.slice(0, relPath.lastIndexOf(file.name))
 
         # get an array of the folders making the file path

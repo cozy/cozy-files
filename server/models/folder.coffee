@@ -96,7 +96,7 @@ Folder::getInheritedClearance = (callback) ->
         callback null, inherited
 
 Folder::updateParentModifDate = (callback) ->
-    Folder.byFullPath key: @path, (err, parents) =>
+    Folder.byFullPath key: @path, (err, parents) ->
         if err
             callback err
         else if parents.length > 0

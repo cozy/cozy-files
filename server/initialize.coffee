@@ -20,7 +20,7 @@ module.exports.afterStart = (app, server, callback) ->
     init.updateIndex()
 
     updateIndex = (type, id)->
-        type.find id, (err, file) =>
+        type.find id, (err, file) ->
             if err
                 return console.log "updateIndex err", err.stack if err
             unless file

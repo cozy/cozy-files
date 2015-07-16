@@ -6,7 +6,7 @@ module.exports.main = (req, res, next) ->
         (cb) -> cozydb.api.getCozyLocale cb
         (cb) -> cozydb.api.getCozyTags cb
         (cb) -> cozydb.api.getCozyInstance cb
-    ], (err, results) =>
+    ], (err, results) ->
 
         if err then next err
         else

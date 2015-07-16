@@ -63,7 +63,7 @@ module.exports = class ModalShareView extends CozyClearanceModal
         super
 
     # support forced public by inheritance and add inherited summary
-    afterRender: () ->
+    afterRender: ->
         super
 
         if @forcedShared

@@ -7,7 +7,7 @@ localization = require '../lib/localization_manager'
 
 cozydb = require 'cozydb'
 cozydomain = 'http://your.friends.cozy.url/'
-cozydb.api.getCozyDomain (err, domain) =>
+cozydb.api.getCozyDomain (err, domain) ->
     return console.log err if err
     cozydomain = domain
 
