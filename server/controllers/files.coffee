@@ -174,7 +174,7 @@ module.exports.create = (req, res, next) ->
         # stream in memory.
         name = fields.name
         path = fields.path
-        lastModification = moment(fields.lastModification).toISOString()
+        lastModification = moment(new Date(fields.lastModification)).toISOString()
         overwrite = fields.overwrite
         upload = true
         canceled = false
