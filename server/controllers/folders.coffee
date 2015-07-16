@@ -338,6 +338,8 @@ module.exports.findContent = (req, res, next) ->
                 if err? then next err
                 else
                     [folders, files, parents] = results
+                    folders = [] if not folders?
+                    files   = [] if not files?
                     content = folders.concat files
 
                     res.send 200, {content, parents}
