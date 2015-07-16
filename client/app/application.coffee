@@ -51,3 +51,8 @@ module.exports =
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'
 
+        document.body.addEventListener 'click', (event) =>
+            if event.target.tagName is 'BODY'
+                @baseCollection.forEach (model) ->
+                    model.setSelectedViewState false
+

@@ -31,6 +31,7 @@ module.exports = class FolderView extends BaseView
         'change #folder-uploader': 'onDirectorySelected'
 
         'click #select-all': 'onSelectAllChanged'
+        'click .container': 'onDeselectAll'
 
         'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
@@ -384,6 +385,11 @@ module.exports = class FolderView extends BaseView
         isChecked = @getSelectedElements().length is @collection.size()
         @collection.forEach (model) ->
             model.setSelectedViewState not isChecked
+
+    onDeselectAll: (event) ->
+        if event.target.id is 'files'
+            @collection.forEach (model) ->
+                model.setSelectedViewState false
 
 
     # Gets the number of selected elements from the collection
