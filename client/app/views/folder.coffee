@@ -492,28 +492,35 @@ module.exports = class FolderView extends BaseView
 
     bulkDownload: ->
         selectedElements = @getSelectedElements()
-        selectedPaths = selectedElements.map (element) ->
-            if element.isFolder()
-                return "#{element.getRepository()}/"
-            else
-                return "#{element.getRepository()}"
-        url = @model.getZipURL()
+        if selectedElements.length > 1
+            selectedPaths = selectedElements.map (element) ->
+                if element.isFolder()
+                    return "#{element.getRepository()}/"
+                else
+                    return "#{element.getRepository()}"
+            url = @model.getZipURL()
 
-        serializedSelection = selectedPaths.join ';'
+            serializedSelection = selectedPaths.join ';'
 
-        # To trigger a download from a POST request, we must create an hidden
-        # form and submit it.
-        inputValue = """
-        value="#{serializedSelection}"
-        """
-        form = """
-        <form id="temp-zip-download" action="#{url}" method="post">
-            <input type="hidden" name="selectedPaths" #{inputValue}/>
-        </form>
-        """
-        $('body').append form
-        $('#temp-zip-download').submit()
-        $('#temp-zip-download').remove()
+            # To trigger a download from a POST request, we must create an hidden
+            # form and submit it.
+            inputValue = """
+            value="#{serializedSelection}"
+            """
+            form = """
+            <form id="temp-zip-download" action="#{url}" method="post">
+                <input type="hidden" name="selectedPaths" #{inputValue}/>
+            </form>
+            """
+            $('body').append form
+            $('#temp-zip-download').submit()
+            $('#temp-zip-download').remove()
+
+        else
+            # download only file selected
+            a = document.createElement 'a'
+            a.href = selectedElements[0].getDownloadUrl()
+            a.dispatchEvent(new window.MouseEvent('click', 'view': window, 'bubbles': true, 'cancelable': true ))
 
 
     ###
