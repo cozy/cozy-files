@@ -53,6 +53,8 @@ helpers =
         if not elmt.dataset.hasPreview
             elmt.dataset.hasPreview = true
             icon = document.createElement 'a'
+            icon.classList.add 'file-preview'
+            icon.title = window.t 'tooltip preview'
             icon.innerHTML = "<i class='fa fa-eye'></i>"
             icon.addEventListener 'click', onClick
             operationsEl = elmt.parentNode.querySelector('.operations')

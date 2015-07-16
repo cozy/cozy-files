@@ -61,6 +61,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "tooltip download"        : "Download"
     "tooltip share"           : "Share"
     "tooltip tag"             : "Tag"
+    "tooltip preview"         : "Preview"
 
     # folder template
     'and x files'         : """

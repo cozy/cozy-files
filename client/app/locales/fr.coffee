@@ -57,6 +57,7 @@ Chrome et Safari.
     "tooltip download"        : "Télécharger"
     "tooltip share"           : "Partager"
     "tooltip tag"             : "Etiquette"
+    "tooltip preview"         : "Prévisualiser"
 
     # file_edit template
     "file edit save"          : "Sauvegarder"
