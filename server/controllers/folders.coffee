@@ -36,7 +36,7 @@ module.exports.fetch = (req, res, next, id) ->
 
 
 findFolder = (id, callback) ->
-    Folder.find id, (err, folder) =>
+    Folder.find id, (err, folder) ->
         if err or not folder
             callback "Folder not found"
         else
@@ -77,7 +77,7 @@ module.exports.create = (req, res, next) ->
     if (not folder.name) or (folder.name is "")
         next new Error "Invalid arguments"
     else
-        Folder.all (err, folders) =>
+        Folder.all (err, folders) ->
             available = pathHelpers.checkIfPathAvailable folder, folders
             if not available
                 res.send code: 'EEXISTS', error: true, msg: "This folder already exists", 400
@@ -117,16 +117,16 @@ module.exports.create = (req, res, next) ->
                     createFolder()
 
 # After 1 minute of inactivity, update parents
-resetTimeout = () =>
+resetTimeout = ->
     clearTimeout(timeout) if timeout?
-    timeout = setTimeout () =>
+    timeout = setTimeout ->
         updateParents()
     , 60 * 1000
 
 
 # Save in RAM lastModification date for parents
 # Update folder parent once all files are uploaded
-updateParents = () ->
+updateParents = ->
     errors = {}
     for name in Object.keys(folderParent)
         folder = folderParent[name]
@@ -140,7 +140,7 @@ module.exports.find = (req, res, next) ->
 
 module.exports.tree = (req, res, next) ->
     folderChild = req.folder
-    folderChild.getParents (err, folders) =>
+    folderChild.getParents (err, folders) ->
         if err then next err
         else
             res.send folders, 200
@@ -208,7 +208,7 @@ module.exports.modify = (req, res, next) ->
         folder.updateParentModifDate (err) ->
             log.raw err if err
 
-            folder.updateAttributes data, (err) =>
+            folder.updateAttributes data, (err) ->
                 return next err if err
 
                 folder.updateParentModifDate (err) ->
@@ -224,7 +224,7 @@ module.exports.modify = (req, res, next) ->
             if err then next err
             else
                 # update all files
-                File.all (err, files) =>
+                File.all (err, files) ->
                     if err then next err
                     else
                         async.each files, updateIfIsSubFolder, (err) ->
@@ -338,6 +338,8 @@ module.exports.findContent = (req, res, next) ->
                 if err? then next err
                 else
                     [folders, files, parents] = results
+                    folders = [] if not folders?
+                    files   = [] if not files?
                     content = folders.concat files
 
                     res.send 200, {content, parents}

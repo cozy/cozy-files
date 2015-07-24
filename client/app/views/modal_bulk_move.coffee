@@ -32,7 +32,7 @@ module.exports = class ModalBulkMoveView extends Modal
         @collection = options.collection
         @parentPath = options.parentPath
 
-    afterRender: () ->
+    afterRender: ->
         # retrieve list of all folders
         client.get 'folders/list', (err, paths) =>
             if err?

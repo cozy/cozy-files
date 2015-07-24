@@ -25,9 +25,9 @@ module.exports = class Router extends Backbone.Router
 
     search: (query) ->
         folder = new File
-                id: query
-                type: "search"
-                name: "#{t('breadcrumbs search title')} '#{query}'"
+            id: query
+            type: "search"
+            name: "#{t('breadcrumbs search title')} '#{query}'"
 
         @folderView.spin() if @folderView?
         folder.fetchContent (err, content) =>

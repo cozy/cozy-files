@@ -190,18 +190,20 @@ module.exports = class FileView extends BaseView
             model: model
             clearance: @model.getClearance()
 
+        input = @$(".file-edit-name")[0]
+        if name is ''
+            input.placeholder = t "new folder"
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
 
         # we only want to select the part before the file extension
         lastIndexOfDot = model.name.lastIndexOf '.'
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
-        input = @$(".file-edit-name")[0]
 
         if typeof input.selectionStart isnt "undefined"
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
-        else if document.selection && document.selection.createRange
+        else if document.selection and document.selection.createRange
             # IE Branch...
             input.select()
             range = document.selection.createRange()

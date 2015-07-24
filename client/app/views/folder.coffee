@@ -31,6 +31,7 @@ module.exports = class FolderView extends BaseView
         'change #folder-uploader': 'onDirectorySelected'
 
         'click #select-all': 'onSelectAllChanged'
+        'click .container': 'onDeselectAll'
 
         'click #button-bulk-download': 'bulkDownload'
         'click #button-bulk-remove': 'bulkRemove'
@@ -199,7 +200,7 @@ module.exports = class FolderView extends BaseView
 
             @baseCollection.add @newFolder
             view = @filesList.views[@newFolder.cid]
-            view.onEditClicked t "new folder"
+            view.onEditClicked ''
 
             @newFolder.once 'sync destroy', => @newFolder = null
 
@@ -291,14 +292,13 @@ module.exports = class FolderView extends BaseView
 
                 new Modal t('chrome error dragdrop title'), \
                     t('chrome error dragdrop content', localeOptions), \
-                    t('chrome error submit'), null, (confirm) =>
-                        processUpload()
+                    t('chrome error submit'), null, (confirm) -> processUpload()
             else
                 processUpload()
 
 
         # An entry can be a folder or a file
-        parseEntriesRecursively = (entry, path) =>
+        parseEntriesRecursively = (entry, path) ->
             pending = pending + 1
             path = path or ""
             path = "#{path}/" if path.length > 0
@@ -384,6 +384,11 @@ module.exports = class FolderView extends BaseView
         isChecked = @getSelectedElements().length is @collection.size()
         @collection.forEach (model) ->
             model.setSelectedViewState not isChecked
+
+    onDeselectAll: (event) ->
+        if event.target.id is 'files'
+            @collection.forEach (model) ->
+                model.setSelectedViewState false
 
 
     # Gets the number of selected elements from the collection
@@ -487,28 +492,35 @@ module.exports = class FolderView extends BaseView
 
     bulkDownload: ->
         selectedElements = @getSelectedElements()
-        selectedPaths = selectedElements.map (element) ->
-            if element.isFolder()
-                return "#{element.getRepository()}/"
-            else
-                return "#{element.getRepository()}"
-        url = @model.getZipURL()
+        if selectedElements.length > 1
+            selectedPaths = selectedElements.map (element) ->
+                if element.isFolder()
+                    return "#{element.getRepository()}/"
+                else
+                    return "#{element.getRepository()}"
+            url = @model.getZipURL()
 
-        serializedSelection = selectedPaths.join ';'
+            serializedSelection = selectedPaths.join ';'
 
-        # To trigger a download from a POST request, we must create an hidden
-        # form and submit it.
-        inputValue = """
-        value="#{serializedSelection}"
-        """
-        form = """
-        <form id="temp-zip-download" action="#{url}" method="post">
-            <input type="hidden" name="selectedPaths" #{inputValue}/>
-        </form>
-        """
-        $('body').append form
-        $('#temp-zip-download').submit()
-        $('#temp-zip-download').remove()
+            # To trigger a download from a POST request, we must create an hidden
+            # form and submit it.
+            inputValue = """
+            value="#{serializedSelection}"
+            """
+            form = """
+            <form id="temp-zip-download" action="#{url}" method="post">
+                <input type="hidden" name="selectedPaths" #{inputValue}/>
+            </form>
+            """
+            $('body').append form
+            $('#temp-zip-download').submit()
+            $('#temp-zip-download').remove()
+
+        else
+            # download only file selected
+            a = document.createElement 'a'
+            a.href = selectedElements[0].getDownloadUrl()
+            a.dispatchEvent(new window.MouseEvent('click', 'view': window, 'bubbles': true, 'cancelable': true ))
 
 
     ###
@@ -549,7 +561,7 @@ module.exports = class FolderView extends BaseView
         @filesList.updateInheritedClearance [clearance: clearance]
 
     # Display an error when the user tries to upload a folder in Firefox.
-    onMozFolderError: =>
+    onMozFolderError: ->
         Modal.error t('modal error firefox dragdrop folder')
 
 

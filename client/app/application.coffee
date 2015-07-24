@@ -2,7 +2,6 @@ FileCollection = require './collections/files'
 UploadQueue = require './collections/upload_queue'
 File = require './models/file'
 SocketListener = require '../lib/socket'
-FolderView = require './views/folder'
 
 ###
 Initialize the model and start the actual code
@@ -50,4 +49,9 @@ module.exports =
 
         # Makes this object immuable.
         Object.freeze this if typeof Object.freeze is 'function'
+
+        document.body.addEventListener 'click', (event) =>
+            if event.target.tagName is 'BODY'
+                @baseCollection.forEach (model) ->
+                    model.setSelectedViewState false
 

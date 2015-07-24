@@ -77,7 +77,7 @@ module.exports = class TagsView extends BaseView
         return if e?.keyCode in [40, 38, 8]
         TagsView.autocomplete.refresh @input.val(), @tags
 
-    tagClicked: (e) =>
+    tagClicked: (e) ->
         tag = e.target.dataset.value
         # simulate search
         $("#search-box").val("tag:#{tag}").trigger 'keyup'

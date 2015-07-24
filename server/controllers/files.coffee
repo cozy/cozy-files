@@ -174,7 +174,7 @@ module.exports.create = (req, res, next) ->
         # stream in memory.
         name = fields.name
         path = fields.path
-        lastModification = moment(fields.lastModification).toISOString()
+        lastModification = moment(new Date(fields.lastModification)).toISOString()
         overwrite = fields.overwrite
         upload = true
         canceled = false
@@ -263,7 +263,7 @@ module.exports.create = (req, res, next) ->
         # Check that the file doesn't exist yet.
         path = normalizePath path
         fullPath = "#{path}/#{name}"
-        File.byFullPath key: fullPath, (err, sameFiles) =>
+        File.byFullPath key: fullPath, (err, sameFiles) ->
             return next err if err
 
             # there is already a file with the same name, give up
@@ -309,7 +309,7 @@ module.exports.create = (req, res, next) ->
 
                 # find parent folder for updating its last modification
                 # date and applying tags to uploaded file.
-                Folder.byFullPath key: data.path, (err, parents) =>
+                Folder.byFullPath key: data.path, (err, parents) ->
                     return next err if err
 
                     # inherit parent folder tags and update its
@@ -321,7 +321,7 @@ module.exports.create = (req, res, next) ->
                         folderParent[parent.name] = parent
 
                     # Save file metadata
-                    File.create data, (err, newFile) =>
+                    File.create data, (err, newFile) ->
                         return next err if err
 
                         # Ask for the data system to not run autostop
@@ -360,7 +360,7 @@ module.exports.modify = (req, res, next) ->
        file.tags?.toString() isnt body.tags?.toString()
         tags = body.tags
         tags = tags.filter (tag) -> typeof tag is 'string'
-        file.updateAttributes tags: tags, (err) =>
+        file.updateAttributes tags: tags, (err) ->
             if err
                 next new Error "Cannot change tags: #{err}"
             else
@@ -405,7 +405,7 @@ module.exports.modify = (req, res, next) ->
 
                 data.clearance = body.clearance if body.clearance
 
-                file.updateAttributes data, (err) =>
+                file.updateAttributes data, (err) ->
                     if err
                         next new Error 'Cannot modify file'
                     else
