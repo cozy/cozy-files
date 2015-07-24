@@ -135,20 +135,18 @@ Folder.prototype.getInheritedClearance = function(callback) {
 Folder.prototype.updateParentModifDate = function(callback) {
   return Folder.byFullPath({
     key: this.path
-  }, (function(_this) {
-    return function(err, parents) {
-      var parent;
-      if (err) {
-        return callback(err);
-      } else if (parents.length > 0) {
-        parent = parents[0];
-        parent.lastModification = moment().toISOString();
-        return parent.save(callback);
-      } else {
-        return callback();
-      }
-    };
-  })(this));
+  }, function(err, parents) {
+    var parent;
+    if (err) {
+      return callback(err);
+    } else if (parents.length > 0) {
+      parent = parents[0];
+      parent.lastModification = moment().toISOString();
+      return parent.save(callback);
+    } else {
+      return callback();
+    }
+  });
 };
 
 if (process.env.NODE_ENV === 'test') {

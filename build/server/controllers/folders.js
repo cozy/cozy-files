@@ -54,15 +54,13 @@ module.exports.fetch = function(req, res, next, id) {
 };
 
 findFolder = function(id, callback) {
-  return Folder.find(id, (function(_this) {
-    return function(err, folder) {
-      if (err || !folder) {
-        return callback("Folder not found");
-      } else {
-        return callback(null, folder);
-      }
-    };
-  })(this));
+  return Folder.find(id, function(err, folder) {
+    if (err || !folder) {
+      return callback("Folder not found");
+    } else {
+      return callback(null, folder);
+    }
+  });
 };
 
 getFolderPath = function(id, cb) {
@@ -103,66 +101,62 @@ module.exports.create = function(req, res, next) {
   if ((!folder.name) || (folder.name === "")) {
     return next(new Error("Invalid arguments"));
   } else {
-    return Folder.all((function(_this) {
-      return function(err, folders) {
-        var available, createFolder, fullPath, now, parent, parents;
-        available = pathHelpers.checkIfPathAvailable(folder, folders);
-        if (!available) {
-          return res.send({
-            code: 'EEXISTS',
-            error: true,
-            msg: "This folder already exists"
-          }, 400);
-        } else {
-          fullPath = folder.path;
-          parents = folders.filter(function(tested) {
-            return fullPath === tested.getFullPath();
-          });
-          now = moment().toISOString();
-          createFolder = function() {
-            folder.creationDate = now;
-            folder.lastModification = now;
-            return Folder.createNewFolder(folder, function(err, newFolder) {
-              var who;
-              resetTimeout();
+    return Folder.all(function(err, folders) {
+      var available, createFolder, fullPath, now, parent, parents;
+      available = pathHelpers.checkIfPathAvailable(folder, folders);
+      if (!available) {
+        return res.send({
+          code: 'EEXISTS',
+          error: true,
+          msg: "This folder already exists"
+        }, 400);
+      } else {
+        fullPath = folder.path;
+        parents = folders.filter(function(tested) {
+          return fullPath === tested.getFullPath();
+        });
+        now = moment().toISOString();
+        createFolder = function() {
+          folder.creationDate = now;
+          folder.lastModification = now;
+          return Folder.createNewFolder(folder, function(err, newFolder) {
+            var who;
+            resetTimeout();
+            if (err) {
+              return next(err);
+            }
+            who = req.guestEmail || 'owner';
+            return sharing.notifyChanges(who, newFolder, function(err) {
               if (err) {
-                return next(err);
+                console.log(err);
               }
-              who = req.guestEmail || 'owner';
-              return sharing.notifyChanges(who, newFolder, function(err) {
-                if (err) {
-                  console.log(err);
-                }
-                return res.send(newFolder, 200);
-              });
+              return res.send(newFolder, 200);
             });
-          };
-          if (parents.length > 0) {
-            parent = parents[0];
-            folder.tags = parent.tags;
-            parent.lastModification = now;
-            folderParent[parent.name] = parent;
-            return createFolder();
-          } else {
-            folder.tags = [];
-            return createFolder();
-          }
+          });
+        };
+        if (parents.length > 0) {
+          parent = parents[0];
+          folder.tags = parent.tags;
+          parent.lastModification = now;
+          folderParent[parent.name] = parent;
+          return createFolder();
+        } else {
+          folder.tags = [];
+          return createFolder();
         }
-      };
-    })(this));
+      }
+    });
   }
 };
 
-resetTimeout = (function(_this) {
-  return function() {
-    if (timeout != null) {
-      clearTimeout(timeout);
-    }
-    return timeout = setTimeout(function() {
-      return updateParents();
-    }, 60 * 1000);
-  };
-})(this);
+resetTimeout = function() {
+  if (timeout != null) {
+    clearTimeout(timeout);
+  }
+  return timeout = setTimeout(function() {
+    return updateParents();
+  }, 60 * 1000);
+};
 
 updateParents = function() {
   var errors, folder, i, len, name, ref;
@@ -189,15 +183,13 @@ module.exports.find = function(req, res, next) {
 module.exports.tree = function(req, res, next) {
   var folderChild;
   folderChild = req.folder;
-  return folderChild.getParents((function(_this) {
-    return function(err, folders) {
-      if (err) {
-        return next(err);
-      } else {
-        return res.send(folders, 200);
-      }
-    };
-  })(this));
+  return folderChild.getParents(function(err, folders) {
+    if (err) {
+      return next(err);
+    } else {
+      return res.send(folders, 200);
+    }
+  });
 };
 
 module.exports.list = function(req, res, next) {
@@ -271,26 +263,24 @@ module.exports.modify = function(req, res, next) {
       if (err) {
         log.raw(err);
       }
-      return folder.updateAttributes(data, (function(_this) {
-        return function(err) {
+      return folder.updateAttributes(data, function(err) {
+        if (err) {
+          return next(err);
+        }
+        return folder.updateParentModifDate(function(err) {
           if (err) {
-            return next(err);
+            log.raw(err);
           }
-          return folder.updateParentModifDate(function(err) {
+          return folder.index(["name"], function(err) {
             if (err) {
               log.raw(err);
             }
-            return folder.index(["name"], function(err) {
-              if (err) {
-                log.raw(err);
-              }
-              return res.send({
-                success: 'File succesfuly modified'
-              }, 200);
-            });
+            return res.send({
+              success: 'File succesfuly modified'
+            }, 200);
           });
-        };
-      })(this));
+        });
+      });
     });
   };
   updateFoldersAndFiles = function(folders) {
@@ -298,21 +288,19 @@ module.exports.modify = function(req, res, next) {
       if (err) {
         return next(err);
       } else {
-        return File.all((function(_this) {
-          return function(err, files) {
-            if (err) {
-              return next(err);
-            } else {
-              return async.each(files, updateIfIsSubFolder, function(err) {
-                if (err) {
-                  return next(err);
-                } else {
-                  return updateTheFolder();
-                }
-              });
-            }
-          };
-        })(this));
+        return File.all(function(err, files) {
+          if (err) {
+            return next(err);
+          } else {
+            return async.each(files, updateIfIsSubFolder, function(err) {
+              if (err) {
+                return next(err);
+              } else {
+                return updateTheFolder();
+              }
+            });
+          }
+        });
       }
     });
   };
@@ -466,6 +454,12 @@ module.exports.findContent = function(req, res, next) {
           return next(err);
         } else {
           folders = results[0], files = results[1], parents = results[2];
+          if (folders == null) {
+            folders = [];
+          }
+          if (files == null) {
+            files = [];
+          }
           content = folders.concat(files);
           return res.send(200, {
             content: content,

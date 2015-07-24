@@ -110,7 +110,7 @@
   globals.require = require;
 })();
 require.register("application", function(exports, require, module) {
-var File, FileCollection, FolderView, SocketListener, UploadQueue;
+var File, FileCollection, SocketListener, UploadQueue;
 
 FileCollection = require('./collections/files');
 
@@ -119,8 +119,6 @@ UploadQueue = require('./collections/upload_queue');
 File = require('./models/file');
 
 SocketListener = require('../lib/socket');
-
-FolderView = require('./views/folder');
 
 
 /*
@@ -154,8 +152,17 @@ module.exports = {
     window.app = this;
     Backbone.history.start();
     if (typeof Object.freeze === 'function') {
-      return Object.freeze(this);
+      Object.freeze(this);
     }
+    return document.body.addEventListener('click', (function(_this) {
+      return function(event) {
+        if (event.target.tagName === 'BODY') {
+          return _this.baseCollection.forEach(function(model) {
+            return model.setSelectedViewState(false);
+          });
+        }
+      };
+    })(this));
   }
 };
 });
@@ -1567,6 +1574,7 @@ module.exports = {
   "tooltip download": "Download",
   "tooltip share": "Share",
   "tooltip tag": "Tag",
+  "tooltip preview": "Preview",
   'and x files': "and %{smart_count} other file ||||\nand %{smart_count} other files",
   "already exists": "already exists.",
   "failed to upload": "could not be sent to server.",
@@ -2166,6 +2174,7 @@ module.exports = {
   "tooltip download": "Télécharger",
   "tooltip share": "Partager",
   "tooltip tag": "Etiquette",
+  "tooltip preview": "Prévisualiser",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
   'and x files': "et un autre fichier ||||\net %{smart_count} autres fichiers",
@@ -3139,6 +3148,8 @@ helpers = {
     if (!elmt.dataset.hasPreview) {
       elmt.dataset.hasPreview = true;
       icon = document.createElement('a');
+      icon.classList.add('file-preview');
+      icon.title = window.t('tooltip preview');
       icon.innerHTML = "<i class='fa fa-eye'></i>";
       icon.addEventListener('click', onClick);
       operationsEl = elmt.parentNode.querySelector('.operations');
@@ -3567,13 +3578,16 @@ module.exports = FileView = (function(_super) {
       model: model,
       clearance: this.model.getClearance()
     }));
+    input = this.$(".file-edit-name")[0];
+    if (name === '') {
+      input.placeholder = t("new folder");
+    }
     this.$(".file-edit-name").width(width);
     this.$(".file-edit-name").focus();
     lastIndexOfDot = model.name.lastIndexOf('.');
     if (lastIndexOfDot === -1) {
       lastIndexOfDot = model.name.length;
     }
-    input = this.$(".file-edit-name")[0];
     if (typeof input.selectionStart !== "undefined") {
       input.selectionStart = 0;
       input.selectionEnd = lastIndexOfDot;
@@ -3997,7 +4011,6 @@ module.exports = FolderView = (function(_super) {
   __extends(FolderView, _super);
 
   function FolderView() {
-    this.onMozFolderError = __bind(this.onMozFolderError, this);
     this.onFilesSelected = __bind(this.onFilesSelected, this);
     return FolderView.__super__.constructor.apply(this, arguments);
   }
@@ -4016,6 +4029,7 @@ module.exports = FolderView = (function(_super) {
       'change #uploader': 'onFilesSelected',
       'change #folder-uploader': 'onDirectorySelected',
       'click #select-all': 'onSelectAllChanged',
+      'click .container': 'onDeselectAll',
       'click #button-bulk-download': 'bulkDownload',
       'click #button-bulk-remove': 'bulkRemove',
       'click #button-bulk-move': 'bulkMove',
@@ -4173,7 +4187,7 @@ module.exports = FolderView = (function(_super) {
       }
       this.baseCollection.add(this.newFolder);
       view = this.filesList.views[this.newFolder.cid];
-      view.onEditClicked(t("new folder"));
+      view.onEditClicked('');
       return this.newFolder.once('sync destroy', (function(_this) {
         return function() {
           return _this.newFolder = null;
@@ -4290,42 +4304,40 @@ module.exports = FolderView = (function(_super) {
         }
       };
     })(this);
-    parseEntriesRecursively = (function(_this) {
-      return function(entry, path) {
-        var reader;
-        pending = pending + 1;
-        path = path || "";
-        if (path.length > 0) {
-          path = "" + path + "/";
-        }
-        if (entry.isFile) {
-          return entry.file(function(file) {
-            file.relativePath = "" + path + file.name;
-            files.push(file);
-            pending = pending - 1;
-            if (pending === 0) {
-              return callback();
-            }
-          }, function(error) {
-            errors.push(entry.name);
-            pending = pending - 1;
-            if (pending === 0) {
-              return callback();
-            }
-          });
-        } else if (entry.isDirectory) {
-          reader = entry.createReader();
-          return reader.readEntries(function(entries) {
-            var subEntry, _i, _len;
-            for (_i = 0, _len = entries.length; _i < _len; _i++) {
-              subEntry = entries[_i];
-              parseEntriesRecursively(subEntry, "" + path + entry.name);
-            }
-            return pending = pending - 1;
-          });
-        }
-      };
-    })(this);
+    parseEntriesRecursively = function(entry, path) {
+      var reader;
+      pending = pending + 1;
+      path = path || "";
+      if (path.length > 0) {
+        path = "" + path + "/";
+      }
+      if (entry.isFile) {
+        return entry.file(function(file) {
+          file.relativePath = "" + path + file.name;
+          files.push(file);
+          pending = pending - 1;
+          if (pending === 0) {
+            return callback();
+          }
+        }, function(error) {
+          errors.push(entry.name);
+          pending = pending - 1;
+          if (pending === 0) {
+            return callback();
+          }
+        });
+      } else if (entry.isDirectory) {
+        reader = entry.createReader();
+        return reader.readEntries(function(entries) {
+          var subEntry, _i, _len;
+          for (_i = 0, _len = entries.length; _i < _len; _i++) {
+            subEntry = entries[_i];
+            parseEntriesRecursively(subEntry, "" + path + entry.name);
+          }
+          return pending = pending - 1;
+        });
+      }
+    };
     _results = [];
     for (_i = 0, _len = items.length; _i < _len; _i++) {
       item = items[_i];
@@ -4389,6 +4401,14 @@ module.exports = FolderView = (function(_super) {
     return this.collection.forEach(function(model) {
       return model.setSelectedViewState(!isChecked);
     });
+  };
+
+  FolderView.prototype.onDeselectAll = function(event) {
+    if (event.target.id === 'files') {
+      return this.collection.forEach(function(model) {
+        return model.setSelectedViewState(false);
+      });
+    }
   };
 
   FolderView.prototype.getSelectedElements = function() {
@@ -4495,22 +4515,32 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.bulkDownload = function() {
-    var form, inputValue, selectedElements, selectedPaths, serializedSelection, url;
+    var a, form, inputValue, selectedElements, selectedPaths, serializedSelection, url;
     selectedElements = this.getSelectedElements();
-    selectedPaths = selectedElements.map(function(element) {
-      if (element.isFolder()) {
-        return "" + (element.getRepository()) + "/";
-      } else {
-        return "" + (element.getRepository());
-      }
-    });
-    url = this.model.getZipURL();
-    serializedSelection = selectedPaths.join(';');
-    inputValue = "value=\"" + serializedSelection + "\"";
-    form = "<form id=\"temp-zip-download\" action=\"" + url + "\" method=\"post\">\n    <input type=\"hidden\" name=\"selectedPaths\" " + inputValue + "/>\n</form>";
-    $('body').append(form);
-    $('#temp-zip-download').submit();
-    return $('#temp-zip-download').remove();
+    if (selectedElements.length > 1) {
+      selectedPaths = selectedElements.map(function(element) {
+        if (element.isFolder()) {
+          return "" + (element.getRepository()) + "/";
+        } else {
+          return "" + (element.getRepository());
+        }
+      });
+      url = this.model.getZipURL();
+      serializedSelection = selectedPaths.join(';');
+      inputValue = "value=\"" + serializedSelection + "\"";
+      form = "<form id=\"temp-zip-download\" action=\"" + url + "\" method=\"post\">\n    <input type=\"hidden\" name=\"selectedPaths\" " + inputValue + "/>\n</form>";
+      $('body').append(form);
+      $('#temp-zip-download').submit();
+      return $('#temp-zip-download').remove();
+    } else {
+      a = document.createElement('a');
+      a.href = selectedElements[0].getDownloadUrl();
+      return a.dispatchEvent(new window.MouseEvent('click', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      }));
+    }
   };
 
 
@@ -6099,7 +6129,6 @@ module.exports = TagsView = (function(_super) {
     this.refresh = __bind(this.refresh, this);
     this.deleteTag = __bind(this.deleteTag, this);
     this.setTags = __bind(this.setTags, this);
-    this.tagClicked = __bind(this.tagClicked, this);
     this.refreshAutocomplete = __bind(this.refreshAutocomplete, this);
     this.onKeyDown = __bind(this.onKeyDown, this);
     return TagsView.__super__.constructor.apply(this, arguments);

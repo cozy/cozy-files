@@ -187,7 +187,7 @@ module.exports.create = function(req, res, next) {
     }
     name = fields.name;
     path = fields.path;
-    lastModification = moment(fields.lastModification).toISOString();
+    lastModification = moment(new Date(fields.lastModification)).toISOString();
     overwrite = fields.overwrite;
     upload = true;
     canceled = false;
@@ -275,81 +275,77 @@ module.exports.create = function(req, res, next) {
     fullPath = path + "/" + name;
     return File.byFullPath({
       key: fullPath
-    }, (function(_this) {
-      return function(err, sameFiles) {
-        var attributes, data, file;
+    }, function(err, sameFiles) {
+      var attributes, data, file;
+      if (err) {
+        return next(err);
+      }
+      if (sameFiles.length > 0) {
+        if (overwrite) {
+          file = sameFiles[0];
+          attributes = {
+            lastModification: lastModification,
+            size: part.byteCount,
+            mime: mime.lookup(name),
+            "class": getFileClass(part),
+            uploading: true
+          };
+          return file.updateAttributes(attributes, function() {
+            keepAlive();
+            return attachBinary(file);
+          });
+        } else {
+          upload = false;
+          return res.send({
+            error: true,
+            code: 'EEXISTS',
+            msg: "This file already exists"
+          }, 400);
+        }
+      }
+      data = {
+        name: name,
+        path: normalizePath(path),
+        creationDate: now,
+        lastModification: lastModification,
+        mime: mime.lookup(name),
+        size: part.byteCount,
+        tags: [],
+        "class": getFileClass(part),
+        uploading: true
+      };
+      return confirmCanUpload(data, req, function(err) {
         if (err) {
           return next(err);
         }
-        if (sameFiles.length > 0) {
-          if (overwrite) {
-            file = sameFiles[0];
-            attributes = {
-              lastModification: lastModification,
-              size: part.byteCount,
-              mime: mime.lookup(name),
-              "class": getFileClass(part),
-              uploading: true
-            };
-            return file.updateAttributes(attributes, function() {
-              keepAlive();
-              return attachBinary(file);
-            });
-          } else {
-            upload = false;
-            return res.send({
-              error: true,
-              code: 'EEXISTS',
-              msg: "This file already exists"
-            }, 400);
-          }
-        }
-        data = {
-          name: name,
-          path: normalizePath(path),
-          creationDate: now,
-          lastModification: lastModification,
-          mime: mime.lookup(name),
-          size: part.byteCount,
-          tags: [],
-          "class": getFileClass(part),
-          uploading: true
-        };
-        return confirmCanUpload(data, req, function(err) {
+        return Folder.byFullPath({
+          key: data.path
+        }, function(err, parents) {
+          var parent;
           if (err) {
             return next(err);
           }
-          return Folder.byFullPath({
-            key: data.path
-          }, (function(_this) {
-            return function(err, parents) {
-              var parent;
-              if (err) {
-                return next(err);
-              }
-              if (parents.length > 0) {
-                parent = parents[0];
-                data.tags = parent.tags;
-                parent.lastModification = now;
-                folderParent[parent.name] = parent;
-              }
-              return File.create(data, function(err, newFile) {
-                if (err) {
-                  return next(err);
-                }
-                keepAlive();
-                err = new Error('Request canceled by user');
-                res.on('close', function() {
-                  log.info('Upload request closed by user');
-                  return uploadStream.abort();
-                });
-                return attachBinary(newFile);
-              });
-            };
-          })(this));
+          if (parents.length > 0) {
+            parent = parents[0];
+            data.tags = parent.tags;
+            parent.lastModification = now;
+            folderParent[parent.name] = parent;
+          }
+          return File.create(data, function(err, newFile) {
+            if (err) {
+              return next(err);
+            }
+            keepAlive();
+            err = new Error('Request canceled by user');
+            res.on('close', function() {
+              log.info('Upload request closed by user');
+              return uploadStream.abort();
+            });
+            return attachBinary(newFile);
+          });
         });
-      };
-    })(this));
+      });
+    });
   });
   form.on('error', function(err) {
     return log.error(err);
@@ -374,18 +370,16 @@ module.exports.modify = function(req, res, next) {
     });
     return file.updateAttributes({
       tags: tags
-    }, (function(_this) {
-      return function(err) {
-        if (err) {
-          return next(new Error("Cannot change tags: " + err));
-        } else {
-          log.info("Tags changed for " + file.name + ": " + tags);
-          return res.send({
-            success: 'Tags successfully changed'
-          }, 200);
-        }
-      };
-    })(this));
+    }, function(err) {
+      if (err) {
+        return next(new Error("Cannot change tags: " + err));
+      } else {
+        log.info("Tags changed for " + file.name + ": " + tags);
+        return res.send({
+          success: 'Tags successfully changed'
+        }, 200);
+      }
+    });
   } else if ((!body.name || body.name === "") && (body.path == null)) {
     log.info("No arguments, no modification performed for " + req.file.name);
     return next(new Error("Invalid arguments, name should be specified."));
@@ -431,20 +425,18 @@ module.exports.modify = function(req, res, next) {
         if (body.clearance) {
           data.clearance = body.clearance;
         }
-        return file.updateAttributes(data, (function(_this) {
-          return function(err) {
-            if (err) {
-              return next(new Error('Cannot modify file'));
-            } else {
-              return file.updateParentModifDate(function(err) {
-                if (err) {
-                  log.raw(err);
-                }
-                return file.index(["name"], modificationSuccess);
-              });
-            }
-          };
-        })(this));
+        return file.updateAttributes(data, function(err) {
+          if (err) {
+            return next(new Error('Cannot modify file'));
+          } else {
+            return file.updateParentModifDate(function(err) {
+              if (err) {
+                log.raw(err);
+              }
+              return file.index(["name"], modificationSuccess);
+            });
+          }
+        });
       }
     });
   }

@@ -17,14 +17,12 @@ cozydb = require('cozydb');
 
 cozydomain = 'http://your.friends.cozy.url/';
 
-cozydb.api.getCozyDomain((function(_this) {
-  return function(err, domain) {
-    if (err) {
-      return console.log(err);
-    }
-    return cozydomain = domain;
-  };
-})(this));
+cozydb.api.getCozyDomain(function(err, domain) {
+  if (err) {
+    return console.log(err);
+  }
+  return cozydomain = domain;
+});
 
 notifications = new NotificationHelper('files');
 

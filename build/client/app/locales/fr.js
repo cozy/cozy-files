@@ -37,6 +37,7 @@ module.exports = {
   "tooltip download": "Télécharger",
   "tooltip share": "Partager",
   "tooltip tag": "Etiquette",
+  "tooltip preview": "Prévisualiser",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
   'and x files': "et un autre fichier ||||\net %{smart_count} autres fichiers",

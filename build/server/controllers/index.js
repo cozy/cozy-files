@@ -14,29 +14,27 @@ module.exports.main = function(req, res, next) {
     }, function(cb) {
       return cozydb.api.getCozyInstance(cb);
     }
-  ], (function(_this) {
-    return function(err, results) {
-      var domain, instance, locale, tags;
-      if (err) {
-        return next(err);
-      } else {
-        locale = results[0], tags = results[1], instance = results[2];
-        if (((instance != null ? instance.domain : void 0) != null) && instance.domain !== 'domain.not.set') {
-          domain = instance.domain;
-          if (domain.indexOf('https') === -1) {
-            domain = "https://" + domain;
-          }
-          if (domain.slice('-1') === "/") {
-            domain = domain.substring(0, domain.length - 1);
-          }
-          domain = domain + "/public/files/";
-        } else {
-          domain = false;
+  ], function(err, results) {
+    var domain, instance, locale, tags;
+    if (err) {
+      return next(err);
+    } else {
+      locale = results[0], tags = results[1], instance = results[2];
+      if (((instance != null ? instance.domain : void 0) != null) && instance.domain !== 'domain.not.set') {
+        domain = instance.domain;
+        if (domain.indexOf('https') === -1) {
+          domain = "https://" + domain;
         }
-        return res.render("index", {
-          imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + (tags.join(',').replace('\"', '')) + "\".split(',');\nwindow.domain = \"" + domain + "\";"
-        });
+        if (domain.slice('-1') === "/") {
+          domain = domain.substring(0, domain.length - 1);
+        }
+        domain = domain + "/public/files/";
+      } else {
+        domain = false;
       }
-    };
-  })(this));
+      return res.render("index", {
+        imports: "window.locale = \"" + locale + "\";\nwindow.tags = \"" + (tags.join(',').replace('\"', '')) + "\".split(',');\nwindow.domain = \"" + domain + "\";"
+      });
+    }
+  });
 };

@@ -26,6 +26,7 @@ clearanceCtl = clearance.controller({
       options.displayName = user.name || localization.t('default user name');
       options.displayEmail = user.email;
       options.localization = localization;
+      options.displayLabel = localization.t("view " + options.type);
       return callback(null, mailTemplate(options));
     });
   },

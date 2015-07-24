@@ -59,51 +59,49 @@ File.injectInheritedClearance = function(files, callback) {
   }, callback);
 };
 
-File.createNewFile = (function(_this) {
-  return function(data, file, callback) {
-    var attachBinary, index, keepAlive, upload;
-    upload = true;
-    attachBinary = function(newFile) {
-      file.path = data.name;
-      return newFile.attachBinary(file, {
-        "name": "file"
-      }, function(err, res, body) {
-        upload = false;
-        if (err) {
-          return newFile.destroy(function(error) {
-            return callback("Error attaching binary: " + err);
-          });
-        } else {
-          return index(newFile);
-        }
-      });
-    };
-    index = function(newFile) {
-      return newFile.index(["name"], function(err) {
-        if (err) {
-          console.log(err);
-        }
-        return callback(null, newFile);
-      });
-    };
-    keepAlive = function() {
-      if (upload) {
-        feed.publish('usage.application', 'files');
-        return setTimeout(function() {
-          return keepAlive();
-        }, 60 * 1000);
-      }
-    };
-    return File.create(data, function(err, newFile) {
+File.createNewFile = function(data, file, callback) {
+  var attachBinary, index, keepAlive, upload;
+  upload = true;
+  attachBinary = function(newFile) {
+    file.path = data.name;
+    return newFile.attachBinary(file, {
+      "name": "file"
+    }, function(err, res, body) {
+      upload = false;
       if (err) {
-        return callback(new Error("Server error while creating file; " + err));
+        return newFile.destroy(function(error) {
+          return callback("Error attaching binary: " + err);
+        });
       } else {
-        attachBinary(newFile);
-        return keepAlive();
+        return index(newFile);
       }
     });
   };
-})(this);
+  index = function(newFile) {
+    return newFile.index(["name"], function(err) {
+      if (err) {
+        console.log(err);
+      }
+      return callback(null, newFile);
+    });
+  };
+  keepAlive = function() {
+    if (upload) {
+      feed.publish('usage.application', 'files');
+      return setTimeout(function() {
+        return keepAlive();
+      }, 60 * 1000);
+    }
+  };
+  return File.create(data, function(err, newFile) {
+    if (err) {
+      return callback(new Error("Server error while creating file; " + err));
+    } else {
+      attachBinary(newFile);
+      return keepAlive();
+    }
+  });
+};
 
 File.prototype.getFullPath = function() {
   return this.path + '/' + this.name;
@@ -167,20 +165,18 @@ File.prototype.getInheritedClearance = function(callback) {
 File.prototype.updateParentModifDate = function(callback) {
   return Folder.byFullPath({
     key: this.path
-  }, (function(_this) {
-    return function(err, parents) {
-      var parent;
-      if (err) {
-        return callback(err);
-      } else if (parents.length > 0) {
-        parent = parents[0];
-        parent.lastModification = moment().toISOString();
-        return parent.save(callback);
-      } else {
-        return callback();
-      }
-    };
-  })(this));
+  }, function(err, parents) {
+    var parent;
+    if (err) {
+      return callback(err);
+    } else if (parents.length > 0) {
+      parent = parents[0];
+      parent.lastModification = moment().toISOString();
+      return parent.save(callback);
+    } else {
+      return callback();
+    }
+  });
 };
 
 File.prototype.destroyWithBinary = function(callback) {
