@@ -112,7 +112,7 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = numUploadChildren > 0
 
     reDecorate: ->
-        console.log "redecorate"
+        #console.log "redecorate"
         @beforeRender()
 
         renderData = @getRenderData()
@@ -344,7 +344,6 @@ module.exports = class FileView extends BaseView
     # When a line is clicked, it should mark the item as selected, unless the
     # user clicked a button.
     onLineClicked: (event) ->
-        console.log 'onLineClicked'
         # List of selectors that will prevent the selection if they, or one
         # of their children, are clicked.
         forbiddenSelectors = [
@@ -463,8 +462,10 @@ module.exports = class FileView extends BaseView
         @$('.type-column-cell').remove()
         @$('.date-column-cell').remove()
 
+        @progressbar.destroy() if @progressbar?
+
         @progressbar = new ProgressBar model: @model
-        cell = $ '<td colspan="2"></td>'
+        cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
         cell.append @progressbar.render().$el
         @$('.size-column-cell').after cell
 
