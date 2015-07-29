@@ -3,12 +3,6 @@
 #
 #   # creation :
 #
-#       onRowsMovedCB = (rows)->
-#           # rows      : [ {rank:Integer, el:Element} , ... ]
-#           Array of objects giving the rank and a reference to the element of
-#           the moved row.
-#           The array is sorted in order to optimize refresh (the most usefull
-#           to refresh is the first one)
 #
 #       viewportElement = $('.longListViewport')[0] # the viewport element
 #
@@ -39,6 +33,23 @@
 #           # call back when a row of the buffer is moved and must be completly
 #           # redecorated
 #           onRowsMovedCB     : (rowsToDecorate)->
+#               # rowsToDecorate  : [ {rank:Integer, el:Element} , ... ]
+#               # Array of objects giving the rank and a reference to the
+#               # element of the moved row.
+#               # The array is sorted in order to optimize refresh (the most
+#               # usefull to refresh is the first one)
+#
+#           # [optional] call back when a row of the buffer is created (the
+#           first decoration might differ from others). If not provided,
+#           onRowsMovedCB will be called instead.
+#           onRowsCreatedCB   : (rowsToDecorate)->
+#               # rowsToDecorate  : [ {rank:Integer, el:Element} , ... ]
+#               # Array of objects giving the rank and a reference to the
+#               # element of the moved row.
+#               # The array is sorted in order to optimize refresh (the most
+#               # usefull to refresh is the first one)
+#
+#
 #
 #       longList = new LongListRows(viewportElement, options)
 #       doActions() ...
@@ -52,10 +63,7 @@
 #   # if some are already in, they will be removed
 #       longList.initRows(nToAdd)
 #
-#   # USELESS SO FAR : if geometry changes : longList.removeAll() and then
-#   # create a new LongList()
-#
-#   # when the geometry of the parent changes (height of viewportElement) :
+#   # when the height of the viewportElement changes :
 #       longList.resizeHandler()
 #
 #   # to add a row
@@ -88,6 +96,10 @@ module.exports = class LongListRows
     constructor: (@externalViewport$, @options ) ->
         @options.MAX_SPEED = @options.MAX_SPEED  * @options.THROTTLE / 1000
         @onRowsMovedCB     = @options.onRowsMovedCB
+        if @options.onRowsCreatedCB
+            @onRowsCreatedCB   = @options.onRowsCreatedCB
+        else
+            @onRowsCreatedCB   = @options.onRowsMovedCB
         ####
         # get elements (name ends with '$')
         @viewport$ = document.createElement('div')
@@ -121,7 +133,7 @@ module.exports = class LongListRows
         @_firstPopulateBuffer(nToAdd)
 
 
-    # to add new rows. Might call onRowsMovedCB.
+    # To add new rows. Might call onRowsMovedCB.
     # ! note : your data describing rows state must be updated before calling
     # this method, because onRowsMovedCB might be called => the data must be
     # up to date when redecoration will occur.
@@ -188,10 +200,16 @@ module.exports = class LongListRows
 
 
 
-
-    # for tests
+    ###*
+     * Methodes for tests, are defined in _DOM_controlerInit
+    ###
     _test:
         goDownHalfBuffer:null
+        goUpHalfBuffer:null
+        getState:null
+        getInternals:null
+        unActivateScrollListener:null
+        activateScrollListener:null
 
 
 
@@ -250,6 +268,7 @@ module.exports = class LongListRows
         MAX_SPEED       = @options.MAX_SPEED
 
 
+
         _scrollHandler = (e) =>
             if noScrollScheduled and isDynamic
                 lastOnScroll_Y = @viewport$.scrollTop
@@ -257,7 +276,9 @@ module.exports = class LongListRows
                 noScrollScheduled = false
 
 
+
         @_scrollHandler = _scrollHandler
+
 
 
         ###*
@@ -279,8 +300,10 @@ module.exports = class LongListRows
             return _emToPixels(value)
 
 
+
         _emToPixels=(value, context)->
             return Math.round(value * _getElementFontSize(context))
+
 
 
         _getDimInPixels = (value)=>
@@ -293,64 +316,13 @@ module.exports = class LongListRows
                     return _remToPixels(value)
 
 
+
         ###*
          * called once for all during _DOM_controlerInit
          * computes the static parameters of the geometry
         ###
         _getStaticDimensions = () =>
             rowHeight         = _getDimInPixels(ROW_HEIGHT)
-
-
-        ###*
-         * Construct the buffer. It will be empty at the end, only ready to be
-         * used).
-         * The buffer lists all the created rows, keep a reference on the first
-         * (top most) and the last (bottom most) line.
-         * The buffer is a closed double linked chain.
-         * Each element of the chain is a "line" with a previous (prev) and next
-           (next) element.
-         * "closed" means that buffer.last.prev == buffer.first
-         * data structure :
-             first   : {line}    # top most line
-             firstRk : {integer} # y of the first line of the buffer
-             last    : {line}    # bottom most line
-             lastRk  : {integer} # y of the last line of the buffer
-             nRows   : {integer} # number of rows in the buffer
-        ###
-        # _constructBuffer = ()=>
-
-        #     row$ = document.createElement('li')
-        #     row$.setAttribute('class', 'long-list-rows')
-        #     row$.style.height = rowHeight + 'px'
-        #     row$.style.width  = rowHeight + 'px'
-        #     @rows$.appendChild(row$)
-
-        #     row =
-        #         prev : null
-        #         next : null
-        #         el   : row$
-        #         rank : null
-        #         id   : null
-        #     row.prev = row
-        #     row.next = row
-
-        #     buffer =
-        #             first   : row  # top most row
-        #             firstRk : -1   # rank of the first row of the buffer
-        #             last    : row  # bottom most row
-        #             lastRk  : -1   # rank of the last row of the buffer
-        #             nRows   :  1   # number of rows in the buffer
-        #             getRow : (rank)->
-        #                 first = this.first
-        #                 row   = first
-        #                 loop
-        #                     if rank == row.rank
-        #                         return row
-        #                     row = row.prev
-        #                     break if row == first
-        #                 return null
-
-        #     @buffer = buffer
 
 
 
@@ -362,7 +334,6 @@ module.exports = class LongListRows
          * row
         ###
         _resizeHandler= ()=>
-            console.log "_resizeHandler"
             # get dimensions.
             viewportHeight = @viewport$.clientHeight
 
@@ -423,13 +394,20 @@ module.exports = class LongListRows
                 nDeleted++
                 currentRow = currentRow.next
                 break unless index--
-            buffer.last = currentRow
-            buffer.lastRk -= nToDelete
-            buffer.first.next = currentRow
-            currentRow.prev = buffer.first
-            buffer.nRows  -= nToDelete
+            buffer.last       = currentRow
+            buffer.lastRk    -= nToDelete
+            buffer.first.next =   currentRow
+            currentRow.prev   = buffer.first
+            buffer.nRows     -= nToDelete
 
-
+        ###*
+         * @param {Integer} add nToAdd rows at the bottom of the buffer
+         *     {Row}:
+         *          prev : {Row}
+         *          next : {Row}
+         *          el   : {Element}
+         *          rank : {Integer}
+        ###
         _addBufferRows = (nToAdd)=>
             rowsToDecorate = []
             startRk = buffer.lastRk
@@ -614,13 +592,20 @@ module.exports = class LongListRows
                 prevCreatedRow = row
                 rowsToDecorate.push({rank:n-1;el:row$})
             # set the buffer
-            bufr.first   = firstCreatedRow.prev
-            bufr.firstRk = 0
-            bufr.last    = row
-            bufr.first.next = bufr.last
-            bufr.last.prev  = bufr.first
-            bufr.lastRk  = row.rank
-            bufr.nRows   = nToCreate
+            if nToAdd == 0
+                bufr.first   = null
+                bufr.firstRk = -1
+                bufr.last    = null
+                bufr.lastRk  = -1
+                bufr.nRows   = null
+            else
+                bufr.first   = firstCreatedRow.prev
+                bufr.firstRk = 0
+                bufr.last    = row
+                bufr.first.next = bufr.last
+                bufr.last.prev  = bufr.first
+                bufr.lastRk  = row.rank
+                bufr.nRows   = nToCreate
             # check if the long list is dynamic
             if nMaxRowsInBufr < nRows
                 isDynamic = true
@@ -628,7 +613,7 @@ module.exports = class LongListRows
                 isDynamic = false
 
 
-            @onRowsMovedCB(rowsToDecorate)
+            @onRowsCreatedCB(rowsToDecorate)
 
         @_firstPopulateBuffer = _firstPopulateBuffer
 
@@ -642,7 +627,9 @@ module.exports = class LongListRows
         ###
         _addRow = (fromRank)->
             # console.log 'LongList._addRow', fromRank
-
+            if nRows == 0
+                @_firstPopulateBuffer(1)
+                return
             ##
             # update nRows
             nRows++
@@ -686,7 +673,7 @@ module.exports = class LongListRows
                         currentRk += 1
                     # redecorate created row
                     @rows$.style.height = nRows*rowHeight + 'px'
-                    @onRowsMovedCB([{el:row$,rank:0}])
+                    @onRowsCreatedCB([{el:row$,rank:0}])
                     return
 
                 ##
@@ -721,7 +708,7 @@ module.exports = class LongListRows
                         currentRk += 1
                     # redecorate created row
                     @rows$.style.height = nRows*rowHeight + 'px'
-                    @onRowsMovedCB([{el:row$,rank:fromRank}])
+                    @onRowsCreatedCB([{el:row$,rank:fromRank}])
                     return
 
                 ##
@@ -746,7 +733,7 @@ module.exports = class LongListRows
                     buffer.nRows++
                     # redecorate created row
                     @rows$.style.height = nRows*rowHeight + 'px'
-                    @onRowsMovedCB([{el:row$,rank:fromRank}])
+                    @onRowsCreatedCB([{el:row$,rank:fromRank}])
                     return
 
                 ##
@@ -1176,7 +1163,37 @@ module.exports = class LongListRows
             return elemtsToDecorate
 
 
-        # construct the buffer
+
+        ###*
+         * Construct the buffer. It will be empty at the end, only ready to be
+         * used.
+         * The buffer :
+         *     * lists all the created rows, eg rows represented in the
+         *       DOM by an element.
+         *     * keeps a reference on the first row (top most) and the last
+         *      (bottom most) row.
+         *     * is a closed double linked chain.
+         * Each element of the chain is a {row} with a previous (prev) and next
+           (next) element.
+         * "closed" means that buffer.last.prev == buffer.first
+         * data structure :
+
+           {buffer} :
+             first   : {row}      # top most row
+             firstRk : {integer}  # y of the first row of the buffer
+             last    : {row}      # bottom most row
+             lastRk  : {integer}  # y of the last row of the buffer
+             nRows   : {integer}  # number of rows in the buffer
+             getRow  : {function} # (rank)-> returns the row if the
+                 rank is in the buffer, null otherwise.
+                 If the buffer is not empty, all elements are removed.
+
+           {Row}:
+                prev : {Row}
+                next : {Row}
+                el   : {Element}
+                rank : {Integer}
+        ###
         _initBuffer = () ->
             # if the buffer is not empty, remove all elements of rows$
             if buffer
@@ -1203,6 +1220,7 @@ module.exports = class LongListRows
             isDynamic = false
         @_initBuffer = _initBuffer
 
+
         ####
         # Get the dimensions (rowHeight)
         _getStaticDimensions()
@@ -1211,7 +1229,7 @@ module.exports = class LongListRows
         _resizeHandler()
         ####
         # bind events
-        @viewport$.addEventListener( 'scroll'     , _scrollHandler    )
+        @viewport$.addEventListener( 'scroll', _scrollHandler)
 
         ###*
          * retuns the element corresponding to the row of the given rank or null
