@@ -264,13 +264,11 @@ module.exports = class FolderView extends BaseView
         items = e.dataTransfer.items
         return unless items.length
 
-        # Due to the asynchronous nature of the API, we use a pending system
-        # where we increment and decrement it for each operations, only calling
-        # the callback when there are no operation pending
-        pending = 0
         files = []
         errors = []
-        callback = =>
+
+        # Once all entries have been parsed, they are added to the upload queue.
+        addAllToQueue = =>
 
             processUpload = =>
                 @uploadQueue.addFolderBlobs files, @model
@@ -296,40 +294,43 @@ module.exports = class FolderView extends BaseView
                 processUpload()
 
 
-        # An entry can be a folder or a file
-        parseEntriesRecursively = (entry, path) =>
-            pending = pending + 1
+        # An entry can be a folder or a file.
+        parseEntriesRecursively = (entry, path, done) =>
             path = path or ""
             path = "#{path}/" if path.length > 0
 
-            # if it's a file we add it to the file list with a proper
-            # relative path
+            # If it's a file we add it to the file list with a proper
+            # relative path.
             if entry.isFile
                 entry.file (file) ->
                     file.relativePath = "#{path}#{file.name}"
                     files.push file
-                    pending = pending - 1
-                    # if there are no operation left, the upload starts
-                    callback() if pending is 0
+                    done()
                 , (error) ->
                     errors.push entry.name
-                    pending = pending - 1
-                    # if there are no operation left, the upload starts
-                    callback() if pending is 0
+                    done()
 
-            # if it's a directory, recursively call the function to reach
-            # the leaves of the file tree
+            # If it's a directory, recursively call the function to reach
+            # the leaves of the file tree.
             else if entry.isDirectory
                 reader = entry.createReader()
-                reader.readEntries (entries) ->
-                    for subEntry in entries
-                        parseEntriesRecursively subEntry, "#{path}#{entry.name}"
-                    pending = pending - 1
 
-        # starts the parsing process
-        for item in items
+                # .readEntries only return chunks of 100 elements, so it must
+                # be called multiple times, until there is no more entries.
+                do unshiftFolder = ->
+                    reader.readEntries (entries) ->
+                        if entries.length is 0
+                            done()
+                        else
+                            async.eachSeries entries, (subEntry, next) ->
+                                parseEntriesRecursively subEntry, "#{path}#{entry.name}", next
+                            , unshiftFolder
+
+        # Start the parsing process.
+        async.eachSeries items, (item, next) ->
             entry = item.webkitGetAsEntry()
-            parseEntriesRecursively entry
+            parseEntriesRecursively entry, null, next
+        , addAllToQueue
 
 
     ###
