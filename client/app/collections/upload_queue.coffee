@@ -211,7 +211,6 @@ module.exports = class UploadQueue
 
 
     addBlobs: (blobs, folder) ->
-        console.log 'addBlobs blobs.length', blobs.length
         @reset() if @completed
 
         i = 0
@@ -219,7 +218,6 @@ module.exports = class UploadQueue
         # we do a non blocking loop, handling one file every 2ms so the
         # UI don't get stuck
         do nonBlockingLoop = =>
-            console.log 'addBlobs', i, blobs.length
             return unless blob = blobs[i++]
 
             path = folder.getRepository() or ''
