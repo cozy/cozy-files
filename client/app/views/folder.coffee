@@ -273,11 +273,6 @@ module.exports = class FolderView extends BaseView
             processUpload = =>
                 @uploadQueue.addFolderBlobs files, @model
 
-                if e.target?
-                    target = $ e.target
-                    # reset the input
-                    target.replaceWith target.clone true
-
             if errors.length > 0
                 formattedErrors = errors
                     .map (name) -> "\"#{name}\""
