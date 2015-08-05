@@ -43,7 +43,7 @@ Chrome et Safari.
     "modal delete msg"          : "La suppression ne pourra pas être annulée"
     "modal delete ok"           : "Supprimer"
     "modal cancel"              : "Annuler"
-    "modal delete error"        : " suppressions ont échouées, les fichiers et répertoires correspondant ont été ré-intégrés."
+    "modal delete error"        : "%{smart_count} suppression a échoué, l'élément correspondant a été ré-intégré. |||| %{smart_count} suppressions ont échoué, les fichiers et répertoires correspondant ont été ré-intégrés."
 
     "modal error in use"        : "Ce nom est déjà utilisé"
     "modal error rename"        : "Le nom n'a pas pu être modifié"
