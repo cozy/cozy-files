@@ -112,7 +112,6 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = numUploadChildren > 0
 
     reDecorate: ->
-        #console.log "redecorate"
         @beforeRender()
 
         renderData = @getRenderData()

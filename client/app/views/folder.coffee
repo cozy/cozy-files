@@ -471,10 +471,8 @@ module.exports = class FolderView extends BaseView
                 # collection instead of removing one by one after each
                 # model.destroy of the sync serie
                 for model in selectedElements
-                    console.log 'toto', model
                     @collection.remove(model)
                 # asynchronous destroy of the models
-                console.log 'ASYNC MODEL.destroy()'
                 async.filter(
                     selectedElements
                     , (model, cb) =>

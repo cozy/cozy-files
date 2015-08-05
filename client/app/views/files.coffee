@@ -60,11 +60,9 @@ module.exports = class FilesView extends BaseView #ViewCollection
     addFile: (model, collection, options) ->
         @longList.addRow(collection.indexOf(model))
         @updateNbFiles()
-        console.log 'files.addFile', model
 
 
     removeFile: (model, collection, options) ->
-        console.log 'files.removeFile', model
         @longList.removeRow(options.index)
         @updateNbFiles()
 
@@ -127,7 +125,6 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
     # Handler called when the list must update.
     onRowsMoved: (rowsToDecorate) ->
-        startPoint = performance.now()
 
         for row, index in rowsToDecorate
             if row.el
@@ -139,22 +136,18 @@ module.exports = class FilesView extends BaseView #ViewCollection
                         view = row.el.view
                         view.model = model
                         view.reDecorate()
-                    else
-                        console.log 'error, model not found', row
+
                 else
                     model = @collection.at rank
                     model.rank = rank
                     options = _.extend {}, {model}, @itemViewOptions()
                     view = new FileView options
-                    view.el = row.el
-                    view.$el = $ view.el
+                    view.setElement row.el
                     view.render()
 
                     row.el.view = view
                     @pool.push view
 
-        duration = performance.now() - startPoint
-        # console.log "Decorated #{rowsToDecorate.length} elements", duration
         return true
 
 
