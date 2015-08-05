@@ -462,51 +462,48 @@ module.exports = class FolderView extends BaseView
         Bulk actions management
     ###
     bulkRemove: ->
-        # TODO : add the confirmation modal (commented for ease of tests)
-        # new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
-        #     if confirm
+        new Modal t("modal are you sure"), t("modal delete msg"), \
+                  t("modal delete ok"), t("modal cancel"), (confirm) =>
+            if confirm
+
+                # Mark elements as pending deletion.
                 selectedElements = @getSelectedElements()
                 window.pendingOperations.deletion += selectedElements.length
-                # we manage ourself the remove of all the models of the
-                # collection instead of removing one by one after each
-                # model.destroy of the sync serie
-                for model in selectedElements
-                    @collection.remove(model)
-                # asynchronous destroy of the models
-                async.filter(
-                    selectedElements
-                    , (model, cb) =>
-                        model.destroy
-                            success: (model,response) ->
-                                # BIN À PRIORI RIEN À FAIRE ?
-                                # setTimeout ()->
-                                #     cb(model,response)
-                                # , 200
-                                window.pendingOperations.deletion--
-                                cb(false)
-                            error: (model) =>
-                                # the deletion has not been done on the server
-                                # we re-integrate the model in the collection
-                                window.pendingOperations.deletion--
-                                cb(true)
-                                # increase the file counter ? géré par filesView ?
-                            # we manage ourself the remove of all the models
-                            # instead of removing one by one after each
-                            # model.destroy of the sync serie
-                            silent: false
-                            wait  : false
 
-                    , (undeletedModels) =>
-                        if undeletedModels.length > 0
-                            console.log "bulkRemove callback : #{undeletedModels.length} deletion(s) failed", undeletedModels
-                            Modal.error undeletedModels.length + t("modal delete error")
-                            sortedModelsInError = _.sortBy(
-                                undeletedModels
-                                , (model)-> return model.rank
-                            )
-                            for model in sortedModelsInError
-                                @collection.add(model)
-                )
+                # Remove all models instead of removing one by one after each
+                # model.destroy, to prevent elements from disappearing in the
+                # meantime.
+                for model in selectedElements
+                    @baseCollection.remove(model)
+
+                # Filter the destroys' result to know which have failed so they
+                # can be re-added to the collection.
+                async.filter selectedElements, (model, next) ->
+                    model.destroy
+                        success: ->
+                            window.pendingOperations.deletion--
+                            next false
+                        error: ->
+                            window.pendingOperations.deletion--
+                            # Mark the model has not deleted on the server to it
+                            # can be re-added to the collection.
+                            next true
+
+                        silent: false
+                        wait: true
+
+                , (undeletedModels) =>
+                    # Re-add the models that have failed to be deleted on the
+                    # server.
+                    if undeletedModels.length > 0
+                        messageOptions = smart_count: undeletedModels.length
+                        Modal.error t("modal delete error", messageOptions)
+                        sortedModelsInError = _.sortBy(
+                            undeletedModels
+                            , (model) -> return model.rank
+                        )
+                        for model in sortedModelsInError
+                            @baseCollection.add(model)
 
 
     bulkMove: ->
