@@ -10,21 +10,37 @@ table#table-items.table.table-hover
           else
             i.fa.fa-minus-square-o
 
-        span= t('name')
-        a#down-name.btn.fa.fa-chevron-down.unactive
-        a#up-name.btn.fa.fa-chevron-up.unactive
+        a#down-name.btn.unactive
+          span= t('name')
+          .fa.fa-chevron-down
+        a#up-name.btn.unactive
+          span= t('name')
+          .fa.fa-chevron-up
+
       td.size-column-cell
-        span= t('size')
-        a#down-size.fa.fa-chevron-down.btn.unactive
-        a#up-size.unactive.btn.fa.fa-chevron-up.unactive
+        a#down-size.btn.unactive
+          span= t('size')
+          .fa.fa-chevron-down
+        a#up-size.unactive.btn
+          span= t('size')
+          .fa.fa-chevron-up
+
       td.type-column-cell
-        span= t('type')
-        a#down-class.btn.fa.fa-chevron-down.unactive
-        a#up-class.fa.fa-chevron-up.btn.unactive
+        a#down-class.btn.unactive
+          span= t('type')
+          .fa.fa-chevron-down
+        a#up-class.btn.unactive
+          span= t('type')
+          .fa.fa-chevron-up
+
       td.date-column-cell
-        span= t('date')
-        a#down-lastModification.btn.fa.fa-chevron-down.unactive
-        a#up-lastModification.btn.fa.fa-chevron-up.unactive
+        a#down-lastModification.btn.unactive
+          span= t('date')
+          .fa.fa-chevron-down
+        a#up-lastModification.btn.unactive
+          span= t('date')
+          .fa.fa-chevron-up
+
   tbody#table-items-body
 
 p.footer#file-amount-indicator

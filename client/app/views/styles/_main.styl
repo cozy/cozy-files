@@ -7,7 +7,9 @@ html, body
 
 body
     font-family: 'Source Sans Pro', sans-serif
-    background-image: url('../images/background.jpg')
+    background-color #f5f5f5
+    background-image none
+    font-size 16px
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
     font-family: 'Maven Pro', sans-serif
@@ -126,6 +128,9 @@ a
             background-color actioncolor
             border-color: actioncolor
 
+    &:active
+        box-shadow none
+
 
 // Inputs
 
@@ -176,8 +181,9 @@ div#affixbar
         p
             margin-bottom 5px
 
-        &:first-of-type
-            padding-top 15px
+    header
+        border-bottom 2px solid #e5e5e5
+        padding 0.8em 0
 
     a.btn
         height 35px
@@ -199,7 +205,7 @@ div#affixbar
         box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
 
 #crumbs
-    overflow hidden
+    height 0
 
     img
         height: 25px
@@ -213,53 +219,61 @@ div#affixbar
         padding-left: 0
         list-style none
         display inline-table
+
         li
             display inline
+
             a
-                display block
-                float left
-                height 35px
-                background basecolor
-                text-align center
-                padding 8px 5px 0 22px
+                display inline-block
                 position relative
-                margin 10px 5px 0 0
-                font-size 15px
+                padding 0.5em 0.5em 0.5em 1.2em
+                margin-right 0.1em
+                background #d5d5d5
+                text-align center
+                font-size 1em
                 text-decoration none
-                color #fff
+                color #333
+
                 &:after
                     content ""
-                    border-top 17px solid transparent
-                    border-bottom 17px solid transparent
-                    border-left 17px solid basecolor
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid #d5d5d5
                     position absolute
-                    right -17px
+                    right -10px
                     top 0
                     z-index 1
+
                 &:before
                     content ""
-                    border-top 17px solid transparent
-                    border-bottom 17px solid transparent
-                    border-left 17px solid white
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid white
                     position absolute
                     left 0
                     top 0
+
                 &:hover
                     background actioncolor
+
                     &:after
                         border-left-color actioncolor
+
             &:first-child
                 a
-                    padding-left: 20px
-                    border-top-left-radius 10px
-                    border-bottom-left-radius 10px
+                    padding-left 1em
+                    border-top-left-radius 0.2em
+                    border-bottom-left-radius 0.2em
+
                     &:before
                         display none
+
             &:last-child
                 a
-                    padding-right 20px
-                    border-top-right-radius 10px
-                    border-bottom-right-radius 10px
+                    padding-right 1em
+                    border-top-right-radius 0.2em
+                    border-bottom-right-radius 0.2em
+
                     &:after
                         display none
 
@@ -479,24 +493,28 @@ table
 table#table-items
     margin-bottom: 10px
 
-    .unactive
-        opacity: 0.5
+    .unactive .fa
+        display none
 
     td
-        height: 40px
+        padding 1.6rem 0.8em
+        border 0
+        border-bottom 1px solid #e5e5e5
 
         .progress
             margin-bottom 0px
 
+    thead td
+        border-color #d5d5d5
+
     td.type-column-cell
     td.size-column-cell
     td.date-column-cell
-        padding-top: 10px
         color: gray
-        width: 100px
+        width: 6em
 
     td.date-column-cell
-        width: 190px
+        width: 12em
         text-align: left
 
         &:first-letter
@@ -515,14 +533,16 @@ table#table-items
         td
             border-top: 0
 
-        span
-            line-height: 30px
-
         .btn
-            top: -2px
+            padding 0.5em 0
+            width 100%
+            text-align left
+
+        span
+            text-transform uppercase
 
         a:hover
-            color: orange
+            color: darken(basecolor, 20%)
 
         #down-name
         #down-size
@@ -592,7 +612,7 @@ tr.folder-row
         background lightblue + 70% !important
 
     td
-        vertical-align: baseline
+        vertical-align: middle
 
         div
         span
@@ -600,7 +620,7 @@ tr.folder-row
         li
         a
         i
-            vertical-align: baseline
+            vertical-align: middle
 
         span.caption
             padding-left 3px // 3 for file and 6 for folder
@@ -738,8 +758,10 @@ tr.folder-row
                 box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
 
     i.fa
-        margin 0 15px 0 0
-        width 15px
+        margin    0 1rem 0 0
+        width     2.2rem
+        font-size 1.4em
+
 
     .icon
         font-size: 14px
@@ -807,7 +829,7 @@ tr.folder-row.broken
 .file-edit-name
     min-width 150px
 
-tr.folder-row td span.caption.caption-edit  
+tr.folder-row td span.caption.caption-edit
     margin 0
     padding 0
     float left
@@ -891,17 +913,17 @@ tr.folder-row
     font-style: italic
 
 #content
-    background white
-    padding-bottom 10px
-    margin-top 56px
+    padding    0.4em 1em 1em
+    margin-top 3.8em
+    height     calc(100vh - 3.8em)
+    background #fff
 
 #content.mt108
     margin-top 108px
 
-#files
+.files
     // margin-top 60px
     position relative
-    min-height 75vh // 75% of screen height, to be sure drop zone is height enough
 
 #files-drop-zone
     pointer-events none // prevent overlay from triggering dragleave
