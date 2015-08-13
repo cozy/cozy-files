@@ -24,7 +24,7 @@ textarea:focus
 input:hover
 select:hover
 textarea:hover
-    border: 1px solid orange
+    border: 1px solid basecolor
 
 input:active
 select:active
@@ -34,7 +34,7 @@ textarea:active
 
 .button
     border: 0
-    background: blue
+    background: basecolor
     color: white
     box-shadow: none
     text-shadow: none
@@ -46,13 +46,13 @@ textarea:active
     border-radius: 5px
 
 .button:hover
-    background: orange
+    background darken(basecolor, 20%)
     border: 0
     color: white
     text-decoration: none
 
 .button:active
-    background: orange - 3%
+    background: basecolor - 3%
     border: 0
     box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
     color: white

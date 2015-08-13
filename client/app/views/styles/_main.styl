@@ -109,8 +109,8 @@ a
             border-bottom-color white
 
         &:hover
-            background-color actioncolor
-            border-color actioncolor
+            background-color darken(basecolor, 20%)
+            border-color darken(basecolor, 20%)
 
     &.btn-cozy.toggled
         box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
@@ -150,17 +150,20 @@ input:focus
     color white
 
 input#search-box
-    height 35px
+    height 36px
     font-size 16px
     margin-left 5px
-    padding-left 25px
-    width 200px
-    background-image url("../images/iconmonstr-magnifier-icon-18.png")
+    padding-left 2.3em
+    width 10em
+    background-image url("../images/magnifier.svg")
     background-repeat no-repeat
-    background-position 5px 8px
+    background-position 0.8em 9px
+    border-radius 0.2rem
+    transition width 0.3s ease-out
 
     &:focus
-      outline none
+        outline none
+        width 20em
 
 .form-control
     min-height: 34px
@@ -186,7 +189,11 @@ div#affixbar
         padding 0.8em 0
 
     a.btn
-        height 35px
+        height 36px
+        border-radius 0.2rem
+
+        &.dropdown-toggle
+            border-left 1px solid rgba(255, 255, 255, 0.3)
 
     img
         height 20px
@@ -200,9 +207,7 @@ div#affixbar
     color: yellow
 
     .row
-        -moz-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
-        -webkit-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
-        box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
+        // box-shadow: 0 2px 4px 0 rgba(0,0,0,0.15);
 
 #crumbs
     height 0
@@ -254,10 +259,10 @@ div#affixbar
                     top 0
 
                 &:hover
-                    background actioncolor
+                    background #c5c5c5
 
                     &:after
-                        border-left-color actioncolor
+                        border-left-color #c5c5c5
 
             &:first-child
                 a
@@ -335,7 +340,7 @@ div#affixbar
     background-color basecolor
 
     &:hover
-        background-color orange
+        background-color darken(basecolor, 20%)
 
 #button-upload-new-file, #button-upload-folder
     input
@@ -493,7 +498,7 @@ table
 table#table-items
     margin-bottom: 10px
 
-    .unactive .fa
+    .unactive.fa::before
         display none
 
     td
@@ -503,9 +508,6 @@ table#table-items
 
         .progress
             margin-bottom 0px
-
-    thead td
-        border-color #d5d5d5
 
     td.type-column-cell
     td.size-column-cell
@@ -521,28 +523,36 @@ table#table-items
             text-transform capitalize
 
     .table-headers
+        th
+            padding 0
+            border-color #d5d5d5
+            border-top 0
+            border-width 1px
 
-        td:first-child input[type=checkbox]
-            width: 20px
-            margin: 0 15px 0 0
-            font-size: 16px
-
-            &:focus
-                outline none
-
-        td
-            border-top: 0
+            &:first-child .btn
+                width 80%
 
         .btn
-            padding 0.5em 0
+            padding 1.6rem 0.8rem
             width 100%
             text-align left
+            text-transform uppercase
+            font-size 1.2rem
+            font-weight bold
+            color #999
+
+            &.active
+                box-shadow 0 0
+                color basecolor
+
+            &::before
+                margin-right 0.5rem
 
         span
             text-transform uppercase
 
         a:hover
-            color: darken(basecolor, 20%)
+            color darken(basecolor, 20%)
 
         #down-name
         #down-size
@@ -550,14 +560,17 @@ table#table-items
         #down-lastModification
             display: none
 
-
+            &.active
+                display inline-block
 
         button#select-all
+            outline none
+            padding 1.6rem
+            width 2.2em
             border none
             background transparent
-            width 15px
-            margin 0 15px 0 0
-            padding 0
+            text-align left
+            color #999
 
             i.fa
                 font-size 16px
@@ -565,7 +578,7 @@ table#table-items
 
 // override bootstrap styles
 .table-hover > tbody > tr:hover > td
-    background lightorange + 50%
+    background-color #f5f5f5
 
 tr.folder-row
 
@@ -580,6 +593,7 @@ tr.folder-row
 
         .operations
             display inline
+            float right
 
     &:hover, &.pseudohover
         .tags input
@@ -913,13 +927,13 @@ tr.folder-row
     font-style: italic
 
 #content
-    padding    0.4em 1em 1em
-    margin-top 3.8em
-    height     calc(100vh - 3.8em)
+    padding    3.9em 1em 1em
+    min-height 100vh
     background #fff
 
-#content.mt108
-    margin-top 108px
+    // notifications about the uplaod status
+    &.mt108
+        padding-top 8em
 
 .files
     // margin-top 60px
