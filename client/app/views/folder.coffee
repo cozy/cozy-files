@@ -140,7 +140,6 @@ module.exports = class FolderView extends BaseView
         # the client without degrading UX
         @refreshData()
         @$("#loading-indicator").show()
-        @$('input#search-box').focus()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
