@@ -85,9 +85,9 @@ td.size-column-cell
 
 td.type-column-cell
   if model.type == 'folder'
-    span.pull-left #{t('folder')}
+    span #{t('folder')}
   else
-    span.pull-left #{t(model.class)}
+    span #{t(model.class)}
 
 td.date-column-cell
   if model.lastModification
