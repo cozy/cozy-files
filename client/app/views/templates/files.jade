@@ -1,7 +1,7 @@
 table#table-items.table.table-hover
   thead
     tr.table-headers
-      td
+      th
         button#select-all
           if numSelectedElements == 0 || numElements == 0
             i.fa.fa-square-o
@@ -10,36 +10,29 @@ table#table-items.table.table-hover
           else
             i.fa.fa-minus-square-o
 
-        a#down-name.btn.unactive
-          span= t('name')
-          .fa.fa-chevron-down
-        a#up-name.btn.unactive
-          span= t('name')
-          .fa.fa-chevron-up
+        a#down-name.btn.unactive.fa.fa-chevron-down
+          = t('name')
+        a#up-name.btn.unactive.fa.fa-chevron-up
+          = t('name')
 
-      td.size-column-cell
-        a#down-size.btn.unactive
-          span= t('size')
-          .fa.fa-chevron-down
-        a#up-size.unactive.btn
-          span= t('size')
-          .fa.fa-chevron-up
+      th.size-column-cell
+        a#down-size.btn.unactive.fa.fa-chevron-down
+          = t('size')
+        a#up-size.unactive.btn.fa.fa-chevron-up
+          = t('size')
+          
 
-      td.type-column-cell
-        a#down-class.btn.unactive
-          span= t('type')
-          .fa.fa-chevron-down
-        a#up-class.btn.unactive
-          span= t('type')
-          .fa.fa-chevron-up
+      th.type-column-cell
+        a#down-class.btn.unactive.fa.fa-chevron-down
+          = t('type')
+        a#up-class.btn.unactive.fa.fa-chevron-up
+          = t('type')
 
-      td.date-column-cell
-        a#down-lastModification.btn.unactive
-          span= t('date')
-          .fa.fa-chevron-down
-        a#up-lastModification.btn.unactive
-          span= t('date')
-          .fa.fa-chevron-up
+      th.date-column-cell
+        a#down-lastModification.btn.unactive.fa.fa-chevron-down
+          = t('date')
+        a#up-lastModification.btn.unactive.fa.fa-chevron-up
+          = t('date')
 
   tbody#table-items-body
 
