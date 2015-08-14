@@ -255,10 +255,6 @@ module.exports = class FolderView extends BaseView
         if files.length
             @uploadQueue.addBlobs files, @model
 
-            if event.target?
-                target = $ event.target
-                # reset the input
-                target.replaceWith target.clone true
 
     onFilesSelectedInChrome: (e) ->
         items = e.dataTransfer.items
