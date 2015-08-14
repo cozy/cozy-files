@@ -75,19 +75,14 @@ a:focus,
 
 .btn-link
 .btn-link:visited
-    color: lighten(basecolor, 30%)
-
 .btn-link:hover
-    color: lighten(basecolor, 30%)
-    text-decoration: none
-
 .btn-link:active
-    color: lighten(basecolor, 30%)
+.btn-link:focus
+    color #444
     text-decoration: none
 
-.btn-link:focus
-    color: white
-    text-decoration: none
+    .fa
+        color: lighten(basecolor, 30%)
 
 // buttons
 
@@ -140,11 +135,6 @@ input
 input:focus
     color: #333
     border-color: basecolor
-
-::selection
-    background lighten(basecolor, 30%)
-::-moz-selection
-    background lighten(basecolor, 30%)
 
 input#search-box
     height 36px
@@ -222,10 +212,10 @@ div#affixbar
         margin-bottom: 0px
         padding-left: 0
         list-style none
-        display inline-table
+        display flex
 
         li
-            display inline
+            display inline-block
 
             a
                 display inline-block
@@ -263,22 +253,36 @@ div#affixbar
                     &:after
                         border-left-color #c5c5c5
 
-            &:first-child
-                a
-                    padding-left 1em
-                    border-top-left-radius 0.2em
-                    border-bottom-left-radius 0.2em
-
-                    &:before
-                        display none
-
             &:last-child
                 a
                     padding-right 1em
                     border-top-right-radius 0.2em
                     border-bottom-right-radius 0.2em
 
+                    @media (max-width: 768px)
+                        // text ellipsis on mobile
+                        max-width         40vw
+                        overflow-x    hidden
+                        text-overflow ellipsis
+                        white-space   nowrap
+
+                    @media (max-width: 520px)
+                        // text ellipsis on mobile
+                        max-width         45vw
+
                     &:after
+                        display none
+
+            &:first-child
+                a
+                    padding-left 1em
+                    border-top-left-radius 0.2em
+                    border-bottom-left-radius 0.2em
+
+                    @media (max-width: 768px)
+                        width auto
+
+                    &:before
                         display none
 
 #affixbar
@@ -295,12 +299,13 @@ div#affixbar
             line-height: 20px
 
     #folder-state
-        font-size 1.2em
         position relative
         top 3px
-        color #999
-
         margin-right 0.8em
+        @media (max-width: 768px)
+            margin-right 0
+        font-size 1.2em
+        color #999
 
         .fa
             margin-right 0.2em
@@ -509,6 +514,10 @@ p.disabled
         border 0
         border-bottom 1px solid #e5e5e5
 
+        @media (max-width: 520px)
+            padding 0 0.4em
+            height 3em
+
         .progress
             margin-bottom 0px
 
@@ -536,7 +545,7 @@ p.disabled
                 width 80%
 
         .btn
-            padding 1.6rem 0.8rem
+            padding 0.8rem
             width 100%
             text-align left
             text-transform uppercase
@@ -570,7 +579,7 @@ p.disabled
 
         button#select-all
             outline none
-            padding 1.6rem
+            padding 0 1.6rem
             width 2.2em
             border none
             background transparent
@@ -632,6 +641,12 @@ tr.folder-row
     &.selected > td
         background lightblue + 70% !important
 
+    &.selected
+    &:hover
+        & > td .caption .link-wrapper
+            @media (max-width: 768px)
+                width 70vw
+
     td
         vertical-align: middle
 
@@ -681,9 +696,19 @@ tr.folder-row
             font-size 12px
             color darken(blue, 20%)
 
+            @media (max-width: 768px)
+                top 10px
+                left -1px
+
 
         .link-wrapper
             display inline-block
+
+            @media (max-width: 768px)
+                width 80vw
+                overflow hidden
+                text-overflow ellipsis
+                white-space nowrap
 
             &:hover
                 border 0
@@ -699,6 +724,9 @@ tr.folder-row
             .btn-link
                 span
                     color #444
+
+                    @media (max-width: 768px)
+                        white-space nowrap
 
             &:hover span
                 color basecolor
@@ -927,7 +955,7 @@ tr.folder-row
     font-size: 0.85em
 
 #content
-    padding    3.9em 1em 1em
+    padding    4.2em 1em 1em
     min-height 100vh
     background #fff
 
