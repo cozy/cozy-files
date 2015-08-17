@@ -21,6 +21,12 @@
             a
                 display inline-block
 
+                &.dropdown-toggle
+                    display none
+
+            .btn
+                padding 6px
+
     #crumbs
         li
             a
@@ -86,12 +92,19 @@
             #button-new-folder
                 display none
 
+                &.visible
+                    display inline-block
+
+    #bulk-actions-btngroup a
+        margin 0 1px
+
 
 @media (max-width: 900px)
     tr.folder-row
         ul.tags
             display: none
             margin-top: 5px
+
 
 @media (max-width: 1000px)
     .date-column-cell

@@ -418,11 +418,11 @@ module.exports = class FolderView extends BaseView
                 clearance = @model.getClearance()?[0]
                 if clearance? and clearance.perm is 'rw'
                     @$('#upload-btngroup').show()
-                    @$('#button-new-folder').show()
+                    @$('#button-new-folder').addClass 'visible'
             else
                 @$('#share-state').show()
                 @$('#upload-btngroup').show()
-                @$('#button-new-folder').show()
+                @$('#button-new-folder').addClass 'visible'
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
 
