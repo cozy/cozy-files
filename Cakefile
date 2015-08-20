@@ -124,8 +124,9 @@ buildJade = ->
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
     logger.info "Start compilation..."
-    command = "coffee -cb --output build/server server && " + \
-              "coffee -cb --output build/ server.coffee && " + \
+    binCoffee = "./node_modules/.bin/coffee"
+    command = "#{binCoffee} -cb --output build/server server && " + \
+              "#{binCoffee} -cb --output build/ server.coffee && " + \
               "cp -r server/views build/server && " + \
               "rm -rf build/client && mkdir build/client && " + \
               # prepare the client build
@@ -137,7 +138,7 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "rm build/server/views/*/*.js && " + \
               "mv build/client/public/*.jade build/server/views/ && " + \
               "rm -rf build/server/views/*_build.jade && " + \
-              "coffee -cb --output build/client/app/locales client/app/locales"
+              "#{binCoffee} -cb --output build/client/app/locales client/app/locales"
 
     exec command, (err, stdout, stderr) ->
         if err
