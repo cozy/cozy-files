@@ -29,20 +29,15 @@
                   | &nbsp;
 
                 //- file & folder uploaders
-                .btn-group#upload-btngroup
-                  a#button-upload-new-file.btn.btn-cozy.btn-cozy
-                    input#uploader(type="file", multiple, title=t('upload button'))
-                    img(src="images/add-file.png")
-                  if supportsDirectoryUpload
-                    a.btn.btn-cozy.dropdown-toggle(data-toggle="dropdown")
-                      span.caret
-                    ul.dropdown-menu
-                      li: a#button-upload-folder
-                        input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory)
-                        span= t('upload folder msg')
-                | &nbsp;
-                a.btn.btn-cozy#button-new-folder(title=t('new folder button'))
-                  img(src="images/add-folder.png")
+                a#button-upload-new-file.btn.btn-cozy
+                  input#uploader(type="file", multiple, title=t('upload button'))
+                  div.action-icon.file-uploader
+                if supportsDirectoryUpload
+                  a#button-upload-folder.btn.btn-cozy
+                    input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory, title=t('upload folder msg'))
+                    div.action-icon.folder-uploader
+                a#button-new-folder.btn.btn-cozy(title=t('new folder button'))
+                  div.action-icon.folder-new
 
                 //- bulk actions: move and remove
                 .btn-group#bulk-actions-btngroup
