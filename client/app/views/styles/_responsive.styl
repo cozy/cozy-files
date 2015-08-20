@@ -17,16 +17,6 @@
         .pull-right
             display block
 
-        #upload-buttons
-            a
-                display inline-block
-
-                &.dropdown-toggle
-                    display none
-
-            .btn
-                padding 6px
-
     #crumbs ul li
         a
             padding 0.5em 0.3em 0.5em 1em
@@ -92,13 +82,20 @@
         #search-box
             max-width 150px
 
-        #upload-buttons
-            #share-state
-            #button-new-folder
+        #upload-buttons a
+            &.btn
+                padding 6px 0.4em
+
+            &#share-state
+            &#button-new-folder
+            &#button-upload-folder
                 display none
 
                 &.visible
-                    display inline-block
+                    display none
+
+            &#share-state
+                display inline-block
 
     #bulk-actions-btngroup a
         margin 0 1px
