@@ -169,9 +169,9 @@ module.exports = {
 
 ;require.register("collections/files", function(exports, require, module) {
 var File, FileCollection,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 File = require('../models/file');
 
@@ -184,8 +184,8 @@ It creates projections (subcollection) that will be consumed by folder views.
 Those projections represents one folder.
  */
 
-module.exports = FileCollection = (function(_super) {
-  __extends(FileCollection, _super);
+module.exports = FileCollection = (function(superClass) {
+  extend(FileCollection, superClass);
 
   function FileCollection() {
     return FileCollection.__super__.constructor.apply(this, arguments);
@@ -253,8 +253,8 @@ module.exports = FileCollection = (function(_super) {
           contentIDs = _.pluck(content, 'id');
           path = folder.getRepository();
           itemsToRemove = _this.getSubCollection(path).filter(function(item) {
-            var _ref;
-            return _ref = item.get('id'), __indexOf.call(contentIDs, _ref) < 0;
+            var ref;
+            return ref = item.get('id'), indexOf.call(contentIDs, ref) < 0;
           });
           _this.remove(itemsToRemove);
           if (!_this.isPathCached(path)) {
@@ -395,7 +395,7 @@ module.exports = FileCollection = (function(_super) {
 
 ;require.register("collections/upload_queue", function(exports, require, module) {
 var File, Helpers, UploadQueue,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 File = require('../models/file');
 
@@ -408,12 +408,12 @@ module.exports = UploadQueue = (function() {
 
   function UploadQueue(baseCollection) {
     this.baseCollection = baseCollection;
-    this.sumProp = __bind(this.sumProp, this);
-    this.computeProgress = __bind(this.computeProgress, this);
-    this.uploadWorker = __bind(this.uploadWorker, this);
-    this.onSyncError = __bind(this.onSyncError, this);
-    this.completeUpload = __bind(this.completeUpload, this);
-    this.abort = __bind(this.abort, this);
+    this.sumProp = bind(this.sumProp, this);
+    this.computeProgress = bind(this.computeProgress, this);
+    this.uploadWorker = bind(this.uploadWorker, this);
+    this.onSyncError = bind(this.onSyncError, this);
+    this.completeUpload = bind(this.completeUpload, this);
+    this.abort = bind(this.abort, this);
     this.uploadCollection = new Backbone.Collection();
     _.extend(this, Backbone.Events);
     this.asyncQueue = async.queue(this.uploadWorker, 5);
@@ -641,8 +641,8 @@ module.exports = UploadQueue = (function() {
         if (!dir) {
           if (!isConflict) {
             blobs = _.filter(blobs, function(blob) {
-              var _ref;
-              return (_ref = blob.name) !== '.' && _ref !== '..';
+              var ref;
+              return (ref = blob.name) !== '.' && ref !== '..';
             });
             return _this.addBlobs(blobs, parent);
           }
@@ -702,7 +702,7 @@ module.exports = UploadQueue = (function() {
 
   UploadQueue.prototype.markPathAsUploading = function(model) {
     var path;
-    path = "" + (model.get('path')) + "/";
+    path = (model.get('path')) + "/";
     if (this.uploadingPaths[path] == null) {
       this.uploadingPaths[path] = 0;
     }
@@ -711,12 +711,12 @@ module.exports = UploadQueue = (function() {
 
   UploadQueue.prototype.unmarkPathAsUploading = function(model) {
     var path;
-    path = "" + (model.get('path')) + "/";
+    path = (model.get('path')) + "/";
     return this.uploadingPaths[path]--;
   };
 
   UploadQueue.prototype.getNumUploadingElementsByPath = function(path) {
-    path = "" + path + "/";
+    path = path + "/";
     return _.reduce(this.uploadingPaths, function(memo, value, index) {
       if (index.indexOf(path) !== -1 || path === '') {
         return memo + value;
@@ -759,7 +759,7 @@ $(function() {
   var err, locale, locales, polyglot;
   jQuery.event.props.push('dataTransfer');
   if (window.domain === "false") {
-    app.domain = "" + window.location.origin + "/public/files/";
+    app.domain = window.location.origin + "/public/files/";
   } else {
     app.domain = window.domain;
   }
@@ -799,11 +799,11 @@ window.onbeforeunload = function() {
 
 ;require.register("lib/base_view", function(exports, require, module) {
 var BaseView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
-module.exports = BaseView = (function(_super) {
-  __extends(BaseView, _super);
+module.exports = BaseView = (function(superClass) {
+  extend(BaseView, superClass);
 
   function BaseView() {
     return BaseView.__super__.constructor.apply(this, arguments);
@@ -814,9 +814,9 @@ module.exports = BaseView = (function(_super) {
   BaseView.prototype.initialize = function() {};
 
   BaseView.prototype.getRenderData = function() {
-    var _ref;
+    var ref;
     return {
-      model: (_ref = this.model) != null ? _ref.toJSON() : void 0
+      model: (ref = this.model) != null ? ref.toJSON() : void 0
     };
   };
 
@@ -854,8 +854,8 @@ exports.request = function(type, url, data, callback) {
       }
     },
     error: function(data) {
-      var _ref;
-      if ((_ref = data.status) === 200 || _ref === 201 || _ref === 204 || _ref === 304) {
+      var ref;
+      if ((ref = data.status) === 200 || ref === 201 || ref === 204 || ref === 304) {
         if (callback != null) {
           return callback(null, data);
         }
@@ -886,7 +886,7 @@ exports.del = function(url, callbacks) {
 });
 
 ;require.register("lib/folder_helpers", function(exports, require, module) {
-var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 module.exports = {
   removeTralingSlash: function(path) {
@@ -904,17 +904,17 @@ module.exports = {
     });
   },
   nestedDirs: function(fileList) {
-    var addedPath, dir, dirs, file, foldersOfPath, parent, parents, relPath, _i, _len;
+    var addedPath, dir, dirs, file, foldersOfPath, i, len, parent, parents, relPath;
     dirs = [];
     addedPath = [];
-    for (_i = 0, _len = fileList.length; _i < _len; _i++) {
-      file = fileList[_i];
+    for (i = 0, len = fileList.length; i < len; i++) {
+      file = fileList[i];
       relPath = file.relativePath || file.mozRelativePath || file.webkitRelativePath;
       parents = relPath.slice(0, relPath.lastIndexOf(file.name));
       foldersOfPath = parents.split('/').slice(0, -1);
       while (foldersOfPath.length > 0) {
         parent = foldersOfPath.join('/');
-        if (!(__indexOf.call(addedPath, parent) >= 0)) {
+        if (!(indexOf.call(addedPath, parent) >= 0)) {
           dirs.push({
             path: parent,
             depth: foldersOfPath.length
@@ -930,13 +930,13 @@ module.exports = {
       return a.depth - b.depth;
     });
     return (function() {
-      var _j, _len1, _results;
-      _results = [];
-      for (_j = 0, _len1 = dirs.length; _j < _len1; _j++) {
-        dir = dirs[_j];
-        _results.push(dir.path);
+      var j, len1, results;
+      results = [];
+      for (j = 0, len1 = dirs.length; j < len1; j++) {
+        dir = dirs[j];
+        results.push(dir.path);
       }
-      return _results;
+      return results;
     })();
   }
 };
@@ -944,15 +944,15 @@ module.exports = {
 
 ;require.register("lib/socket", function(exports, require, module) {
 var File, SocketListener, contactCollection,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 File = require('../models/file');
 
 contactCollection = require('cozy-clearance/contact_collection');
 
-module.exports = SocketListener = (function(_super) {
-  __extends(SocketListener, _super);
+module.exports = SocketListener = (function(superClass) {
+  extend(SocketListener, superClass);
 
   function SocketListener() {
     return SocketListener.__super__.constructor.apply(this, arguments);
@@ -1059,18 +1059,18 @@ module.exports = SocketListener = (function(_super) {
 
 ;require.register("lib/view_collection", function(exports, require, module) {
 var BaseView, ViewCollection,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('lib/base_view');
 
-module.exports = ViewCollection = (function(_super) {
-  __extends(ViewCollection, _super);
+module.exports = ViewCollection = (function(superClass) {
+  extend(ViewCollection, superClass);
 
   function ViewCollection() {
-    this.removeItem = __bind(this.removeItem, this);
-    this.addItem = __bind(this.addItem, this);
+    this.removeItem = bind(this.removeItem, this);
+    this.addItem = bind(this.addItem, this);
     return ViewCollection.__super__.constructor.apply(this, arguments);
   }
 
@@ -1091,7 +1091,7 @@ module.exports = ViewCollection = (function(_super) {
   ViewCollection.prototype.getItemViewSelector = function() {
     var classNames;
     classNames = this.itemview.prototype.className.replace(' ', '.');
-    return "" + this.itemview.prototype.tagName + "." + classNames;
+    return this.itemview.prototype.tagName + "." + classNames;
   };
 
   ViewCollection.prototype.onChange = function() {
@@ -1162,10 +1162,10 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.render = function() {
-    var id, view, _ref;
-    _ref = this.views;
-    for (id in _ref) {
-      view = _ref[id];
+    var id, ref, view;
+    ref = this.views;
+    for (id in ref) {
+      view = ref[id];
       view.$el.detach();
     }
     return ViewCollection.__super__.render.apply(this, arguments);
@@ -1183,10 +1183,10 @@ module.exports = ViewCollection = (function(_super) {
   };
 
   ViewCollection.prototype.onReset = function(newcollection) {
-    var id, view, _ref;
-    _ref = this.views;
-    for (id in _ref) {
-      view = _ref[id];
+    var id, ref, view;
+    ref = this.views;
+    for (id in ref) {
+      view = ref[id];
       this.removeItem(view.model);
     }
     return newcollection.forEach(this.addItem);
@@ -1468,7 +1468,7 @@ module.exports = {
   "no": "No",
   "ok": "Ok",
   "name": "Name",
-  "type": "Type",
+  "type": "Kind",
   "size": "Size",
   "date": "Last update",
   "download": "Download all",
@@ -1951,10 +1951,10 @@ module.exports = {
 
 ;require.register("models/file", function(exports, require, module) {
 var File, client,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 client = require('../lib/client');
 
@@ -1981,8 +1981,8 @@ The state "selected" is only relevant into the view, but it's handy to manage
 it in the model.
  */
 
-module.exports = File = (function(_super) {
-  __extends(File, _super);
+module.exports = File = (function(superClass) {
+  extend(File, superClass);
 
   File.prototype.breadcrumb = [];
 
@@ -1995,9 +1995,9 @@ module.exports = File = (function(_super) {
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
   function File(options) {
-    this.sync = __bind(this.sync, this);
-    var doctype, _ref;
-    doctype = (_ref = options.docType) != null ? _ref.toLowerCase() : void 0;
+    this.sync = bind(this.sync, this);
+    var doctype, ref;
+    doctype = (ref = options.docType) != null ? ref.toLowerCase() : void 0;
     if ((doctype != null) && (doctype === 'file' || doctype === 'folder')) {
       options.type = doctype;
     }
@@ -2011,7 +2011,7 @@ module.exports = File = (function(_super) {
       path = "/" + path;
     }
     name = this.get('name');
-    return "" + path + "/" + name;
+    return path + "/" + name;
   };
 
   File.prototype.isFolder = function() {
@@ -2031,8 +2031,8 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.hasBinary = function() {
-    var _ref, _ref1;
-    return this.isFile() && (((_ref = this.get('binary')) != null ? (_ref1 = _ref.file) != null ? _ref1.id : void 0 : void 0) != null);
+    var ref, ref1;
+    return this.isFile() && (((ref = this.get('binary')) != null ? (ref1 = ref.file) != null ? ref1.id : void 0 : void 0) != null);
   };
 
   File.prototype.isBroken = function() {
@@ -2104,7 +2104,7 @@ module.exports = File = (function(_super) {
     if (error == null) {
       error = null;
     }
-    if (__indexOf.call(File.VALID_STATUSES, status) < 0) {
+    if (indexOf.call(File.VALID_STATUSES, status) < 0) {
       message = ("Invalid upload status " + status + " not ") + ("in " + File.VALID_STATUSES);
       throw new Error(message);
     } else {
@@ -2170,7 +2170,7 @@ module.exports = File = (function(_super) {
     if (this.isRoot()) {
       return "";
     } else {
-      return "" + (this.get('path')) + "/" + (this.get('name'));
+      return (this.get('path')) + "/" + (this.get('name'));
     }
   };
 
@@ -2237,7 +2237,7 @@ module.exports = File = (function(_super) {
     link = "" + app.domain + (this.urlRoot()) + this.id;
     if (this.isFile()) {
       name = encodeURIComponent(this.get('name'));
-      link = "" + link + "/attach/" + name;
+      link = link + "/attach/" + name;
     }
     return link;
   };
@@ -2285,8 +2285,8 @@ module.exports = File = (function(_super) {
   };
 
   File.prototype.prepareCallbacks = function(callbacks, presuccess, preerror) {
-    var error, success, _ref;
-    _ref = callbacks || {}, success = _ref.success, error = _ref.error;
+    var error, ref, success;
+    ref = callbacks || {}, success = ref.success, error = ref.error;
     if (presuccess == null) {
       presuccess = (function(_this) {
         return function(data) {
@@ -2329,7 +2329,7 @@ module.exports = File = (function(_super) {
   File.prototype.fetchContent = function(callbacks) {
     var key, url;
     this.prepareCallbacks(callbacks);
-    url = "" + (this.urlRoot()) + "content";
+    url = (this.urlRoot()) + "content";
     key = window.location.search;
     if (app.isPublic && !this.isSearch()) {
       url = "" + (this.urlRoot()) + this.id + "/content" + key;
@@ -2391,8 +2391,8 @@ module.exports = File = (function(_super) {
 
 ;require.register("router", function(exports, require, module) {
 var File, FileCollection, FolderView, PublicFolderView, Router, app,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 app = require('application');
 
@@ -2410,8 +2410,8 @@ Binds routes to code actions.
 This is also used as a controller to initialize views and perform data fetching
  */
 
-module.exports = Router = (function(_super) {
-  __extends(Router, _super);
+module.exports = Router = (function(superClass) {
+  extend(Router, superClass);
 
   function Router() {
     return Router.__super__.constructor.apply(this, arguments);
@@ -2440,7 +2440,7 @@ module.exports = Router = (function(_super) {
     folder = new File({
       id: query,
       type: "search",
-      name: "" + (t('breadcrumbs search title')) + " '" + query + "'"
+      name: (t('breadcrumbs search title')) + " '" + query + "'"
     });
     if (this.folderView != null) {
       this.folderView.spin();
@@ -2510,7 +2510,7 @@ module.exports = Router = (function(_super) {
 
 ;require.register("utils/plugin_utils", function(exports, require, module) {
 var helpers,
-  __hasProp = {}.hasOwnProperty;
+  hasProp = {}.hasOwnProperty;
 
 helpers = {
   modal: function(options) {
@@ -2564,14 +2564,14 @@ helpers = {
 
 module.exports = {
   init: function() {
-    var config, observer, onMutation, pluginConf, pluginName, _ref;
+    var config, observer, onMutation, pluginConf, pluginName, ref;
     if (window.plugins == null) {
       window.plugins = {};
     }
-    _ref = window.plugins;
-    for (pluginName in _ref) {
-      if (!__hasProp.call(_ref, pluginName)) continue;
-      pluginConf = _ref[pluginName];
+    ref = window.plugins;
+    for (pluginName in ref) {
+      if (!hasProp.call(ref, pluginName)) continue;
+      pluginConf = ref[pluginName];
       this.activate(pluginName);
     }
     window.plugins.helpers = helpers;
@@ -2583,17 +2583,17 @@ module.exports = {
         subtree: true
       };
       onMutation = function(mutations) {
-        var check, checkNode, mutation, _i, _len, _results;
+        var check, checkNode, i, len, mutation, results;
         checkNode = function(node, action) {
-          var listener, _ref1, _results;
+          var listener, ref1, results;
           if (node.nodeType !== Node.ELEMENT_NODE) {
             return;
           }
-          _ref1 = window.plugins;
-          _results = [];
-          for (pluginName in _ref1) {
-            if (!__hasProp.call(_ref1, pluginName)) continue;
-            pluginConf = _ref1[pluginName];
+          ref1 = window.plugins;
+          results = [];
+          for (pluginName in ref1) {
+            if (!hasProp.call(ref1, pluginName)) continue;
+            pluginConf = ref1[pluginName];
             if (pluginConf.active) {
               if (action === 'add') {
                 listener = pluginConf.onAdd;
@@ -2602,76 +2602,76 @@ module.exports = {
                 listener = pluginConf.onDelete;
               }
               if ((listener != null) && listener.condition.bind(pluginConf)(node)) {
-                _results.push(listener.action.bind(pluginConf)(node));
+                results.push(listener.action.bind(pluginConf)(node));
               } else {
-                _results.push(void 0);
+                results.push(void 0);
               }
             } else {
-              _results.push(void 0);
+              results.push(void 0);
             }
           }
-          return _results;
+          return results;
         };
         check = function(mutation) {
-          var node, nodes, _i, _j, _len, _len1, _results;
+          var i, j, len, len1, node, nodes, results;
           nodes = Array.prototype.slice.call(mutation.addedNodes);
-          for (_i = 0, _len = nodes.length; _i < _len; _i++) {
-            node = nodes[_i];
+          for (i = 0, len = nodes.length; i < len; i++) {
+            node = nodes[i];
             checkNode(node, 'add');
           }
           nodes = Array.prototype.slice.call(mutation.removedNodes);
-          _results = [];
-          for (_j = 0, _len1 = nodes.length; _j < _len1; _j++) {
-            node = nodes[_j];
-            _results.push(checkNode(node, 'del'));
+          results = [];
+          for (j = 0, len1 = nodes.length; j < len1; j++) {
+            node = nodes[j];
+            results.push(checkNode(node, 'del'));
           }
-          return _results;
+          return results;
         };
-        _results = [];
-        for (_i = 0, _len = mutations.length; _i < _len; _i++) {
-          mutation = mutations[_i];
-          _results.push(check(mutation));
+        results = [];
+        for (i = 0, len = mutations.length; i < len; i++) {
+          mutation = mutations[i];
+          results.push(check(mutation));
         }
-        return _results;
+        return results;
       };
       observer = new MutationObserver(onMutation);
       return observer.observe(document, config);
     } else {
       return setInterval(function() {
-        var _ref1, _results;
-        _ref1 = window.plugins;
-        _results = [];
-        for (pluginName in _ref1) {
-          if (!__hasProp.call(_ref1, pluginName)) continue;
-          pluginConf = _ref1[pluginName];
+        var ref1, results;
+        ref1 = window.plugins;
+        results = [];
+        for (pluginName in ref1) {
+          if (!hasProp.call(ref1, pluginName)) continue;
+          pluginConf = ref1[pluginName];
           if (pluginConf.active) {
             if (pluginConf.onAdd != null) {
               if (pluginConf.onAdd.condition(document.body)) {
-                _results.push(pluginConf.onAdd.action(document.body));
+                results.push(pluginConf.onAdd.action(document.body));
               } else {
-                _results.push(void 0);
+                results.push(void 0);
               }
             } else {
-              _results.push(void 0);
+              results.push(void 0);
             }
           } else {
-            _results.push(void 0);
+            results.push(void 0);
           }
         }
-        return _results;
+        return results;
       }, 200);
     }
   },
   activate: function(key) {
-    var event, listener, plugin, pluginConf, pluginName, type, _ref, _ref1, _results;
+    var event, listener, plugin, pluginConf, pluginName, ref, ref1, results, type;
     plugin = window.plugins[key];
     type = plugin.type;
     plugin.active = true;
     if (plugin.listeners != null) {
-      _ref = plugin.listeners;
-      for (event in _ref) {
-        if (!__hasProp.call(_ref, event)) continue;
-        listener = _ref[event];
+      ref = plugin.listeners;
+      for (event in ref) {
+        if (!hasProp.call(ref, event)) continue;
+        listener = ref[event];
         window.addEventListener(event, listener.bind(plugin));
       }
     }
@@ -2679,32 +2679,32 @@ module.exports = {
       plugin.onActivate();
     }
     if (type != null) {
-      _ref1 = window.plugins;
-      _results = [];
-      for (pluginName in _ref1) {
-        if (!__hasProp.call(_ref1, pluginName)) continue;
-        pluginConf = _ref1[pluginName];
+      ref1 = window.plugins;
+      results = [];
+      for (pluginName in ref1) {
+        if (!hasProp.call(ref1, pluginName)) continue;
+        pluginConf = ref1[pluginName];
         if (pluginName === key) {
           continue;
         }
         if (pluginConf.type === type && pluginConf.active) {
-          _results.push(this.deactivate(pluginName));
+          results.push(this.deactivate(pluginName));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     }
   },
   deactivate: function(key) {
-    var event, listener, plugin, _ref;
+    var event, listener, plugin, ref;
     plugin = window.plugins[key];
     plugin.active = false;
     if (plugin.listeners != null) {
-      _ref = plugin.listeners;
-      for (event in _ref) {
-        if (!__hasProp.call(_ref, event)) continue;
-        listener = _ref[event];
+      ref = plugin.listeners;
+      for (event in ref) {
+        if (!hasProp.call(ref, event)) continue;
+        listener = ref[event];
         window.removeEventListener(event, listener);
       }
     }
@@ -2717,13 +2717,13 @@ module.exports = {
 
 ;require.register("views/breadcrumbs", function(exports, require, module) {
 var BaseView, BreadcrumbsView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
-module.exports = BreadcrumbsView = (function(_super) {
-  __extends(BreadcrumbsView, _super);
+module.exports = BreadcrumbsView = (function(superClass) {
+  extend(BreadcrumbsView, superClass);
 
   function BreadcrumbsView() {
     return BreadcrumbsView.__super__.constructor.apply(this, arguments);
@@ -2734,16 +2734,16 @@ module.exports = BreadcrumbsView = (function(_super) {
   BreadcrumbsView.prototype.tagName = "ul";
 
   BreadcrumbsView.prototype.render = function() {
-    var folder, opacity, _i, _len, _ref;
+    var folder, i, len, opacity, ref;
     if (this.collection[0].id !== 'root') {
       this.collection.shift();
     }
     opacity = this.collection.length === 1 ? '0.5' : '1';
     this.$el.css('opacity', opacity);
     this.$el.empty();
-    _ref = this.collection;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      folder = _ref[_i];
+    ref = this.collection;
+    for (i = 0, len = ref.length; i < len; i++) {
+      folder = ref[i];
       this.$el.append(this.itemview({
         model: folder
       }));
@@ -2758,9 +2758,9 @@ module.exports = BreadcrumbsView = (function(_super) {
 
 ;require.register("views/file_view", function(exports, require, module) {
 var BaseView, FileView, ModalShareView, ModalView, ProgressBar, TagsView, client,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
@@ -2774,11 +2774,11 @@ ProgressBar = require('../widgets/progressbar');
 
 client = require("../lib/client");
 
-module.exports = FileView = (function(_super) {
-  __extends(FileView, _super);
+module.exports = FileView = (function(superClass) {
+  extend(FileView, superClass);
 
   function FileView() {
-    this.onKeyPress = __bind(this.onKeyPress, this);
+    this.onKeyPress = bind(this.onKeyPress, this);
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
@@ -3080,8 +3080,8 @@ module.exports = FileView = (function(_super) {
     forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
     forbiddenElements = forbiddenSelectors.map((function(_this) {
       return function(selector) {
-        var _ref;
-        return ((_ref = _this.$(selector)) != null ? _ref[0] : void 0) || null;
+        var ref;
+        return ((ref = _this.$(selector)) != null ? ref[0] : void 0) || null;
       };
     })(this));
     results = forbiddenElements.filter(function(element) {
@@ -3191,15 +3191,15 @@ module.exports = FileView = (function(_super) {
 
 ;require.register("views/files", function(exports, require, module) {
 var FileView, FilesView, ViewCollection,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 ViewCollection = require('../lib/view_collection');
 
 FileView = require('./file_view');
 
-module.exports = FilesView = (function(_super) {
-  __extends(FilesView, _super);
+module.exports = FilesView = (function(superClass) {
+  extend(FilesView, superClass);
 
   function FilesView() {
     return FilesView.__super__.constructor.apply(this, arguments);
@@ -3333,19 +3333,19 @@ module.exports = FilesView = (function(_super) {
 
   FilesView.prototype.displayChevron = function(order, type) {
     if (order === "asc") {
-      this.$("#up-" + type).show();
+      this.$("#up-" + type).addClass('active');
       this.$("#down-" + type).hide();
       return this.$("#up-" + type).removeClass('unactive');
     } else {
       this.$("#up-" + type).hide();
-      this.$("#down-" + type).show();
+      this.$("#down-" + type).addClass('active');
       return this.$("#down-" + type).removeClass('unactive');
     }
   };
 
   FilesView.prototype.onChangeOrder = function(event) {
-    var order, type, _ref;
-    _ref = event.target.id.split('-'), order = _ref[0], type = _ref[1];
+    var order, ref, type;
+    ref = event.target.id.split('-'), order = ref[0], type = ref[1];
     order = order === 'up' ? 'desc' : 'asc';
     this.chevron = {
       order: order,
@@ -3357,15 +3357,15 @@ module.exports = FilesView = (function(_super) {
   };
 
   FilesView.prototype.updateInheritedClearance = function(clearance) {
-    var file, _i, _len, _ref, _results;
+    var file, i, len, ref, results;
     if ((clearance != null) && clearance.length > 0 && (clearance[0].clearance != null)) {
-      _ref = this.collection.models;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        file = _ref[_i];
-        _results.push(file.set('inheritedClearance', clearance));
+      ref = this.collection.models;
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        file = ref[i];
+        results.push(file.set('inheritedClearance', clearance));
       }
-      return _results;
+      return results;
     }
   };
 
@@ -3381,9 +3381,9 @@ module.exports = FilesView = (function(_super) {
 
 ;require.register("views/folder", function(exports, require, module) {
 var BACKSPACE_KEY, BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalConflict, ModalShareView, UploadStatusView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
@@ -3411,11 +3411,11 @@ Handles the display logic for a folder.
 Main entry point of the interface: handles breadcrumb, buttons and files list
  */
 
-module.exports = FolderView = (function(_super) {
-  __extends(FolderView, _super);
+module.exports = FolderView = (function(superClass) {
+  extend(FolderView, superClass);
 
   function FolderView() {
-    this.onFilesSelected = __bind(this.onFilesSelected, this);
+    this.onFilesSelected = bind(this.onFilesSelected, this);
     return FolderView.__super__.constructor.apply(this, arguments);
   }
 
@@ -3519,8 +3519,7 @@ module.exports = FolderView = (function(_super) {
     this.renderFileList();
     this.renderUploadStatus();
     this.refreshData();
-    this.$("#loading-indicator").show();
-    return this.$('input#search-box').focus();
+    return this.$("#loading-indicator").show();
   };
 
   FolderView.prototype.renderBreadcrumb = function() {
@@ -3661,8 +3660,8 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onFilesSelected = function(event) {
-    var files, target, _ref;
-    files = ((_ref = event.dataTransfer) != null ? _ref.files : void 0) || event.target.files;
+    var files, ref, target;
+    files = ((ref = event.dataTransfer) != null ? ref.files : void 0) || event.target.files;
     if (files.length) {
       this.uploadQueue.addBlobs(files, this.model);
       if (event.target != null) {
@@ -3673,7 +3672,7 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.onFilesSelectedInChrome = function(e) {
-    var callback, entry, errors, files, item, items, parseEntriesRecursively, pending, _i, _len, _results;
+    var callback, entry, errors, files, i, item, items, len, parseEntriesRecursively, pending, results;
     items = e.dataTransfer.items;
     if (!items.length) {
       return;
@@ -3713,7 +3712,7 @@ module.exports = FolderView = (function(_super) {
       pending = pending + 1;
       path = path || "";
       if (path.length > 0) {
-        path = "" + path + "/";
+        path = path + "/";
       }
       if (entry.isFile) {
         return entry.file(function(file) {
@@ -3733,22 +3732,22 @@ module.exports = FolderView = (function(_super) {
       } else if (entry.isDirectory) {
         reader = entry.createReader();
         return reader.readEntries(function(entries) {
-          var subEntry, _i, _len;
-          for (_i = 0, _len = entries.length; _i < _len; _i++) {
-            subEntry = entries[_i];
+          var i, len, subEntry;
+          for (i = 0, len = entries.length; i < len; i++) {
+            subEntry = entries[i];
             parseEntriesRecursively(subEntry, "" + path + entry.name);
           }
           return pending = pending - 1;
         });
       }
     };
-    _results = [];
-    for (_i = 0, _len = items.length; _i < _len; _i++) {
-      item = items[_i];
+    results = [];
+    for (i = 0, len = items.length; i < len; i++) {
+      item = items[i];
       entry = item.webkitGetAsEntry();
-      _results.push(parseEntriesRecursively(entry));
+      results.push(parseEntriesRecursively(entry));
     }
-    return _results;
+    return results;
   };
 
 
@@ -3822,7 +3821,7 @@ module.exports = FolderView = (function(_super) {
   };
 
   FolderView.prototype.toggleFolderActions = function(event) {
-    var clearance, isShiftPressed, selectedElements, _ref;
+    var clearance, isShiftPressed, ref, selectedElements;
     isShiftPressed = event.isShiftPressed;
     selectedElements = this.getSelectedElements();
     if (isShiftPressed) {
@@ -3837,15 +3836,15 @@ module.exports = FolderView = (function(_super) {
     } else {
       if (app.isPublic) {
         this.$('#download-link').show();
-        clearance = (_ref = this.model.getClearance()) != null ? _ref[0] : void 0;
+        clearance = (ref = this.model.getClearance()) != null ? ref[0] : void 0;
         if ((clearance != null) && clearance.perm === 'rw') {
           this.$('#upload-btngroup').show();
-          this.$('#button-new-folder').show();
+          this.$('#button-new-folder').addClass('visible');
         }
       } else {
         this.$('#share-state').show();
         this.$('#upload-btngroup').show();
-        this.$('#button-new-folder').show();
+        this.$('#button-new-folder').addClass('visible');
       }
       this.$('#bulk-actions-btngroup').removeClass('enabled');
     }
@@ -3924,7 +3923,7 @@ module.exports = FolderView = (function(_super) {
     if (selectedElements.length > 1) {
       selectedPaths = selectedElements.map(function(element) {
         if (element.isFolder()) {
-          return "" + (element.getRepository()) + "/";
+          return (element.getRepository()) + "/";
         } else {
           return "" + (element.getRepository());
         }
@@ -4001,13 +4000,13 @@ module.exports = FolderView = (function(_super) {
 
 ;require.register("views/modal", function(exports, require, module) {
 var BaseView, ModalView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
-module.exports = ModalView = (function(_super) {
-  __extends(ModalView, _super);
+module.exports = ModalView = (function(superClass) {
+  extend(ModalView, superClass);
 
   ModalView.prototype.id = "dialog-modal";
 
@@ -4028,12 +4027,12 @@ module.exports = ModalView = (function(_super) {
     };
   };
 
-  function ModalView(title, msg, yes, no, cb, hideOnYes) {
+  function ModalView(title, msg, yes, no, cb1, hideOnYes) {
     this.title = title;
     this.msg = msg;
     this.yes = yes;
     this.no = no;
-    this.cb = cb;
+    this.cb = cb1;
     this.hideOnYes = hideOnYes != null ? hideOnYes : true;
     ModalView.__super__.constructor.call(this);
   }
@@ -4099,15 +4098,15 @@ module.exports.error = function(code, cb) {
 
 ;require.register("views/modal_bulk_move", function(exports, require, module) {
 var Modal, ModalBulkMoveView, client,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 Modal = require("./modal");
 
 client = require("../lib/client");
 
-module.exports = ModalBulkMoveView = (function(_super) {
-  __extends(ModalBulkMoveView, _super);
+module.exports = ModalBulkMoveView = (function(superClass) {
+  extend(ModalBulkMoveView, superClass);
 
   ModalBulkMoveView.prototype.formTemplate = function() {
     return "<div class=\"move-widget\">\n<span> " + (t('move elements to')) + ": </span>\n<select class=\"move-select\"></select>\n</div>";
@@ -4130,7 +4129,7 @@ module.exports = ModalBulkMoveView = (function(_super) {
   ModalBulkMoveView.prototype.afterRender = function() {
     return client.get('folders/list', (function(_this) {
       return function(err, paths) {
-        var allowedPaths, forbiddenPaths, path, _i, _len;
+        var allowedPaths, forbiddenPaths, i, len, path;
         if (err != null) {
           return Modal.error(err);
         } else {
@@ -4151,8 +4150,8 @@ module.exports = ModalBulkMoveView = (function(_super) {
             return isAllowed && path !== _this.parentPath;
           });
           _this.moveForm = $(_this.formTemplate());
-          for (_i = 0, _len = allowedPaths.length; _i < _len; _i++) {
-            path = allowedPaths[_i];
+          for (i = 0, len = allowedPaths.length; i < len; i++) {
+            path = allowedPaths[i];
             _this.moveForm.find('select').append(_this.optionTemplate(path));
           }
           return _this.$el.find('.modal-body').append(_this.moveForm);
@@ -4199,7 +4198,7 @@ module.exports = ModalBulkMoveView = (function(_super) {
       var id, type;
       id = model.get('id');
       type = model.get('type');
-      return client.put("" + type + "s/" + id, {
+      return client.put(type + "s/" + id, {
         path: newPath
       }, cb);
     }, function() {
@@ -4215,15 +4214,15 @@ module.exports = ModalBulkMoveView = (function(_super) {
 
 ;require.register("views/modal_conflict", function(exports, require, module) {
 var Modal, ModalConflictView, client,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 Modal = require("./modal");
 
 client = require("../lib/client");
 
-module.exports = ModalConflictView = (function(_super) {
-  __extends(ModalConflictView, _super);
+module.exports = ModalConflictView = (function(superClass) {
+  extend(ModalConflictView, superClass);
 
   ModalConflictView.prototype.conflictTemplate = function() {
     var rememberLabel;
@@ -4260,10 +4259,10 @@ module.exports = ModalConflictView = (function(_super) {
 
 ;require.register("views/modal_share", function(exports, require, module) {
 var BaseView, CozyClearanceModal, Modal, ModalShareView, client,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 BaseView = require('../lib/base_view');
 
@@ -4273,11 +4272,11 @@ client = require("../lib/client");
 
 CozyClearanceModal = require("cozy-clearance/modal_share_view");
 
-module.exports = ModalShareView = (function(_super) {
-  __extends(ModalShareView, _super);
+module.exports = ModalShareView = (function(superClass) {
+  extend(ModalShareView, superClass);
 
   function ModalShareView() {
-    this.typeaheadFilter = __bind(this.typeaheadFilter, this);
+    this.typeaheadFilter = bind(this.typeaheadFilter, this);
     return ModalShareView.__super__.constructor.apply(this, arguments);
   }
 
@@ -4330,11 +4329,11 @@ module.exports = ModalShareView = (function(_super) {
   ModalShareView.prototype.typeaheadFilter = function(item) {
     var email;
     email = item.toString().split(';')[0];
-    return ModalShareView.__super__.typeaheadFilter.apply(this, arguments) && __indexOf.call(this.summaryemails, email) < 0;
+    return ModalShareView.__super__.typeaheadFilter.apply(this, arguments) && indexOf.call(this.summaryemails, email) < 0;
   };
 
   ModalShareView.prototype.getRenderData = function() {
-    var folder, guest, guests, out, _i, _j, _len, _len1, _ref, _ref1;
+    var folder, guest, guests, i, j, len, len1, out, ref, ref1;
     out = ModalShareView.__super__.getRenderData.apply(this, arguments);
     if (this.forcedShared) {
       if (this.inherited != null) {
@@ -4342,12 +4341,12 @@ module.exports = ModalShareView = (function(_super) {
           out.clearance = 'public';
         } else {
           guests = [];
-          _ref = this.inherited;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            folder = _ref[_i];
-            _ref1 = folder.clearance;
-            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-              guest = _ref1[_j];
+          ref = this.inherited;
+          for (i = 0, len = ref.length; i < len; i++) {
+            folder = ref[i];
+            ref1 = folder.clearance;
+            for (j = 0, len1 = ref1.length; j < len1; j++) {
+              guest = ref1[j];
               guests.push(guest);
             }
           }
@@ -4366,7 +4365,7 @@ module.exports = ModalShareView = (function(_super) {
   };
 
   ModalShareView.prototype.afterRender = function() {
-    var checkbox, folder, guestCanWrite, html, item, label, list, listitems, rule, summary, text, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+    var checkbox, folder, guestCanWrite, html, i, item, j, k, label, len, len1, len2, list, listitems, ref, ref1, rule, summary, text;
     ModalShareView.__super__.afterRender.apply(this, arguments);
     if (this.forcedShared) {
       this.$('#share-public').addClass('toggled');
@@ -4399,17 +4398,17 @@ module.exports = ModalShareView = (function(_super) {
     } else {
       listitems = [];
       summary = [];
-      _ref = this.inherited;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        folder = _ref[_i];
+      ref = this.inherited;
+      for (i = 0, len = ref.length; i < len; i++) {
+        folder = ref[i];
         if (!(folder.clearance.length !== 0)) {
           continue;
         }
         text = t('inherited from') + folder.name;
         listitems.push($('<li>').addClass('header').text(text));
-        _ref1 = folder.clearance;
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          rule = _ref1[_j];
+        ref1 = folder.clearance;
+        for (j = 0, len1 = ref1.length; j < len1; j++) {
+          rule = ref1[j];
           if (!folder.clearance) {
             continue;
           }
@@ -4423,8 +4422,8 @@ module.exports = ModalShareView = (function(_super) {
         summary = $('<div id="inherited-share-summary">').text(text);
         summary.append($('<a>').text(t('details')));
         list = $('<ul id="inherited-share-list">').hide();
-        for (_k = 0, _len2 = listitems.length; _k < _len2; _k++) {
-          item = listitems[_k];
+        for (k = 0, len2 = listitems.length; k < len2; k++) {
+          item = listitems[k];
           list.append(item);
         }
         this.$('#share-list').after(summary, list);
@@ -4474,15 +4473,15 @@ module.exports = ModalShareView = (function(_super) {
 
 ;require.register("views/public_folder", function(exports, require, module) {
 var FolderView, PublicFolderView, client,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 FolderView = require('./folder');
 
 client = require('../lib/client');
 
-module.exports = PublicFolderView = (function(_super) {
-  __extends(PublicFolderView, _super);
+module.exports = PublicFolderView = (function(superClass) {
+  extend(PublicFolderView, superClass);
 
   function PublicFolderView() {
     return PublicFolderView.__super__.constructor.apply(this, arguments);
@@ -4567,7 +4566,7 @@ var jade_interp;
 var locals_ = (locals || {}),model = locals_.model;
 if ( model.id == "root")
 {
-buf.push("<li><a href=\"#\"><span class=\"fa fa-home\"></span></a></li>");
+buf.push("<li><a href=\"#\"><span>Files</span></a></li>");
 }
 else
 {
@@ -4700,11 +4699,11 @@ buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, option
 buf.push("</td><td class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
 buf.push("</td><td class=\"date-column-cell\">");
 if ( model.lastModification)
@@ -4791,11 +4790,11 @@ buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, option
 buf.push("</td><td class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
 buf.push("</td><td class=\"date-column-cell\">");
 if ( model.lastModification)
@@ -4923,11 +4922,11 @@ buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, option
 buf.push("</td><td class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"pull-left\">" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
 buf.push("</td><td class=\"date-column-cell\">");
 if ( model.lastModification)
@@ -4953,7 +4952,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),numSelectedElements = locals_.numSelectedElements,numElements = locals_.numElements,model = locals_.model;
-buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><td><button id=\"select-all\">");
+buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><th><button id=\"select-all\">");
 if ( numSelectedElements == 0 || numElements == 0)
 {
 buf.push("<i class=\"fa fa-square-o\"></i>");
@@ -4966,7 +4965,7 @@ else
 {
 buf.push("<i class=\"fa fa-minus-square-o\"></i>");
 }
-buf.push("</button><span>" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</span><a id=\"down-name\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-name\" class=\"btn fa fa-chevron-up unactive\"></a></td><td class=\"size-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</span><a id=\"down-size\" class=\"fa fa-chevron-down btn unactive\"></a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up unactive\"></a></td><td class=\"type-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</span><a id=\"down-class\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-class\" class=\"fa fa-chevron-up btn unactive\"></a></td><td class=\"date-column-cell\"><span>" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</span><a id=\"down-lastModification\" class=\"btn fa fa-chevron-down unactive\"></a><a id=\"up-lastModification\" class=\"btn fa fa-chevron-up unactive\"></a></td></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
+buf.push("</button><a id=\"down-name\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a><a id=\"up-name\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a></th><th class=\"size-column-cell\"><a id=\"down-size\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a></th><th class=\"type-column-cell\"><a id=\"down-class\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a><a id=\"up-class\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a></th><th class=\"date-column-cell\"><a id=\"down-lastModification\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a><a id=\"up-lastModification\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a></th></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
 if ( model.type == 'search')
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in search')) == null ? '' : jade_interp)) + "");
@@ -4994,10 +4993,10 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.hasPublicKey,query = locals_.query,model = locals_.model,clearance = locals_.clearance,supportsDirectoryUpload = locals_.supportsDirectoryUpload,areNotificationsEnabled = locals_.areNotificationsEnabled,zipUrl = locals_.zipUrl;
-buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><div class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><div class=\"pull-right\">");
+buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><header class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><div class=\"pull-right\">");
 if ( !isPublic || hasPublicKey)
 {
-buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + " class=\"pull-right\"/>");
+buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + " placeholder=\"Search\" class=\"pull-right\"/>");
 }
 if ( model.type != 'search')
 {
@@ -5013,14 +5012,14 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span><span class=\"text\">" + (jade.escape((jade_interp = t('shared')) == null ? '' : jade_interp)) + "</span><span>&nbsp;(" + (jade.escape((jade_interp = clearance.length) == null ? '' : jade_interp)) + ")</span>");
 }
-buf.push("</span><a" + (jade.attr("title", "" + (t('share')) + "", true, false)) + " id=\"share-state\" class=\"btn btn-cozy btn-cozy-contrast\"><span class=\"fa fa-share-alt\"></span></a>&nbsp;");
+buf.push("</span><a id=\"share-state\"" + (jade.attr("title", "" + (t('share')) + "", true, false)) + " class=\"btn btn-cozy btn-cozy-contrast\"><span class=\"fa fa-share-alt\"></span></a>");
 }
-buf.push("<div id=\"upload-btngroup\" class=\"btn-group\"><a id=\"button-upload-new-file\" class=\"btn btn-cozy btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"" + (jade.attr("title", t('upload button'), true, false)) + "/><img src=\"images/add-file.png\"/></a>");
+buf.push("<a id=\"button-upload-new-file\" class=\"btn btn-cozy\"><input id=\"uploader\" type=\"file\" multiple=\"multiple\"" + (jade.attr("title", t('upload button'), true, false)) + "/><div class=\"action-icon file-uploader\"></div></a>");
 if ( supportsDirectoryUpload)
 {
-buf.push("<a data-toggle=\"dropdown\" class=\"btn btn-cozy dropdown-toggle\"><span class=\"caret\"></span></a><ul class=\"dropdown-menu\"><li><a id=\"button-upload-folder\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"/><span>" + (jade.escape(null == (jade_interp = t('upload folder msg')) ? "" : jade_interp)) + "</span></a></li></ul>");
+buf.push("<a id=\"button-upload-folder\" class=\"btn btn-cozy\"><input id=\"folder-uploader\" type=\"file\" directory=\"directory\" mozdirectory=\"mozdirectory\" webkitdirectory=\"webkitdirectory\"" + (jade.attr("title", t('upload folder msg'), true, false)) + "/><div class=\"action-icon folder-uploader\"></div></a>");
 }
-buf.push("</div>&nbsp;<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><img src=\"images/add-folder.png\"/></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\">");
+buf.push("<a id=\"button-new-folder\"" + (jade.attr("title", t('new folder button'), true, false)) + " class=\"btn btn-cozy\"><div class=\"action-icon folder-new\"></div></a><div id=\"bulk-actions-btngroup\" class=\"btn-group\">");
 if ( isPublic)
 {
 buf.push("<a id=\"button-bulk-download\"" + (jade.attr("title", "" + (t('download all')) + "", true, false)) + " class=\"btn btn-cozy-contrast\"><span class=\"label\">" + (jade.escape((jade_interp = t("download all")) == null ? '' : jade_interp)) + "&nbsp;</span><span class=\"fa fa-download icon-white\"></span></a>");
@@ -5044,7 +5043,7 @@ buf.push("&nbsp;");
 }
 buf.push("<a id=\"download-link\"" + (jade.attr("href", "" + (zipUrl) + "", true, false)) + (jade.attr("title", t("download"), true, false)) + " class=\"btn btn-cozy-contrast\">" + (jade.escape((jade_interp = t("download")) == null ? '' : jade_interp)) + "&nbsp;<i class=\"icon-arrow-down icon-white\"></i></a>");
 }
-buf.push("</div></div></div><div class=\"row\"><div id=\"upload-status-container\" class=\"col-lg-12\"></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\"><img src=\"images/spinner.svg\" width=\"20\"/></div><div id=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
+buf.push("</div></div></header><div class=\"row\"><div id=\"upload-status-container\" class=\"col-lg-12\"></div></div></div></div><div class=\"container\"><div class=\"row\"><div id=\"content\" class=\"col-lg-12\"><div id=\"loading-indicator\"><img src=\"images/spinner.svg\" width=\"20\"/></div><div id=\"files\" class=\"files\"></div><div id=\"files-drop-zone\"><div class=\"overlay\"></div><div class=\"vertical-container\"><p>" + (jade.escape(null == (jade_interp = t('drop message')) ? "" : jade_interp)) + "</p></div></div></div></div></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -5144,8 +5143,8 @@ if (typeof define === 'function' && define.amd) {
 
 ;require.register("views/upload_status", function(exports, require, module) {
 var BaseView, File, ProgressBar, UploadStatusView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
@@ -5153,8 +5152,8 @@ File = require('../models/file');
 
 ProgressBar = require('../widgets/progressbar');
 
-module.exports = UploadStatusView = (function(_super) {
-  __extends(UploadStatusView, _super);
+module.exports = UploadStatusView = (function(superClass) {
+  extend(UploadStatusView, superClass);
 
   function UploadStatusView() {
     return UploadStatusView.__super__.constructor.apply(this, arguments);
@@ -5181,9 +5180,9 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   UploadStatusView.prototype.getRenderData = function() {
-    var data, loadedBytes, totalBytes, value, _ref;
+    var data, loadedBytes, ref, totalBytes, value;
     if (this.collection.progress) {
-      _ref = this.collection.progress, loadedBytes = _ref.loadedBytes, totalBytes = _ref.totalBytes;
+      ref = this.collection.progress, loadedBytes = ref.loadedBytes, totalBytes = ref.totalBytes;
       value = parseInt(100 * loadedBytes / totalBytes) + '%';
     } else {
       value = '0 %';
@@ -5198,9 +5197,9 @@ module.exports = UploadStatusView = (function(_super) {
     var percentage, progress;
     this.$el.removeClass('success danger warning');
     progress = parseInt(100 * e.loadedBytes / e.totalBytes);
-    percentage = "" + progress + "%";
+    percentage = progress + "%";
     this.progressbar.width(percentage);
-    return this.progressbarContent.text("" + (t('total progress')) + " : " + percentage);
+    return this.progressbarContent.text((t('total progress')) + " : " + percentage);
   };
 
   UploadStatusView.prototype.complete = function() {
@@ -5233,7 +5232,7 @@ module.exports = UploadStatusView = (function(_super) {
   };
 
   UploadStatusView.prototype.makeErrorSentence = function(errors) {
-    var error, parts, _i, _len;
+    var error, i, len, parts;
     parts = [];
     parts.push("" + (errors.pop().get('name')));
     if (errors.length > 1) {
@@ -5247,8 +5246,8 @@ module.exports = UploadStatusView = (function(_super) {
     if (errors.length > 1) {
       parts.push(': ');
       parts.push("" + (errors.pop().get('name')));
-      for (_i = 0, _len = errors.length; _i < _len; _i++) {
-        error = errors[_i];
+      for (i = 0, len = errors.length; i < len; i++) {
+        error = errors[i];
         parts.push(", " + (error.get('name')));
       }
     }
@@ -5294,10 +5293,10 @@ module.exports = UploadStatusView = (function(_super) {
 
 ;require.register("widgets/autocomplete", function(exports, require, module) {
 var ARROW_DOWN_KEY, ARROW_UP_KEY, Autocomplete, BaseView, ENTER_KEY,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 BaseView = require('../lib/base_view');
 
@@ -5307,13 +5306,13 @@ ARROW_UP_KEY = 38;
 
 ARROW_DOWN_KEY = 40;
 
-module.exports = Autocomplete = (function(_super) {
-  __extends(Autocomplete, _super);
+module.exports = Autocomplete = (function(superClass) {
+  extend(Autocomplete, superClass);
 
   function Autocomplete() {
-    this.unbind = __bind(this.unbind, this);
-    this.delayedUnbind = __bind(this.delayedUnbind, this);
-    this.onInputKeyDown = __bind(this.onInputKeyDown, this);
+    this.unbind = bind(this.unbind, this);
+    this.delayedUnbind = bind(this.delayedUnbind, this);
+    this.onInputKeyDown = bind(this.onInputKeyDown, this);
     return Autocomplete.__super__.constructor.apply(this, arguments);
   }
 
@@ -5328,8 +5327,8 @@ module.exports = Autocomplete = (function(_super) {
   };
 
   Autocomplete.prototype.onInputKeyDown = function(e) {
-    var delta, _ref;
-    if ((_ref = e.keyCode) === ARROW_UP_KEY || _ref === ARROW_DOWN_KEY) {
+    var delta, ref;
+    if ((ref = e.keyCode) === ARROW_UP_KEY || ref === ARROW_DOWN_KEY) {
       delta = e.keyCode - 39;
       this.select(this.selectedIndex + delta);
       e.preventDefault();
@@ -5382,24 +5381,24 @@ module.exports = Autocomplete = (function(_super) {
   };
 
   Autocomplete.prototype.refresh = function(search, existings) {
-    var selected, tag, _i, _len, _ref, _ref1;
+    var i, len, ref, ref1, selected, tag;
     search = this.input.val();
-    selected = (_ref = this.visible) != null ? _ref[this.selectedIndex] : void 0;
+    selected = (ref = this.visible) != null ? ref[this.selectedIndex] : void 0;
     if (existings == null) {
       existings = [];
     }
-    _ref1 = this.tags;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      tag = _ref1[_i];
+    ref1 = this.tags;
+    for (i = 0, len = ref1.length; i < len; i++) {
+      tag = ref1[i];
       tag.el.classList.remove('selected');
     }
     this.visible = this.tags.filter((function(_this) {
       return function(tag, index) {
-        var _ref2;
-        return (_ref2 = tag.value, __indexOf.call(existings, _ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase()) && index < _this.limit;
+        var ref2;
+        return (ref2 = tag.value, indexOf.call(existings, ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase()) && index < _this.limit;
       };
     })(this));
-    if (selected && __indexOf.call(this.visible, selected) >= 0) {
+    if (selected && indexOf.call(this.visible, selected) >= 0) {
       this.selectedIndex = this.visible.indexOf(selected);
     } else {
       this.selectedIndex = -1;
@@ -5409,10 +5408,10 @@ module.exports = Autocomplete = (function(_super) {
   };
 
   Autocomplete.prototype.select = function(index) {
-    var tag, visibleElement, _i, _len, _ref;
-    _ref = this.tags;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      tag = _ref[_i];
+    var i, len, ref, tag, visibleElement;
+    ref = this.tags;
+    for (i = 0, len = ref.length; i < len; i++) {
+      tag = ref[i];
       tag.el.classList.remove('selected');
     }
     index = (index + this.visible.length) % this.visible.length;
@@ -5468,13 +5467,13 @@ module.exports = Autocomplete = (function(_super) {
 
 ;require.register("widgets/progressbar", function(exports, require, module) {
 var BaseView, ProgressbarView,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 BaseView = require('../lib/base_view');
 
-module.exports = ProgressbarView = (function(_super) {
-  __extends(ProgressbarView, _super);
+module.exports = ProgressbarView = (function(superClass) {
+  extend(ProgressbarView, superClass);
 
   function ProgressbarView() {
     return ProgressbarView.__super__.constructor.apply(this, arguments);
@@ -5515,26 +5514,26 @@ module.exports = ProgressbarView = (function(_super) {
 
 ;require.register("widgets/tags", function(exports, require, module) {
 var Autocomplete, BaseView, TagsView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 BaseView = require('../lib/base_view');
 
 Autocomplete = require('./autocomplete');
 
-module.exports = TagsView = (function(_super) {
-  __extends(TagsView, _super);
+module.exports = TagsView = (function(superClass) {
+  extend(TagsView, superClass);
 
   function TagsView() {
-    this.hideInput = __bind(this.hideInput, this);
-    this.toggleInput = __bind(this.toggleInput, this);
-    this.refresh = __bind(this.refresh, this);
-    this.deleteTag = __bind(this.deleteTag, this);
-    this.setTags = __bind(this.setTags, this);
-    this.refreshAutocomplete = __bind(this.refreshAutocomplete, this);
-    this.onKeyDown = __bind(this.onKeyDown, this);
+    this.hideInput = bind(this.hideInput, this);
+    this.toggleInput = bind(this.toggleInput, this);
+    this.refresh = bind(this.refresh, this);
+    this.deleteTag = bind(this.deleteTag, this);
+    this.setTags = bind(this.setTags, this);
+    this.refreshAutocomplete = bind(this.refreshAutocomplete, this);
+    this.onKeyDown = bind(this.onKeyDown, this);
     return TagsView.__super__.constructor.apply(this, arguments);
   }
 
@@ -5553,14 +5552,14 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.initialize = function() {
-    var tag, tags, _i, _len;
+    var i, len, tag, tags;
     tags = this.model.get('tags');
     if (tags == null) {
       tags = [];
     }
     this.tags = [];
-    for (_i = 0, _len = tags.length; _i < _len; _i++) {
-      tag = tags[_i];
+    for (i = 0, len = tags.length; i < len; i++) {
+      tag = tags[i];
       if (tag != null) {
         this.tags.push(tag);
       }
@@ -5584,7 +5583,7 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.onKeyDown = function(e) {
-    var val, _ref, _ref1, _ref2;
+    var ref, ref1, ref2, val;
     val = this.input.val();
     if (val === '' && e.keyCode === 8) {
       this.setTags(this.tags.slice(0, -1));
@@ -5595,11 +5594,11 @@ module.exports = TagsView = (function(_super) {
       e.stopPropagation();
       return;
     }
-    if (val && ((_ref = e.keyCode) === 188 || _ref === 32 || _ref === 9 || _ref === 13)) {
+    if (val && ((ref = e.keyCode) === 188 || ref === 32 || ref === 9 || ref === 13)) {
       if (this.tags == null) {
         this.tags = [];
       }
-      if (__indexOf.call(this.tags, val) < 0) {
+      if (indexOf.call(this.tags, val) < 0) {
         this.tags.push(val);
       }
       this.setTags(this.tags);
@@ -5611,12 +5610,12 @@ module.exports = TagsView = (function(_super) {
       e.stopPropagation();
       return;
     }
-    if ((_ref1 = e.keyCode) === 188 || _ref1 === 32 || _ref1 === 9 || _ref1 === 13) {
+    if ((ref1 = e.keyCode) === 188 || ref1 === 32 || ref1 === 9 || ref1 === 13) {
       e.preventDefault();
       e.stopPropagation();
       return;
     }
-    if ((_ref2 = e.keyCode) === 40 || _ref2 === 38) {
+    if ((ref2 = e.keyCode) === 40 || ref2 === 38) {
       return true;
     }
     if (val && e.keyCode !== 8) {
@@ -5626,11 +5625,11 @@ module.exports = TagsView = (function(_super) {
   };
 
   TagsView.prototype.refreshAutocomplete = function(e) {
-    var _ref;
+    var ref;
     if (this.input.val() !== '') {
       TagsView.autocomplete.$el.show();
     }
-    if ((_ref = e != null ? e.keyCode : void 0) === 40 || _ref === 38 || _ref === 8) {
+    if ((ref = e != null ? e.keyCode : void 0) === 40 || ref === 38 || ref === 8) {
       return;
     }
     return TagsView.autocomplete.refresh(this.input.val(), this.tags);
@@ -5676,14 +5675,14 @@ module.exports = TagsView = (function(_super) {
     var html, tag;
     this.$('.tag').remove();
     html = ((function() {
-      var _i, _len, _ref, _results;
-      _ref = this.tags || [];
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tag = _ref[_i];
-        _results.push("<li class=\"tag\" data-value=\"" + tag + "\">\n    " + tag + "\n    <span class=\"deleter fa fa-times\"></span>\n</li>");
+      var i, len, ref, results;
+      ref = this.tags || [];
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        tag = ref[i];
+        results.push("<li class=\"tag\" data-value=\"" + tag + "\">\n    " + tag + "\n    <span class=\"deleter fa fa-times\"></span>\n</li>");
       }
-      return _results;
+      return results;
     }).call(this)).join('');
     return this.$el.prepend(html);
   };
