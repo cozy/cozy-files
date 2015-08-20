@@ -589,12 +589,7 @@ p.disabled
                 margin 0
                 font-size 16px
 
-// override bootstrap styles
-.table-hover > tbody > tr:hover > td
-    background-color #f5f5f5
-
 tr.folder-row
-
     .file-path
         color #999
         font-family 'Source Sans Pro', sans-serif
@@ -641,12 +636,6 @@ tr.folder-row
     // mandatory to override bootstrap
     &.selected > td
         background lightblue + 70% !important
-
-    &.selected
-    &:hover
-        & > td .caption .link-wrapper
-            @media (max-width: 768px)
-                width 70vw
 
     td
         vertical-align: middle
@@ -706,7 +695,7 @@ tr.folder-row
             display inline-block
 
             @media (max-width: 768px)
-                width 80vw
+                width 85vw
                 overflow hidden
                 text-overflow ellipsis
                 white-space nowrap
