@@ -619,19 +619,23 @@ tr.folder-row
                 display none
 
         .caption
-                .icon-zone
-                    .fa
-                        display inline
+            .icon-zone
+                .fa
+                    display inline
 
-                    .fa-folder-o
-                            position relative
-                            top: -3px
+                .fa-folder-o
+                        position relative
+                        top: -3px
 
-                .icon-zone:hover
-                    .fa
-                        display: inline-block
-                    input[type=checkbox]
-                        display: none
+            .icon-zone:hover
+                .fa
+                    display: inline-block
+                input[type=checkbox]
+                    display: none
+
+        .caption-wrapper
+            display flex
+            align-items center
 
     // mandatory to override bootstrap
     &.selected > td
@@ -869,11 +873,14 @@ tr.folder-row td span.caption.caption-edit
     float left
 
     input.file-edit-name
-        border 1px solid blue
+        height 2em
+        margin 0 0.5em
+        padding 0 0.5em
+        border 1px solid #ccc
         outline 0
 
         &:hover
-            border 1px solid orange
+            border 1px solid basecolor
             color #333
 
         &:active
