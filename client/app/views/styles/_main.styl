@@ -7,7 +7,9 @@ html, body
 
 body
     font-family: 'Source Sans Pro', sans-serif
-    background-image: url('../images/background.jpg')
+    background-color #f5f5f5
+    background-image none
+    font-size 16px
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
     font-family: 'Maven Pro', sans-serif
@@ -55,7 +57,7 @@ a:focus,
 
 
 .mt108
-    margin-top: 108px
+    padding-top 8em
 
 .modal-content
     box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2)
@@ -73,20 +75,14 @@ a:focus,
 
 .btn-link
 .btn-link:visited
-    color: basecolor - 30%
-
 .btn-link:hover
-    color: actioncolor - 10%
-    text-decoration: none
-
 .btn-link:active
-    color: basecolor - 30%
+.btn-link:focus
+    color #444
     text-decoration: none
 
-.btn-link:focus
-    background: actioncolor - 10%
-    color: white
-    text-decoration: none
+    .fa
+        color: lighten(basecolor, 30%)
 
 // buttons
 
@@ -107,8 +103,8 @@ a
             border-bottom-color white
 
         &:hover
-            background-color actioncolor
-            border-color actioncolor
+            background-color darken(basecolor, 20%)
+            border-color darken(basecolor, 20%)
 
     &.btn-cozy.toggled
         box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
@@ -123,8 +119,11 @@ a
         color white
 
         &:hover
-            background-color actioncolor
-            border-color: actioncolor
+            background-color darken(contrastcolor, 25%)
+            border-color darken(contrastcolor, 25%)
+
+    &:active
+        box-shadow none
 
 
 // Inputs
@@ -137,25 +136,21 @@ input:focus
     color: #333
     border-color: basecolor
 
-::selection
-    background actioncolor - 10%
-    color white
-::-moz-selection
-    background actioncolor - 10%
-    color white
-
 input#search-box
-    height 35px
+    height 36px
     font-size 16px
     margin-left 5px
-    padding-left 25px
-    width 200px
-    background-image url("../images/iconmonstr-magnifier-icon-18.png")
+    padding-left 2.3em
+    width 10em
+    background-image url("../images/magnifier.svg")
     background-repeat no-repeat
-    background-position 5px 8px
+    background-position 0.8em 9px
+    border-radius 0.2rem
+    transition width 0.3s ease-out
 
     &:focus
-      outline none
+        outline none
+        width 20em
 
 .form-control
     min-height: 34px
@@ -165,7 +160,6 @@ input#search-box
 // Menu
 
 div#affixbar
-    height 45px
     z-index 100
     width 100%
     position fixed
@@ -176,11 +170,18 @@ div#affixbar
         p
             margin-bottom 5px
 
-        &:first-of-type
-            padding-top 15px
+    div.row
+        height 0
+
+    header
+        padding 0.8em 0
+        border-bottom 1px solid #e5e5e5
 
     a.btn
-        height 35px
+        height 36px
+        padding 6px 0.6em
+        margin-right 0.2rem
+        border-radius 0.2rem
 
     img
         height 20px
@@ -194,12 +195,10 @@ div#affixbar
     color: yellow
 
     .row
-        -moz-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
-        -webkit-box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
-        box-shadow: 0 5px 7px 0 rgba(0,0,0,0.2);
+        // box-shadow: 0 2px 4px 0 rgba(0,0,0,0.15);
 
 #crumbs
-    overflow hidden
+    height 0
 
     img
         height: 25px
@@ -212,55 +211,77 @@ div#affixbar
         margin-bottom: 0px
         padding-left: 0
         list-style none
-        display inline-table
+        display flex
+
         li
-            display inline
+            display inline-block
+
             a
-                display block
-                float left
-                height 35px
-                background basecolor
-                text-align center
-                padding 8px 5px 0 22px
+                display inline-block
                 position relative
-                margin 10px 5px 0 0
-                font-size 15px
+                padding 0.5em 0.5em 0.5em 1.2em
+                margin-right 0.1em
+                background #A7B5C6
+                text-align center
+                font-size 1em
                 text-decoration none
                 color #fff
+
                 &:after
                     content ""
-                    border-top 17px solid transparent
-                    border-bottom 17px solid transparent
-                    border-left 17px solid basecolor
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid #A7B5C6
                     position absolute
-                    right -17px
+                    right -10px
                     top 0
                     z-index 1
+
                 &:before
                     content ""
-                    border-top 17px solid transparent
-                    border-bottom 17px solid transparent
-                    border-left 17px solid white
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid white
                     position absolute
                     left 0
                     top 0
+
                 &:hover
-                    background actioncolor
+                    background #92A0B2
+
                     &:after
-                        border-left-color actioncolor
-            &:first-child
-                a
-                    padding-left: 20px
-                    border-top-left-radius 10px
-                    border-bottom-left-radius 10px
-                    &:before
-                        display none
+                        border-left-color #92A0B2
+
             &:last-child
                 a
-                    padding-right 20px
-                    border-top-right-radius 10px
-                    border-bottom-right-radius 10px
+                    padding-right 1em
+                    border-top-right-radius 0.2em
+                    border-bottom-right-radius 0.2em
+
+                    @media (max-width: 768px)
+                        // text ellipsis on mobile
+                        max-width         40vw
+                        overflow-x    hidden
+                        text-overflow ellipsis
+                        white-space   nowrap
+
+                    @media (max-width: 520px)
+                        // text ellipsis on mobile
+                        max-width         45vw
+
                     &:after
+                        display none
+
+            &:first-child
+                a
+                    padding-left 1em
+                    border-top-left-radius 0.2em
+                    border-bottom-left-radius 0.2em
+
+                    @media (max-width: 768px)
+                        width auto
+
+                    &:before
                         display none
 
 #affixbar
@@ -275,15 +296,20 @@ div#affixbar
     #share-state
             font-size: 18px
             line-height: 20px
+            margin-right 0.6rem
 
     #folder-state
-        font-family 'Maven Pro', sans-serif
-        font-size 20px
         position relative
-        top 5px
-        color #666
+        top 3px
+        margin-right 0.8em
+        @media (max-width: 768px)
+            margin-right 0
+        font-size 1.2em
+        color #999
 
-        margin-right 10px
+        .fa
+            margin-right 0.2em
+            color #aaa
 
     // by default (private area) we don't display download and notif buttons
     #notifications
@@ -314,28 +340,25 @@ div#affixbar
     position: relative
     overflow: hidden
     cursor: pointer
-    color white
-    padding 6px 12px
     line-height 1.5
     min-height 34px
-    background-color basecolor
 
-    &:hover
-        background-color orange
-
-#button-upload-new-file, #button-upload-folder
+#button-upload-new-file,
+#button-upload-folder
     input
         cursor: pointer
-        position: absolute
-        width: 200px
         display: block
-        height: 45px
-        font-size: 45px
+        position: absolute
         top: 0px
         right: 0px
-        line-height: 45px
+        width: 100%
+        height: 100%
         opacity: 0.01
-        z-index: 100
+        z-index: 10
+
+#button-new-folder
+    z-index 20
+    margin-left 0.4em
 
 .table
     .tbody
@@ -475,15 +498,22 @@ p.disabled
 
 // File table
 
-table
-table#table-items
+#table-items
     margin-bottom: 10px
 
-    .unactive
-        opacity: 0.5
+    .unactive.fa::before
+        display none
 
     td
-        height: 40px
+        vertical-align middle
+        padding 0 0.8em
+        height 3.4em
+        border 0
+        border-bottom 1px solid #e5e5e5
+
+        @media (max-width: 520px)
+            padding 0 0.4em
+            height 3em
 
         .progress
             margin-bottom 0px
@@ -491,38 +521,49 @@ table#table-items
     td.type-column-cell
     td.size-column-cell
     td.date-column-cell
-        padding-top: 10px
-        color: gray
-        width: 100px
+        font-size 0.85em
+        color gray
+
+    td.type-column-cell
+    td.size-column-cell
+        width 7em
 
     td.date-column-cell
-        width: 190px
-        text-align: left
-
-        &:first-letter
-            text-transform capitalize
+        width: 14em
 
     .table-headers
+        th
+            padding 0
+            border-color #dcdcdc
+            border-top 0
+            border-width 1px
 
-        td:first-child input[type=checkbox]
-            width: 20px
-            margin: 0 15px 0 0
-            font-size: 16px
-
-            &:focus
-                outline none
-
-        td
-            border-top: 0
-
-        span
-            line-height: 30px
+            &:first-child .btn
+                width 80%
 
         .btn
-            top: -2px
+            padding 0.8rem
+            width 100%
+            text-align left
+            text-transform uppercase
+            font-size 1.2rem
+            font-weight bold
+            color #999
+            font-family "Source Sans Pro", Helvetica, Arial, sans-serif
+
+            &.active
+                box-shadow 0 0
+                color basecolor
+
+            &::before
+                margin-right 0.5rem
+                font normal normal normal 14px/1 FontAwesome
+
+        span
+            text-transform uppercase
 
         a:hover
-            color: orange
+            color darken(basecolor, 20%)
 
         #down-name
         #down-size
@@ -530,36 +571,37 @@ table#table-items
         #down-lastModification
             display: none
 
-
+            &.active
+                display inline-block
 
         button#select-all
+            outline none
+            padding 0 1.6rem
+            width 2.2em
             border none
             background transparent
-            width 15px
-            margin 0 15px 0 0
-            padding 0
+            text-align left
+            color #999
 
             i.fa
-                font-size 16px
+                position relative
+                top 3px
                 margin 0
-
-// override bootstrap styles
-.table-hover > tbody > tr:hover > td
-    background lightorange + 50%
+                font-size 16px
 
 tr.folder-row
-
     .file-path
-        color darkcolor
+        color #999
         font-family 'Source Sans Pro', sans-serif
-        margin-bottom 0
-        margin-left 3px
+        margin-bottom 0.1em
+        font-size 0.85em
 
     &:hover
         color mediumcolor-contrast
 
         .operations
             display inline
+            float right
 
     &:hover, &.pseudohover
         .tags input
@@ -573,34 +615,30 @@ tr.folder-row
                 display none
 
         .caption
-                .icon-zone
-                    .fa
-                        display inline
+            .icon-zone
+                .fa
+                    display inline
 
-                    .fa-folder-o
-                            position relative
-                            top: -3px
+                .fa-folder-o
+                        position relative
+                        top: -3px
 
-                .icon-zone:hover
-                    .fa
-                        display: inline-block
-                    input[type=checkbox]
-                        display: none
+            .icon-zone:hover
+                .fa
+                    display: inline-block
+                input[type=checkbox]
+                    display: none
+
+        .caption-wrapper
+            display flex
+            align-items center
 
     // mandatory to override bootstrap
     &.selected > td
         background lightblue + 70% !important
 
     td
-        vertical-align: baseline
-
-        div
-        span
-        ul
-        li
-        a
-        i
-            vertical-align: baseline
+        vertical-align: middle
 
         span.caption
             padding-left 3px // 3 for file and 6 for folder
@@ -638,17 +676,31 @@ tr.folder-row
         .fa-users
         .fa-share-alt
         .fa-globe
-            position absolute
-            top 10px
-            left -3px
-            font-size 12px
             z-index 10
+            position absolute
+            top 12px
+            left -6px
+            padding 0.1em
+            background-color #fff
+            border-radius 50%
+            font-size 12px
+            color darken(blue, 20%)
+
+            @media (max-width: 768px)
+                top 10px
+                left -1px
 
 
         .link-wrapper
             display inline-block
+
+            @media (max-width: 768px)
+                width 85vw
+                overflow hidden
+                text-overflow ellipsis
+                white-space nowrap
+
             &:hover
-                color orange - 10%
                 border 0
                 text-decoration none
 
@@ -658,6 +710,16 @@ tr.folder-row
 
                     &:focus
                         color white
+
+            .btn-link
+                span
+                    color #444
+
+                    @media (max-width: 768px)
+                        white-space nowrap
+
+            &:hover span
+                color basecolor
 
 
     .spinholder
@@ -680,14 +742,10 @@ tr.folder-row
 
             span:hover
             i:hover
-                color: orange
+                color: darken(basecolor, 30%)
 
         a:hover
-            color: orange
-
-    .caption-wrapper
-        display: inline
-        height: 100%
+            color: darken(basecolor, 30%)
 
     ul.tags
         margin: 0
@@ -707,39 +765,37 @@ tr.folder-row
 
         li.tag
             display inline-block
-            border 1px solid lightgray
-            border-radius 6px
-            padding 0.2em 0.5em 0.2em 0.5em
-            margin-top 0px
+            padding 0.2em 0.5em
+            margin-top 0
             margin-right 5px
-            border 1px solid transparent
-            border-radius 0
-            background-color blue + 90%
-            cursor pointer
-            font-family 'Maven Pro', sans-serif
-            color blue - 40%
+            border-radius 0.2em
+            background-color #e5e5e5
+            color #333
             user-select none
+            cursor pointer
 
             .deleter
                 cursor pointer
                 font-size 10px
                 transform translate(0px, -1px)
+
                 &:hover
-                    color orange - 40%
+                    color #111
 
             &:hover
-                border 1px solid orange
-                background-color orange + 90%
-                color orange - 40%
+                background-color #d5d5d5
+                color #333
 
             &:focus
             &:active
-                border 1px solid blue
-                box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+                box-shadow 0 0
 
     i.fa
-        margin 0 15px 0 0
-        width 15px
+        margin     0 1rem 0 0
+        width      2.2rem
+        text-align center
+        font-size  1.4em
+
 
     .icon
         font-size: 14px
@@ -747,12 +803,6 @@ tr.folder-row
     &:hover .operations
         a
             color: lightblue - 30%
-
-        a:hover
-            color: orange
-
-        a:active
-            color: orange
 
 
 tr.folder-row.uploading
@@ -807,22 +857,28 @@ tr.folder-row.broken
 .file-edit-name
     min-width 150px
 
-tr.folder-row td span.caption.caption-edit  
+tr.folder-row td span.caption.caption-edit
     margin 0
     padding 0
     float left
 
     input.file-edit-name
-        border 1px solid blue
+        height 2em
+        margin 0 0.5em
+        padding 0 0.5em
+        border 1px solid #ccc
         outline 0
 
         &:hover
-            border 1px solid orange
+            border 1px solid basecolor
             color #333
 
         &:active
         &:focus
             border 1px solid blue
+
+    .icon-zone
+        margin-left -1px
 
 tr.folder-row td input.caption
     margin-left 5px
@@ -887,21 +943,23 @@ tr.folder-row
 
 .footer
     text-align: center
-    color: grey
+    color: #999
     font-style: italic
+    font-size: 0.85em
 
 #content
-    background white
-    padding-bottom 10px
-    margin-top 56px
+    padding    4.2em 1em 1em
+    min-height 100vh
+    background #fff
 
-#content.mt108
-    margin-top 108px
+    // notifications about the uplaod status
+    &.mt108
+        padding-top 8em
 
-#files
+.files
     // margin-top 60px
     position relative
-    min-height 75vh // 75% of screen height, to be sure drop zone is height enough
+    min-height calc(100vh - 6em)
 
 #files-drop-zone
     pointer-events none // prevent overlay from triggering dragleave
@@ -914,8 +972,8 @@ tr.folder-row
     z-index 99
 
     .overlay
-        opacity 0.4
-        background grey
+        opacity 0.67
+        background lighten(basecolor, 20%)
         width 100%
         height 100%
         position absolute
@@ -924,26 +982,28 @@ tr.folder-row
         display table
         width 100%
         height 100%
+        position absolute
 
         p
             display table-cell
             vertical-align middle
             text-align center
-            font-size 25px
-            color 000
-            margin auto
+            font-size 2em
+            color #fff
+            text-shadow 0 2px 6px rgba(basecolor, 0.5)
 
     #file-amount-indicator
     #no-files-indicator
         display none
 
 #upload-status
-    color: #31708f
+    padding: 15px
+    margin-top: 0.5em
     background-color: #d9edf7
     border-color: #bce8f1
-    padding: 15px
     border: 1px solid transparent
     border-radius: 4px
+    color: #31708f
 
     .btn
         margin-top -6px

@@ -134,7 +134,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "ok"                        : "Ok"
 
     "name"                      : "Name"
-    "type"                      : "Type"
+    "type"                      : "Kind"
     "size"                      : "Size"
     "date"                      : "Last update"
     "download"                  : "Download all"

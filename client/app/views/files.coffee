@@ -110,12 +110,12 @@ module.exports = class FilesView extends ViewCollection
     displayChevron: (order, type) ->
 
         if order is "asc"
-            @$("#up-#{type}").show()
+            @$("#up-#{type}").addClass 'active'
             @$("#down-#{type}").hide()
             @$("#up-#{type}").removeClass 'unactive'
         else
             @$("#up-#{type}").hide()
-            @$("#down-#{type}").show()
+            @$("#down-#{type}").addClass 'active'
             @$("#down-#{type}").removeClass 'unactive'
 
 
