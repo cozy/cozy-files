@@ -21,7 +21,7 @@ label
 // Boostrap fix
 
 .modal-footer
-    margin-top: 0
+    margin-top 0
 
 .modal-sm
     width 300px
@@ -64,6 +64,14 @@ a:focus,
 
 .modal-footer
     margin-top: 0
+
+    span.pull-left.email-hint
+        display block
+        text-align left
+        width 100%
+
+    button
+        margin-top 2em
 
 .modal-sm
     width 300px
@@ -1085,7 +1093,7 @@ body.error-404 .error-frame
     #affixbar
         #share-state
         #folder-state
-        #upload-btngroup
+        #upload-buttons
         #button-new-folder
             display none
 
@@ -1122,9 +1130,13 @@ body.error-404 .error-frame
             display: none
 
     &.can-upload #affixbar
-        #upload-btngroup
+        #upload-buttons
         #button-new-folder
             display inline-block
+
+        #button-new-folder
+            margin-left 0.1em
+            margin-right 0
 
     #files
         .tagit-new
@@ -1139,3 +1151,4 @@ body.error-404 .error-frame
 
         .tags
                 display: none
+

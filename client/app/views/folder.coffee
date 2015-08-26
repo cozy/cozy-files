@@ -384,6 +384,7 @@ module.exports = class FolderView extends BaseView
         @collection.forEach (model) ->
             model.setSelectedViewState not isChecked
 
+
     onDeselectAll: (event) ->
         if event.target.id is 'files'
             @collection.forEach (model) ->
@@ -412,17 +413,19 @@ module.exports = class FolderView extends BaseView
             @$('#button-new-folder').hide()
             @$('#download-link').hide() # in public area
             @$('#bulk-actions-btngroup').addClass 'enabled'
+
         else
             if app.isPublic
                 @$('#download-link').show() # in public area
                 clearance = @model.getClearance()?[0]
                 if clearance? and clearance.perm is 'rw'
-                    @$('#upload-btngroup').show()
-                    @$('#button-new-folder').addClass 'visible'
+                    @$('#upload-buttons').show()
+                    @$('#button-new-folder').show()
+                    @$('#button-upload-new-file').show()
             else
                 @$('#share-state').show()
                 @$('#upload-btngroup').show()
-                @$('#button-new-folder').addClass 'visible'
+                @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
 
