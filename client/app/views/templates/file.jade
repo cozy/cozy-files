@@ -12,13 +12,13 @@ td
             div.spinholder
               img(src="images/spinner.svg")
             if clearance == 'public'
-              i.fa.fa-folder
+              i.icon-type.type-folder
                 span.fa.fa-globe
             else if clearance && clearance.length > 0
-              i.fa.fa-folder-o
+              i.fa.type-folder
                 span.fa.fa-globe
             else
-              i.fa.fa-folder
+              i.icon-type.type-folder
             a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
               span= model.name
 
@@ -28,13 +28,13 @@ td
             div.spinholder
               img(src="images/spinner.svg")
             if model.mime && this.mimeClasses[model.mime]
-              i(class="fa #{this.mimeClasses[model.mime]}")
+              i(class="icon-type #{this.mimeClasses[model.mime]}")
                 if clearance == 'public'
                   span.fa.fa-globe
                 else if clearance && clearance.length > 0
                   span.fa.fa-globe
             else
-              i.fa.fa-file-o
+              i.icon-type.type-file
                 if clearance == 'public'
                   span.fa.fa-globe
                 else if clearance && clearance.length > 0
@@ -53,6 +53,9 @@ td
         for tag in model.tags || []
           li.tag #{tag}
             span.deleter.fa.fa-times
+
+    block empty
+      .block-empty
 
     block actions
       if !isUploading && !isBroken && !isServerUploading

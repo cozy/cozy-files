@@ -6,19 +6,19 @@ block title
       span.icon-zone
         if clearance == 'public'
           span.fa.fa-globe
-          i.fa.fa-folder-o
+          i.icon-type.type-folder
         else if clearance && clearance.length > 0
           span.fa.fa-globe
-          i.fa.fa-folder-o
+          i.icon-type.type-folder
         else
-          i.fa.fa-folder
+          i.icon-type.type-folder
         div.spinholder
           img(src="images/spinner.svg")
     else
       if model.mime && this.mimeClasses[model.mime]
-        i(class="fa #{this.mimeClasses[model.mime]}")
+        i(class="icon-type #{this.mimeClasses[model.mime]}")
       else
-        i.fa.fa-file-o
+        i.icon-type.type-file
     input.caption.file-edit-name(value=model.name)
   a.btn.btn-sm.btn-cozy.file-edit-save
     | #{t("file edit save")}

@@ -183,6 +183,20 @@ div#affixbar
         margin-right 0.2rem
         border-radius 0.2rem
 
+        &#button-bulk-remove
+            border-color dangercolor
+            background-color dangercolor
+
+            &:hover
+                background-color darken(dangercolor, 15%)
+                border-color darken(dangercolor, 15%)
+
+    #bulk-actions-btngroup
+        margin 0 0.4em
+
+        a.btn
+            margin 0 0.1em
+
     img
         height 20px
         color #C60
@@ -319,6 +333,7 @@ div#affixbar
 
 #bulk-actions-btngroup
     display none
+
     &.enabled
         display inline-block
 
@@ -506,8 +521,8 @@ p.disabled
 
     td
         vertical-align middle
-        padding 0 0.8em
-        height 3.4em
+        padding 0 0.5em
+        height 3.2em
         border 0
         border-bottom 1px solid #e5e5e5
 
@@ -600,8 +615,7 @@ tr.folder-row
         color mediumcolor-contrast
 
         .operations
-            display inline
-            float right
+            display block
 
     &:hover, &.pseudohover
         .tags input
@@ -646,6 +660,9 @@ tr.folder-row
         .caption-wrapper .fa-folder.spin
             animation spin 2s infinite ease-out
 
+    .caption-wrapper
+        display flex
+
     // the filename
     .caption
         display inline-block
@@ -678,21 +695,22 @@ tr.folder-row
         .fa-globe
             z-index 10
             position absolute
-            top 12px
+            top 19px
             left -6px
             padding 0.1em
             background-color #fff
             border-radius 50%
-            font-size 12px
+            font-size 14px
             color darken(blue, 20%)
 
             @media (max-width: 768px)
-                top 10px
-                left -1px
+                top 18px
+                left -2px
 
 
         .link-wrapper
-            display inline-block
+            display     flex
+            align-items center
 
             @media (max-width: 768px)
                 width 85vw
@@ -731,10 +749,11 @@ tr.folder-row
 
     // the toolbox - delete, rename, etc
     .operations
-        font-size: 16px
         margin: 0
+        margin-top: 4px
         padding: 0
         display: none
+        font-size: 16px
 
         a
             padding-left: 10px
@@ -749,9 +768,8 @@ tr.folder-row
 
     ul.tags
         margin: 0
-        padding: 0
         margin-top: 5px
-        display: inline-block
+        padding: 0
         border: none
         font-size: 1.3rem
 
@@ -790,12 +808,9 @@ tr.folder-row
             &:active
                 box-shadow 0 0
 
-    i.fa
-        margin     0 1rem 0 0
-        width      2.2rem
-        text-align center
-        font-size  1.4em
-
+    .block-empty
+        z-index -1
+        flex    1
 
     .icon
         font-size: 14px
