@@ -409,24 +409,32 @@ module.exports = class FolderView extends BaseView
 
         if selectedElements.length > 0
             @$('#share-state').hide()
-            @$('#upload-btngroup').hide()
+            @$('#button-upload-new-file').hide()
+            @$('#button-upload-folder').hide()
             @$('#button-new-folder').hide()
             @$('#download-link').hide() # in public area
             @$('#bulk-actions-btngroup').addClass 'enabled'
+
+            if app.isPublic
+                @$('#bulk-actions-btngroup').show()
+                @$('#button-bulk-download').show()
 
         else
             if app.isPublic
                 @$('#download-link').show() # in public area
                 clearance = @model.getClearance()?[0]
-                if clearance? and clearance.perm is 'rw'
-                    @$('#upload-buttons').show()
-                    @$('#button-new-folder').show()
+                if $('body').hasClass 'can-upload'
                     @$('#button-upload-new-file').show()
+                    @$('#button-upload-folder').show()
+                    @$('#button-new-folder').show()
+                @$('#bulk-actions-btngroup').hide()
+                @$('#button-bulk-download').hide()
             else
                 @$('#share-state').show()
-                @$('#upload-btngroup').show()
+                @$('#button-upload-new-file').show()
+                @$('#button-upload-folder').show()
                 @$('#button-new-folder').show()
-            @$('#bulk-actions-btngroup').removeClass 'enabled'
+                @$('#bulk-actions-btngroup').removeClass 'enabled'
 
 
         # Check if all checkbox should be selected. It is selected

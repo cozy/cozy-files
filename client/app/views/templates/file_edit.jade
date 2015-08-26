@@ -3,17 +3,16 @@ extends file
 block title
   span.caption.caption-edit.btn.btn-link
     if model.type && model.type == "folder"
-      span.icon-zone
-        if clearance == 'public'
-          span.fa.fa-globe
-          i.icon-type.type-folder
-        else if clearance && clearance.length > 0
-          span.fa.fa-globe
-          i.icon-type.type-folder
-        else
-          i.icon-type.type-folder
-        div.spinholder
-          img(src="images/spinner.svg")
+      if clearance == 'public'
+        span.fa.fa-globe
+        i.icon-type.type-folder
+      else if clearance && clearance.length > 0
+        span.fa.fa-globe
+        i.icon-type.type-folder
+      else
+        i.icon-type.type-folder
+      div.spinholder
+        img(src="images/spinner.svg")
     else
       if model.mime && this.mimeClasses[model.mime]
         i(class="icon-type #{this.mimeClasses[model.mime]}")
