@@ -628,21 +628,6 @@ tr.folder-row
         .spinholder
                 display none
 
-        .caption
-            .icon-zone
-                .fa
-                    display inline
-
-                .fa-folder-o
-                        position relative
-                        top: -3px
-
-            .icon-zone:hover
-                .fa
-                    display: inline-block
-                input[type=checkbox]
-                    display: none
-
         .caption-wrapper
             display flex
             align-items center
@@ -665,7 +650,6 @@ tr.folder-row
 
     // the filename
     .caption
-        display inline-block
         font-size: 16px
         font-family: 'Source Sans Pro', sans-serif
         padding: 0
@@ -873,13 +857,13 @@ tr.folder-row.broken
     min-width 150px
 
 tr.folder-row td span.caption.caption-edit
+    display flex
     margin 0
     padding 0
-    float left
 
     input.file-edit-name
         height 2em
-        margin 0 0.5em
+        margin 0 0.5em 0 0
         padding 0 0.5em
         border 1px solid #ccc
         outline 0
@@ -891,9 +875,6 @@ tr.folder-row td span.caption.caption-edit
         &:active
         &:focus
             border 1px solid blue
-
-    .icon-zone
-        margin-left -1px
 
 tr.folder-row td input.caption
     margin-left 5px
@@ -909,11 +890,6 @@ tr.folder-row td input.caption
 
 .file-edit-cancel.disabled
     color grey
-
-tr.folder-row
-    .caption-edit
-        i.fa
-            margin-right: 9px
 
 .spinner
         display: inline-block

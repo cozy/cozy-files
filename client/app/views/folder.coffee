@@ -408,7 +408,8 @@ module.exports = class FolderView extends BaseView
 
         if selectedElements.length > 0
             @$('#share-state').hide()
-            @$('#upload-btngroup').hide()
+            @$('#button-upload-new-file').hide()
+            @$('#button-upload-folder').hide()
             @$('#button-new-folder').hide()
             @$('#download-link').hide() # in public area
             @$('#bulk-actions-btngroup').addClass 'enabled'
@@ -417,12 +418,14 @@ module.exports = class FolderView extends BaseView
                 @$('#download-link').show() # in public area
                 clearance = @model.getClearance()?[0]
                 if clearance? and clearance.perm is 'rw'
-                    @$('#upload-btngroup').show()
-                    @$('#button-new-folder').addClass 'visible'
+                    @$('#button-upload-new-file').show()
+                    @$('#button-upload-folder').show()
+                    @$('#button-new-folder').show()
             else
                 @$('#share-state').show()
-                @$('#upload-btngroup').show()
-                @$('#button-new-folder').addClass 'visible'
+                @$('#button-upload-new-file').show()
+                @$('#button-upload-folder').show()
+                @$('#button-new-folder').show()
             @$('#bulk-actions-btngroup').removeClass 'enabled'
 
 
