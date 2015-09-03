@@ -315,7 +315,7 @@ else
 {
 buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control disabled\"/>");
 }
-buf.push("<p>&nbsp;</p></div><p><span class=\"public-url\">" + (jade.escape(null == (jade_interp = t('or')) ? "" : jade_interp)) + "</span>&nbsp;" + (jade.escape((jade_interp = t('modal shared with people msg')) == null ? '' : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
+buf.push("<p>&nbsp;</p></div><p><span class=\"public-url\">" + (jade.escape(null == (jade_interp = t('or')) ? "" : jade_interp)) + "</span>&nbsp;" + (jade.escape((jade_interp = t('modal shared with people msg')) == null ? '' : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">" + t("share add") + "</a></form><ul id=\"share-list\">");
 if ( clearance != 'public')
 {
 // iterate clearance
