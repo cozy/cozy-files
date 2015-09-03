@@ -746,11 +746,18 @@ module.exports = class LongListRows
             # the maximum in the buffer (nRows == nMaxRowsInBufr + 1)
 
             ##
-            # case B.1 : The insertion is before the buffer, first row included
+            # case B.1 : The insertion is before the buffer, first row included,
+            # then just shift down the buffer of one row
             if fromRank <= buffer.firstRk
                 scrollTop = @viewport$.scrollTop
                 @rows$.style.height = nRows*rowHeight + 'px'
-                @viewport$.scrollTop = scrollTop + rowHeight
+                # adapt viewport position only if it is not the target row is
+                # not the first visible one (in this case the user will prefer
+                # to see the shift of the rows)
+                viewport_startRk = Math.floor(scrollTop / rowHeight)
+                if fromRank != viewport_startRk
+                    @viewport$.scrollTop = scrollTop + rowHeight
+
                 # adapt ranks of the rows of the buffer
                 last = buffer.last
                 row   = buffer.first
@@ -766,7 +773,12 @@ module.exports = class LongListRows
                 buffer.lastRk  += 1
                 # adapt the buffer position
                 @rows$.style.paddingTop = (buffer.firstRk*rowHeight)+'px'
-                return
+
+                # we have to adapt buffer if the insertion rank is the first row
+                # of the viewport (since viewport has not been moved earlier)
+                if fromRank == viewport_startRk
+                    _moveBuffer(true)
+
 
             ##
             # case B.2 : The insertion is into the buffer

@@ -32,8 +32,6 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
         'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
         'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
-        'click div.link-wrapper i.fa': (e) -> @viewProxy 'onSelectClicked', e
-        'click tr.folder-row': (e) -> @viewProxy 'onLineClicked', e
         'click li.itemRow': (e) -> @viewProxy 'onLineClicked', e
 
     initialize: (options) ->
@@ -179,6 +177,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
             view[methodName].apply view, args
+        else
 
 
 

@@ -434,8 +434,6 @@ module.exports = class FileView extends BaseView
         @hideLoading()
         @showLoading() if @hasUploadingChildren
 
-
-
     afterReDecorate: ->
         @$el.data 'cid', @model.cid # link between the element and the model
 
