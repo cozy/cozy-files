@@ -187,9 +187,12 @@ module.exports = class FolderView extends BaseView
 
     onNewFolderClicked: ->
 
+        # There is already a new folder.
         if @newFolder
-            # there is already a new folder
-            @filesList.views[@newFolder.cid].$('.file-edit-name').focus()
+            # Look for the view into the pool.
+            view = _.find @filesList.pool, (view) =>
+                return view.model.cid is @newFolder.cid
+            view.$('.file-edit-name').focus()
         else
             @newFolder ?= new File
                 name: ''
@@ -197,7 +200,10 @@ module.exports = class FolderView extends BaseView
                 path: @model.getRepository()
 
             @baseCollection.add @newFolder
-            view = @filesList.views[@newFolder.cid]
+
+            # Look for the view into the pool.
+            view = _.find @filesList.pool, (view) =>
+                return view.model.cid is @newFolder.cid
             view.onEditClicked ''
 
             @newFolder.once 'sync destroy', => @newFolder = null
