@@ -179,8 +179,9 @@ Chrome et Safari.
     "forced public"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé."
     "forced shared"                   : "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :"
     "confirm"                         : "Confirmer"
+    "share add"                       : "Ajouter"
     "share forgot add"                : """
-        Il semble que vous ayez oublié d'appuyer sur le bouton Add
+        Il semble que vous ayez oublié d'appuyer sur le bouton Ajouter
     """
     "share confirm save"              : """
         Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?
