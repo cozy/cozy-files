@@ -131,6 +131,7 @@ Usted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarl
     "forced public":"""Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido."""
     "forced shared":"""Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :"""
     "confirm":"""Confirmar"""
+    "share add":"""Añadir"""
     "share forgot add":"""Parece que a usted se le ha olvidado pulsar el botón Añadir"""
     "share confirm save":"""Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?"""
     "yes forgot":"""Atrás"""
