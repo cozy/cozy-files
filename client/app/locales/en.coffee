@@ -181,6 +181,7 @@ feature, it's available in Chromium, Chrome and Safari browsers.
     "forced public"                   : "The current file/folder is shared because one of its parent folders is shared."
     "forced shared"                   : "The current file/folder is shared because one of its parent folders is shared. Here is the list of guests who can access it:"
     "confirm"                         : "Confirm"
+    "share add"                       : "Add"
     "share forgot add"                : """
         Looks like you forgot to click the Add button
     """
