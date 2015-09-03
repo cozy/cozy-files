@@ -21,7 +21,6 @@ div.extensible-column(role="gridcell")
               i.icon-type.type-folder
             a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
               span= model.name
-              span RANK=#{rank}
 
       else if model.type == 'file'
         .caption(data-file-url="#{attachmentUrl}")
@@ -45,10 +44,9 @@ div.extensible-column(role="gridcell")
                   href="#{attachmentUrl}",
                   title="#{t('download file')}", target="_blank")
                     span= model.name
-                    span RANK=#{rank}
+    
             else
               span.file-name= model.name
-              span RANK=#{rank}
 
     block tags
       ul.tags
