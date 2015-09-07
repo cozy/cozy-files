@@ -28,20 +28,31 @@
         // Second and third column
         .size-column-cell
         .type-column-cell
-            width 100px
+            width 10rem
 
         // Last column
         .date-column-cell
-            width 190px
+            width 20rem
 
         // .type-column + .date-column
         .progressbar-cell
-            width 290px
+            width 30rem
 
         // Center vertically all cell elements.
         [role="gridcell"]
             display flex
-            *
+
+            @media (max-width: (1000/16)em)
+                &.type-column-cell
+                &.date-column-cell
+                &.size-column-cell
+                    display none
+
+            @media (max-width: (1200/16)em)
+                &.type-column-cell
+                    display none
+
+            & > *
                 flex 1
                 margin auto 0
                 display inline-block
@@ -59,6 +70,9 @@
             .progressview
                 display flex
 
+    [role="rowheader"]
+        @media (max-width: (1000/16)em)
+            display none
 
     [role="columnheader"]
         #down-name
@@ -73,36 +87,82 @@
 
     // List's header.
     [role="rowheader"]
-        min-height 40px
-        padding 0 8px
+        padding 0 2rem
+        border-bottom 1px solid #d5d5d5
 
+        [role="columnheader"]
+            padding 0
+            border-color #dcdcdc
+            border-top 0
+            border-width 1px
+
+            &:first-child .btn
+                width 80%
+
+        .btn
+            padding 0.8rem
+            width 100%
+            text-align left
+            text-transform uppercase
+            font-size 1.2rem
+            font-weight bold
+            color #999
+            font-family "Source Sans Pro", Helvetica, Arial, sans-serif
+
+            &.active
+                box-shadow 0 0
+                color basecolor
+
+            &::before
+                margin-right 0.5rem
+                font normal normal normal 14px/1 FontAwesome
+
+        span
+            text-transform uppercase
+
+        a:hover
+            color darken(basecolor, 20%)
+
+        #up-name
+        #up-size
+        #up-class
+        #up-lastModification
+            &::before
+                display none
+
+            &.active::before
+                display inline-block
+
+        // checkbox - select all items
         button#select-all
+            outline none
+            width 2em
+            margin-right 0.375em
             border none
             background transparent
-            width 15px
-            margin 0 15px 0 0
-            padding 0
+            text-align center
+            color #999
 
             i.fa
+                position relative
+                top 3px
+                margin 0
                 font-size 16px
-
-        .unactive
-            opacity 0.5
 
     // List of elements.
     [role="grid"]
         list-style-type none
         padding 0
-        margin-bottom 10px
+        margin-bottom 0
 
 
         // Specific column styles
         .type-column-cell
         .size-column-cell
         .date-column-cell
-            color gray
-
-        .date-column-cell
+            padding 0.8rem
+            font-size .875em
+            color #999
             text-align left
 
             &:first-letter
@@ -111,30 +171,37 @@
     // Generic row styles
     .itemRow
         // min-height 40px
-        padding 0 8px
-        border-top 1px solid #ddd
+        padding 0.425em 2rem
+        border-bottom 1px solid #e5e5e5
+
+        &:last-of-type
+            border 0
 
         &:hover
-            background lightorange + 50%
+            background #f5f5f5
+
+            // Add ellipsis to folder/file's name which are too long
+            // They width have to be even shorter on hover (because there are some actions displayed)
+            [role="gridcell"] .caption .link-wrapper .btn-link
+                @media (min-width: (1201/16)em)
+                    max-width (550/16)em
+
+                @media (max-width: (1200/16)em)
+                    max-width calc(100vw - 34em)
+
+                @media (max-width: (1000/16)em)
+                    max-width calc(100vw - 15em)
+
+                @media (max-width: (768/16)em)
+                    max-width calc(100vw - 5em)
 
         &.selected
             background lightblue + 70%
 
+        .caption-wrapper
+            display flex
+
         [role="gridcell"]
-
-            // Icon.
-            i.fa
-                margin 0 15px 0 0
-                width 15px
-
-                // Icon's share state.
-                .fa-users
-                .fa-globe
-                    position absolute
-                    top 10px
-                    left -3px
-                    font-size 12px
-                    z-index 10
 
             // Spinner.
             .spinholder
@@ -155,6 +222,60 @@
                 span + span
                     margin-left 5px
 
+                .link-wrapper
+                    display     flex
+                    align-items center
+
+
+                    &:hover
+                        border 0
+                        text-decoration none
+
+                        // Override default behaviour
+                        a
+                            color blue - 20%
+
+                            &:focus
+                                color white
+
+                    // name + icon related to the file type
+                    .btn-link
+                        overflow hidden
+                        text-overflow ellipsis
+                        white-space nowrap
+
+                        @media (min-width: (1201/16)em)
+                            max-width (640/16)em
+
+                        @media (max-width: (1200/16)em)
+                            max-width calc(100vw - 26em)
+
+                        @media (max-width: (1000/16)em)
+                            max-width calc(100vw - 5em)
+
+                        span
+                            color #333
+
+                    &:hover span
+                        color basecolor
+
+                // Shared icon on list view
+                .fa-globe
+                    z-index 10
+                    position absolute
+                    top 19px
+                    left -6px
+                    padding 0.1em
+                    background-color #fff
+                    border-radius 50%
+                    font-size 14px
+                    color blue - 20%
+
+                // Rename folder/file + create new folder
+                &.caption-edit
+                    display flex
+                    align-items center
+
             // Displayed in search results.
             .file-path
                 color darkcolor
@@ -164,55 +285,60 @@
 
             // Tags list.
             .tags
-                margin 0
-                padding 0
-                margin-top 5px
-                display inline-block
-                border none
-                font-size 1.3rem
+                margin: 0
+                margin-top: 5px
+                padding: 0
+                border: none
+                font-size: 1.3rem
 
                 input
-                    padding-left 5px
-                    width 100px
+                    visibility: hidden
+                    padding-left: 5px
+                    width: 100px
+
+                    &:focus
+                        visibility: visible
 
                 li.tag
                     display inline-block
-                    border 1px solid lightgray
-                    border-radius 6px
-                    padding 0.2em 0.5em 0.2em 0.5em
-                    margin-top 0px
+                    padding 0.2em 0.5em
+                    margin-top 0
                     margin-right 5px
-                    border 1px solid transparent
-                    border-radius 0
-                    background-color blue + 90%
-                    cursor pointer
-                    font-family 'Maven Pro', sans-serif
-                    color blue - 40%
+                    border-radius 0.2em
+                    background-color #e5e5e5
+                    color #333
                     user-select none
+                    cursor pointer
 
+                    // delete icon
                     .deleter
                         cursor pointer
-                        font-size 10px
+                        font-size (12/16)em
                         transform translate(0px, -1px)
+
                         &:hover
-                            color orange - 40%
+                            color #111
 
                     &:hover
-                        border 1px solid orange
-                        background-color orange + 90%
-                        color orange - 40%
+                        background-color #d5d5d5
+                        color #333
 
                     &:focus
                     &:active
-                        border 1px solid blue
-                        box-shadow 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+                        box-shadow 0 0
+
+            // aligned right the operations
+            .block-empty
+                z-index -1
+                flex    1
 
             // List of operations.
             .operations
-                font-size 16px
-                margin 0
-                padding 0
                 display none
+                flex none
+                margin 0
+                margin-top (4/16)em
+                padding 0
 
                 a
                     padding-left 10px
@@ -220,12 +346,7 @@
 
                     span:hover
                     i:hover
-                        color orange
+                        color blue - 20%
 
                 a:hover
-                    color orange
-
-#files footer
-    color gray
-    font-style italic
-    text-align center
+                    color blue - 20%

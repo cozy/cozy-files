@@ -180,8 +180,7 @@ div#affixbar
         height 0
 
     header
-        padding 0.8em 0
-        border-bottom 1px solid #e5e5e5
+        padding 0.8em 0 0.4em
 
     a.btn
         height 36px
@@ -517,325 +516,7 @@ p.disabled
     left: 50%
 
 
-/*// File table
 
-#table-items
-    margin-bottom: 10px
-
-    .unactive.fa::before
-        display none
-
-    td
-        vertical-align middle
-        padding 0 0.5em
-        height 3.2em
-        border 0
-        border-bottom 1px solid #e5e5e5
-
-        @media (max-width: 520px)
-            padding 0 0.4em
-            height 3em
-
-        .progress
-            margin-bottom 0px
-
-    td.type-column-cell
-    td.size-column-cell
-    td.date-column-cell
-        font-size 0.85em
-        color gray
-
-    td.type-column-cell
-    td.size-column-cell
-        width 7em
-
-    td.date-column-cell
-        width: 14em
-
-    .table-headers
-        th
-            padding 0
-            border-color #dcdcdc
-            border-top 0
-            border-width 1px
-
-            &:first-child .btn
-                width 80%
-
-        .btn
-            padding 0.8rem
-            width 100%
-            text-align left
-            text-transform uppercase
-            font-size 1.2rem
-            font-weight bold
-            color #999
-            font-family "Source Sans Pro", Helvetica, Arial, sans-serif
-
-            &.active
-                box-shadow 0 0
-                color basecolor
-
-            &::before
-                margin-right 0.5rem
-                font normal normal normal 14px/1 FontAwesome
-
-        span
-            text-transform uppercase
-
-        a:hover
-            color darken(basecolor, 20%)
-
-        #down-name
-        #down-size
-        #down-class
-        #down-lastModification
-            display: none
-
-            &.active
-                display inline-block
-
-        button#select-all
-            outline none
-            padding 0 1.6rem
-            width 2.2em
-            border none
-            background transparent
-            text-align left
-            color #999
-
-            i.fa
-                position relative
-                top 3px
-                margin 0
-                font-size 16px
-
-tr.folder-row
-    .file-path
-        color #999
-        font-family 'Source Sans Pro', sans-serif
-        margin-bottom 0.1em
-        font-size 0.85em
-
-    &:hover
-        color mediumcolor-contrast
-
-        .operations
-            display block
-
-    &:hover, &.pseudohover
-        .tags input
-            visibility visible
-
-    &.edit-mode
-        .tags
-                display none
-
-        .spinholder
-                display none
-
-        .caption-wrapper
-            display flex
-            align-items center
-
-    // mandatory to override bootstrap
-    &.selected > td
-        background lightblue + 70% !important
-
-    td
-        vertical-align: middle
-
-        span.caption
-            padding-left 3px // 3 for file and 6 for folder
-
-        .caption-wrapper .fa-folder.spin
-            animation spin 2s infinite ease-out
-
-    .caption-wrapper
-        display flex
-
-    // the filename
-    .caption
-        font-size: 16px
-        font-family: 'Source Sans Pro', sans-serif
-        padding: 0
-        margin-left: 0px
-        margin-right: 10px
-
-        .selector-wrapper
-            display inline
-            padding-top 4px
-
-            button
-                border none
-                background transparent
-                width 20px
-                margin 0 10px 0 0
-                padding 0
-
-                i.fa
-                    margin 0
-
-        .icon-zone:hover
-            .spinholder
-                display none
-
-        .fa-users
-        .fa-share-alt
-        .fa-globe
-            z-index 10
-            position absolute
-            top 19px
-            left -6px
-            padding 0.1em
-            background-color #fff
-            border-radius 50%
-            font-size 14px
-            color darken(blue, 20%)
-
-            @media (max-width: 768px)
-                top 18px
-                left -2px
-
-
-        .link-wrapper
-            display     flex
-            align-items center
-
-            @media (max-width: 768px)
-                width 85vw
-                overflow hidden
-                text-overflow ellipsis
-                white-space nowrap
-
-            &:hover
-                border 0
-                text-decoration none
-
-                // Override default behaviour
-                a
-                    color orange - 10%
-
-                    &:focus
-                        color white
-
-            .btn-link
-                span
-                    color #444
-
-                    @media (max-width: 768px)
-                        white-space nowrap
-
-            &:hover span
-                color basecolor
-
-
-    .spinholder
-        vertical-align: top
-        display none
-        margin 0
-        padding 0 20px 0 0
-        width 15px
-
-    // the toolbox - delete, rename, etc
-    .operations
-        margin: 0
-        margin-top: 4px
-        padding: 0
-        display: none
-        font-size: 16px
-
-        a
-            padding-left: 10px
-            color: blue
-
-            span:hover
-            i:hover
-                color: darken(basecolor, 30%)
-
-        a:hover
-            color: darken(basecolor, 30%)
-
-    ul.tags
-        margin: 0
-        margin-top: 5px
-        padding: 0
-        border: none
-        font-size: 1.3rem
-
-        input
-            visibility: hidden
-            padding-left: 5px
-            width: 100px
-
-            &:focus
-                visibility: visible
-
-        li.tag
-            display inline-block
-            padding 0.2em 0.5em
-            margin-top 0
-            margin-right 5px
-            border-radius 0.2em
-            background-color #e5e5e5
-            color #333
-            user-select none
-            cursor pointer
-
-            .deleter
-                cursor pointer
-                font-size 10px
-                transform translate(0px, -1px)
-
-                &:hover
-                    color #111
-
-            &:hover
-                background-color #d5d5d5
-                color #333
-
-            &:focus
-            &:active
-                box-shadow 0 0
-
-    .block-empty
-        z-index -1
-        flex    1
-
-    .icon
-        font-size: 14px
-
-    &:hover .operations
-        a
-            color: lightblue - 30%
-
-
-tr.folder-row.uploading
-    &:hover
-        .operations
-            display none
-
-
-tr.folder-row.broken
-    background-color #FEE
-
-    .file-name
-        color #333
-        cursor: default
-
-        &:hover
-            color #333
-
-    .broken-widget
-        display inline
-
-        .broken-text
-            color red - 20%
-
-        .broken-button
-            margin-left 10px
-            color red - 20%
-*/
 .visible-lg.visible-md.visible-inline
   display: inline!important
 
@@ -906,14 +587,15 @@ tr.folder-row td span.caption.caption-edit
             .progress
                 margin-bottom 0px
 
-.footer
+#files #file-amount-indicator
+    border-top 1px solid #d5d5d5
     text-align: center
     color: #999
     font-style: italic
-    font-size: 0.85em
+    font-size: 0.8125em
 
 #content
-    padding    4.2em 1em 1em
+    padding    (56/16)em 0 0.2em
     min-height 100vh
     background #fff
 
@@ -1117,3 +799,8 @@ body.error-404 .error-frame
         .tags
                 display: none
 
+// Footer with the status of the current folder
+#files footer
+    color gray
+    font-style italic
+    text-align center

@@ -92,7 +92,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
             DIMENSIONS_UNIT : 'px' #'em'
 
             # Height reserved for each row (unit defined by DIMENSIONS_UNIT)
-            ROW_HEIGHT      : 37 #2
+            ROW_HEIGHT      : 48 #2
 
             # number of "screens" before and after the viewport
             # (ex : 1.5 => 1+2*1.5=4 screens always ready)
