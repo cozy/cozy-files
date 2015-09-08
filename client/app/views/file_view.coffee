@@ -89,7 +89,6 @@ module.exports = class FileView extends BaseView
 
     getRenderData: ->
         _.extend super(),
-            rank: @model.rank # temporary data to help debugging.
             isUploading: @model.isUploading()
             isServerUploading: @model.isServerUploading()
             isBroken: @model.isBroken()
@@ -122,7 +121,6 @@ module.exports = class FileView extends BaseView
         renderData = @getRenderData()
         @elementLink.attr 'href', renderData.downloadUrl
         @elementName[0].textContent = renderData.model.name
-        @elementName[1].textContent = "RANK=#{renderData.rank}"
 
         if @model.isFile()
             size = renderData.model.size or 0
