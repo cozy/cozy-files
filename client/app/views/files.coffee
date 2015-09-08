@@ -47,6 +47,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         @listenTo @collection, 'add', @addFile
         @listenTo @collection, 'remove', @removeFile
+        @listenTo @collection, 'sort', @render
 
         # Event delegation.
         @listenTo @collection, 'change', _.partial(@viewProxy, 'refresh')
@@ -198,12 +199,18 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         if order is "asc"
             @$("#up-#{type}").addClass 'active'
-            @$("#down-#{type}").hide()
             @$("#up-#{type}").removeClass 'unactive'
+            @$("#up-#{type}").show()
+            @$("#down-#{type}").removeClass 'active'
+            @$("#down-#{type}").addClass 'unactive'
+            @$("#down-#{type}").hide()
         else
-            @$("#up-#{type}").hide()
             @$("#down-#{type}").addClass 'active'
             @$("#down-#{type}").removeClass 'unactive'
+            @$("#down-#{type}").show()
+            @$("#up-#{type}").removeClass 'active'
+            @$("#up-#{type}").addClass 'unactive'
+            @$("#up-#{type}").hide()
 
 
     # Changer sorting depending on the clicked chevron.
