@@ -136,9 +136,14 @@ module.exports = class FolderView extends BaseView
         @renderUploadStatus()
 
         # We make a reload after the view is displayed to update
-        # the client without degrading UX
-        @refreshData()
-        @$("#loading-indicator").show()
+        # the client without degrading UX, unless it's the first time the folder
+        # is rendered (data has just been loaded).
+        if @model.hasContentBeenRendered()
+            @refreshData()
+            @$("#loading-indicator").show()
+        else
+            @model.isContentRendered = true
+            @$("#loading-indicator").hide()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()

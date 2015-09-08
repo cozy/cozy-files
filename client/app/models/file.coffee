@@ -36,6 +36,10 @@ module.exports = class File extends Backbone.Model
     # View state. Handled through *viewSelected
     viewSelected: false
 
+    # Flag to know if a folder's content has been rendered yet or not. Used by
+    # folder view to refresh cached data only if needed.
+    isContentRendered: false
+
     # Valid values for `uploadStatus`.
     @VALID_STATUSES: [null, 'uploading', 'uploaded', 'errored', 'conflict']
 
@@ -61,6 +65,8 @@ module.exports = class File extends Backbone.Model
 
     hasBinary: -> return @isFile() and @get('binary')?.file?.id?
     isBroken: -> return @isFile() and not @hasBinary() and not @get('uploading')
+
+    hasContentBeenRendered: -> return @isFolder() and @isContentRendered
 
     ###
         Getters for the local state.
