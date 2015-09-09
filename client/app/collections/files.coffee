@@ -41,16 +41,12 @@ module.exports = class FileCollection extends Backbone.Collection
 
     # Retrieves folder's content (files and folders in it)
     getFolderContent: (folder, callback = ->) ->
-        #console.log "fetch folder content"
         path = folder.getRepository()
         folder.fetchContent (err, content, parents) =>
             if err?
                 callback err
             else
-                start = performance.now()
                 @set content, remove: false, sort: false
-
-                afterSet = performance.now()
 
                 # we handle deletion manually because
                 # they must be based on  projection, not baseCollection
@@ -63,11 +59,6 @@ module.exports = class FileCollection extends Backbone.Collection
                 # we mark as cached the folder if it's the first time we load
                 # its content
                 @cachedPaths.push path unless @isPathCached path
-                afterAll = performance.now()
-
-                console.log "SET DURATION=", afterSet - start
-                console.log "OTHER DURATION=", afterAll - afterSet
-                console.log "TOTAL DURATION=", afterAll - start
 
                 callback()
 
