@@ -130,11 +130,12 @@ module.exports = class FileView extends BaseView
         type = if @model.isFolder() then 'folder' else renderData.model.class
         @elementType.textContent = t(type)
 
-        {lastModification} = renderData.model.lastModification
+        {lastModification} = renderData.model
         if lastModification
             lastModification = moment(lastModification).calendar()
-            @elementLastModificationDate.textContent = lastModification
-        # TODO : if there is no lastModification, we should erase the current value
+        else
+            lastModification = ""
+        @elementLastModificationDate.textContent = lastModification
 
         @afterReDecorate()
 
@@ -444,8 +445,6 @@ module.exports = class FileView extends BaseView
             @$el.removeClass 'uploading'
             @$el.toggleClass 'broken', @model.isBroken()
             @updateTags()
-            if @model.get('tags').length
-                @addTags() #todo : updateTags or hideTags
 
         # When folders are drag and drop, they can be clicked before being
         # actually created, resulting in an error. Folders don't rely
@@ -482,7 +481,7 @@ module.exports = class FileView extends BaseView
 
 
     # TODO : be more clever :-)
-    updateTags: ()->
+    updateTags: ->
         if @model.get('tags').length
             @addTags()
 
