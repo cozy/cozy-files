@@ -47,8 +47,10 @@ module.exports = class FileCollection extends Backbone.Collection
             if err?
                 callback err
             else
-                # adds the new models (updates them if already in collection)
-                @set content, remove: false
+                start = performance.now()
+                @set content, remove: false, sort: false
+
+                afterSet = performance.now()
 
                 # we handle deletion manually because
                 # they must be based on  projection, not baseCollection
@@ -61,6 +63,12 @@ module.exports = class FileCollection extends Backbone.Collection
                 # we mark as cached the folder if it's the first time we load
                 # its content
                 @cachedPaths.push path unless @isPathCached path
+                afterAll = performance.now()
+
+                console.log "SET DURATION=", afterSet - start
+                console.log "OTHER DURATION=", afterAll - afterSet
+                console.log "TOTAL DURATION=", afterAll - start
+
                 callback()
 
     ###
@@ -102,7 +110,6 @@ module.exports = class FileCollection extends Backbone.Collection
 
 
     comparator: (f1, f2) ->
-
         # default values
         @type = 'name' unless @type?
         @order = 'asc' unless @order?

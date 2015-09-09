@@ -8,6 +8,7 @@ log = require('printit')
 
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
+{folderContentComparatorFactory} = require '../helpers/file'
 Folder = require '../models/folder'
 File = require '../models/file'
 cozydb = require 'cozydb'
@@ -341,6 +342,9 @@ module.exports.findContent = (req, res, next) ->
                     folders = [] if not folders?
                     files   = [] if not files?
                     content = folders.concat files
+
+                    comparator = folderContentComparatorFactory('name', 'asc')
+                    content.sort comparator
 
                     res.send 200, {content, parents}
 
