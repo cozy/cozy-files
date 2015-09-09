@@ -62,6 +62,9 @@ module.exports = class File extends Backbone.Model
     isFile: -> return @get('type') is 'file'
     isSearch: -> return @get('type') is 'search'
     isRoot: -> return @get('id') is 'root'
+    isShared: ->
+        clearance = @get 'clearance'
+        return clearance? and (clearance is 'public' or clearance.length > 0)
 
     hasBinary: -> return @isFile() and @get('binary')?.file?.id?
     isBroken: -> return @isFile() and not @hasBinary() and not @get('uploading')
