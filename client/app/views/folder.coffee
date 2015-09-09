@@ -203,6 +203,7 @@ module.exports = class FolderView extends BaseView
                 name: ''
                 type: 'folder'
                 path: @model.getRepository()
+                tags: [].concat(@model.get('tags'))
 
             @baseCollection.add @newFolder
 
