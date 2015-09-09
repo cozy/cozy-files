@@ -108,34 +108,56 @@ module.exports = class FileView extends BaseView
 
 
     beforeRender: ->
-        # If the model is a folder, we listen to the upload queue to enable or
-        # disable the "something is being uploaded in my tree" indicator
+        # If the model is a folder, listen to the upload queue to enable or
+        # disable the "something is being uploaded in my tree" indicator.
         if @model.isFolder()
             path = @model.getRepository()
             numUploadChildren = @uploadQueue.getNumUploadingElementsByPath path
             @hasUploadingChildren = numUploadChildren > 0
+        else
+            @hasUploadingChildren = false
+
 
     reDecorate: ->
         @beforeRender()
-
         renderData = @getRenderData()
-        @elementLink.attr 'href', renderData.downloadUrl
-        @elementName[0].textContent = renderData.model.name
 
-        if @model.isFile()
+        @elementName.html renderData.model.name
+
+        if @model.isFolder()
+            link = "#folders/#{renderData.model.id}"
+            size = ""
+            type = "folder"
+        else
+            link = renderData.downloadUrl
             size = renderData.model.size or 0
             size = filesize size, base: 2
-            @elementSize.textContent = size
-
-        type = if @model.isFolder() then 'folder' else renderData.model.class
-        @elementType.textContent = t(type)
+            type = renderData.model.class
 
         {lastModification} = renderData.model
         if lastModification
             lastModification = moment(lastModification).calendar()
         else
             lastModification = ""
-        @elementLastModificationDate.textContent = lastModification
+
+        iconClass = @getElementIconClass()
+
+        @elementLink.attr 'href', link
+        @elementSize.html size
+        @elementType.html t(type)
+        @elementLastModificationDate.html lastModification
+
+        # Change element's icon if necessary.
+        unless @elementIcon.hasClass(iconClass)
+            @elementIcon.attr 'class', ''
+            @elementIcon.addClass "icon-type #{iconClass}"
+
+        # Change sharing status icon if necessary.
+        if @model.isShared()
+            if @elementIcon.find('span.fa').length is 0
+                @elementIcon.append $('<span class="fa fa-globe"></span>')
+        else
+            @elementIcon.empty()
 
         @afterReDecorate()
 
@@ -409,6 +431,7 @@ module.exports = class FileView extends BaseView
         @elementSize = @$ '.size-column-cell span'
         @elementType = @$ '.type-column-cell span'
         @elementLastModificationDate = @$ '.date-column-cell span'
+        @elementIcon = @$ '.icon-type'
 
         @$el.data('cid', @model.cid) # link between the element and the model
         @$el.addClass('itemRow')
@@ -473,6 +496,9 @@ module.exports = class FileView extends BaseView
 
     # Add and display tag widget.
     addTags: ->
+        if @tags?
+            @tags.destroy()
+
         @tags = new TagsView
             el: @$ '.tags'
             model: @model
@@ -506,3 +532,19 @@ module.exports = class FileView extends BaseView
     hideLoading: ->
         @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
+
+
+    # Get a DOM node with the element's icon properly defined.
+    getElementIconClass: ->
+
+        # Determine the icon based on element's type.
+        if @model.isFolder()
+            icon = "type-folder"
+        else
+            mimeType = @model.get 'mime'
+            mimeClass = @mimeClasses[mimeType]
+            if mimeType? and mimeClass?
+                icon = mimeClass
+            else
+                icon = "type-file"
+        return icon
