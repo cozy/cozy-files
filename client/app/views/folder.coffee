@@ -205,7 +205,8 @@ module.exports = class FolderView extends BaseView
                 path: @model.getRepository()
                 tags: [].concat(@model.get('tags'))
 
-            @baseCollection.add @newFolder
+            # Insert at the begining to prevent useless sorting.
+            @baseCollection.add @newFolder, at: 0
 
             # Look for the view into the pool.
             view = _.find @filesList.pool, (view) =>
