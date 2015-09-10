@@ -20,6 +20,14 @@ baseController = new cozydb.SimpleController
     reqProp: 'file'
     reqParamID: 'fileid'
 
+
+## FOR TESTS - TO BE DELETED ##
+module.exports.destroyBroken = (req, res) ->
+    res.send 400,
+        error: true
+        msg: "Deletion error for tests"
+
+
 ## Helpers ##
 
 

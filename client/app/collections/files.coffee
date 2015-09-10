@@ -41,14 +41,12 @@ module.exports = class FileCollection extends Backbone.Collection
 
     # Retrieves folder's content (files and folders in it)
     getFolderContent: (folder, callback = ->) ->
-        #console.log "fetch folder content"
         path = folder.getRepository()
         folder.fetchContent (err, content, parents) =>
             if err?
                 callback err
             else
-                # adds the new models (updates them if already in collection)
-                @set content, remove: false
+                @set content, remove: false, sort: false
 
                 # we handle deletion manually because
                 # they must be based on  projection, not baseCollection
@@ -61,6 +59,7 @@ module.exports = class FileCollection extends Backbone.Collection
                 # we mark as cached the folder if it's the first time we load
                 # its content
                 @cachedPaths.push path unless @isPathCached path
+
                 callback()
 
     ###
@@ -102,7 +101,6 @@ module.exports = class FileCollection extends Backbone.Collection
 
 
     comparator: (f1, f2) ->
-
         # default values
         @type = 'name' unless @type?
         @order = 'asc' unless @order?

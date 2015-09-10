@@ -1,16 +1,13 @@
-@media (max-width: 520px)
+@media (max-width: (520/16)em)
     // Landscape phones and down
 
     body
         text-rendering optimizeSpeed
 
-    .table-headers
-        display none
-
-    tr.folder-row .caption
+    .itemRow .caption
         font-size 14px
 
-    #affixbar
+    div#affixbar
         #search-box
             display none
 
@@ -46,7 +43,6 @@
 
 @media (max-width: 768px)
     // Landscape phone to portrait tablet
-
     body
         text-rendering optimizeSpeed
 
@@ -59,8 +55,8 @@
         display none
 
 
-    tr.folder-row
-        ul.tags
+    .itemRow
+        .tags
             display none
 
         .file-tags
@@ -74,11 +70,6 @@
 
         .caption
             margin-right 0
-
-    .btn-link
-        white-space   nowrap
-        overflow      hidden
-        text-overflow ellipsis
 
     #crumbs
         ul
@@ -113,14 +104,6 @@
     #bulk-actions-btngroup a
         margin 0 1px
 
-
-@media (max-width: 900px)
-    tr.folder-row
-        ul.tags
-            display: none
-            margin-top: 5px
-
-
 @media (max-width: 1000px)
     .date-column-cell
     .size-column-cell
@@ -130,10 +113,16 @@
         .text
             display: none
 
-@media (min-width: 1000px)
-    // override bootstrap styles
-    .table-hover > tbody > tr:hover > td
-        background-color #f5f5f5
+    .itemRow
+        .tags
+            display: none
+            margin-top: 5px
+
+    div#affixbar
+        border-bottom 1px solid #d5d5d5
+
+        header
+            padding 0.6em 0
 
 
 @media (max-width: 1200px)

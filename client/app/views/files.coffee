@@ -1,7 +1,9 @@
-ViewCollection = require '../lib/view_collection'
+#ViewCollection = require '../lib/view_collection'
+BaseView = require '../lib/base_view'
 FileView = require './file_view'
+LongList = require '../lib/long-list-rows'
 
-module.exports = class FilesView extends ViewCollection
+module.exports = class FilesView extends BaseView #ViewCollection
     template: require './templates/files'
     el: '#files'
 
@@ -30,8 +32,7 @@ module.exports = class FilesView extends ViewCollection
         'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
         'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
         'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
-        'click div.link-wrapper i.fa': (e) -> @viewProxy 'onSelectClicked', e
-        'click tr.folder-row': (e) -> @viewProxy 'onLineClicked', e
+        'click li.itemRow': (e) -> @viewProxy 'onLineClicked', e
 
     initialize: (options) ->
         super options
@@ -44,7 +45,9 @@ module.exports = class FilesView extends ViewCollection
 
         @chevron = order: @collection.order, type: @collection.type
 
-        @listenTo @collection, 'add remove', @updateNbFiles
+        @listenTo @collection, 'add', @addFile
+        @listenTo @collection, 'remove', @removeFile
+        @listenTo @collection, 'sort', @render
 
         # Event delegation.
         @listenTo @collection, 'change', _.partial(@viewProxy, 'refresh')
@@ -54,16 +57,99 @@ module.exports = class FilesView extends ViewCollection
         @listenTo @collection, 'upload-complete',  _.partial(@viewProxy, 'onUploadComplete')
 
 
+
+    addFile: (model, collection, options) ->
+        @longList.addRow(collection.indexOf(model))
+        @updateNbFiles()
+
+
+    removeFile: (model, collection, options) ->
+        @longList.removeRow(options.index)
+        @updateNbFiles()
+
+
     getRenderData: ->
         _.extend super(),
             numSelectedElements: @numSelectedElements
             numElements: @collection.size()
 
 
+    beforeRender: ->
+        super()
+        @startPoint = performance.now()
+
+
     afterRender: ->
         super()
         @displayChevron @chevron.order, @chevron.type
         @updateNbFiles()
+
+        # Pool of views that matches the buffer of elements of LongList.
+        @pool = []
+
+        # LongList options.
+        options =
+            # unit used for the dimensions (px,em or rem)
+            DIMENSIONS_UNIT : 'px' #'em'
+
+            # Height reserved for each row (unit defined by DIMENSIONS_UNIT)
+            ROW_HEIGHT      : 48 #2
+
+            # number of "screens" before and after the viewport
+            # (ex : 1.5 => 1+2*1.5=4 screens always ready)
+            BUFFER_COEF   : 4
+
+            # number of "screens" before and after the viewport corresponding to
+            # the safe zone. The Safe Zone is the rows where viewport can go
+            # without trigering the movement of the buffer.
+            # Must be smaller than BUFFER_COEFF
+            SAFE_ZONE_COEF  : 3
+
+            # minimum duration between two refresh after scroll (ms)
+            THROTTLE        : 150
+
+            # max number of viewport height by seconds : beyond this speed the
+            # refresh is delayed to the nex throttle
+            MAX_SPEED       : 2.5
+
+            # call back when a row of the buffer is moved and must be completly
+            # redecorated
+            onRowsMovedCB   : @onRowsMoved.bind(@)
+
+        # DOM element the LongList will be bound to.
+        viewPortElement = @$(@collectionEl)[0]
+
+        # Initialize the list.
+        @longList = new LongList viewPortElement, options
+        @longList.initRows @collection.length
+
+
+    # Handler called when the list must update.
+    onRowsMoved: (rowsToDecorate) ->
+
+        for row, index in rowsToDecorate
+            if row.el
+                rank = row.rank
+                if row.el.view?
+                    model = @collection.at rank
+                    if model
+                        model.rank = rank
+                        view = row.el.view
+                        view.model = model
+                        view.reDecorate()
+
+                else
+                    model = @collection.at rank
+                    model.rank = rank
+                    options = _.extend {}, {model}, @itemViewOptions()
+                    view = new FileView options
+                    view.setElement row.el
+                    view.render()
+
+                    row.el.view = view
+                    @pool.push view
+
+        return true
 
 
     # Manage event delegation. Events are listen to on the collection level,
@@ -78,19 +164,21 @@ module.exports = class FilesView extends ViewCollection
         if object.cid?
             cid = object.cid
         else
-            cid = @$(object.target).parents('tr').data 'cid'
+            cid = @$(object.target).parents('li').data 'cid'
 
             unless cid?
                 cid = @$(object.currentTarget).data 'cid'
 
         # Get the view.
-        view = _.find @views, (view) -> view.model.cid is cid
+        view = _.find @pool, (view) -> view.model.cid is cid
 
         # In case of deletion, view may not exist anymore.
+        # If model isn't attached to a view in the pool, it is not found.
         if view?
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
             view[methodName].apply view, args
+        else
 
 
 
@@ -111,12 +199,18 @@ module.exports = class FilesView extends ViewCollection
 
         if order is "asc"
             @$("#up-#{type}").addClass 'active'
-            @$("#down-#{type}").hide()
             @$("#up-#{type}").removeClass 'unactive'
+            @$("#up-#{type}").show()
+            @$("#down-#{type}").removeClass 'active'
+            @$("#down-#{type}").addClass 'unactive'
+            @$("#down-#{type}").hide()
         else
-            @$("#up-#{type}").hide()
             @$("#down-#{type}").addClass 'active'
             @$("#down-#{type}").removeClass 'unactive'
+            @$("#down-#{type}").show()
+            @$("#up-#{type}").removeClass 'active'
+            @$("#up-#{type}").addClass 'unactive'
+            @$("#up-#{type}").hide()
 
 
     # Changer sorting depending on the clicked chevron.
