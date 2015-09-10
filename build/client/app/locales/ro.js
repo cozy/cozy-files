@@ -19,7 +19,7 @@ module.exports = {
   "modal delete msg": "Ștergerea nu poate fi anulată",
   "modal delete ok": "Ștergere",
   "modal cancel": "Anulare",
-  "modal delete error": "Anulare",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Nume deja folosit",
   "modal error rename": "Numele nu a putut fi schimbat",
   "modal error empty name": "Numele nu poate fi vid",

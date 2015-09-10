@@ -26,7 +26,7 @@ module.exports = {
   "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
   "modal delete ok": "Löschen",
   "modal cancel": "Abbrechen",
-  "modal delete error": "Abbrechen",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Name ist schon in Gebrauch",
   "modal error rename": "Name kann nicht geändert werden",
   "modal error empty name": "Name kann nicht leer sein",

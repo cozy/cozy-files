@@ -248,7 +248,8 @@ module.exports = FileCollection = (function(superClass) {
           return callback(err);
         } else {
           _this.set(content, {
-            remove: false
+            remove: false,
+            sort: false
           });
           contentIDs = _.pluck(content, 'id');
           path = folder.getRepository();
@@ -942,6 +943,1138 @@ module.exports = {
 };
 });
 
+;require.register("lib/long-list-rows", function(exports, require, module) {
+var LongListRows;
+
+module.exports = LongListRows = (function() {
+  function LongListRows(externalViewport$, options) {
+    this.externalViewport$ = externalViewport$;
+    this.options = options;
+    this.options.MAX_SPEED = this.options.MAX_SPEED * this.options.THROTTLE / 1000;
+    this.onRowsMovedCB = this.options.onRowsMovedCB;
+    if (this.options.onRowsCreatedCB) {
+      this.onRowsCreatedCB = this.options.onRowsCreatedCB;
+    } else {
+      this.onRowsCreatedCB = this.options.onRowsMovedCB;
+    }
+    this.viewport$ = document.createElement('div');
+    this.viewport$.classList.add('viewport');
+    this.externalViewport$.appendChild(this.viewport$);
+    this.rows$ = document.createElement('div');
+    this.rows$.classList.add('rows');
+    this.rows$.style.cssText = "padding-top: 0px; box-sizing: border-box;";
+    this.viewport$.appendChild(this.rows$);
+    this.externalViewport$.style.display = 'flex';
+    this.viewport$.style.cssText = "flex: 1 1 0%; position: relative; overflow-x: hidden; overflow-y: auto;";
+    this._DOM_controlerInit();
+  }
+
+  LongListRows.prototype.initRows = function(nToAdd) {
+    this._initBuffer();
+    return this._firstPopulateBuffer(nToAdd);
+  };
+
+  LongListRows.prototype.addRow = function(fromRank) {
+    return this._addRow(fromRank);
+  };
+
+  LongListRows.prototype.removeRow = function(rankOrElement) {
+    return this._removeRows(rankOrElement, 1);
+  };
+
+  LongListRows.prototype.removeRows = function(rankOrElement, nToRemove) {
+    return this._removeRows(rankOrElement, nToRemove);
+  };
+
+  LongListRows.prototype.removeAllRows = function() {
+    return this._initBuffer();
+  };
+
+  LongListRows.prototype.getRowElementAt = function(rank) {
+    var row;
+    row = this._getRowAt(rank);
+    if (row) {
+      return row.el;
+    } else {
+      return void 0;
+    }
+  };
+
+
+  /**
+       * return the current number of rows
+   * @return {Number} Number of rows
+   */
+
+  LongListRows.prototype.getLength = function() {};
+
+
+  /**
+   * get elements of rows of the buffer after a certain rank. Returns an empty
+   * array if the rank is after the buffer.
+   * @return {Array} [{rank:Integer, el:Element}, ...]
+   */
+
+  LongListRows.prototype.getRowsAfter = function() {};
+
+
+  /**
+   * Methodes for tests, are defined in _DOM_controlerInit
+   */
+
+  LongListRows.prototype._test = {
+    goDownHalfBuffer: null,
+    goUpHalfBuffer: null,
+    getState: null,
+    getInternals: null,
+    unActivateScrollListener: null,
+    activateScrollListener: null
+  };
+
+
+  /**
+   * This is the main procedure. Its scope contains all the functions used to
+   * update the buffer and the shared variables between those functions. This
+   * approach has been chosen for performance reasons (acces to scope
+   * variables faster than to nested properties of objects). It's not an
+   * obvious choice.
+   */
+
+  LongListRows.prototype._DOM_controlerInit = function() {
+    var BUFFER_COEF, DIMENSIONS_UNIT, MAX_SPEED, ROW_HEIGHT, SAFE_ZONE_COEF, THROTTLE, VP_firstRk, VP_lastRk, _addBufferRows, _addRow, _deleteBufferRows, _emToPixels, _firstPopulateBuffer, _getDimInPixels, _getElementFontSize, _getInternals, _getRowAt, _getRowsAfter, _getState, _getStaticDimensions, _goDownHalfBuffer, _goUpHalfBuffer, _initBuffer, _moveBuffer, _moveBufferToBottom, _moveBufferToTop, _remToPixels, _removeRow, _removeRows, _resizeHandler, _scrollHandler, buffer, current_scrollTop, isDynamic, lastOnScroll_Y, nMaxRowsInBufr, nRows, nRowsInBufrMargin, nRowsInSafeZone, nRowsInSafeZoneMargin, nRowsInViewport, noScrollScheduled, previousHeight, rowHeight, safeZone, viewportHeight;
+    buffer = null;
+    noScrollScheduled = true;
+    previousHeight = null;
+    rowHeight = null;
+    nMaxRowsInBufr = null;
+    nRowsInBufrMargin = null;
+    nRowsInSafeZoneMargin = null;
+    nRowsInSafeZone = null;
+    nRowsInViewport = null;
+    VP_firstRk = null;
+    VP_lastRk = null;
+    isDynamic = false;
+    viewportHeight = null;
+    lastOnScroll_Y = null;
+    current_scrollTop = null;
+    nRows = 0;
+    safeZone = {
+      startY: null,
+      endY: null,
+      firstVisibleRk: null
+    };
+    DIMENSIONS_UNIT = this.options.DIMENSIONS_UNIT;
+    ROW_HEIGHT = this.options.ROW_HEIGHT;
+    BUFFER_COEF = this.options.BUFFER_COEF;
+    SAFE_ZONE_COEF = this.options.SAFE_ZONE_COEF;
+    THROTTLE = this.options.THROTTLE;
+    MAX_SPEED = this.options.MAX_SPEED;
+    _scrollHandler = (function(_this) {
+      return function(e) {
+        if (noScrollScheduled && isDynamic) {
+          lastOnScroll_Y = _this.viewport$.scrollTop;
+          setTimeout(_moveBuffer, THROTTLE);
+          return noScrollScheduled = false;
+        }
+      };
+    })(this);
+    this._scrollHandler = _scrollHandler;
+
+    /**
+     * returns the font-size in px of a given element (context) or of the
+     * root element of the document if no context is provided.
+     * @param  {element} context Optionnal: an elemment to get the font-size
+     * @return {integer} the font-size
+     */
+    _getElementFontSize = function(context) {
+      return parseFloat(getComputedStyle(context || document.documentElement).fontSize);
+    };
+    _remToPixels = function(value) {
+      return _emToPixels(value);
+    };
+    _emToPixels = function(value, context) {
+      return Math.round(value * _getElementFontSize(context));
+    };
+    _getDimInPixels = (function(_this) {
+      return function(value) {
+        switch (DIMENSIONS_UNIT) {
+          case 'px':
+            return value;
+          case 'em':
+            return _emToPixels(value, _this.viewport$);
+          case 'rem':
+            return _remToPixels(value);
+        }
+      };
+    })(this);
+
+    /**
+     * called once for all during _DOM_controlerInit
+     * computes the static parameters of the geometry
+     */
+    _getStaticDimensions = (function(_this) {
+      return function() {
+        return rowHeight = _getDimInPixels(ROW_HEIGHT);
+      };
+    })(this);
+
+    /**
+     * Compute all the geometry after a resize or when the list in inserted
+     * in the DOM.
+     * _moveBuffer will be executed at the end except if the viewport has
+     * no height (if not inserted in the dom for instance) or there is no
+     * row
+     */
+    _resizeHandler = (function(_this) {
+      return function() {
+        var deltaRows;
+        viewportHeight = _this.viewport$.clientHeight;
+        if (viewportHeight <= 0) {
+          if (_this.initialHeight) {
+            viewportHeight = _this.initialHeight;
+          } else {
+            return false;
+          }
+        }
+        if (viewportHeight === previousHeight && nRows !== 0) {
+          _moveBuffer();
+          return;
+        }
+        previousHeight = viewportHeight;
+        nRowsInViewport = Math.ceil(viewportHeight / rowHeight);
+        nRowsInBufrMargin = Math.round(BUFFER_COEF * nRowsInViewport);
+        nMaxRowsInBufr = nRowsInViewport + nRowsInBufrMargin * 2;
+        nRowsInSafeZoneMargin = Math.round(SAFE_ZONE_COEF * nRowsInViewport);
+        nRowsInSafeZone = nRowsInViewport + nRowsInSafeZoneMargin * 2;
+        if (nRows <= nMaxRowsInBufr) {
+          isDynamic = false;
+        } else {
+          isDynamic = true;
+        }
+        if (buffer) {
+          deltaRows = Math.min(nRows, nMaxRowsInBufr) - buffer.nRows;
+          if (deltaRows < 0) {
+            _deleteBufferRows(-deltaRows);
+          } else if (deltaRows > 0) {
+            _addBufferRows(deltaRows);
+          }
+        }
+        if (nRows !== 0) {
+          return _moveBuffer();
+        }
+      };
+    })(this);
+    this.resizeHandler = _resizeHandler;
+    _deleteBufferRows = (function(_this) {
+      return function(nToDelete) {
+        var currentRow, index, nDeleted;
+        currentRow = buffer.last;
+        index = nToDelete - 1;
+        nDeleted = 1;
+        while (true) {
+          console.log(nDeleted);
+          _this.rows$.removeChild(currentRow.el);
+          nDeleted++;
+          currentRow = currentRow.next;
+          if (!index--) {
+            break;
+          }
+        }
+        buffer.last = currentRow;
+        buffer.lastRk -= nToDelete;
+        buffer.first.next = currentRow;
+        currentRow.prev = buffer.first;
+        return buffer.nRows -= nToDelete;
+      };
+    })(this);
+
+    /**
+     * @param {Integer} add nToAdd rows at the bottom of the buffer
+     *     {Row}:
+     *          prev : {Row}
+     *          next : {Row}
+     *          el   : {Element}
+     *          rank : {Integer}
+     */
+    _addBufferRows = (function(_this) {
+      return function(nToAdd) {
+        var j, n, prevCreatedRow, ref, row, row$, rowsToDecorate, startRk;
+        rowsToDecorate = [];
+        startRk = buffer.lastRk;
+        prevCreatedRow = buffer.last;
+        for (n = j = 1, ref = nToAdd; j <= ref; n = j += 1) {
+          row$ = document.createElement('li');
+          row$.setAttribute('class', 'long-list-row');
+          row$.dataset.rank = startRk + n;
+          row$.style.height = rowHeight + 'px';
+          _this.rows$.appendChild(row$);
+          row = {
+            prev: null,
+            next: prevCreatedRow,
+            el: row$,
+            rank: startRk + n
+          };
+          prevCreatedRow.prev = row;
+          prevCreatedRow = row;
+          rowsToDecorate.push({
+            rank: startRk + n,
+            el: row$
+          });
+        }
+        buffer.last = row;
+        buffer.first.next = row;
+        buffer.last.prev = buffer.first;
+        buffer.lastRk = row.rank;
+        buffer.nRows += nToAdd;
+        return _this.onRowsMovedCB(rowsToDecorate);
+      };
+    })(this);
+
+    /**
+     * Adapt the buffer when the viewport has moved out of the safe zone.
+     * Launched by initRows and _scrollHandler
+     */
+    _moveBuffer = (function(_this) {
+      return function(force) {
+        var SZ_firstRk, SZ_lastRk, VP_firstY, VP_lastY, bufr, elemtsToDecorate, nToMove, newBfr_firstRk, newBfr_lastRk, speed, targetRk;
+        noScrollScheduled = true;
+        current_scrollTop = _this.viewport$.scrollTop;
+        speed = Math.abs(current_scrollTop - lastOnScroll_Y) / viewportHeight;
+        if (speed > MAX_SPEED && !force) {
+          _scrollHandler();
+          return;
+        }
+        bufr = buffer;
+        VP_firstY = current_scrollTop;
+        VP_firstRk = Math.floor(VP_firstY / rowHeight);
+        VP_lastY = current_scrollTop + viewportHeight;
+        VP_lastRk = Math.floor(VP_lastY / rowHeight);
+        SZ_firstRk = Math.max(VP_firstRk - nRowsInSafeZoneMargin, 0);
+        SZ_lastRk = SZ_firstRk + nRowsInSafeZone - 1;
+        nToMove = 0;
+        if (bufr.lastRk < SZ_lastRk) {
+          newBfr_firstRk = Math.max(VP_firstRk - nRowsInBufrMargin, 0);
+          newBfr_lastRk = newBfr_firstRk + nMaxRowsInBufr - 1;
+          if (nRows <= newBfr_lastRk) {
+            newBfr_lastRk = nRows - 1;
+            newBfr_firstRk = newBfr_lastRk - nMaxRowsInBufr + 1;
+          }
+          nToMove = Math.min(newBfr_lastRk - bufr.lastRk, nMaxRowsInBufr);
+          targetRk = Math.max(bufr.lastRk + 1, newBfr_firstRk);
+          if (nToMove > 0) {
+            elemtsToDecorate = _moveBufferToBottom(nToMove, targetRk);
+            _this.rows$.style.paddingTop = (bufr.firstRk * rowHeight) + 'px';
+            return _this.onRowsMovedCB(elemtsToDecorate);
+          }
+        } else if (SZ_firstRk < bufr.firstRk) {
+          newBfr_firstRk = Math.max(VP_firstRk - nRowsInBufrMargin, 0);
+          newBfr_lastRk = newBfr_firstRk + nMaxRowsInBufr - 1;
+          nToMove = Math.min(bufr.firstRk - newBfr_firstRk, nMaxRowsInBufr);
+          targetRk = Math.min(bufr.firstRk - 1, newBfr_lastRk);
+          if (nToMove > 0) {
+            elemtsToDecorate = _moveBufferToTop(nToMove, targetRk);
+            _this.rows$.style.paddingTop = (bufr.firstRk * rowHeight) + 'px';
+            return _this.onRowsMovedCB(elemtsToDecorate);
+          }
+        }
+      };
+    })(this);
+    this._moveBuffer = _moveBuffer;
+
+    /**
+     * The buffer has been initialized, now we will create its rows elements
+     * The buffer lists all the created rows, keep a reference on the first
+     * (top most) and the last (bottom most) row.
+     * The buffer is a closed double linked chain.
+     * Each element of the chain is a "row" with a previous (prev) and next
+       (next) element.
+     * "closed" means that buffer.last.prev == buffer.first
+     * Buffer data structure :
+         first   : {row}    # top most row
+         firstRk : {integer} # y of the first row of the buffer
+         last    : {row}    # bottom most row
+         lastRk  : {integer} # y of the last row of the buffer
+         nRows   : {integer} # number of rows in the buffer
+     */
+    _firstPopulateBuffer = (function(_this) {
+      return function(nToAdd) {
+        var bufr, firstCreatedRow, j, n, nToCreate, prevCreatedRow, ref, row, row$, rowsToDecorate;
+        nRows = nToAdd;
+        _this.rows$.style.height = nRows * rowHeight + 'px';
+        _this.viewport$.scrollTop = 0;
+        bufr = buffer;
+        nToCreate = Math.min(nRows, nMaxRowsInBufr);
+        firstCreatedRow = {};
+        prevCreatedRow = firstCreatedRow;
+        rowsToDecorate = [];
+        for (n = j = 1, ref = nToCreate; j <= ref; n = j += 1) {
+          row$ = document.createElement('li');
+          row$.setAttribute('class', 'long-list-row');
+          row$.dataset.rank = n - 1;
+          row$.style.height = rowHeight + 'px';
+          _this.rows$.appendChild(row$);
+          row = {
+            prev: null,
+            next: prevCreatedRow,
+            el: row$,
+            rank: n - 1
+          };
+          prevCreatedRow.prev = row;
+          prevCreatedRow = row;
+          rowsToDecorate.push({
+            rank: n - 1,
+            el: row$
+          });
+        }
+        if (nToAdd === 0) {
+          bufr.first = null;
+          bufr.firstRk = -1;
+          bufr.last = null;
+          bufr.lastRk = -1;
+          bufr.nRows = null;
+        } else {
+          bufr.first = firstCreatedRow.prev;
+          bufr.firstRk = 0;
+          bufr.last = row;
+          bufr.first.next = bufr.last;
+          bufr.last.prev = bufr.first;
+          bufr.lastRk = row.rank;
+          bufr.nRows = nToCreate;
+        }
+        if (nMaxRowsInBufr < nRows) {
+          isDynamic = true;
+        } else {
+          isDynamic = false;
+        }
+        return _this.onRowsCreatedCB(rowsToDecorate);
+      };
+    })(this);
+    this._firstPopulateBuffer = _firstPopulateBuffer;
+
+    /**
+     * Add a new row in the current long list.
+     * If the insertion is before the buffer or into the buffer, the
+     * impacted rows are modified (their rank is increased by nToAdd)
+     * If some rows are inserted
+     * @param {integer} fromRank first rank where a row will be added
+     */
+    _addRow = function(fromRank) {
+      var currentRk, last, next, row, row$, rowOfInsertion, scrollTop, viewport_startRk;
+      if (nRows === 0) {
+        this._firstPopulateBuffer(1);
+        return;
+      }
+      nRows++;
+      if (nRows <= nMaxRowsInBufr) {
+        isDynamic = false;
+      } else {
+        isDynamic = true;
+      }
+      if (nRows <= nMaxRowsInBufr) {
+        if (fromRank === 0) {
+          row$ = document.createElement('li');
+          row$.setAttribute('class', 'long-list-row');
+          row$.style.height = rowHeight + 'px';
+          this.rows$.insertBefore(row$, this.rows$.firstChild);
+          row = {
+            prev: buffer.first,
+            next: buffer.last,
+            el: row$,
+            rank: 0
+          };
+          buffer.first.next = row;
+          buffer.last.prev = row;
+          buffer.first = row;
+          buffer.lastRk++;
+          buffer.nRows++;
+          last = buffer.last;
+          row = buffer.first;
+          currentRk = 0;
+          while (true) {
+            row.rank = currentRk;
+            row.el.dataset.rank = currentRk;
+            if (row === last) {
+              break;
+            }
+            row = row.prev;
+            currentRk += 1;
+          }
+          this.rows$.style.height = nRows * rowHeight + 'px';
+          this.onRowsCreatedCB([
+            {
+              el: row$,
+              rank: 0
+            }
+          ]);
+          return;
+        } else if (fromRank <= buffer.lastRk) {
+          row$ = document.createElement('li');
+          row$.setAttribute('class', 'long-list-row');
+          row$.style.height = rowHeight + 'px';
+          rowOfInsertion = buffer.getRow(fromRank);
+          this.rows$.insertBefore(row$, rowOfInsertion.el);
+          next = rowOfInsertion.next;
+          row = {
+            prev: rowOfInsertion,
+            next: next,
+            el: row$,
+            rank: fromRank
+          };
+          next.prev = row;
+          rowOfInsertion.next = row;
+          buffer.lastRk++;
+          buffer.nRows++;
+          last = buffer.last;
+          row = row;
+          currentRk = fromRank;
+          while (true) {
+            row.rank = currentRk;
+            row.el.dataset.rank = currentRk;
+            if (row === last) {
+              break;
+            }
+            row = row.prev;
+            currentRk += 1;
+          }
+          this.rows$.style.height = nRows * rowHeight + 'px';
+          this.onRowsCreatedCB([
+            {
+              el: row$,
+              rank: fromRank
+            }
+          ]);
+          return;
+        } else if (fromRank === buffer.lastRk + 1) {
+          row$ = document.createElement('li');
+          row$.setAttribute('class', 'long-list-row');
+          row$.style.height = rowHeight + 'px';
+          row$.dataset.rank = fromRank;
+          this.rows$.appendChild(row$);
+          row = {
+            prev: buffer.first,
+            next: buffer.last,
+            el: row$,
+            rank: fromRank
+          };
+          buffer.first.next = row;
+          buffer.last.prev = row;
+          buffer.last = row;
+          buffer.lastRk++;
+          buffer.nRows++;
+          this.rows$.style.height = nRows * rowHeight + 'px';
+          this.onRowsCreatedCB([
+            {
+              el: row$,
+              rank: fromRank
+            }
+          ]);
+          return;
+        } else {
+          return void 0;
+        }
+      }
+      if (fromRank <= buffer.firstRk) {
+        scrollTop = this.viewport$.scrollTop;
+        this.rows$.style.height = nRows * rowHeight + 'px';
+        viewport_startRk = Math.floor(scrollTop / rowHeight);
+        if (fromRank !== viewport_startRk) {
+          this.viewport$.scrollTop = scrollTop + rowHeight;
+        }
+        last = buffer.last;
+        row = buffer.first;
+        currentRk = row.rank + 1;
+        while (true) {
+          row.rank = currentRk;
+          row.el.dataset.rank = currentRk;
+          if (row === last) {
+            break;
+          }
+          row = row.prev;
+          currentRk += 1;
+        }
+        buffer.firstRk += 1;
+        buffer.lastRk += 1;
+        this.rows$.style.paddingTop = (buffer.firstRk * rowHeight) + 'px';
+        if (fromRank === viewport_startRk) {
+          return _moveBuffer(true);
+        }
+      } else if (fromRank <= buffer.lastRk) {
+        scrollTop = this.viewport$.scrollTop;
+        viewport_startRk = Math.floor(scrollTop / rowHeight);
+        this.rows$.style.height = nRows * rowHeight + 'px';
+        if (fromRank < viewport_startRk) {
+          this._insertTopToRank(fromRank);
+          this.viewport$.scrollTop = scrollTop + rowHeight;
+          this.rows$.style.paddingTop = (buffer.firstRk * rowHeight) + 'px';
+        } else {
+          this._insertBottomToRank(fromRank);
+        }
+      } else if (buffer.lastRk < fromRank) {
+        this.rows$.style.height = nRows * rowHeight + 'px';
+      }
+    };
+    this._addRow = _addRow;
+
+    /**
+     * Move the first row of buffer to fromRank
+     * fromRank must be after buffer.firstRk and before buffer.lastRk
+     * @param  {Integer} fromRank the rank where first row will go
+     */
+    this._insertTopToRank = function(fromRank) {
+      var elToMove, last, next, rk, row, rowOfInsertion, rowToReUse;
+      rowOfInsertion = buffer.getRow(fromRank);
+      elToMove = buffer.first.el;
+      this.rows$.insertBefore(elToMove, rowOfInsertion.el);
+      buffer.firstRk += 1;
+      rowToReUse = buffer.first;
+      if (fromRank === buffer.firstRk) {
+
+      } else {
+        buffer.first = rowToReUse.prev;
+        buffer.first.next = buffer.last;
+        buffer.last.prev = buffer.first;
+        next = rowOfInsertion.next;
+        next.prev = rowToReUse;
+        rowOfInsertion.next = rowToReUse;
+        rowToReUse.next = next;
+        rowToReUse.prev = rowOfInsertion;
+      }
+      row = rowToReUse;
+      last = buffer.last;
+      rk = fromRank;
+      while (true) {
+        row.rank = rk;
+        row.el.dataset.rank = rk;
+        rk++;
+        if (row === last) {
+          break;
+        }
+        row = row.prev;
+      }
+      buffer.lastRk = rk - 1;
+      return this.onRowsMovedCB([
+        {
+          el: rowToReUse.el,
+          rank: rowToReUse.rank
+        }
+      ]);
+    };
+    this._insertBottomToRank = function(fromRank) {
+      var elToMove, last, next, rk, row, rowOfInsertion, rowToReUse;
+      rowOfInsertion = buffer.getRow(fromRank);
+      elToMove = buffer.last.el;
+      this.rows$.insertBefore(elToMove, rowOfInsertion.el);
+      rowToReUse = buffer.last;
+      if (rowOfInsertion !== buffer.last) {
+        rowToReUse = buffer.last;
+        buffer.last = rowToReUse.next;
+        buffer.last.prev = buffer.first;
+        buffer.first.next = buffer.last;
+        next = rowOfInsertion.next;
+        next.prev = rowToReUse;
+        rowOfInsertion.next = rowToReUse;
+        rowToReUse.next = next;
+        rowToReUse.prev = rowOfInsertion;
+        row = rowToReUse;
+        last = buffer.last;
+        rk = fromRank;
+        while (true) {
+          row.rank = rk;
+          row.el.dataset.rank = rk;
+          rk++;
+          if (row === last) {
+            break;
+          }
+          row = row.prev;
+        }
+      }
+      return this.onRowsMovedCB([
+        {
+          el: rowToReUse.el,
+          rank: rowToReUse.rank
+        }
+      ]);
+    };
+
+    /**
+     * Remove rows
+     * @param  {Integer|Element} fromRank  Rank  of the first row to delete,
+     *                           or reference to the element of the row.
+     * @param  {Integer} nToRemove Number of rows to delete from fromRank
+     */
+    _removeRows = function(rankOrElement, nToRemove) {
+      var fromRank, j, ref, ref1, rk, scrollTopDelta, toRank;
+      if (typeof rankOrElement === "number") {
+        fromRank = rankOrElement;
+      } else {
+        fromRank = parseInt(fromRank.dataset.rank);
+      }
+      toRank = fromRank + nToRemove - 1;
+      if (toRank > nRows - 1) {
+        toRank = nRows(-1);
+        nToRemove = toRank - fromRank + 1;
+      }
+      nRows -= nToRemove;
+      if (nRows < 1) {
+        this.removeAllRows();
+      }
+      if (nRows <= nMaxRowsInBufr) {
+        isDynamic = false;
+      } else {
+        isDynamic = true;
+      }
+      scrollTopDelta = 0;
+      for (rk = j = ref = fromRank, ref1 = toRank; j <= ref1; rk = j += 1) {
+        scrollTopDelta += _removeRow(fromRank);
+      }
+      return this.viewport$.scrollTop += scrollTopDelta;
+    };
+
+    /**
+     * Prerequisites :
+     *    - nRows and isDynamic must have been updated before _removeRow is
+     *    called
+     *    - must NOT be called to remove the last row (dealt by _removeRows)
+     * @return  {number} scrollTopDelta : delta in px that the scrollTop of
+     *                   the viewport should vary.
+     */
+    _removeRow = (function(_this) {
+      return function(fromRank) {
+        var currentRk, currentRow, first, firstImpactedRow, last, next, prev, row, scrollTop, scrollTopDelta, viewport_endRk, viewport_startRk;
+        if (fromRank < buffer.firstRk) {
+          _this.rows$.style.height = nRows * rowHeight + 'px';
+          first = buffer.first;
+          row = first;
+          currentRk = first.rank - 1;
+          buffer.firstRk = currentRk;
+          while (true) {
+            row.rank = currentRk;
+            row.el.dataset.rank = currentRk;
+            row = row.prev;
+            currentRk += 1;
+            if (row === first) {
+              break;
+            }
+          }
+          buffer.lastRk = currentRk - 1;
+          _this.rows$.style.paddingTop = (buffer.firstRk * rowHeight) + 'px';
+          return -rowHeight;
+        } else if (fromRank <= buffer.lastRk) {
+          scrollTop = _this.viewport$.scrollTop;
+          viewport_startRk = Math.floor(scrollTop / rowHeight);
+          viewport_endRk = viewport_startRk + nRowsInViewport - 1;
+          if (fromRank < viewport_startRk) {
+            scrollTopDelta = -rowHeight;
+          } else {
+            scrollTopDelta = 0;
+          }
+          row = _getRowAt(fromRank);
+          _this.rows$.style.height = nRows * rowHeight + 'px';
+          if (0 < buffer.firstRk) {
+            first = buffer.first;
+            last = buffer.last;
+            if (row === last) {
+              buffer.first = last;
+              buffer.last = last.next;
+              _this.rows$.insertBefore(row.el, first.el);
+            } else if (row !== first) {
+              prev = row.prev;
+              next = row.next;
+              prev.next = next;
+              next.prev = prev;
+              row.prev = first;
+              row.next = last;
+              first.next = row;
+              last.prev = row;
+              buffer.first = row;
+              _this.rows$.insertBefore(row.el, first.el);
+            }
+            first = row;
+            currentRow = row;
+            currentRk = buffer.firstRk - 1;
+            buffer.firstRk = currentRk;
+            while (true) {
+              currentRow.rank = currentRk;
+              currentRow.el.dataset.rank = currentRk;
+              currentRow = currentRow.prev;
+              currentRk += 1;
+              if (currentRow === first) {
+                break;
+              }
+            }
+            buffer.lastRk = currentRk - 1;
+            _this.rows$.style.paddingTop = (buffer.firstRk * rowHeight) + 'px';
+            _this.onRowsMovedCB([
+              {
+                el: row.el,
+                rank: row.rank
+              }
+            ]);
+            return scrollTopDelta;
+          } else if (buffer.lastRk < nRows) {
+            first = buffer.first;
+            last = buffer.last;
+            if (row === first) {
+              buffer.last = first;
+              buffer.first = first.prev;
+              _this.rows$.appendChild(row.el);
+              firstImpactedRow = buffer.first;
+            } else if (row !== last) {
+              prev = row.prev;
+              next = row.next;
+              prev.next = next;
+              next.prev = prev;
+              row.prev = first;
+              row.next = last;
+              first.next = row;
+              last.prev = row;
+              buffer.last = row;
+              _this.rows$.appendChild(row.el);
+              firstImpactedRow = prev;
+            } else {
+              firstImpactedRow = row;
+            }
+            first = buffer.first;
+            currentRow = firstImpactedRow;
+            currentRk = fromRank;
+            while (true) {
+              currentRow.rank = currentRk;
+              currentRow.el.dataset.rank = currentRk;
+              currentRow = currentRow.prev;
+              currentRk += 1;
+              if (currentRow === first) {
+                break;
+              }
+            }
+            _this.onRowsMovedCB([
+              {
+                el: row.el,
+                rank: row.rank
+              }
+            ]);
+            return scrollTopDelta;
+          } else {
+            isDynamic = false;
+            first = buffer.first;
+            last = buffer.last;
+            if (row === first) {
+              last.prev = row.prev;
+              buffer.first = row.prev;
+              buffer.first.next = last;
+              _this.rows$.removeChild(row.el);
+              firstImpactedRow = buffer.first;
+            } else if (row !== last) {
+              prev = row.prev;
+              next = row.next;
+              prev.next = next;
+              next.prev = prev;
+              _this.rows$.removeChild(row.el);
+              firstImpactedRow = prev;
+            } else {
+              buffer.last = last.next;
+              buffer.last.prev = first;
+              first.next = buffer.last;
+              _this.rows$.removeChild(row.el);
+              firstImpactedRow = null;
+            }
+            if (firstImpactedRow) {
+              first = buffer.first;
+              currentRow = firstImpactedRow;
+              currentRk = fromRank;
+              while (true) {
+                currentRow.rank = currentRk;
+                currentRow.el.dataset.rank = currentRk;
+                currentRow = currentRow.prev;
+                currentRk += 1;
+                if (currentRow === first) {
+                  break;
+                }
+              }
+            }
+            buffer.lastRk -= 1;
+            buffer.nRows -= 1;
+            return scrollTopDelta;
+          }
+        } else if (buffer.lastRk < fromRank) {
+          _this.rows$.style.height = nRows * rowHeight + 'px';
+          return 0;
+        }
+      };
+    })(this);
+    this._removeRows = _removeRows;
+
+    /**
+     * move `nToMove` rows from top of the buffer to its bottom and will
+     * have their rank starting at `newRk`
+     * @param  {Integer} nToMove Nomber of rows to move
+     * @param  {Integer} newRk rank of insertion of the first element at the
+     *                         bottom of the buffer
+     */
+    _moveBufferToBottom = (function(_this) {
+      return function(nToMove, newRk) {
+        var bufr, elemtsToDecorate, j, ref, ref1, rk, row;
+        bufr = buffer;
+        elemtsToDecorate = [];
+        row = bufr.first;
+        for (rk = j = ref = newRk, ref1 = newRk + nToMove - 1; j <= ref1; rk = j += 1) {
+          row.rank = rk;
+          row.el.dataset.rank = rk;
+          _this.rows$.appendChild(row.el);
+          elemtsToDecorate.push({
+            el: row.el,
+            rank: rk
+          });
+          row = row.prev;
+        }
+        bufr.first = row;
+        bufr.last = row.next;
+        bufr.firstRk = bufr.first.rank;
+        bufr.lastRk = rk - 1;
+        return elemtsToDecorate;
+      };
+    })(this);
+
+    /**
+     * move `nToMove` rows from bottom of the buffer to its top and will
+     * have their rank starting at `newRk`
+     * @param  {Integer} nToMove Nomber of rows to move
+     * @param  {Integer} newRk rank of insertion of the first element at the
+     *                         top of the buffer
+     */
+    _moveBufferToTop = (function(_this) {
+      return function(nToMove, newRk) {
+        var bufr, elemtsToDecorate, firstEl, j, ref, ref1, rk, row;
+        bufr = buffer;
+        elemtsToDecorate = [];
+        row = bufr.last;
+        firstEl = bufr.first.el;
+        for (rk = j = ref = newRk, ref1 = newRk - nToMove + 1; j >= ref1; rk = j += -1) {
+          row.rank = rk;
+          row.el.dataset.rank = rk;
+          _this.rows$.appendChild(row.el);
+          _this.rows$.insertBefore(row.el, firstEl);
+          elemtsToDecorate.push({
+            el: row.el,
+            rank: rk
+          });
+          firstEl = row.el;
+          row = row.next;
+        }
+        bufr.last = row;
+        bufr.first = row.prev;
+        bufr.lastRk = bufr.last.rank;
+        bufr.firstRk = rk + 1;
+        return elemtsToDecorate;
+      };
+    })(this);
+
+    /**
+     * Construct the buffer. It will be empty at the end, only ready to be
+     * used.
+     * The buffer :
+     *     * lists all the created rows, eg rows represented in the
+     *       DOM by an element.
+     *     * keeps a reference on the first row (top most) and the last
+     *      (bottom most) row.
+     *     * is a closed double linked chain.
+     * Each element of the chain is a {row} with a previous (prev) and next
+       (next) element.
+     * "closed" means that buffer.last.prev == buffer.first
+     * data structure :
+    
+       {buffer} :
+         first   : {row}      # top most row
+         firstRk : {integer}  # y of the first row of the buffer
+         last    : {row}      # bottom most row
+         lastRk  : {integer}  # y of the last row of the buffer
+         nRows   : {integer}  # number of rows in the buffer
+         getRow  : {function} # (rank)-> returns the row if the
+             rank is in the buffer, null otherwise.
+             If the buffer is not empty, all elements are removed.
+    
+       {Row}:
+            prev : {Row}
+            next : {Row}
+            el   : {Element}
+            rank : {Integer}
+     */
+    _initBuffer = function() {
+      if (buffer) {
+        this.rows$.innerHTML = '';
+        this.rows$.style.height = '0px';
+        this.rows$.style.paddingTop = '0px';
+      }
+      buffer = {
+        first: null,
+        firstRk: -1,
+        last: null,
+        lastRk: -1,
+        nRows: null,
+        getRow: function(rank) {
+          var first, row;
+          first = this.first;
+          row = first;
+          while (true) {
+            if (rank === row.rank) {
+              return row;
+            }
+            row = row.prev;
+            if (row === first) {
+              break;
+            }
+          }
+          return null;
+        }
+      };
+      nRows = 0;
+      return isDynamic = false;
+    };
+    this._initBuffer = _initBuffer;
+    _getStaticDimensions();
+    _resizeHandler();
+    this.viewport$.addEventListener('scroll', _scrollHandler);
+
+    /**
+     * retuns the element corresponding to the row of the given rank or null
+     * if this row is outside the buffer.
+     */
+    _getRowAt = function(rank) {
+      var i, row;
+      if (rank < buffer.firstRk) {
+        return null;
+      } else if (rank <= buffer.lastRk) {
+        row = buffer.first;
+        i = rank - buffer.firstRk;
+        while (i--) {
+          row = row.prev;
+        }
+        return row;
+      } else {
+        return null;
+      }
+    };
+    this._getRowAt = _getRowAt;
+    this.getLength = function() {
+      return nRows;
+    };
+
+    /**
+     * get an array of the rows elements in the buffer after rank (included)
+     * @param  {Integer} rank Rank of the first row
+     * @return {Array}      [{rank:Integer, el:Element}, ...], [] if the
+     *                      rank is not in the buffer.
+     */
+    _getRowsAfter = function(rank) {
+      var first, res, row;
+      res = [];
+      if (rank > buffer.lastRk) {
+        return res;
+      }
+      first = buffer.first;
+      row = _getRowAt(rank);
+      if (row === null) {
+        row = buffer.first;
+      }
+      while (true) {
+        res.push({
+          el: row.el,
+          rank: row.rank
+        });
+        row = row.prev;
+        if (row === first) {
+          break;
+        }
+      }
+      return res;
+    };
+    this.getRowsAfter = _getRowsAfter;
+    _goDownHalfBuffer = (function(_this) {
+      return function(ratio) {
+        var bufferHeight, scrollTop;
+        if (typeof ratio !== 'number') {
+          ratio = 0.5;
+        }
+        scrollTop = _this.viewport$.scrollTop;
+        bufferHeight = buffer.nRows * rowHeight;
+        _this.viewport$.scrollTop = scrollTop + Math.round(bufferHeight * ratio);
+        return _moveBuffer(true);
+      };
+    })(this);
+    this._test.goDownHalfBuffer = _goDownHalfBuffer;
+    _goUpHalfBuffer = (function(_this) {
+      return function(ratio) {
+        var bufferHeight, scrollTop;
+        if (typeof ratio !== 'number') {
+          ratio = 0.5;
+        }
+        scrollTop = _this.viewport$.scrollTop;
+        bufferHeight = buffer.nRows * rowHeight;
+        return _this.viewport$.scrollTop = scrollTop - Math.round(bufferHeight * ratio);
+      };
+    })(this);
+    this._test.goUpHalfBuffer = _goUpHalfBuffer;
+    _getState = (function(_this) {
+      return function() {
+        var SZ_firstRk, SZ_lastRk, VP_firstY, VP_lastY, bufr, state;
+        current_scrollTop = _this.viewport$.scrollTop;
+        bufr = buffer;
+        VP_firstY = current_scrollTop;
+        VP_firstRk = Math.floor(VP_firstY / rowHeight);
+        VP_lastY = current_scrollTop + viewportHeight;
+        VP_lastRk = Math.floor(VP_lastY / rowHeight);
+        SZ_firstRk = Math.max(VP_firstRk - nRowsInSafeZoneMargin, 0);
+        SZ_lastRk = SZ_firstRk + nRowsInSafeZone - 1;
+        state = {
+          buffer: {
+            firstRk: buffer.firstRk,
+            lastRk: buffer.lastRk,
+            nRows: buffer.nRows
+          },
+          viewport: {
+            firstRk: VP_firstRk,
+            lastRk: VP_lastRk
+          },
+          safeZone: {
+            firstRk: SZ_firstRk,
+            lastRk: SZ_lastRk
+          },
+          nRows: nRows,
+          rowHeight: rowHeight,
+          height: parseInt(_this.rows$.style.height),
+          nMaxRowsInBufr: nMaxRowsInBufr,
+          isDynamic: isDynamic
+        };
+        return state;
+      };
+    })(this);
+    this._test.getState = _getState;
+    _getInternals = (function(_this) {
+      return function() {
+        return {
+          buffer: buffer,
+          rows$: _this.rows$,
+          viewport$: _this.viewport$
+        };
+      };
+    })(this);
+    this._test.getInternals = _getInternals;
+    this._test.unActivateScrollListener = (function(_this) {
+      return function() {
+        return _this.viewport$.removeEventListener('scroll', _scrollHandler);
+      };
+    })(this);
+    return this._test.activateScrollListener = (function(_this) {
+      return function() {
+        return _this.viewport$.addEventListener('scroll', _scrollHandler);
+      };
+    })(this);
+  };
+
+  return LongListRows;
+
+})();
+});
+
 ;require.register("lib/socket", function(exports, require, module) {
 var File, SocketListener, contactCollection,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1259,7 +2392,7 @@ module.exports = {
   "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
   "modal delete ok": "Löschen",
   "modal cancel": "Abbrechen",
-  "modal delete error": "Abbrechen",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Name ist schon in Gebrauch",
   "modal error rename": "Name kann nicht geändert werden",
   "modal error empty name": "Name kann nicht leer sein",
@@ -1412,7 +2545,7 @@ module.exports = {
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
   "modal cancel": "cancel",
-  "modal delete error": "cancel",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
   "modal error empty name": "Name can't be empty",
@@ -1566,7 +2699,7 @@ module.exports = {
   "modal delete msg": "Suprimir es definitivo",
   "modal delete ok": "Suprimir",
   "modal cancel": "anular",
-  "modal delete error": "anular",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Ese nombre ya se ha utilizado",
   "modal error rename": "No se ha podido modificar el nombre",
   "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
@@ -1717,7 +2850,7 @@ module.exports = {
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",
   "modal cancel": "Annuler",
-  "modal delete error": "Annuler",
+  "modal delete error": "%{smart_count} suppression a échoué, l'élément correspondant a été ré-intégré. |||| %{smart_count} suppressions ont échoué, les fichiers et répertoires correspondant ont été ré-intégrés.",
   "modal error in use": "Ce nom est déjà utilisé",
   "modal error rename": "Le nom n'a pas pu être modifié",
   "modal error empty name": "Le nom du dossier ne peut pas être vide",
@@ -1863,7 +2996,7 @@ module.exports = {
   "modal delete msg": "Ștergerea nu poate fi anulată",
   "modal delete ok": "Ștergere",
   "modal cancel": "Anulare",
-  "modal delete error": "Anulare",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Nume deja folosit",
   "modal error rename": "Numele nu a putut fi schimbat",
   "modal error empty name": "Numele nu poate fi vid",
@@ -1992,6 +3125,8 @@ module.exports = File = (function(superClass) {
 
   File.prototype.viewSelected = false;
 
+  File.prototype.isContentRendered = false;
+
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
   function File(options) {
@@ -2030,6 +3165,12 @@ module.exports = File = (function(superClass) {
     return this.get('id') === 'root';
   };
 
+  File.prototype.isShared = function() {
+    var clearance;
+    clearance = this.get('clearance');
+    return (clearance != null) && (clearance === 'public' || clearance.length > 0);
+  };
+
   File.prototype.hasBinary = function() {
     var ref, ref1;
     return this.isFile() && (((ref = this.get('binary')) != null ? (ref1 = ref.file) != null ? ref1.id : void 0 : void 0) != null);
@@ -2037,6 +3178,10 @@ module.exports = File = (function(superClass) {
 
   File.prototype.isBroken = function() {
     return this.isFile() && !this.hasBinary() && !this.get('uploading');
+  };
+
+  File.prototype.hasContentBeenRendered = function() {
+    return this.isFolder() && this.isContentRendered;
   };
 
 
@@ -2782,10 +3927,6 @@ module.exports = FileView = (function(superClass) {
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
-  FileView.prototype.className = 'folder-row';
-
-  FileView.prototype.tagName = 'tr';
-
   FileView.prototype.templateNormal = require('./templates/file');
 
   FileView.prototype.templateEdit = require('./templates/file_edit');
@@ -2882,19 +4023,64 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.initialize = function(options) {
-    var numUploadChildren, path;
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
     if (!app.isPublic) {
-      if (ModalShareView == null) {
-        ModalShareView = require("./modal_share");
-      }
+      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
     }
+  };
+
+  FileView.prototype.beforeRender = function() {
+    var numUploadChildren, path;
     if (this.model.isFolder()) {
       path = this.model.getRepository();
       numUploadChildren = this.uploadQueue.getNumUploadingElementsByPath(path);
       return this.hasUploadingChildren = numUploadChildren > 0;
+    } else {
+      return this.hasUploadingChildren = false;
     }
+  };
+
+  FileView.prototype.reDecorate = function() {
+    var iconClass, lastModification, link, renderData, size, type;
+    this.beforeRender();
+    renderData = this.getRenderData();
+    this.elementName.html(renderData.model.name);
+    if (this.model.isFolder()) {
+      link = "#folders/" + renderData.model.id;
+      size = "";
+      type = "folder";
+    } else {
+      link = renderData.downloadUrl;
+      size = renderData.model.size || 0;
+      size = filesize(size, {
+        base: 2
+      });
+      type = renderData.model["class"];
+    }
+    lastModification = renderData.model.lastModification;
+    if (lastModification) {
+      lastModification = moment(lastModification).calendar();
+    } else {
+      lastModification = "";
+    }
+    iconClass = this.getElementIconClass();
+    this.elementLink.attr('href', link);
+    this.elementSize.html(size);
+    this.elementType.html(t(type));
+    this.elementLastModificationDate.html(lastModification);
+    if (!this.elementIcon.hasClass(iconClass)) {
+      this.elementIcon.attr('class', '');
+      this.elementIcon.addClass("icon-type " + iconClass);
+    }
+    if (this.model.isShared()) {
+      if (this.elementIcon.find('span.fa').length === 0) {
+        this.elementIcon.append($('<span class="fa fa-globe"></span>'));
+      }
+    } else {
+      this.elementIcon.empty();
+    }
+    return this.afterReDecorate();
   };
 
   FileView.prototype.onUploadComplete = function() {
@@ -3126,7 +4312,14 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.afterRender = function() {
+    this.elementLink = this.$('a.btn-link');
+    this.elementName = this.elementLink.find('span');
+    this.elementSize = this.$('.size-column-cell span');
+    this.elementType = this.$('.type-column-cell span');
+    this.elementLastModificationDate = this.$('.date-column-cell span');
+    this.elementIcon = this.$('.icon-type');
     this.$el.data('cid', this.model.cid);
+    this.$el.addClass('itemRow');
     if (this.model.isUploading() || this.model.isServerUploading()) {
       this.$el.addClass('uploading');
       this.addProgressBar();
@@ -3146,25 +4339,58 @@ module.exports = FileView = (function(superClass) {
     }
   };
 
+  FileView.prototype.afterReDecorate = function() {
+    this.$el.data('cid', this.model.cid);
+    if (this.model.isUploading() || this.model.isServerUploading()) {
+      this.$el.addClass('uploading');
+      this.addProgressBar();
+      this.blockDownloadLink();
+      this.blockNameLink();
+    } else {
+      this.$el.removeClass('uploading');
+      this.$el.toggleClass('broken', this.model.isBroken());
+      this.updateTags();
+    }
+    if (this.model.isNew()) {
+      this.blockNameLink();
+    }
+    this.hideLoading();
+    if (this.hasUploadingChildren) {
+      return this.showLoading();
+    }
+  };
+
   FileView.prototype.addProgressBar = function() {
     var cell;
     this.$('.type-column-cell').remove();
     this.$('.date-column-cell').remove();
+    if (this.progressbar != null) {
+      this.progressbar.destroy();
+    }
     this.progressbar = new ProgressBar({
       model: this.model
     });
-    cell = $('<td colspan="2"></td>');
+    cell = $('<td colspan="2" class="progressbar-cell" role="gridcell"></td>');
     cell.append(this.progressbar.render().$el);
     return this.$('.size-column-cell').after(cell);
   };
 
   FileView.prototype.addTags = function() {
+    if (this.tags != null) {
+      this.tags.destroy();
+    }
     this.tags = new TagsView({
       el: this.$('.tags'),
       model: this.model
     });
     this.tags.render();
     return this.tags.hideInput();
+  };
+
+  FileView.prototype.updateTags = function() {
+    if (this.model.get('tags').length) {
+      return this.addTags();
+    }
   };
 
   FileView.prototype.blockDownloadLink = function() {
@@ -3189,19 +4415,37 @@ module.exports = FileView = (function(superClass) {
     return this.$('.spinholder').hide();
   };
 
+  FileView.prototype.getElementIconClass = function() {
+    var icon, mimeClass, mimeType;
+    if (this.model.isFolder()) {
+      icon = "type-folder";
+    } else {
+      mimeType = this.model.get('mime');
+      mimeClass = this.mimeClasses[mimeType];
+      if ((mimeType != null) && (mimeClass != null)) {
+        icon = mimeClass;
+      } else {
+        icon = "type-file";
+      }
+    }
+    return icon;
+  };
+
   return FileView;
 
 })(BaseView);
 });
 
 ;require.register("views/files", function(exports, require, module) {
-var FileView, FilesView, ViewCollection,
+var BaseView, FileView, FilesView, LongList,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-ViewCollection = require('../lib/view_collection');
+BaseView = require('../lib/base_view');
 
 FileView = require('./file_view');
+
+LongList = require('../lib/long-list-rows');
 
 module.exports = FilesView = (function(superClass) {
   extend(FilesView, superClass);
@@ -3260,10 +4504,7 @@ module.exports = FilesView = (function(superClass) {
     'click div.selector-wrapper button': function(e) {
       return this.viewProxy('onSelectClicked', e);
     },
-    'click div.link-wrapper i.fa': function(e) {
-      return this.viewProxy('onSelectClicked', e);
-    },
-    'click tr.folder-row': function(e) {
+    'click li.itemRow': function(e) {
       return this.viewProxy('onLineClicked', e);
     }
   };
@@ -3281,12 +4522,24 @@ module.exports = FilesView = (function(superClass) {
       order: this.collection.order,
       type: this.collection.type
     };
-    this.listenTo(this.collection, 'add remove', this.updateNbFiles);
+    this.listenTo(this.collection, 'add', this.addFile);
+    this.listenTo(this.collection, 'remove', this.removeFile);
+    this.listenTo(this.collection, 'sort', this.render);
     this.listenTo(this.collection, 'change', _.partial(this.viewProxy, 'refresh'));
     this.listenTo(this.collection, 'sync error', _.partial(this.viewProxy, 'onSyncError'));
     this.listenTo(this.collection, 'toggle-select', _.partial(this.viewProxy, 'onToggleSelect'));
     this.listenTo(this.collection, 'add remove reset', _.partial(this.viewProxy, 'onCollectionChanged'));
     return this.listenTo(this.collection, 'upload-complete', _.partial(this.viewProxy, 'onUploadComplete'));
+  };
+
+  FilesView.prototype.addFile = function(model, collection, options) {
+    this.longList.addRow(collection.indexOf(model));
+    return this.updateNbFiles();
+  };
+
+  FilesView.prototype.removeFile = function(model, collection, options) {
+    this.longList.removeRow(options.index);
+    return this.updateNbFiles();
   };
 
   FilesView.prototype.getRenderData = function() {
@@ -3296,10 +4549,60 @@ module.exports = FilesView = (function(superClass) {
     });
   };
 
+  FilesView.prototype.beforeRender = function() {
+    FilesView.__super__.beforeRender.call(this);
+    return this.startPoint = performance.now();
+  };
+
   FilesView.prototype.afterRender = function() {
+    var options, viewPortElement;
     FilesView.__super__.afterRender.call(this);
     this.displayChevron(this.chevron.order, this.chevron.type);
-    return this.updateNbFiles();
+    this.updateNbFiles();
+    this.pool = [];
+    options = {
+      DIMENSIONS_UNIT: 'px',
+      ROW_HEIGHT: 48,
+      BUFFER_COEF: 4,
+      SAFE_ZONE_COEF: 3,
+      THROTTLE: 150,
+      MAX_SPEED: 2.5,
+      onRowsMovedCB: this.onRowsMoved.bind(this)
+    };
+    viewPortElement = this.$(this.collectionEl)[0];
+    this.longList = new LongList(viewPortElement, options);
+    return this.longList.initRows(this.collection.length);
+  };
+
+  FilesView.prototype.onRowsMoved = function(rowsToDecorate) {
+    var i, index, len, model, options, rank, row, view;
+    for (index = i = 0, len = rowsToDecorate.length; i < len; index = ++i) {
+      row = rowsToDecorate[index];
+      if (row.el) {
+        rank = row.rank;
+        if (row.el.view != null) {
+          model = this.collection.at(rank);
+          if (model) {
+            model.rank = rank;
+            view = row.el.view;
+            view.model = model;
+            view.reDecorate();
+          }
+        } else {
+          model = this.collection.at(rank);
+          model.rank = rank;
+          options = _.extend({}, {
+            model: model
+          }, this.itemViewOptions());
+          view = new FileView(options);
+          view.setElement(row.el);
+          view.render();
+          row.el.view = view;
+          this.pool.push(view);
+        }
+      }
+    }
+    return true;
   };
 
   FilesView.prototype.viewProxy = function(methodName, object) {
@@ -3307,17 +4610,19 @@ module.exports = FilesView = (function(superClass) {
     if (object.cid != null) {
       cid = object.cid;
     } else {
-      cid = this.$(object.target).parents('tr').data('cid');
+      cid = this.$(object.target).parents('li').data('cid');
       if (cid == null) {
         cid = this.$(object.currentTarget).data('cid');
       }
     }
-    view = _.find(this.views, function(view) {
+    view = _.find(this.pool, function(view) {
       return view.model.cid === cid;
     });
     if (view != null) {
       args = [].splice.call(arguments, 1);
       return view[methodName].apply(view, args);
+    } else {
+
     }
   };
 
@@ -3339,12 +4644,18 @@ module.exports = FilesView = (function(superClass) {
   FilesView.prototype.displayChevron = function(order, type) {
     if (order === "asc") {
       this.$("#up-" + type).addClass('active');
-      this.$("#down-" + type).hide();
-      return this.$("#up-" + type).removeClass('unactive');
+      this.$("#up-" + type).removeClass('unactive');
+      this.$("#up-" + type).show();
+      this.$("#down-" + type).removeClass('active');
+      this.$("#down-" + type).addClass('unactive');
+      return this.$("#down-" + type).hide();
     } else {
-      this.$("#up-" + type).hide();
       this.$("#down-" + type).addClass('active');
-      return this.$("#down-" + type).removeClass('unactive');
+      this.$("#down-" + type).removeClass('unactive');
+      this.$("#down-" + type).show();
+      this.$("#up-" + type).removeClass('active');
+      this.$("#up-" + type).addClass('unactive');
+      return this.$("#up-" + type).hide();
     }
   };
 
@@ -3381,7 +4692,7 @@ module.exports = FilesView = (function(superClass) {
 
   return FilesView;
 
-})(ViewCollection);
+})(BaseView);
 });
 
 ;require.register("views/folder", function(exports, require, module) {
@@ -3462,7 +4773,6 @@ module.exports = FolderView = (function(superClass) {
       }
     }
     this.listenTo(this.baseCollection, 'toggle-select', this.toggleFolderActions);
-    this.listenTo(this.baseCollection, 'remove', this.toggleFolderActions);
     this.listenTo(this.collection, 'remove', this.toggleFolderActions);
     this.listenTo(this.model, 'sync', this.onFolderSync);
     this.conflictQueue = async.queue(this.resolveConflict.bind(this), 1);
@@ -3523,8 +4833,13 @@ module.exports = FolderView = (function(superClass) {
     this.renderBreadcrumb();
     this.renderFileList();
     this.renderUploadStatus();
-    this.refreshData();
-    return this.$("#loading-indicator").show();
+    if (this.model.hasContentBeenRendered()) {
+      this.refreshData();
+      return this.$("#loading-indicator").show();
+    } else {
+      this.model.isContentRendered = true;
+      return this.$("#loading-indicator").hide();
+    }
   };
 
   FolderView.prototype.renderBreadcrumb = function() {
@@ -3584,17 +4899,29 @@ module.exports = FolderView = (function(superClass) {
   FolderView.prototype.onNewFolderClicked = function() {
     var view;
     if (this.newFolder) {
-      return this.filesList.views[this.newFolder.cid].$('.file-edit-name').focus();
+      view = _.find(this.filesList.pool, (function(_this) {
+        return function(view) {
+          return view.model.cid === _this.newFolder.cid;
+        };
+      })(this));
+      return view.$('.file-edit-name').focus();
     } else {
       if (this.newFolder == null) {
         this.newFolder = new File({
           name: '',
           type: 'folder',
-          path: this.model.getRepository()
+          path: this.model.getRepository(),
+          tags: [].concat(this.model.get('tags'))
         });
       }
-      this.baseCollection.add(this.newFolder);
-      view = this.filesList.views[this.newFolder.cid];
+      this.baseCollection.add(this.newFolder, {
+        at: 0
+      });
+      view = _.find(this.filesList.pool, (function(_this) {
+        return function(view) {
+          return view.model.cid === _this.newFolder.cid;
+        };
+      })(this));
       view.onEditClicked('');
       return this.newFolder.once('sync destroy', (function(_this) {
         return function() {
@@ -3665,36 +4992,26 @@ module.exports = FolderView = (function(superClass) {
   };
 
   FolderView.prototype.onFilesSelected = function(event) {
-    var files, ref, target;
+    var files, ref;
     files = ((ref = event.dataTransfer) != null ? ref.files : void 0) || event.target.files;
     if (files.length) {
-      this.uploadQueue.addBlobs(files, this.model);
-      if (event.target != null) {
-        target = $(event.target);
-        return target.replaceWith(target.clone(true));
-      }
+      return this.uploadQueue.addBlobs(files, this.model);
     }
   };
 
   FolderView.prototype.onFilesSelectedInChrome = function(e) {
-    var callback, entry, errors, files, i, item, items, len, parseEntriesRecursively, pending, results;
+    var addAllToQueue, errors, files, items, parseEntriesRecursively;
     items = e.dataTransfer.items;
     if (!items.length) {
       return;
     }
-    pending = 0;
     files = [];
     errors = [];
-    callback = (function(_this) {
+    addAllToQueue = (function(_this) {
       return function() {
         var formattedErrors, localeOptions, processUpload;
         processUpload = function() {
-          var target;
-          _this.uploadQueue.addFolderBlobs(files, _this.model);
-          if (e.target != null) {
-            target = $(e.target);
-            return target.replaceWith(target.clone(true));
-          }
+          return _this.uploadQueue.addFolderBlobs(files, _this.model);
         };
         if (errors.length > 0) {
           formattedErrors = errors.map(function(name) {
@@ -3712,47 +5029,43 @@ module.exports = FolderView = (function(superClass) {
         }
       };
     })(this);
-    parseEntriesRecursively = function(entry, path) {
-      var reader;
-      pending = pending + 1;
-      path = path || "";
-      if (path.length > 0) {
-        path = path + "/";
-      }
-      if (entry.isFile) {
-        return entry.file(function(file) {
-          file.relativePath = "" + path + file.name;
-          files.push(file);
-          pending = pending - 1;
-          if (pending === 0) {
-            return callback();
-          }
-        }, function(error) {
-          errors.push(entry.name);
-          pending = pending - 1;
-          if (pending === 0) {
-            return callback();
-          }
-        });
-      } else if (entry.isDirectory) {
-        reader = entry.createReader();
-        return reader.readEntries(function(entries) {
-          var i, len, subEntry;
-          for (i = 0, len = entries.length; i < len; i++) {
-            subEntry = entries[i];
-            parseEntriesRecursively(subEntry, "" + path + entry.name);
-          }
-          return pending = pending - 1;
-        });
-      }
-    };
-    results = [];
-    for (i = 0, len = items.length; i < len; i++) {
-      item = items[i];
+    parseEntriesRecursively = (function(_this) {
+      return function(entry, path, done) {
+        var reader, unshiftFolder;
+        path = path || "";
+        if (path.length > 0) {
+          path = path + "/";
+        }
+        if (entry.isFile) {
+          return entry.file(function(file) {
+            file.relativePath = "" + path + file.name;
+            files.push(file);
+            return done();
+          }, function(error) {
+            errors.push(entry.name);
+            return done();
+          });
+        } else if (entry.isDirectory) {
+          reader = entry.createReader();
+          return (unshiftFolder = function() {
+            return reader.readEntries(function(entries) {
+              if (entries.length === 0) {
+                return done();
+              } else {
+                return async.eachSeries(entries, function(subEntry, next) {
+                  return parseEntriesRecursively(subEntry, "" + path + entry.name, next);
+                }, unshiftFolder);
+              }
+            });
+          })();
+        }
+      };
+    })(this);
+    return async.eachSeries(items, function(item, next) {
+      var entry;
       entry = item.webkitGetAsEntry();
-      results.push(parseEntriesRecursively(entry));
-    }
-    return results;
+      return parseEntriesRecursively(entry, null, next);
+    }, addAllToQueue);
   };
 
 
@@ -3901,22 +5214,43 @@ module.exports = FolderView = (function(superClass) {
   FolderView.prototype.bulkRemove = function() {
     return new Modal(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
       return function(confirm) {
+        var i, len, model, selectedElements;
         if (confirm) {
-          window.pendingOperations.deletion++;
-          return async.eachSeries(_this.getSelectedElements(), function(element, cb) {
-            return element.destroy({
+          selectedElements = _this.getSelectedElements();
+          window.pendingOperations.deletion += selectedElements.length;
+          for (i = 0, len = selectedElements.length; i < len; i++) {
+            model = selectedElements[i];
+            _this.baseCollection.remove(model);
+          }
+          return async.filter(selectedElements, function(model, next) {
+            return model.destroy({
               success: function() {
-                return setTimeout(cb, 200);
+                window.pendingOperations.deletion--;
+                return next(false);
               },
               error: function() {
-                return setTimeout(cb, 200);
-              }
+                window.pendingOperations.deletion--;
+                return next(true);
+              },
+              silent: false,
+              wait: true
             });
-          }, function(err) {
-            window.pendingOperations.deletion--;
-            if (err != null) {
-              Modal.error(t("modal delete error"));
-              return console.log(err);
+          }, function(undeletedModels) {
+            var j, len1, messageOptions, results, sortedModelsInError;
+            if (undeletedModels.length > 0) {
+              messageOptions = {
+                smart_count: undeletedModels.length
+              };
+              Modal.error(t("modal delete error", messageOptions));
+              sortedModelsInError = _.sortBy(undeletedModels, function(model) {
+                return model.rank;
+              });
+              results = [];
+              for (j = 0, len1 = sortedModelsInError.length; j < len1; j++) {
+                model = sortedModelsInError[j];
+                results.push(_this.baseCollection.add(model));
+              }
+              return results;
             }
           });
         }
@@ -4611,7 +5945,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\">");
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
 buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
@@ -4660,7 +5994,7 @@ buf.push("</i>");
 }
 if ( !isBroken)
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a>");
 }
 else
 {
@@ -4704,13 +6038,13 @@ else if ( isBroken)
 {
 buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
-buf.push("</div></td><td class=\"size-column-cell\">");
+buf.push("</div></div><div role=\"gridcell\" class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
 buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"type-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
 buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
@@ -4719,12 +6053,12 @@ else
 {
 buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"date-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
 if ( model.lastModification)
 {
 buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td>");;return buf.join("");
+buf.push("</div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -4743,7 +6077,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,options = locals_.options;
-buf.push("<td><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
 if ( model.type && model.type == "folder")
 {
 if ( clearance == 'public')
@@ -4794,13 +6128,13 @@ buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : 
   }
 }).call(this);
 
-buf.push("</ul><div class=\"block-empty\"></div><!-- empty!--></div></td><td class=\"size-column-cell\">");
+buf.push("</ul><div class=\"block-empty\"></div><!-- empty!--></div></div><div role=\"gridcell\" class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
 buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"type-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
 buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
@@ -4809,12 +6143,12 @@ else
 {
 buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"date-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
 if ( model.lastModification)
 {
 buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td>");;return buf.join("");
+buf.push("</div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -4833,7 +6167,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<td><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
 buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
@@ -4882,7 +6216,7 @@ buf.push("</i>");
 }
 if ( !isBroken)
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape((jade_interp = model.name) == null ? '' : jade_interp)) + "</span></a>");
+buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a>");
 }
 else
 {
@@ -4926,13 +6260,13 @@ else if ( isBroken)
 {
 buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
 }
-buf.push("</div></td><td class=\"size-column-cell\">");
+buf.push("</div></div><div role=\"gridcell\" class=\"size-column-cell\">");
 if ( model.type == 'file')
 {
 options = {base: 2}
 buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"type-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
 if ( model.type == 'folder')
 {
 buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
@@ -4941,12 +6275,12 @@ else
 {
 buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td><td class=\"date-column-cell\">");
+buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
 if ( model.lastModification)
 {
 buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
 }
-buf.push("</td>");;return buf.join("");
+buf.push("</div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -4965,7 +6299,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),numSelectedElements = locals_.numSelectedElements,numElements = locals_.numElements,model = locals_.model;
-buf.push("<table id=\"table-items\" class=\"table table-hover\"><thead><tr class=\"table-headers\"><th><button id=\"select-all\">");
+buf.push("<!-- List's header.--><div role=\"rowheader\"><div role=\"columnheader\" class=\"extensible-column\"><button id=\"select-all\">");
 if ( numSelectedElements == 0 || numElements == 0)
 {
 buf.push("<i class=\"fa fa-square-o\"></i>");
@@ -4978,7 +6312,7 @@ else
 {
 buf.push("<i class=\"fa fa-minus-square-o\"></i>");
 }
-buf.push("</button><a id=\"down-name\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a><a id=\"up-name\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a></th><th class=\"size-column-cell\"><a id=\"down-size\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a><a id=\"up-size\" class=\"unactive btn fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a></th><th class=\"type-column-cell\"><a id=\"down-class\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a><a id=\"up-class\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a></th><th class=\"date-column-cell\"><a id=\"down-lastModification\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a><a id=\"up-lastModification\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a></th></tr></thead><tbody id=\"table-items-body\"></tbody></table><p id=\"file-amount-indicator\" class=\"footer\"></p><p id=\"no-files-indicator\" class=\"footer\">");
+buf.push("</button><a id=\"down-name\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('name')    ) ? "" : jade_interp)) + "</a><a id=\"up-name\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"size-column-cell\"><a id=\"down-size\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a><a id=\"up-size\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"type-column-cell\"><a id=\"down-class\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a><a id=\"up-class\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"date-column-cell\"><a id=\"down-lastModification\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a><a id=\"up-lastModification\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a></div></div><!--table#table-items.table.table-hover--><!--  thead--><!--    tr.table-headers--><!--      th--><!--        button#select-all--><!--          if numSelectedElements == 0 || numElements == 0--><!--            i.fa.fa-square-o--><!--          else if numSelectedElements == numElements--><!--            i.fa.fa-check-square-o--><!--          else--><!--            i.fa.fa-minus-square-o--><!----><!--        a#down-name.btn.unactive.fa.fa-chevron-down--><!--          = t('name')--><!--        a#up-name.btn.unactive.fa.fa-chevron-up--><!--          = t('name')--><!----><!--      th.size-column-cell--><!--        a#down-size.btn.unactive.fa.fa-chevron-down--><!--          = t('size')--><!--        a#up-size.unactive.btn.fa.fa-chevron-up--><!--          = t('size')--><!--          --><!----><!--      th.type-column-cell--><!--        a#down-class.btn.unactive.fa.fa-chevron-down--><!--          = t('type')--><!--        a#up-class.btn.unactive.fa.fa-chevron-up--><!--          = t('type')--><!----><!--      th.date-column-cell--><!--        a#down-lastModification.btn.unactive.fa.fa-chevron-down--><!--          = t('date')--><!--        a#up-lastModification.btn.unactive.fa.fa-chevron-up--><!--          = t('date')--><!-- List of elements.--><ul id=\"table-items-body\" role=\"grid\"></ul><!-- Footer.--><footer id=\"file-amount-indicator\"></footer><footer id=\"no-files-indicator\">");
 if ( model.type == 'search')
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in search')) == null ? '' : jade_interp)) + "");
@@ -4987,7 +6321,7 @@ else
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in folder')) == null ? '' : jade_interp)) + "");
 }
-buf.push("</p>");;return buf.join("");
+buf.push("</footer>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -5358,7 +6692,7 @@ module.exports = Autocomplete = (function(superClass) {
     e.preventDefault();
     e.stopPropagation();
     this.unbindCancel = true;
-    this.input.parents('.folder-row').addClass('pseudohover');
+    this.input.parents('.itemRow').addClass('pseudohover');
     return this.input.focus();
   };
 
@@ -5465,7 +6799,7 @@ module.exports = Autocomplete = (function(superClass) {
     }
     this.input.off('keydown', this.onInputKeyDown);
     this.input.off('blur', this.delayedUnbind);
-    this.input.parents('.folder-row').removeClass('pseudohover');
+    this.input.parents('.itemRow').removeClass('pseudohover');
     this.input.val('');
     this.$target = null;
     this.$el.hide();

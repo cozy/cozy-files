@@ -37,6 +37,13 @@ baseController = new cozydb.SimpleController({
   reqParamID: 'fileid'
 });
 
+module.exports.destroyBroken = function(req, res) {
+  return res.send(400, {
+    error: true,
+    msg: "Deletion error for tests"
+  });
+};
+
 module.exports.fetch = function(req, res, next, id) {
   return File.request('all', {
     key: id
