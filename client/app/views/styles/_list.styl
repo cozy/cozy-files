@@ -67,8 +67,8 @@
                 &:hover .operations
                     display inline-block
 
-            .progressview
-                display flex
+            .progress
+                margin 0
 
     [role="rowheader"]
         @media (max-width: (1000/16)em)
@@ -112,6 +112,8 @@
             &.active
                 box-shadow 0 0
                 color basecolor
+                // 'important' is necessary to override the JQuery property 'show' and is display 'inline'
+                display inline-block !important
 
             &::before
                 margin-right 0.5rem
