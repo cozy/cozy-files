@@ -101,5 +101,6 @@ module.exports = {
   "perm r folder": "parcurge acest dosar ",
   "perm rw folder": "parcurge acest dosar și încărca fișiere",
   "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar.",
-  "send email hint": "Notification emails will be sent one time on save"
+  "send email hint": "Notification emails will be sent one time on save",
+  "share add": "Încărcare"
 };

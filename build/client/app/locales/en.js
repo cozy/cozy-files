@@ -125,6 +125,7 @@ module.exports = {
   "forced public": "The current file/folder is shared because one of its parent folders is shared.",
   "forced shared": "The current file/folder is shared because one of its parent folders is shared. Here is the list of guests who can access it:",
   "confirm": "Confirm",
+  "share add": "Add",
   "share forgot add": "Looks like you forgot to click the Add button",
   "share confirm save": "The changes you made to the permissions will not be saved. Is that what you want ?",
   "mail not sent": "Mail not sent",
