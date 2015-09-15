@@ -132,6 +132,7 @@ buildJsInLocales = ->
         # add locales at the end of app.js
     exec "rm -rf build/client/app/locales/*.json"
 
+
 task 'build', 'Build CoffeeScript to Javascript', ->
     logger.options.prefix = 'cake:build'
     logger.info "Start compilation..."
@@ -140,6 +141,10 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "#{binCoffee} -cb --output build/ server.coffee && " + \
               "cp -r server/views build/server && " + \
               # prepare the client build
+              "rm -rf build/client && mkdir build/client && " + \
+              "mkdir -p build/client/app/locales/ && " + \
+              "rm -rf build/client/app/locales/* && " + \
+              "cp -R client/public build/client/ && " + \
               "rm -rf build/client && mkdir build/client && " + \
               "mkdir -p build/client/app/locales/ && " + \
               "rm -rf build/client/app/locales/* && " + \
@@ -153,6 +158,7 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "mv build/client/public/*.jade build/server/views/ && " + \
               "rm -rf build/server/views/*_build.jade && " + \
               "rm -rf client/app/locales/*.coffee"
+
 
     exec command, (err, stdout, stderr) ->
         if err
