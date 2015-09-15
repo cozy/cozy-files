@@ -1,0 +1,20 @@
+.modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-hidden='true') ×
+        h4.modal-title #{t("new folder caption")}
+      .modal-body
+        fieldset
+          .form-group
+            label(for='inputName')
+              | #{t("new folder msg")}
+            input#inputName.form-control(type="text")
+          .form-group.hide#folder-upload-form
+            br
+            p.text-center= t('upload folder separator')
+            label(for='inputName')
+              | #{t("upload folder msg")}
+            input#folder-uploader.form-control(type="file", directory, mozdirectory, webkitdirectory)
+      .modal-footer
+        button.btn.btn-link#modal-dialog-no(type='button', data-dismiss='modal') #{t("new folder close")}
+        button.btn.btn-cozy-contrast#modal-dialog-yes(type='button', disabled="disabled") #{t("new folder send")}

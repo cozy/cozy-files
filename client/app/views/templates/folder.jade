@@ -1,0 +1,82 @@
+#affixbar(data-spy="affix", data-offset-top="1")
+  .container
+    header.row
+      .col-lg-12
+        #crumbs.pull-left
+        div.pull-right
+            if !isPublic || hasPublicKey
+              input#search-box.pull-right(type="search", value="#{query}", placeholder="Search")
+
+            if model.type != 'search'
+              #upload-buttons.pull-right
+
+                //- clearance modification buttons
+                if model.id != 'root'
+                  span#folder-state
+                    if clearance == 'public'
+                      span.fa.fa-globe
+                      span.text #{t('shared')}
+                    else if clearance && clearance.length > 0
+                      span.fa.fa-globe
+                      span.text #{t('shared')}
+                      //-span.fa.fa-users
+                      span &nbsp;(#{clearance.length})
+                    //-else
+                      //-span.text #{t('private')}
+                      //-span.fa.fa-lock
+                  a#share-state.btn.btn-cozy.btn-cozy-contrast(title="#{t('share')}")
+                    span.fa.fa-share-alt
+
+                //- file & folder uploaders
+                a#button-upload-new-file.btn.btn-cozy
+                  input#uploader(type="file", multiple, title=t('upload button'))
+                  div.action-icon.file-uploader
+                if supportsDirectoryUpload
+                  a#button-upload-folder.btn.btn-cozy
+                    input#folder-uploader(type="file", directory, mozdirectory, webkitdirectory, title=t('upload folder msg'))
+                    div.action-icon.folder-uploader
+                a#button-new-folder.btn.btn-cozy(title=t('new folder button'))
+                  div.action-icon.folder-new
+
+                //- bulk actions: move and remove
+                .btn-group#bulk-actions-btngroup
+                  if isPublic
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy-contrast
+                        span.label #{t("download all")}&nbsp;
+                        span.fa.fa-download.icon-white
+                  else
+                      a#button-bulk-download(title="#{t('download all')}").btn.btn-cozy
+                        span.fa.fa-download
+                  a#button-bulk-move(title="#{t('move all')}").btn.btn-cozy.btn-cozy
+                    span.fa.fa-file
+                    span.fa.fa-arrow-right
+                  a#button-bulk-remove(title="#{t('remove all')}").btn.btn-cozy.btn-cozy
+                    span.fa.fa-trash-o
+
+              //- notification toggle button
+              if isPublic && hasPublicKey
+                if areNotificationsEnabled
+                  a#notifications.btn.btn-cozy.toggled= t('notifications enabled')
+                else
+                  a#notifications.btn.btn-cozy= t('notifications disabled')
+                | &nbsp;
+
+              //- download button
+              a#download-link.btn.btn-cozy-contrast(
+                href="#{zipUrl}"
+                title=t("download"))
+                | #{t("download")}&nbsp;
+                i.icon-arrow-down.icon-white
+    .row
+      .col-lg-12#upload-status-container
+
+.container
+  .row
+    .col-lg-12#content
+      #loading-indicator
+        img(src="images/spinner.svg", width="20")
+      #files.files
+      #files-drop-zone
+        .overlay
+        .vertical-container
+          p= t('drop message')

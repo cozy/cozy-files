@@ -1,0 +1,10 @@
+/node_modules/
+/client/node_modules/
+/client/public/
+.DS_Store
+
+*.swp
+*.log
+*.transifex.coffee
+
+/test/fixtures/big-folder/

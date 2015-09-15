@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
+    <title>magnifier</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <path d="M10.8501883,12.8469598 C9.74562318,13.5757789 8.42235269,14 7,14 C3.13400656,14 0,10.8659934 0,7 C0,3.13400656 3.13400656,0 7,0 C10.8659934,0 14,3.13400656 14,7 C14,8.42175676 13.5761343,9.74451433 12.8478757,10.8487999 L16,14.0017991 L14.0023536,16 L10.8501883,12.8469598 Z M7,12 C9.76142389,12 12,9.76142389 12,7 C12,4.23857611 9.76142389,2 7,2 C4.23857611,2 2,4.23857611 2,7 C2,9.76142389 4.23857611,12 7,12 Z" id="magnifier" fill="#BBBBBB" sketch:type="MSShapeGroup"></path>
+    </g>
+</svg>

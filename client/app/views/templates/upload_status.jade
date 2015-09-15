@@ -1,0 +1,7 @@
+span= t('upload running')
+
+#dismiss.btn.btn-cozy.pull-right= t('ok')
+.progress.active.pull-right
+    .progress-bar.progress-bar-info(
+        style="width: " + value)
+    .progress-bar.progress-bar-content #{t('total progress')} #{value}

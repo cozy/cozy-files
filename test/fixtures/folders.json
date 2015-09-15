@@ -1,0 +1,37 @@
+[
+    {
+        "docType": "Folder",
+        "name": "Mes images",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Mes photos",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Mes vidéos",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Mes musiques",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Many files",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Files to remove",
+        "path": ""
+    },
+    {
+        "docType": "Folder",
+        "name": "Chats mignons",
+        "path": "/Mes images"
+    }
+]

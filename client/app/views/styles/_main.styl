@@ -1,0 +1,804 @@
+@import 'nib'
+@import '_colors'
+
+
+html, body
+    height: 100%
+
+body
+    font-family: 'Source Sans Pro', sans-serif
+    background-color #f5f5f5
+    background-image none
+    font-size 16px
+
+h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6
+    font-family: 'Maven Pro', sans-serif
+
+label
+    font-weight: normal
+
+
+// Boostrap fix
+
+.modal-footer
+    margin-top 0
+
+.modal-sm
+    width 300px
+.modal-lg
+    width 900px
+
+.hidden
+    display: none
+
+
+/*      FIXING BOOTSTRAP */
+body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom
+    margin-right: 0
+
+textarea:hover,
+input[type="text"]:hover,
+textarea:active,
+input[type="text"]:active,
+textarea:focus,
+input[type="text"]:focus
+a:focus,
+.btn:focus
+     outline:0px !important
+     -webkit-appearance:none
+.btn[disabled=disabled], .btn:disabled
+    opacity: 0.2
+
+.error
+    color: red
+
+
+// Helpers
+.mt108
+    padding-top 8em
+
+.modal-content
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2)
+
+.modal-footer
+    margin-top: 0
+
+    span.pull-left.email-hint
+        display block
+        text-align left
+        width 100%
+
+    button
+        margin-top 2em
+
+.modal-sm
+    width 300px
+.modal-lg
+    width 900px
+
+.hidden
+    display: none
+
+.btn-link
+.btn-link:visited
+.btn-link:hover
+.btn-link:active
+.btn-link:focus
+    color #444
+    text-decoration: none
+
+    .fa
+        color: lighten(basecolor, 30%)
+
+// buttons
+
+a
+    cursor: pointer
+
+.btn
+    position: relative
+
+    &.btn-cozy
+        background-color basecolor
+        border-color basecolor
+        font-family 'Source Sans Pro', sans-serif
+        color white
+
+        .caret
+            border-top-color white
+            border-bottom-color white
+
+        &:hover
+            background-color darken(basecolor, 20%)
+            border-color darken(basecolor, 20%)
+
+    &.btn-cozy.toggled
+        box-shadow: 1px 3px 2px rgba(0, 0, 0, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.0)
+        background-color basecolor - 10%
+
+        &:hover
+            background-color actioncolor - 10%
+
+    &.btn-cozy-contrast
+        background-color contrastcolor - 10%
+        border-color contrastcolor - 10%
+        color white
+
+        &:hover
+            background-color darken(contrastcolor, 25%)
+            border-color darken(contrastcolor, 25%)
+
+    &:active
+        box-shadow none
+
+
+// Inputs
+
+input
+    border: 1px solid #ccc
+    color: #333
+
+input:focus
+    color: #333
+    border-color: basecolor
+
+input#search-box
+    height 36px
+    font-size 16px
+    margin-left 5px
+    padding-left 2.3em
+    width 10em
+    background-image url("../images/magnifier.svg")
+    background-repeat no-repeat
+    background-position 0.8em 9px
+    border-radius 0.2rem
+    transition width 0.3s ease-out
+
+    &:focus
+        outline none
+        width 20em
+
+.form-control
+    min-height: 34px
+    height: auto
+
+
+// Menu
+
+div#affixbar
+    z-index 100
+    width 100%
+    position fixed
+
+    .row
+        background-color white
+
+        p
+            margin-bottom 5px
+
+
+    header
+        padding 0.8em 0 0.4em
+
+    a.btn
+        height 36px
+        padding 6px 0.6em
+        margin-right 0.2rem
+        border-radius 0.2rem
+
+        &#button-bulk-remove
+            border-color dangercolor
+            background-color dangercolor
+
+            &:hover
+                background-color darken(dangercolor, 15%)
+                border-color darken(dangercolor, 15%)
+
+    #bulk-actions-btngroup
+        margin 0 0.4em
+
+        a.btn
+            margin 0 0.1em
+
+    img
+        height 20px
+        color #C60
+
+.affix-top
+    color: blue
+
+.affix
+    position: fixed
+    color: yellow
+
+    .row
+        // box-shadow: 0 2px 4px 0 rgba(0,0,0,0.15);
+
+#crumbs
+    height 0
+
+    img
+        height: 25px
+        margin-top: 0px
+        margin-left:-5px
+        margin-right:-5px
+
+    ul
+        margin-top: 10px
+        margin-bottom: 0px
+        padding-left: 0
+        list-style none
+        display flex
+
+        li
+            display inline-block
+
+            a
+                display inline-block
+                position relative
+                padding 0.5em 0.5em 0.5em 1.2em
+                margin-right 0.1em
+                background #A7B5C6
+                text-align center
+                font-size 1em
+                text-decoration none
+                color #fff
+
+                &:after
+                    content ""
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid #A7B5C6
+                    position absolute
+                    right -10px
+                    top 0
+                    z-index 1
+
+                &:before
+                    content ""
+                    border-top 1.2em solid transparent
+                    border-bottom 1.2em solid transparent
+                    border-left 10px solid white
+                    position absolute
+                    left 0
+                    top 0
+
+                &:hover
+                    background #92A0B2
+
+                    &:after
+                        border-left-color #92A0B2
+
+            &:last-child
+                a
+                    padding-right 1em
+                    border-top-right-radius 0.2em
+                    border-bottom-right-radius 0.2em
+
+                    @media (max-width: 768px)
+                        // text ellipsis on mobile
+                        max-width         40vw
+                        overflow-x    hidden
+                        text-overflow ellipsis
+                        white-space   nowrap
+
+                    @media (max-width: 520px)
+                        // text ellipsis on mobile
+                        max-width         45vw
+
+                    &:after
+                        display none
+
+            &:first-child
+                a
+                    padding-left 1em
+                    border-top-left-radius 0.2em
+                    border-bottom-left-radius 0.2em
+
+                    @media (max-width: 768px)
+                        width auto
+
+                    &:before
+                        display none
+
+#affixbar
+    #crumbs
+        ul
+            margin-top: 0
+
+        li
+            a
+                margin-top: 0
+
+    #share-state
+            font-size: 18px
+            line-height: 20px
+            margin-right 0.6rem
+
+    #folder-state
+        position relative
+        top 3px
+        margin-right 0.8em
+        @media (max-width: 768px)
+            margin-right 0
+        font-size 1.2em
+        color #999
+
+        .fa
+            margin-right 0.2em
+            color #aaa
+
+    // by default (private area) we don't display download and notif buttons
+    #notifications
+    #download-link
+        display none
+
+
+#bulk-actions-btngroup
+    display none
+
+    &.enabled
+        display inline-block
+
+    a
+        border-radius 10px
+        margin 0 2.5px
+
+    // If two or more icons are used, they should be separated by a small margin.
+    #button-bulk-move span.fa:not(:first-of-type)
+        margin-left 5px
+
+#uploader
+    cursor: pointer
+
+#upload-btngroup
+    cursor: pointer
+
+#button-upload-new-file
+    position: relative
+    overflow: hidden
+    cursor: pointer
+    line-height 1.5
+    min-height 34px
+
+#button-upload-new-file,
+#button-upload-folder
+    input
+        cursor: pointer
+        display: block
+        position: absolute
+        top: 0px
+        right: 0px
+        width: 100%
+        height: 100%
+        opacity: 0.01
+        z-index: 10
+
+#button-new-folder
+    z-index 20
+    margin-left 0.4em
+
+.table
+    .tbody
+        .td
+            span
+                display none
+
+#clearancemanager
+    label
+        font-weight: normal
+
+
+#cozy-clearance-modal
+    .modal-dialog
+        width 700px
+
+    .input-group
+        width 100%
+        input
+            width 90%
+            height 34px
+            line-height 1.428
+            padding-left 5px
+            -webkit-appearance button
+        a.btn
+            width 10%
+            border-bottom-left-radius 0
+            border-top-left-radius 0
+
+p.disabled
+    color: #999
+
+#public-url.disabled
+    color: #DDD
+    background: #DDD
+    cursor: default
+    user-select: none
+
+    &:hover
+    &:active
+    &:focus
+        border: 1px solid #CCC
+
+#share-list
+    list-style-type: none
+    margin-top 5px
+    padding-left 5px
+
+    // will allow inline-block children to be vertically aligned
+    li
+        font-size 0
+        letter-spacing 0
+        word-spacing 0
+
+        span
+            display inline-block
+            vertical-align middle
+
+            &.clearance-name
+                max-width 190px
+                overflow hidden
+                text-overflow ellipsis
+                white-space nowrap
+
+        select
+                vertical-align middle
+                font-size 14px
+                margin-left 5px
+                background: white
+                border-bottom: 1px solid lightcolor
+
+                &:focus
+                        outline: none
+
+
+#inherited-share-list
+    li.header
+        list-style-type none
+        margin-left -30px
+        font-weight bold
+
+.linkshow
+    font-size 14px
+    margin-bottom 5px
+    margin-left -5px
+    padding-left 10px
+    line-height: 20px
+
+    label
+            margin-top: 10px
+            font-weight: normal
+
+    input
+        color #444
+        width 70%
+
+.typeahead.dropdown-menu > li > a
+    padding: 3px 6px 3px 3px
+
+.typeahead.dropdown-menu > li > a > img
+    margin: 0 3px 0 0
+
+.clearance-name
+    font-size: 15px
+    margin-left: 5px
+
+    &:first-child
+        margin-left: 50px
+
+.clearance-btn
+    font-size: 16px
+    margin-left: 10px
+
+.clearance-line
+    line-height: 47px
+    border-bottom: 1px solid lightcolor
+    padding-bottom: 5px
+
+.notifs-label
+    margin-top: 30px
+    font-weight: normal
+    margin-bottom: 0px
+
+    input
+        margin-right: 5px
+
+
+
+// Loader
+
+#loading-indicator
+    position: absolute
+    width: 25px
+    height: 25px
+    left: 50%
+
+
+
+.visible-lg.visible-md.visible-inline
+  display: inline!important
+
+
+// Move widget
+
+.move-widget
+    padding 10px 10px 10px 35px
+
+    .btn
+        padding 2px 10px
+
+    select
+        min-width 150px
+        margin-right 10px
+        background white
+        max-width 100%
+
+#moved-infos
+    margin-top 5px
+    padding-left 35px
+    color #333
+
+.file-edit-name
+    min-width 150px
+
+tr.folder-row td span.caption.caption-edit
+    display flex
+
+.spinner
+        display: inline-block
+
+.progress
+    position relative
+    background lightblue
+
+    .progress-bar
+        font-size 14px
+        position absolute
+
+        &.progress-bar-content
+            width 100%
+            background transparent
+            color #fff
+            text-align center
+
+    .progress-name
+        margin-bottom 8px
+        height 20px
+        line-height 20px
+
+        span
+            display inline-block
+            overflow hidden
+
+        .name
+            font-weight bold
+            white-space nowrap
+            text-overflow ellipsis
+            width: 150px
+        .error
+            color red
+        .success
+            color green
+        .progressview
+            display inline-block
+            width: 380px
+            .progress
+                margin-bottom 0px
+
+#files #file-amount-indicator
+    border-top 1px solid #d5d5d5
+    text-align: center
+    color: #999
+    font-style: italic
+    font-size: 0.8125em
+
+#content
+    padding    (56/16)em 0 0.2em
+    min-height 100vh
+    background #fff
+
+    // notifications about the uplaod status
+    &.mt108
+        padding-top 8em
+
+.files
+    // margin-top 60px
+    position relative
+    min-height calc(100vh - 6em)
+
+#files-drop-zone
+    pointer-events none // prevent overlay from triggering dragleave
+    display none
+    position absolute
+    width 100%
+    height 100%
+    top 0
+    left 0
+    z-index 99
+
+    .overlay
+        opacity 0.67
+        background lighten(basecolor, 20%)
+        width 100%
+        height 100%
+        position absolute
+
+    .vertical-container
+        display table
+        width 100%
+        height 100%
+        position absolute
+
+        p
+            display table-cell
+            vertical-align middle
+            text-align center
+            font-size 2em
+            color #fff
+            text-shadow 0 2px 6px rgba(basecolor, 0.5)
+
+    #file-amount-indicator
+    #no-files-indicator
+        display none
+
+#upload-status
+    padding: 15px
+    margin-top: 0.5em
+    background-color: #d9edf7
+    border-color: #bce8f1
+    border: 1px solid transparent
+    border-radius: 4px
+    color: #31708f
+
+    .btn
+        margin-top -6px
+        margin-right 5px
+
+    .progress
+        margin-right 5px
+        width 300px
+
+    &.success
+        color: #3c763d
+        background-color: #dff0d8
+        border-color: #d6e9c6
+    &.error
+        color: #a94442
+        background-color: #f2dede
+        border-color: #ebccd1
+    &.warning
+        color: #8a6d3b
+        background-color: #fcf8e3
+        border-color: #faebcc
+
+#tagsAutocomplete
+    background-color: white
+    border: 1px solid blue
+    position: absolute
+    width: 150px
+    list-style-type: none
+    padding-left: 0px
+
+    &.empty
+        border 0
+
+    li
+        padding-left: 5px
+
+        &.selected, &:hover
+            background-color orange + 40%
+
+
+
+// 404 page (not found)
+
+body.error-404
+    background #fff
+
+body.error-404 .container
+    display table
+    overflow hidden
+    position relative
+    height 100%
+
+body.error-404 .row
+    display table-cell
+    vertical-align middle
+
+body.error-404 .error-frame
+    padding 80px 40px
+    background #fff
+    border 10px solid blue
+    font-size 25px
+    text-align center
+
+    .headline
+        margin-bottom 50px
+        font-size 30px
+        color blue
+
+/*
+    PUBLIC STYLES
+
+    We hide some part of the UI that are not relevant in the public part
+*/
+.public
+
+    #loading-indicator
+        margin-top: 10px
+
+    #affixbar
+        #share-state
+        #folder-state
+        #upload-buttons
+        #button-new-folder
+            display none
+
+        #notifications
+        #download-link
+            display inline-block
+
+        #bulk-actions-btngroup
+            position: static
+            display inline-block
+
+            #button-bulk-move
+            #button-bulk-remove
+            #button-bulk-download
+                display: none
+
+            #button-bulk-download
+                border-radius: 4px
+
+                span
+                    padding: 0
+                    font-size: 14px
+                    font-weight: normal
+                    font-family: 'Source Sans Pro', sans-serif
+
+        #upload-buttons
+            padding-left: 0
+            margin-left: 0
+
+        #download-link
+            font-size: 14px
+            font-weight: normal
+            font-family: 'Source Sans Pro', sans-serif
+
+        #search-box
+        #button-upload-new-file
+            display: none
+
+        #upload-buttons
+            display inline-block
+
+    &.can-upload #affixbar
+        #upload-buttons
+        #button-new-folder
+        #button-upload-new-file
+            display inline-block
+
+        #button-new-folder
+            margin-left 0.1em
+            margin-right 0
+
+
+    #files
+        .tagit-new
+        .tagit-close
+        .operations
+            // !important to prevent any manipulation from JS on mouseover
+            display none !important
+
+        // since we hide the close 'x' we must reduce parent's size
+        .tagit-choice
+            padding-right 0.5em !important
+
+        .tags
+                display: none
+
+// Footer with the status of the current folder
+#files footer
+    color gray
+    font-style italic
+    text-align center

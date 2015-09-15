@@ -1,0 +1,143 @@
+@media (max-width: (520/16)em)
+    // Landscape phones and down
+
+    body
+        text-rendering optimizeSpeed
+
+    .itemRow .caption
+        font-size 14px
+
+    div#affixbar
+        #search-box
+            display none
+
+        .pull-right
+            display block
+
+    #crumbs ul li
+        a
+            padding 0.5em 0.3em 0.5em 1em
+
+        &:first-child a
+            padding-left 0.8em
+
+        &:last-child a
+            padding-right 0.6em
+
+
+    .modal-dialog
+        max-width: 100%
+        width: 100%
+
+        #share-list li select.change-perm
+            display block
+
+        #share-list img
+            display: none
+
+    #cozy-clearance-modal .input-group input
+        width 75%
+
+    #cozy-clearance-modal .input-group a.btn
+        width 25%
+
+@media (max-width: 768px)
+    // Landscape phone to portrait tablet
+    body
+        text-rendering optimizeSpeed
+
+    .button-title-reponsive
+        display none
+
+    .type-column-cell
+    .date-column-cell
+    .size-column-cell
+        display none
+
+
+    .itemRow
+        .tags
+            display none
+
+        .file-tags
+        .file-delete
+        .file-download
+        .file-edit
+        .file-share
+        .file-move
+        .file-preview
+            display none
+
+        .caption
+            margin-right 0
+
+    #crumbs
+        ul
+            li
+                display none
+
+            li:first-child
+            li:last-child
+                display inline
+
+    #affixbar
+        #search-box
+            max-width 150px
+
+        #upload-buttons a
+            &.btn
+                padding 6px 0.4em
+
+            &#share-state
+            &#button-new-folder
+            &#button-upload-folder
+            &#button-bulk-download
+            &#button-bulk-move
+                display none
+
+                &.visible
+                    display none
+
+            &#share-state
+                display inline-block
+
+    #bulk-actions-btngroup a
+        margin 0 1px
+
+@media (max-width: 1000px)
+    .date-column-cell
+    .size-column-cell
+        display: none
+
+    #folder-state
+        .text
+            display: none
+
+    .itemRow
+        .tags
+            display: none
+            margin-top: 5px
+
+    div#affixbar
+        border-bottom 1px solid #d5d5d5
+
+        header
+            padding 0.6em 0
+
+
+@media (max-width: 1200px)
+    // Portrait tablet to landscape and desktop
+
+    .type-column-cell
+        display: none
+
+    .application
+        .container
+            margin: 0
+            width: 100%
+            max-width: 100%
+
+// Fix bootstrap
+@media (max-width: 768px)
+    .container
+        max-width: 100vw

@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "clean-css-brunch": "1.7.2",
+    "coffee-script-brunch": "1.8.2",
+    "css-brunch": "1.7.0",
+    "digest-brunch": "1.5.1",
+    "glob": "^5.0.10",
+    "jade-brunch": "1.8.1",
+    "javascript-brunch": "1.7.1",
+    "stylus-brunch": "1.8.1"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,14 @@
+if model.id == "root"
+  li
+    a(href="#")
+      span
+        | Files
+else
+  if model.type == "search"
+    li
+      a(href="#search/#{model.id}")
+        | #{model.name}
+  else
+    li
+      a(href="#folders/#{model.id}")
+        | #{model.name}
