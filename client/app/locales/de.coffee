@@ -180,6 +180,7 @@ Merkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.
     "forced public"                   : "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird."
     "forced shared"                   : "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird. Hier ist die Lsite der Gäste mit Zugriff:"
     "confirm"                         : "Bestätigen"
+    "share add"                       : "Hinzufügen"
     "share forgot add"                : """
         Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken
     """
