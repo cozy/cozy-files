@@ -103,6 +103,17 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
 task 'tests', 'Run tests for client and server', (opts) ->
     testsServer opts, -> testsClient opts, -> process.exit 0
 
+# convert JSON lang files to JS
+buildJsInLocales = ->
+    path = require 'path'
+    for file in fs.readdirSync './client/app/locales/'
+        filename = './client/app/locales/' + file
+        template = fs.readFileSync filename, 'utf8'
+        exported = "module.exports = #{template};\n"
+        name     = file.replace '.json', '.js'
+        fs.writeFileSync "./build/client/app/locales/#{name}", exported
+        # add locales at the end of app.js
+    exec "rm -rf build/client/app/locales/*.json"
 
 buildJade = ->
     jade = require 'jade'
@@ -119,6 +130,7 @@ buildJade = ->
             else
                 buildFolder elemPath
     buildFolder srcPath
+
 
 
 task 'build', 'Build CoffeeScript to Javascript', ->
@@ -138,13 +150,17 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "rm build/server/views/*/*.js && " + \
               "mv build/client/public/*.jade build/server/views/ && " + \
               "rm -rf build/server/views/*_build.jade && " + \
-              "#{binCoffee} -cb --output build/client/app/locales client/app/locales"
+              "mkdir -p build/client/app/locales/ && " + \
+              "rm -rf build/client/app/locales/* && " + \
+              "cp -R client/public build/client/ && " + \
+              "rm -rf client/app/locales/*.coffee"
 
     exec command, (err, stdout, stderr) ->
         if err
             logger.error "An error has occurred while compiling:\n" + err
             process.exit 1
         else
+            buildJsInLocales()
             buildJade()
             exec "rm -rf build/server/views/*.jade && rm -rf build/server/views/*/*.jade", ->
                 logger.info "Compilation succeeded."
