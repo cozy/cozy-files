@@ -15,7 +15,9 @@ window.plugins.gallery = {
   addGallery: function (params) {
     var images, gal;
     images = this.getFiles();
-    if (images.length > 0) {
+    // don't display the gallery in folders with more than 50 pictures,
+    // as the gallery library may make the browser unresponsive
+    if (images.length > 0 && images.length < 50) {
       gal = document.getElementById('gallery');
       if (gal === null) {
         gal = document.createElement('div');
