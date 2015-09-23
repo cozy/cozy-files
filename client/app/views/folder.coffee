@@ -59,7 +59,6 @@ module.exports = class FolderView extends BaseView
 
         # refresh folder action buttons after bulk actions
         @listenTo @baseCollection, 'toggle-select', @toggleFolderActions
-        @listenTo @baseCollection, 'remove', @toggleFolderActions
         @listenTo @collection, 'remove', @toggleFolderActions
 
         # when clearance is saved, we update the share button's icon
@@ -137,9 +136,14 @@ module.exports = class FolderView extends BaseView
         @renderUploadStatus()
 
         # We make a reload after the view is displayed to update
-        # the client without degrading UX
-        @refreshData()
-        @$("#loading-indicator").show()
+        # the client without degrading UX, unless it's the first time the folder
+        # is rendered (data has just been loaded).
+        if @model.hasContentBeenRendered()
+            @refreshData()
+            @$("#loading-indicator").show()
+        else
+            @model.isContentRendered = true
+            @$("#loading-indicator").hide()
 
     renderBreadcrumb: ->
         @$('#crumbs').empty()
@@ -188,17 +192,25 @@ module.exports = class FolderView extends BaseView
 
     onNewFolderClicked: ->
 
+        # There is already a new folder.
         if @newFolder
-            # there is already a new folder
-            @filesList.views[@newFolder.cid].$('.file-edit-name').focus()
+            # Look for the view into the pool.
+            view = _.find @filesList.pool, (view) =>
+                return view.model.cid is @newFolder.cid
+            view.$('.file-edit-name').focus()
         else
             @newFolder ?= new File
                 name: ''
                 type: 'folder'
                 path: @model.getRepository()
+                tags: [].concat(@model.get('tags'))
 
-            @baseCollection.add @newFolder
-            view = @filesList.views[@newFolder.cid]
+            # Insert at the begining to prevent useless sorting.
+            @baseCollection.add @newFolder, at: 0
+
+            # Look for the view into the pool.
+            view = _.find @filesList.pool, (view) =>
+                return view.model.cid is @newFolder.cid
             view.onEditClicked ''
 
             @newFolder.once 'sync destroy', => @newFolder = null
@@ -256,30 +268,19 @@ module.exports = class FolderView extends BaseView
         if files.length
             @uploadQueue.addBlobs files, @model
 
-            if event.target?
-                target = $ event.target
-                # reset the input
-                target.replaceWith target.clone true
 
     onFilesSelectedInChrome: (e) ->
         items = e.dataTransfer.items
         return unless items.length
 
-        # Due to the asynchronous nature of the API, we use a pending system
-        # where we increment and decrement it for each operations, only calling
-        # the callback when there are no operation pending
-        pending = 0
         files = []
         errors = []
-        callback = =>
+
+        # Once all entries have been parsed, they are added to the upload queue.
+        addAllToQueue = =>
 
             processUpload = =>
                 @uploadQueue.addFolderBlobs files, @model
-
-                if e.target?
-                    target = $ e.target
-                    # reset the input
-                    target.replaceWith target.clone true
 
             if errors.length > 0
                 formattedErrors = errors
@@ -296,40 +297,43 @@ module.exports = class FolderView extends BaseView
                 processUpload()
 
 
-        # An entry can be a folder or a file
-        parseEntriesRecursively = (entry, path) ->
-            pending = pending + 1
+        # An entry can be a folder or a file.
+        parseEntriesRecursively = (entry, path, done) =>
             path = path or ""
             path = "#{path}/" if path.length > 0
 
-            # if it's a file we add it to the file list with a proper
-            # relative path
+            # If it's a file we add it to the file list with a proper
+            # relative path.
             if entry.isFile
                 entry.file (file) ->
                     file.relativePath = "#{path}#{file.name}"
                     files.push file
-                    pending = pending - 1
-                    # if there are no operation left, the upload starts
-                    callback() if pending is 0
+                    done()
                 , (error) ->
                     errors.push entry.name
-                    pending = pending - 1
-                    # if there are no operation left, the upload starts
-                    callback() if pending is 0
+                    done()
 
-            # if it's a directory, recursively call the function to reach
-            # the leaves of the file tree
+            # If it's a directory, recursively call the function to reach
+            # the leaves of the file tree.
             else if entry.isDirectory
                 reader = entry.createReader()
-                reader.readEntries (entries) ->
-                    for subEntry in entries
-                        parseEntriesRecursively subEntry, "#{path}#{entry.name}"
-                    pending = pending - 1
 
-        # starts the parsing process
-        for item in items
+                # .readEntries only return chunks of 100 elements, so it must
+                # be called multiple times, until there is no more entries.
+                do unshiftFolder = ->
+                    reader.readEntries (entries) ->
+                        if entries.length is 0
+                            done()
+                        else
+                            async.eachSeries entries, (subEntry, next) ->
+                                parseEntriesRecursively subEntry, "#{path}#{entry.name}", next
+                            , unshiftFolder
+
+        # Start the parsing process.
+        async.eachSeries items, (item, next) ->
             entry = item.webkitGetAsEntry()
-            parseEntriesRecursively entry
+            parseEntriesRecursively entry, null, next
+        , addAllToQueue
 
 
     ###
@@ -482,18 +486,49 @@ module.exports = class FolderView extends BaseView
         Bulk actions management
     ###
     bulkRemove: ->
-        new Modal t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
+        new Modal t("modal are you sure"), t("modal delete msg"), \
+                  t("modal delete ok"), t("modal cancel"), (confirm) =>
             if confirm
-                window.pendingOperations.deletion++
-                async.eachSeries @getSelectedElements(), (element, cb) ->
-                    element.destroy
-                        success: -> setTimeout cb, 200
-                        error: -> setTimeout cb, 200
-                , (err) ->
-                    window.pendingOperations.deletion--
-                    if err?
-                        Modal.error t("modal delete error")
-                        console.log err
+
+                # Mark elements as pending deletion.
+                selectedElements = @getSelectedElements()
+                window.pendingOperations.deletion += selectedElements.length
+
+                # Remove all models instead of removing one by one after each
+                # model.destroy, to prevent elements from disappearing in the
+                # meantime.
+                for model in selectedElements
+                    @baseCollection.remove(model)
+
+                # Filter the destroys' result to know which have failed so they
+                # can be re-added to the collection.
+                async.filter selectedElements, (model, next) ->
+                    model.destroy
+                        success: ->
+                            window.pendingOperations.deletion--
+                            next false
+                        error: ->
+                            window.pendingOperations.deletion--
+                            # Mark the model has not deleted on the server to it
+                            # can be re-added to the collection.
+                            next true
+
+                        silent: false
+                        wait: true
+
+                , (undeletedModels) =>
+                    # Re-add the models that have failed to be deleted on the
+                    # server.
+                    if undeletedModels.length > 0
+                        messageOptions = smart_count: undeletedModels.length
+                        Modal.error t("modal delete error", messageOptions)
+                        sortedModelsInError = _.sortBy(
+                            undeletedModels
+                            , (model) -> return model.rank
+                        )
+                        for model in sortedModelsInError
+                            @baseCollection.add(model)
+
 
     bulkMove: ->
         new ModalBulkMove

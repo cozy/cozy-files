@@ -18,6 +18,7 @@ module.exports =
         get: files.find
         put: files.modify
         delete: files.destroy
+        # delete: files.destroyBroken # for tests
     'files/:fileid/attach/:name':
         get: files.getAttachment
     'files/:fileid/download/:name':
@@ -43,6 +44,7 @@ module.exports =
         get: folders.find
         put: folders.modify
         delete: folders.destroy
+        # delete: files.destroyBroken # for tests
 
     # Skips the folder retrieval for root actions
     'folders/root/zip/:name':

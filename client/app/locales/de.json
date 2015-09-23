@@ -1,4 +1,4 @@
-module.exports = {
+{
   "file broken indicator": "Abgebrochene Datei",
   "file broken remove": "Abgebrochene Datei entfernen",
   "or": "oder",
@@ -149,4 +149,3 @@ module.exports = {
   "elements successfully moved to": "Elemente erfolgreich verschoben zu",
   "close": "Schließen"
 }
-;

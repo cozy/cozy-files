@@ -1,43 +1,45 @@
-table#table-items.table.table-hover
-  thead
-    tr.table-headers
-      th
-        button#select-all
-          if numSelectedElements == 0 || numElements == 0
-            i.fa.fa-square-o
-          else if numSelectedElements == numElements
-            i.fa.fa-check-square-o
-          else
-            i.fa.fa-minus-square-o
+// List's header.
+div(role="rowheader")
+  div.extensible-column(role="columnheader")
+    button#select-all
+      if numSelectedElements == 0 || numElements == 0
+        i.fa.fa-square-o
+      else if numSelectedElements == numElements
+        i.fa.fa-check-square-o
+      else
+        i.fa.fa-minus-square-o
 
-        a#down-name.btn.unactive.fa.fa-chevron-down
-          = t('name')
-        a#up-name.btn.unactive.fa.fa-chevron-up
-          = t('name')
+    a#down-name.btn.unactive.fa.fa-chevron-down
+        = t('name')    
+    a#up-name.btn.unactive.fa.fa-chevron-up
+        = t('name')
 
-      th.size-column-cell
-        a#down-size.btn.unactive.fa.fa-chevron-down
-          = t('size')
-        a#up-size.unactive.btn.fa.fa-chevron-up
-          = t('size')
-          
+  div.size-column-cell(role="columnheader")
+    a#down-size.btn.unactive.fa.fa-chevron-down
+        = t('size')
+    a#up-size.btn.unactive.fa.fa-chevron-up
+        = t('size')
 
-      th.type-column-cell
-        a#down-class.btn.unactive.fa.fa-chevron-down
-          = t('type')
-        a#up-class.btn.unactive.fa.fa-chevron-up
-          = t('type')
+  div.type-column-cell(role="columnheader")
+    a#down-class.btn.unactive.fa.fa-chevron-down
+        = t('type')
+    a#up-class.btn.unactive.fa.fa-chevron-up
+        = t('type')
 
-      th.date-column-cell
-        a#down-lastModification.btn.unactive.fa.fa-chevron-down
-          = t('date')
-        a#up-lastModification.btn.unactive.fa.fa-chevron-up
-          = t('date')
+  div.date-column-cell(role="columnheader")
+    a#down-lastModification.btn.unactive.fa.fa-chevron-down
+        = t('date')
+    a#up-lastModification.btn.unactive.fa.fa-chevron-up
+        = t('date')
 
-  tbody#table-items-body
+// List of elements.
+ul#table-items-body(role="grid")
 
-p.footer#file-amount-indicator
-p.footer#no-files-indicator
+
+// Footer.
+footer#file-amount-indicator
+footer#no-files-indicator
+
   if model.type == 'search'
     | #{t('no file in search')}
   else

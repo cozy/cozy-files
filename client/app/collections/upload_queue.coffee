@@ -1,4 +1,4 @@
-File = require '../models/file'
+File    = require '../models/file'
 Helpers = require '../lib/folder_helpers'
 
 # the uploadQueue is a mix of async.queue & BackoneCollection

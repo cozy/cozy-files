@@ -1,4 +1,4 @@
-module.exports = {
+{
   "modal error": "Eroare",
   "modal ok": "OK",
   "modal error get files": "A apărut o eroare în transferul de fișiere de la server",
@@ -103,4 +103,3 @@ module.exports = {
   "send email hint": "Notification emails will be sent one time on save",
   "share add": "Încărcare"
 }
-;

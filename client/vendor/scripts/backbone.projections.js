@@ -160,9 +160,9 @@ exports.Filtered = (function(_super) {
           return _this.remove(model);
         }
       },
-      add: function(model) {
+      add: function(model, collection, options) {
         if (_this.options.filter(model)) {
-          return _this.add(model);
+          return _this.add(model, options);
         }
       },
       change: function(model) {

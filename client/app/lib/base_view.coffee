@@ -11,7 +11,7 @@ module.exports = class BaseView extends Backbone.View
         @beforeRender()
         @$el.html @template @getRenderData()
         @afterRender()
-        @
+        return @
 
     beforeRender: ->
 
