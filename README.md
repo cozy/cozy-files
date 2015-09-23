@@ -35,6 +35,8 @@ You can contribute to the Cozy Files in many ways:
 Hacking the Files app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack Cozy Files just like it was your own app.
 
     git clone https://github.com/cozy/cozy-files.git
+    cd cozy-files
+    npm install
 
 Run it with:
 
@@ -47,6 +49,8 @@ Each modification of the server requires a new build, here is how to run a build
 Each modification of the client requires a specific build too.
 
     cd client
+    npm install
+    npm install -g brunch
     brunch build
 
 ## Tests
