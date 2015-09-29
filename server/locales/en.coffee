@@ -1,3 +1,4 @@
+# coffeelint: disable=max_line_length
 module.exports =
 
     "default user name": "Someone"

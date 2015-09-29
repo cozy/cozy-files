@@ -1,3 +1,4 @@
+# coffeelint: disable=max_line_length
 index = require './index'
 files = require './files'
 folders = require './folders'
