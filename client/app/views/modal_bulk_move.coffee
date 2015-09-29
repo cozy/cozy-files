@@ -105,6 +105,6 @@ module.exports = class ModalBulkMoveView extends Modal
             id = model.get 'id'
             type = model.get 'type'
             client.put "#{type}s/#{id}", path: newPath, cb
-        , ->
+        , (err) ->
             window.pendingOperations.move--
-            callback()
+            callback err
