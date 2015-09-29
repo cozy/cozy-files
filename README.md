@@ -25,8 +25,8 @@ From the command line you can type this command:
 
 You can contribute to the Cozy Files in many ways:
 
-* Pick up an [issue](https://github.com/mycozycloud/cozy-files/issues?state=open) and solve it.
-* Translate it in [a new language](https://github.com/mycozycloud/cozy-files/tree/master/client/app/locales).
+* Pick up an [issue](https://github.com/cozy/cozy-files/issues?state=open) and solve it.
+* Translate it in [a new language](https://github.com/cozy/cozy-files/tree/master/client/app/locales).
 * Allow to move a file from a folder to another.
 
 
@@ -34,7 +34,9 @@ You can contribute to the Cozy Files in many ways:
 
 Hacking the Files app requires you [setup a dev environment](http://cozy.io/hack/getting-started/). Once it's done you can hack Cozy Files just like it was your own app.
 
-    git clone https://github.com/mycozycloud/cozy-files.git
+    git clone https://github.com/cozy/cozy-files.git
+    cd cozy-files
+    npm install
 
 Run it with:
 
@@ -47,6 +49,8 @@ Each modification of the server requires a new build, here is how to run a build
 Each modification of the client requires a specific build too.
 
     cd client
+    npm install
+    npm install -g brunch
     brunch build
 
 ## Tests
@@ -54,7 +58,7 @@ Each modification of the client requires a specific build too.
 Cozy Files manages files in your Cozy platform.
 
 ![Build
-Status](https://travis-ci.org/mycozycloud/cozy-files.png?branch=master)
+Status](https://travis-ci.org/cozy/cozy-files.png?branch=master)
 
 To run tests, use the following command into the Cozy Files folder:
 
@@ -96,7 +100,7 @@ Cozy Files is developed by Cozy Cloud and distributed under the AGPL v3 license.
 
 ## What is Cozy?
 
-![Cozy Logo](https://raw.github.com/mycozycloud/cozy-setup/gh-pages/assets/images/happycloud.png)
+![Cozy Logo](https://raw.github.com/cozy/cozy-setup/gh-pages/assets/images/happycloud.png)
 
 [Cozy](http://cozy.io) is a platform that brings all your web services in the
 same private space.  With it, your web apps and your devices can share data

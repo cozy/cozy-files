@@ -2376,7 +2376,7 @@ module.exports = {
   "modal error get content": "Ein Fehler ist aufgetreten während dem abholen des Inhalts von Ordner \"%{folderName}\" vom Server",
   "modal error empty name": "Der Name kann nicht lerr sein",
   "modal error file invalid": "es scheint eine gültige Datei zu sein",
-  'modal error firefox dragdrop folder': "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
+  "modal error firefox dragdrop folder": "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
   "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "root",
   "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
@@ -2392,7 +2392,7 @@ module.exports = {
   "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
   "modal delete ok": "Löschen",
   "modal cancel": "Abbrechen",
-  "modal delete error": "Abbrechen",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Name ist schon in Gebrauch",
   "modal error rename": "Name kann nicht geändert werden",
   "modal error empty name": "Name kann nicht leer sein",
@@ -2405,7 +2405,7 @@ module.exports = {
   "tooltip download": "Herunterladen",
   "tooltip share": "Teilen",
   "tooltip tag": "Tag",
-  'and x files': "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
+  "and x files": "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
   "already exists": "Existiert bereit.",
   "failed to upload": "kann nicht zum Server gesendet werden.",
   "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
@@ -2503,22 +2503,23 @@ module.exports = {
   "perm rw folder": "Dateien durchblättern und hochladen",
   "change notif": "Diesen Kasten anwählen um benachrichtigt zu werden, wenn eine Kontakt\neine Datei zu diesem Ordner hinzufügt.",
   "send email hint": "Mitteilungs E-Mails werden einmalig beim Speichern gesendet",
-  'move': 'Verschieben',
-  'tooltip move': 'Element zu einem anderen Ordner verschieben.',
-  "moving...": 'Verschieben...',
-  'move element to': 'Elment verschieben zu',
-  'error occured canceling move': 'Ein Fehler ist während dem abbrechen des Verschiebens aufgetreten.',
-  'error occured while moving element': 'Ein Fehler ist während dem Verschieben eines Elements aufgetreten',
-  'file successfully moved to': 'Datei erfolgreich verschoben zu',
-  'plugin modal close': 'Schließen',
-  'moving selected elements': 'Ausgewählte Elemente verschieben',
-  'move elements to': "Elemente verschieben zu",
-  "elements successfully moved to": 'Elemente erfolgreich verschoben zu',
-  'close': 'Schließen'
-};
+  "move": "Verschieben",
+  "tooltip move": "Element zu einem anderen Ordner verschieben.",
+  "moving...": "Verschieben...",
+  "move element to": "Elment verschieben zu",
+  "error occured canceling move": "Ein Fehler ist während dem abbrechen des Verschiebens aufgetreten.",
+  "error occured while moving element": "Ein Fehler ist während dem Verschieben eines Elements aufgetreten",
+  "file successfully moved to": "Datei erfolgreich verschoben zu",
+  "plugin modal close": "Schließen",
+  "moving selected elements": "Ausgewählte Elemente verschieben",
+  "move elements to": "Elemente verschieben zu",
+  "elements successfully moved to": "Elemente erfolgreich verschoben zu",
+  "close": "Schließen"
+}
+;
 });
 
-;require.register("locales/en", function(exports, require, module) {
+require.register("locales/en", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Broken file",
   "file broken remove": "Remove broken file",
@@ -2530,7 +2531,7 @@ module.exports = {
   "modal error get content": "An error occurred while retrieving content of folder \"%{folderName}\" from the server",
   "modal error empty name": "The name can't be empty",
   "modal error file invalid": "doesn't seem to be a valid file",
-  'modal error firefox dragdrop folder': "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
+  "modal error firefox dragdrop folder": "Mozilla Firefox doesn't support folder uploading. If you need this\nfeature, it's available in Chromium, Chrome and Safari browsers.",
   "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
   "root folder name": "root",
   "confirmation reload": "An operation is in progress, are you sure you want to reload the page?",
@@ -2546,7 +2547,7 @@ module.exports = {
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
   "modal cancel": "cancel",
-  "modal delete error": "cancel",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Name already in use",
   "modal error rename": "Name could not be changed",
   "modal error empty name": "Name can't be empty",
@@ -2560,7 +2561,7 @@ module.exports = {
   "tooltip share": "Share",
   "tooltip tag": "Tag",
   "tooltip preview": "Preview",
-  'and x files': "and %{smart_count} other file ||||\nand %{smart_count} other files",
+  "and x files": "and %{smart_count} other file ||||\nand %{smart_count} other files",
   "already exists": "already exists.",
   "failed to upload": "could not be sent to server.",
   "upload complete": "One file successfully uploaded. ||||\n%{smart_count} files successfully uploaded.",
@@ -2658,22 +2659,23 @@ module.exports = {
   "perm rw folder": "browse and upload files",
   "change notif": "Check this box to be notified when a contact\nadd a file to this folder.",
   "send email hint": "Notification emails will be sent one time on save",
-  'move': 'Move',
-  'tooltip move': 'Move element to another folder.',
-  "moving...": 'Moving...',
-  'move element to': 'Move element to',
-  'error occured canceling move': 'An error occured while canceling move.',
-  'error occured while moving element': 'An error occured while moving element',
-  'file successfully moved to': 'File successfully moved to',
-  'plugin modal close': 'Close',
-  'moving selected elements': 'Moving selected elements',
-  'move elements to': "Move elements to",
-  "elements successfully moved to": 'Elements successfully moved to',
-  'close': 'Close'
-};
+  "move": "Move",
+  "tooltip move": "Move element to another folder.",
+  "moving...": "Moving...",
+  "move element to": "Move element to",
+  "error occured canceling move": "An error occured while canceling move.",
+  "error occured while moving element": "An error occured while moving element",
+  "file successfully moved to": "File successfully moved to",
+  "plugin modal close": "Close",
+  "moving selected elements": "Moving selected elements",
+  "move elements to": "Move elements to",
+  "elements successfully moved to": "Elements successfully moved to",
+  "close": "Close"
+}
+;
 });
 
-;require.register("locales/es", function(exports, require, module) {
+require.register("locales/es", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Archivo estropeado",
   "file broken remove": "Suprimir el archivo estropeado",
@@ -2701,7 +2703,7 @@ module.exports = {
   "modal delete msg": "Suprimir es definitivo",
   "modal delete ok": "Suprimir",
   "modal cancel": "anular",
-  "modal delete error": "anular",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Ese nombre ya se ha utilizado",
   "modal error rename": "No se ha podido modificar el nombre",
   "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
@@ -2821,10 +2823,11 @@ module.exports = {
   "move elements to": "Desplazar los elementos a",
   "elements successfully moved to": "Elementos desplazados con éxito a",
   "close": "Cerrar"
-};
+}
+;
 });
 
-;require.register("locales/fr", function(exports, require, module) {
+require.register("locales/fr", function(exports, require, module) {
 module.exports = {
   "file broken indicator": "Fichier cassé",
   "file broken remove": "Supprimer le fichier cassé",
@@ -2837,7 +2840,7 @@ module.exports = {
   "modal error empty name": "Le nom ne peut pas être vide",
   "modal error no data": "Pas de noms et de dossier à envoyer",
   "modal error file invalid": "Le fichier ne parait pas être valide",
-  'modal error firefox dragdrop folder': "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
+  "modal error firefox dragdrop folder": "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
   "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
   "root folder name": "racine",
   "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
@@ -2853,7 +2856,7 @@ module.exports = {
   "modal delete msg": "La suppression ne pourra pas être annulée",
   "modal delete ok": "Supprimer",
   "modal cancel": "Annuler",
-  "modal delete error": "Annuler",
+  "modal delete error": "%{smart_count} suppression a échoué, l'élément correspondant a été ré-intégré. |||| %{smart_count} suppressions ont échoué, les fichiers et répertoires correspondant ont été ré-intégrés.",
   "modal error in use": "Ce nom est déjà utilisé",
   "modal error rename": "Le nom n'a pas pu être modifié",
   "modal error empty name": "Le nom du dossier ne peut pas être vide",
@@ -2866,7 +2869,7 @@ module.exports = {
   "tooltip preview": "Prévisualiser",
   "file edit save": "Sauvegarder",
   "file edit cancel": "Annuler",
-  'and x files': "et un autre fichier ||||\net %{smart_count} autres fichiers",
+  "and x files": "et un autre fichier ||||\net %{smart_count} autres fichiers",
   "already exists": "existent déjà.",
   "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
   "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
@@ -2965,21 +2968,22 @@ module.exports = {
   "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
   "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
   "move": "Déplacer",
-  'tooltip move': "Déplacer l'élément dans un autre dossier.",
+  "tooltip move": "Déplacer l'élément dans un autre dossier.",
   "moving...": "Déplacement en cours…",
   "move element to": "Déplacer l'élément vers",
   "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
   "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
-  "file successfully moved to": 'Fichier déplacé avec succès vers',
-  'plugin modal close': 'Fermer',
-  'moving selected elements': 'Déplacer des éléments',
-  'move elements to': "Déplacer les éléments vers",
-  "elements successfully moved to": 'Eléments déplacés avec succès vers',
-  'close': 'Fermer'
-};
+  "file successfully moved to": "Fichier déplacé avec succès vers",
+  "plugin modal close": "Fermer",
+  "moving selected elements": "Déplacer des éléments",
+  "move elements to": "Déplacer les éléments vers",
+  "elements successfully moved to": "Eléments déplacés avec succès vers",
+  "close": "Fermer"
+}
+;
 });
 
-;require.register("locales/ro", function(exports, require, module) {
+require.register("locales/ro", function(exports, require, module) {
 module.exports = {
   "modal error": "Eroare",
   "modal ok": "OK",
@@ -3000,7 +3004,7 @@ module.exports = {
   "modal delete msg": "Ștergerea nu poate fi anulată",
   "modal delete ok": "Ștergere",
   "modal cancel": "Anulare",
-  "modal delete error": "Anulare",
+  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
   "modal error in use": "Nume deja folosit",
   "modal error rename": "Numele nu a putut fi schimbat",
   "modal error empty name": "Numele nu poate fi vid",
@@ -3012,7 +3016,7 @@ module.exports = {
   "tooltip edit": "Redenumire",
   "tooltip download": "Descărcare",
   "tooltip share": "Partajare",
-  'and x files': "și un alt fișier ||||\nși %{smart_count} alte fișiere",
+  "and x files": "și un alt fișier ||||\nși %{smart_count} alte fișiere",
   "already exists": "există deja.",
   "failed to upload": "nu au putut fi trimise la server.",
   "upload complete": "dosarul a fost trimis cu succes la server ||||\n%{smart_count} dosare au fost trimise cu succes la server.",
@@ -3084,10 +3088,11 @@ module.exports = {
   "change notif": "Bifați această casetă pentru a fi notificat atunci când o persoană de contact\nadăuga un fișier în acest dosar.",
   "send email hint": "Notification emails will be sent one time on save",
   "share add": "Încărcare"
-};
+}
+;
 });
 
-;require.register("models/file", function(exports, require, module) {
+require.register("models/file", function(exports, require, module) {
 var File, client,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
