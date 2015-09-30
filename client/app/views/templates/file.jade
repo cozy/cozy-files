@@ -23,7 +23,7 @@ div.extensible-column(role="gridcell")
               span= model.name
 
       else if model.type == 'file'
-        .caption(data-file-url="#{attachmentUrl}")
+        .caption(data-file-name="#{attachmentUrl.toLowerCase()}", data-file-url="#{attachmentUrl}")
           div.link-wrapper.btn-link
             div.spinholder
               img(src="images/spinner.svg")
