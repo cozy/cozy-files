@@ -5,15 +5,10 @@ host = https://www.transifex.com
 file_filter = server/locales/<lang>.json
 source_file = server/locales/en.json
 source_lang = en
-trans.de = client/app/locales/de.json
-trans.es = client/app/locales/es.json
-trans.ro = client/app/locales/ro.json
-trans.fr = client/app/locales/fr.json
 type = KEYVALUEJSON
 
 [cozy-files.server-enjson]
 file_filter = server/locales/<lang>.json
 source_file = server/locales/en.json
 source_lang = en
-trans.fr = client/app/locales/fr.json
 type = KEYVALUEJSON
