@@ -182,7 +182,8 @@ module.exports.create = (req, res, next) ->
         # stream in memory.
         name = fields.name
         path = fields.path
-        lastModification = moment(new Date(fields.lastModification)).toISOString()
+        lastModification = moment(new Date(fields.lastModification))
+        lastModification = lastModification.toISOString()
         overwrite = fields.overwrite
         upload = true
         canceled = false
@@ -365,7 +366,7 @@ module.exports.modify = (req, res, next) ->
     body = req.body
 
     if body.tags and (Array.isArray body.tags) and
-       file.tags?.toString() isnt body.tags?.toString()
+            file.tags?.toString() isnt body.tags?.toString()
         tags = body.tags
         tags = tags.filter (tag) -> typeof tag is 'string'
         file.updateAttributes tags: tags, (err) ->

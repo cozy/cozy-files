@@ -81,7 +81,11 @@ module.exports.create = (req, res, next) ->
         Folder.all (err, folders) ->
             available = pathHelpers.checkIfPathAvailable folder, folders
             if not available
-                res.send code: 'EEXISTS', error: true, msg: "This folder already exists", 400
+                res.send
+                    code: 'EEXISTS',
+                    error: true,
+                    msg: "This folder already exists",
+                    400
             else
                 fullPath = folder.path
                 parents = folders.filter (tested) ->
@@ -109,9 +113,6 @@ module.exports.create = (req, res, next) ->
 
                     parent.lastModification = now
                     folderParent[parent.name] = parent
-                    #parent.save (err) ->
-                    #    if err then next err
-                    #else
                     createFolder()
                 else
                     folder.tags = []
@@ -120,19 +121,15 @@ module.exports.create = (req, res, next) ->
 # After 1 minute of inactivity, update parents
 resetTimeout = ->
     clearTimeout(timeout) if timeout?
-    timeout = setTimeout ->
-        updateParents()
-    , 60 * 1000
+    timeout = setTimeout updateParents, 60 * 1000
 
 
 # Save in RAM lastModification date for parents
 # Update folder parent once all files are uploaded
 updateParents = ->
-    errors = {}
-    for name in Object.keys(folderParent)
-        folder = folderParent[name]
+    for name, folder of folderParent
         folder.save (err) ->
-            errors[folder.name] = err if err?
+            log.error err if err?
     folderParent = {}
 
 module.exports.find = (req, res, next) ->
@@ -159,9 +156,9 @@ module.exports.modify = (req, res, next) ->
     folder = req.folder
 
     if (not req.body.name?) \
-       and (not req.body.public?) \
-       and (not req.body.tags?) \
-       and (not req.body.path?)
+            and (not req.body.public?) \
+            and (not req.body.tags?) \
+            and (not req.body.path?)
         return res.send error: true, msg: "Data required", 400
 
     previousName = folder.name
@@ -206,6 +203,8 @@ module.exports.modify = (req, res, next) ->
 
         data.clearance = req.body.clearance if req.body.clearance
 
+        # updateParentModifDate is called twice, because the parent can have
+        # changed between the 2 calls (not a mistake).
         folder.updateParentModifDate (err) ->
             log.raw err if err
 
@@ -237,7 +236,7 @@ module.exports.modify = (req, res, next) ->
         return next err if err
 
         if sameFolders.length > 0 and \
-           sameFolders[0].id isnt req.body.id
+                sameFolders[0].id isnt req.body.id
             res.send error: true, msg: "The name already in use", 400
         else
             Folder.all (err, folders) ->
@@ -382,7 +381,7 @@ module.exports.searchContent = (req, res, next) ->
 
     isPublic = req.url.indexOf('/public/') is 0
     key = req.query.key
-    # if the clearance is 'public', we don't allow the search (for privacy reasons)
+    # if the clearance is 'public', search is forbidden (for privacy reasons)
     if isPublic and not key?.length > 0
         err = new Error 'You cannot access public search result'
         err.status = 404
@@ -425,7 +424,8 @@ module.exports.searchContent = (req, res, next) ->
                 if key?
                     isAuthorized = (element, callback) ->
                         sharing.checkClearance element, req, (authorized) ->
-                            callback authorized and element.clearance isnt 'public'
+                            callback authorized and
+                                element.clearance isnt 'public'
 
                     async.filter content, isAuthorized, (results) ->
                         sendResults results
@@ -491,7 +491,7 @@ An error occured while adding a file to archive. File: #{file.name}
 
 
     # Grab all files and files of children folders
-    File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err, files) ->
+    File.byFullPath startkey: "#{key}/", endkey: "#{key}/\ufff0", (err,files) ->
         if err then next err
         else
             # Only keeps files that have been selected
