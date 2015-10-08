@@ -194,7 +194,8 @@ module.exports.create = function(req, res, next) {
     }
     name = fields.name;
     path = fields.path;
-    lastModification = moment(new Date(fields.lastModification)).toISOString();
+    lastModification = moment(new Date(fields.lastModification));
+    lastModification = lastModification.toISOString();
     overwrite = fields.overwrite;
     upload = true;
     canceled = false;
