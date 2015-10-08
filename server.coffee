@@ -10,7 +10,7 @@ application = module.exports = (callback) ->
         host: process.env.HOST || '127.0.0.1'
 
     initialize.beforeStart ->
-        americano.start options, (app, server) ->
+        americano.start options, (err, app, server) ->
             app.server = server
             app.use errorHandler
             initialize.afterStart app, server, callback
