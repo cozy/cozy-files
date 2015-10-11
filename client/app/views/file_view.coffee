@@ -403,8 +403,7 @@ module.exports = class FileView extends BaseView
         # checkbox.
         if results.length is 0 and not @$el.hasClass('edit-mode')
             isShiftPressed = event.shiftKey or false
-            if isShiftPressed
-                window.getSelection().removeAllRanges()
+            window.getSelection().removeAllRanges()
             @model.toggleViewSelected isShiftPressed
 
 
