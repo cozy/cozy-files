@@ -2,6 +2,7 @@
 BaseView = require '../lib/base_view'
 FileView = require './file_view'
 LongList = require '../lib/long-list-rows'
+FileInfo = require './file_info'
 
 module.exports = class FilesView extends BaseView #ViewCollection
     template: require './templates/files'
@@ -33,6 +34,8 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click li.itemRow'                  : (e) -> @viewProxy 'onLineClicked'        , e
         'click a.cancel-upload-button'      : (e) -> @viewProxy 'onCancelUploadClicked', e
         'click div.selector-wrapper button' : (e) -> @viewProxy 'onSelectClicked'      , e
+        'mouseenter .icon-type': (e) -> @viewProxy 'onFileLinkOver'       , e
+        'mouseleave .icon-type': (e) -> @viewProxy 'onFileLinkOut'        , e
 
     initialize: (options) ->
         super options
@@ -123,6 +126,9 @@ module.exports = class FilesView extends BaseView #ViewCollection
         @longList = new LongList viewPortElement, options
         @longList.initRows @collection.length
 
+        # init the file info popover
+        this.fileInfoCtrlr = new FileInfo(@$('.file-info')[0])
+
 
     # Handler called when the list must update.
     onRowsMoved: (rowsToDecorate) ->
@@ -161,7 +167,6 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         # Get view's cid. Views are indexed by cid. Object can be a File model
         # or a DOMElement within FileView.$el.
-        console.log "tototot !"
         if object.cid?
             cid = object.cid
         else
@@ -178,9 +183,23 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if view?
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
-            view[methodName].apply view, args
+            if methodName == 'onFileLinkOver'
+                @onFileLinkOver view, args
+                return
+            else if methodName == 'onFileLinkOut'
+                @onFileLinkOut view, args
+                return
+            else
+                view[methodName].apply view, args
+                return
         else
+            return
 
+    onFileLinkOver: (targetView, event) ->
+        @fileInfoCtrlr.onEnterLink(targetView)
+
+    onFileLinkOut: (targetView, event) ->
+        @fileInfoCtrlr.onExitLink(targetView)
 
 
     updateNbFiles: ->

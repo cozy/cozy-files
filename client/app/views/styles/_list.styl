@@ -10,8 +10,21 @@
     display flex
     flex-direction column
 
+    .file-info
+        width            : 100px
+        height           : 100px
+        top : 50px
+        left: 60px
+        background-color : red
+        position         : absolute
+        z-index          : 1000
+        display : none
+    .ease
+        transition: top 0.2s ease
+
     [role="grid"]
         flex 1
+        position relative
 
     footer
         margin-top auto
