@@ -6,10 +6,11 @@ div.extensible-column(role="gridcell")
   div.caption-wrapper
 
     block title
+
       if model.type == 'folder'
         .caption
-          div.link-wrapper.btn-link
-            div.spinholder
+          a.link-wrapper.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
+            div.spinholder(style="display: none")
               img(src="images/spinner.svg")
             if clearance == 'public'
               i.icon-type.type-folder
@@ -19,20 +20,22 @@ div.extensible-column(role="gridcell")
                 span.fa.fa-globe
             else
               i.icon-type.type-folder
-            a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
-              span= model.name
+            span= model.name
 
       else if model.type == 'file'
         .caption(data-file-url="#{attachmentUrl}")
-          div.link-wrapper.btn-link
-            div.spinholder
+          a.link-wrapper.btn-link(href="#{attachmentUrl}", title="#{t('download file')}", target="_blank")
+            div.spinholder(style="display: none")
               img(src="images/spinner.svg")
             if model.mime && this.mimeClasses[model.mime]
-              i(class="icon-type #{this.mimeClasses[model.mime]}")
-                if clearance == 'public'
-                  span.fa.fa-globe
-                else if clearance && clearance.length > 0
-                  span.fa.fa-globe
+              if this.mimeThumbs[model.mime] && model.binary.thumb.id
+                img.icon-type.type-thumb(src="files/photo/thumb/#{model.id}")
+              else
+                i(class="icon-type #{this.mimeClasses[model.mime]}")
+              if clearance == 'public'
+                span.fa.fa-globe
+              else if clearance && clearance.length > 0
+                span.fa.fa-globe
             else
               i.icon-type.type-file
                 if clearance == 'public'
@@ -40,13 +43,9 @@ div.extensible-column(role="gridcell")
                 else if clearance && clearance.length > 0
                   span.fa.fa-globe
             if !isBroken
-                a.btn-link(
-                  href="#{attachmentUrl}",
-                  title="#{t('download file')}", target="_blank")
-                    span= model.name
-    
+                span= model.name
             else
-              span.file-name= model.name
+              span= model.name
 
     block tags
       ul.tags

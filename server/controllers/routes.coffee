@@ -24,6 +24,8 @@ module.exports =
         get: files.getAttachment
     'files/:fileid/download/:name':
         get: files.downloadAttachment
+    'files/photo/thumb/:fileid':
+        get: files.photoThumb
 
 
     'folderid':

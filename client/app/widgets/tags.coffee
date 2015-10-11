@@ -11,7 +11,7 @@ module.exports = class TagsView extends BaseView
         'keyup input': 'refreshAutocomplete'
 
     template: -> """
-        <input type="text" placeholder="#{t('tag')}">
+        <input type="text" placeholder="#{t('tag')}" style="display: none">
     """
 
     initialize: ->
@@ -119,6 +119,7 @@ module.exports = class TagsView extends BaseView
 
     hideInput: =>
         @$('input').hide()
+        console.log 'tags.hideInput'
 
 TagsView.autocomplete = new Autocomplete(id: 'tagsAutocomplete')
 TagsView.autocomplete.render()

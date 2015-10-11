@@ -106,11 +106,11 @@ module.exports = class FilesView extends BaseView #ViewCollection
             SAFE_ZONE_COEF  : 3
 
             # minimum duration between two refresh after scroll (ms)
-            THROTTLE        : 150
+            THROTTLE        : 60
 
             # max number of viewport height by seconds : beyond this speed the
             # refresh is delayed to the nex throttle
-            MAX_SPEED       : 2.5
+            MAX_SPEED       : 1.5
 
             # call back when a row of the buffer is moved and must be completly
             # redecorated

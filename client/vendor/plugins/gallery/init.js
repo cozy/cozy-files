@@ -23,6 +23,7 @@ window.plugins.gallery = {
         gal.style.display = "none";
         document.body.appendChild(gal);
       } else {
+        return;
         gal.innerHTML = '';
       }
       Array.prototype.forEach.call(images, function (elmt, idx) {
