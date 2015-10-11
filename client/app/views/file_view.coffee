@@ -376,7 +376,7 @@ module.exports = class FileView extends BaseView
     # user clicked a button.
     onLineClicked: (event) ->
         # List of selectors that will prevent the selection if they, or one
-        # of their children, are clicked.
+        # of their children, have been clicked.
         forbiddenSelectors = [
             '.operations'
             '.tags'
@@ -388,8 +388,10 @@ module.exports = class FileView extends BaseView
         ]
 
         # Map them to an actual DOM element.
-        forbiddenElements = forbiddenSelectors.map (selector) =>
-            return @$(selector)?[0] or null
+        forbiddenElements = []
+        for selector in forbiddenSelectors
+            if elmt$ = $(selector)?[0]
+                forbiddenElements.push(elmt$)
 
         # For each forbidden element, check if it, or one of its children, has
         # been clicked.
@@ -401,6 +403,8 @@ module.exports = class FileView extends BaseView
         # checkbox.
         if results.length is 0 and not @$el.hasClass('edit-mode')
             isShiftPressed = event.shiftKey or false
+            if isShiftPressed
+                window.getSelection().removeAllRanges()
             @model.toggleViewSelected isShiftPressed
 
 

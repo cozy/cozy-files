@@ -21,18 +21,18 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click #down-lastModification' : 'onChangeOrder'
 
         # Event delegation.
-        'click a.file-tags': (e) -> @viewProxy 'onTagClicked', e
-        'click a.file-delete': (e) -> @viewProxy 'onDeleteClicked', e
-        'click a.file-share': (e) -> @viewProxy 'onShareClicked', e
-        'click a.file-edit': (e) -> @viewProxy 'onEditClicked', e
-        'click a.file-edit-save': (e) -> @viewProxy 'onSaveClicked', e
-        'click a.file-edit-cancel': (e) -> @viewProxy 'onCancelClicked', e
-        'click a.cancel-upload-button': (e) -> @viewProxy 'onCancelUploadClicked', e
-        'click a.file-move': (e) -> @viewProxy 'onMoveClicked', e
-        'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
-        'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
-        'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
-        'click li.itemRow': (e) -> @viewProxy 'onLineClicked', e
+        'click a.file-tags'                 : (e) -> @viewProxy 'onTagClicked'         , e
+        'click a.file-delete'               : (e) -> @viewProxy 'onDeleteClicked'      , e
+        'click a.file-share'                : (e) -> @viewProxy 'onShareClicked'       , e
+        'click a.file-edit'                 : (e) -> @viewProxy 'onEditClicked'        , e
+        'click a.file-edit-save'            : (e) -> @viewProxy 'onSaveClicked'        , e
+        'click a.file-edit-cancel'          : (e) -> @viewProxy 'onCancelClicked'      , e
+        'click a.file-move'                 : (e) -> @viewProxy 'onMoveClicked'        , e
+        'click a.broken-button'             : (e) -> @viewProxy 'onDeleteClicked'      , e
+        'keydown input.file-edit-name'      : (e) -> @viewProxy 'onKeyPress'           , e
+        'click li.itemRow'                  : (e) -> @viewProxy 'onLineClicked'        , e
+        'click a.cancel-upload-button'      : (e) -> @viewProxy 'onCancelUploadClicked', e
+        'click div.selector-wrapper button' : (e) -> @viewProxy 'onSelectClicked'      , e
 
     initialize: (options) ->
         super options
@@ -161,6 +161,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
 
         # Get view's cid. Views are indexed by cid. Object can be a File model
         # or a DOMElement within FileView.$el.
+        console.log "tototot !"
         if object.cid?
             cid = object.cid
         else
