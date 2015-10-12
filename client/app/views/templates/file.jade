@@ -28,7 +28,7 @@ div.extensible-column(role="gridcell")
             div.spinholder(style="display: none")
               img(src="images/spinner.svg")
             if model.mime && this.mimeClasses[model.mime]
-              if this.mimeThumbs[model.mime] && model.binary.thumb.id
+              if model.binary && model.binary.thumb
                 img.icon-type.type-thumb(src="files/photo/thumb/#{model.id}")
               else
                 i(class="icon-type #{this.mimeClasses[model.mime]}")
