@@ -1,18 +1,32 @@
 
+###*
+ * This module is in charge of displaying the file information in a popover when
+ * the user let his mouse over the icon of the file.
+ * For now we only display the thumbnail of file being an image.
+###
 
 module.exports = class FileInfo
 
     constructor: (elmt) ->
 
         @el  = elmt
-        @_thumbEl = document.createElement('img')
-        @el.appendChild(@_thumbEl)
+        @img = document.createElement('img')
+        @a   = document.createElement('a')
+        @el.appendChild(@a).appendChild(@img)
 
         elmt.addEventListener 'mouseenter', (event) =>
             @stateMachine._enterPopo()
 
         elmt.addEventListener 'mouseleave', (event) =>
             @stateMachine._exitPopo()
+
+        @a.addEventListener 'click', (event) =>
+            # if ctrl => open link in new window : nothing to do
+            if event.ctrlKey
+                return
+            # else show gallery
+            window.app.gallery.show(@_currentTarget.model)
+            event.preventDefault()
 
         events = []
         events.push name:'_enterLink' , from:'Init'       , to:'WaitToShow'
@@ -32,7 +46,8 @@ module.exports = class FileInfo
 
             events : events
 
-            # error: (eventName, from, to, args, errorCode, errorMessage) ->
+            # usefull for debug
+            #  error: (eventName, from, to, args, errorCode, errorMessage) ->
             #     console.log '  event ' + eventName + ' was naughty :- ' + errorMessage
 
             callbacks:
@@ -87,7 +102,9 @@ module.exports = class FileInfo
         scrollTop       = target.el.offsetParent.scrollTop
         @el.style.top   = (topFileInfo - scrollTop) + 'px'
         # update content
-        @_thumbEl.src = "files/photo/thumb/#{target.model.attributes.id}"
+        attr     = target.model.attributes
+        @img.src = "files/photo/thumb/#{attr.id}"
+        @a.href  = "files/#{attr.id}/attach/#{attr.name}"
 
 
     _show: () ->

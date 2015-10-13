@@ -22,7 +22,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click #down-lastModification' : 'onChangeOrder'
 
         # Event delegation.
-        'click a.btn-link'                  : (e) -> @viewProxy 'onFileLinkClicked'    , e
+        'click a.link-wrapper'              : (e) -> @viewProxy 'onFileLinkClicked'    , e
         'click a.file-tags'                 : (e) -> @viewProxy 'onTagClicked'         , e
         'click a.file-delete'               : (e) -> @viewProxy 'onDeleteClicked'      , e
         'click a.file-share'                : (e) -> @viewProxy 'onShareClicked'       , e

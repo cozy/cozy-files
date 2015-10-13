@@ -367,14 +367,17 @@ module.exports = class FileView extends BaseView
     onCancelUploadClicked: ->
         @uploadQueue.abort @model
 
+
     # when a file link (icon or name) is clicked, choose the action to lauch
     onFileLinkClicked: (e)=>
         # if an image, launch the gallerie viewer, otherwise let the browser
         # open the link in a new window
         if @model.attributes.mime?.substr(0,5)=='image'
-            console.log 'open gallerie !'
+            # ctrl + click on an img => open in new window, nothing to do
+            if e.ctrlKey
+                return
+            window.app.gallery.show(@model)
             e.preventDefault()
-
 
 
     # When a line is clicked, it should mark the item as selected, unless the
@@ -392,24 +395,19 @@ module.exports = class FileView extends BaseView
             '.selector-wrapper'
         ]
 
-        # Map them to an actual DOM element.
-        forbiddenElements = []
-        for selector in forbiddenSelectors
-            if elmt$ = $(selector)?[0]
-                forbiddenElements.push(elmt$)
+        if @$el.hasClass('edit-mode')
+            return
 
-        # For each forbidden element, check if it, or one of its children, has
-        # been clicked.
-        results = forbiddenElements.filter (element) ->
-            return element? and
-                (element is event.target or $.contains(element, event.target))
+        t = event.target
+        for sel in forbiddenSelectors
+            if $(t).parents(sel).length != 0 or t.matches(sel)
+                return
 
-        # If none of the forbidden elements has been clicked, we can select the
-        # checkbox.
-        if results.length is 0 and not @$el.hasClass('edit-mode')
-            isShiftPressed = event.shiftKey or false
-            window.getSelection().removeAllRanges()
-            @model.toggleViewSelected isShiftPressed
+        isShiftPressed = event.shiftKey or false
+        window.getSelection().removeAllRanges()
+        @model.toggleViewSelected isShiftPressed
+
+
 
 
     onKeyPress: (e) =>
@@ -467,6 +465,7 @@ module.exports = class FileView extends BaseView
 
         # @hideLoading()
         @showLoading() if @hasUploadingChildren
+
 
     afterReDecorate: ->
         @$el.data 'cid', @model.cid # link between the element and the model
@@ -544,7 +543,7 @@ module.exports = class FileView extends BaseView
     hideLoading: ->
         @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-        console.log 'file_view.hideLoading'
+        # console.log 'file_view.hideLoading'
 
 
     # Get a DOM node with the element's icon properly defined.

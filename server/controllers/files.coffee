@@ -481,6 +481,31 @@ module.exports.photoThumb = (req, res, next) ->
         stream.abort()
 
     stream.pipe res
+###*
+ * Returns "screens" (image reduced in ) for given file.
+ * there is a bug : when the browser cancels many downloads, some are not
+ * cancelled, what leads to saturate the stack of threads and blocks the
+ * download of thumbs.
+ * Cf comments bellow to reproduce easily
+###
+module.exports.photoScreen = (req, res, next) ->
+    which = if req.file.binary.screen then 'screen' else 'file'
+    stream = req.file.getBinary which, (err) ->
+        if err
+            console.log err
+            next(err)
+            stream.on 'data', () ->
+            stream.on 'end', () ->
+            stream.resume()
+            return
+
+    req.on 'close', () ->
+        stream.abort()
+
+    res.on 'close', () ->
+        stream.abort()
+
+    stream.pipe res
     ##
     # there is a bug : when the browser cancels many downloads, some are not
     # cancelled, what leads to saturate the stack of threads and blocks the

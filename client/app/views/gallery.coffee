@@ -1,0 +1,53 @@
+
+###*
+ * this module is in charge of displaying a photo gallery when an image is
+ * clicked
+###
+module.exports = class Gallery
+
+    ###*
+     * will open the diaporama when a photo is clicked
+     * @param  {BackboneModel} modelClicked Model of the file clicked
+    ###
+    show: (modelClicked) ->
+
+        # 1/ preprare the div of a fake thumbnail (input for baguettebox.js)
+        gal = document.getElementById('gallery')
+        if gal == null
+            gal = document.createElement('div')
+            gal.id = 'gallery'
+            gal.style.display = 'none'
+            document.body.appendChild gal
+        else
+            gal.innerHTML = ''
+
+        # 2/ populate the div with the links to the photo to display
+        a_toSimulateClick = null
+        window.app.router.folderView.collection.forEach (model)=>
+            attr = model.attributes
+            if attr.mime.substr(0,5) != 'image'
+                return
+            a      = document.createElement('a')
+            a.href = "files/photo/screen/#{attr.id}/#{attr.name}"
+            gal.appendChild a
+            if model == modelClicked
+                a_toSimulateClick = a
+
+        # 3/ run baguetteBox
+        window.baguetteBox.run '#gallery',
+            captions  : true
+            buttons   : 'auto'
+            async     : false
+            preload   : 2
+            animation : 'slideIn'
+
+        # 4/ launch the display of the diaporama. For that we have to simulate
+        # a click on a thumbnail.
+        event = document.createEvent('MouseEvent')
+        event.initMouseEvent 'click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null
+        event.preventDefault()
+        a_toSimulateClick.dispatchEvent event
+
+        return
+
+
