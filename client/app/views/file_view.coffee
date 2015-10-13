@@ -79,10 +79,6 @@ module.exports = class FileView extends BaseView
         'application/x-apple-diskimage'          : 'type-archive'
         'multipart/x-gzip'                       : 'type-archive'
 
-    mimeThumbs:
-        'image/jpg'                              : 'type-image'
-        'image/jpeg'                             : 'type-image'
-
 
     template: (args) ->
         if @isSearchMode
@@ -370,6 +366,15 @@ module.exports = class FileView extends BaseView
     # been canceled for two seconds before removing the whole file line.
     onCancelUploadClicked: ->
         @uploadQueue.abort @model
+
+    # when a file link (icon or name) is clicked, choose the action to lauch
+    onFileLinkClicked: (e)=>
+        # if an image, launch the gallerie viewer, otherwise let the browser
+        # open the link in a new window
+        if @model.attributes.mime?.substr(0,5)=='image'
+            console.log 'open gallerie !'
+            e.preventDefault()
+
 
 
     # When a line is clicked, it should mark the item as selected, unless the

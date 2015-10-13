@@ -22,6 +22,7 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click #down-lastModification' : 'onChangeOrder'
 
         # Event delegation.
+        'click a.btn-link'                  : (e) -> @viewProxy 'onFileLinkClicked'    , e
         'click a.file-tags'                 : (e) -> @viewProxy 'onTagClicked'         , e
         'click a.file-delete'               : (e) -> @viewProxy 'onDeleteClicked'      , e
         'click a.file-share'                : (e) -> @viewProxy 'onShareClicked'       , e
@@ -195,9 +196,13 @@ module.exports = class FilesView extends BaseView #ViewCollection
         else
             return
 
+
+    # display file info popover if relevant
     onFileLinkOver: (targetView, event) ->
         @fileInfoCtrlr.onEnterLink(targetView)
 
+
+    # hide file info popover if relevant
     onFileLinkOut: (targetView, event) ->
         @fileInfoCtrlr.onExitLink(targetView)
 

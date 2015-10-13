@@ -128,7 +128,7 @@ module.exports = class FileInfo
 
 
     onEnterLink: (targetView)->
-        console.log 'onEnterLink', @stateMachine.current
+        # console.log 'onEnterLink', @stateMachine.current
         @_lastEnteredTarget =
             el    : targetView.el
             model : targetView.model
@@ -136,5 +136,5 @@ module.exports = class FileInfo
 
 
     onExitLink: (targetView)->
-        console.log 'onExitLink', @stateMachine.current
+        # console.log 'onExitLink', @stateMachine.current
         @stateMachine._exitLink()
