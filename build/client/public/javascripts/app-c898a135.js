@@ -110,7 +110,7 @@
   globals.require = require;
 })();
 require.register("application", function(exports, require, module) {
-var File, FileCollection, SocketListener, UploadQueue;
+var File, FileCollection, Gallery, SocketListener, UploadQueue;
 
 FileCollection = require('./collections/files');
 
@@ -119,6 +119,8 @@ UploadQueue = require('./collections/upload_queue');
 File = require('./models/file');
 
 SocketListener = require('../lib/socket');
+
+Gallery = require('./views/gallery');
 
 
 /*
@@ -151,6 +153,7 @@ module.exports = {
     this.baseCollection.add(this.root);
     window.app = this;
     Backbone.history.start();
+    window.app.gallery = new Gallery();
     if (typeof Object.freeze === 'function') {
       Object.freeze(this);
     }
@@ -3911,6 +3914,223 @@ module.exports = BreadcrumbsView = (function(superClass) {
 })(BaseView);
 });
 
+;require.register("views/file_info", function(exports, require, module) {
+
+/**
+ * This module is in charge of displaying the file information in a popover when
+ * the user let his mouse over the icon of the file.
+ * For now we only display the thumbnail of file being an image.
+ */
+var FileInfo;
+
+module.exports = FileInfo = (function() {
+  function FileInfo(elmt) {
+    var events;
+    this.el = elmt;
+    this.img = document.createElement('img');
+    this.a = document.createElement('a');
+    this.el.appendChild(this.a).appendChild(this.img);
+    elmt.addEventListener('mouseenter', (function(_this) {
+      return function(event) {
+        return _this.stateMachine._enterPopo();
+      };
+    })(this));
+    elmt.addEventListener('mouseleave', (function(_this) {
+      return function(event) {
+        return _this.stateMachine._exitPopo();
+      };
+    })(this));
+    this.a.addEventListener('click', (function(_this) {
+      return function(event) {
+        if (event.ctrlKey) {
+          return;
+        }
+        window.app.gallery.show(_this._currentTarget.model);
+        return event.preventDefault();
+      };
+    })(this));
+    events = [];
+    events.push({
+      name: '_enterLink',
+      from: 'Init',
+      to: 'WaitToShow'
+    });
+    events.push({
+      name: '_enterLink',
+      from: 'WaitToShow',
+      to: 'WaitToShow'
+    });
+    events.push({
+      name: '_enterLink',
+      from: 'WaitToHide',
+      to: 'Visible'
+    });
+    events.push({
+      name: '_showTimer',
+      from: 'WaitToShow',
+      to: 'Visible'
+    });
+    events.push({
+      name: '_exitLink',
+      from: 'Visible',
+      to: 'WaitToHide'
+    });
+    events.push({
+      name: '_exitLink',
+      from: 'Init',
+      to: 'Init'
+    });
+    events.push({
+      name: '_exitLink',
+      from: 'WaitToShow',
+      to: 'Init'
+    });
+    events.push({
+      name: '_enterPopo',
+      from: 'WaitToHide',
+      to: 'Visible'
+    });
+    events.push({
+      name: '_exitPopo',
+      from: 'Visible',
+      to: 'WaitToHide'
+    });
+    events.push({
+      name: '_hideTimer',
+      from: 'WaitToHide',
+      to: 'Init'
+    });
+    this.stateMachine = StateMachine.create({
+      initial: 'Init',
+      events: events,
+      callbacks: {
+        onenterWaitToShow: (function(_this) {
+          return function(event, from, to) {
+            if (from === 'Init') {
+              return _this._startShowTimer();
+            }
+          };
+        })(this),
+        onenterVisible: (function(_this) {
+          return function(event, from, to) {
+            if (from === 'WaitToShow') {
+              _this._setNewTarget();
+              return _this._show();
+            } else if (from === 'WaitToHide') {
+              window.clearTimeout(_this.hideTimeout);
+              if (_this._lastEnteredTarget !== _this._currentTarget) {
+                return _this._setNewTarget();
+              }
+            }
+          };
+        })(this),
+        onenterWaitToHide: (function(_this) {
+          return function(event, from, to) {
+            return _this._startHideTimer();
+          };
+        })(this),
+        onenterInit: (function(_this) {
+          return function(event, from, to) {
+            if (from === 'WaitToHide') {
+              return _this._hide();
+            } else if (from === 'WaitToShow') {
+              return window.clearTimeout(_this.showTimeout);
+            }
+          };
+        })(this),
+        onbefore_enterLink: (function(_this) {
+          return function(event, from, to) {
+            if (!_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
+              return false;
+            } else {
+              return true;
+            }
+          };
+        })(this),
+        onbefore_exitLink: (function(_this) {
+          return function(event, from, to) {
+            if (!_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
+              return false;
+            }
+          };
+        })(this)
+      }
+    });
+  }
+
+  FileInfo.prototype._setNewTarget = function() {
+    var attr, scrollTop, target, topFileInfo;
+    target = this._lastEnteredTarget;
+    this._currentTarget = target;
+    topFileInfo = target.el.offsetTop;
+    scrollTop = target.el.offsetParent.scrollTop;
+    this.el.style.top = (topFileInfo - scrollTop) + 'px';
+    attr = target.model.attributes;
+    this.img.src = "files/photo/thumb/" + attr.id;
+    return this.a.href = "files/" + attr.id + "/attach/" + attr.name;
+  };
+
+  FileInfo.prototype._show = function() {
+    this.el.style.display = 'block';
+    return this.el.classList.add('ease');
+  };
+
+  FileInfo.prototype._hide = function() {
+    this.el.style.display = 'none';
+    return this.el.classList.remove('ease');
+  };
+
+  FileInfo.prototype._startShowTimer = function() {
+    return this.showTimeout = window.setTimeout((function(_this) {
+      return function() {
+        return _this.stateMachine._showTimer();
+      };
+    })(this), 700);
+  };
+
+  FileInfo.prototype._startHideTimer = function() {
+    return this.hideTimeout = window.setTimeout((function(_this) {
+      return function() {
+        return _this.stateMachine._hideTimer();
+      };
+    })(this), 300);
+  };
+
+
+  /**
+   * Return false if the model corresponds to a file which has no info to
+   * display in the popover. For now only files with thumbnails are concerned.
+   * @param  {View}  targetView Backbone view of the file
+   * @return {Boolean}  True if the file has info to display in the
+   *                    popover, false otherwise.
+   */
+
+  FileInfo.prototype._hasInfoToDisplay = function(targetView) {
+    var ref;
+    if (((ref = targetView.model.attributes.binary) != null ? ref.thumb : void 0) != null) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  FileInfo.prototype.onEnterLink = function(targetView) {
+    this._lastEnteredTarget = {
+      el: targetView.el,
+      model: targetView.model
+    };
+    return this.stateMachine._enterLink();
+  };
+
+  FileInfo.prototype.onExitLink = function(targetView) {
+    return this.stateMachine._exitLink();
+  };
+
+  return FileInfo;
+
+})();
+});
+
 ;require.register("views/file_view", function(exports, require, module) {
 var BaseView, FileView, ModalShareView, ModalView, ProgressBar, TagsView, client,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -3934,6 +4154,7 @@ module.exports = FileView = (function(superClass) {
 
   function FileView() {
     this.onKeyPress = bind(this.onKeyPress, this);
+    this.onFileLinkClicked = bind(this.onFileLinkClicked, this);
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
@@ -4276,22 +4497,33 @@ module.exports = FileView = (function(superClass) {
     return this.uploadQueue.abort(this.model);
   };
 
-  FileView.prototype.onLineClicked = function(event) {
-    var forbiddenElements, forbiddenSelectors, isShiftPressed, results;
-    forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
-    forbiddenElements = forbiddenSelectors.map((function(_this) {
-      return function(selector) {
-        var ref;
-        return ((ref = _this.$(selector)) != null ? ref[0] : void 0) || null;
-      };
-    })(this));
-    results = forbiddenElements.filter(function(element) {
-      return (element != null) && (element === event.target || $.contains(element, event.target));
-    });
-    if (results.length === 0 && !this.$el.hasClass('edit-mode')) {
-      isShiftPressed = event.shiftKey || false;
-      return this.model.toggleViewSelected(isShiftPressed);
+  FileView.prototype.onFileLinkClicked = function(e) {
+    var ref;
+    if (((ref = this.model.attributes.mime) != null ? ref.substr(0, 5) : void 0) === 'image') {
+      if (e.ctrlKey) {
+        return;
+      }
+      window.app.gallery.show(this.model);
+      return e.preventDefault();
     }
+  };
+
+  FileView.prototype.onLineClicked = function(event) {
+    var forbiddenSelectors, i, isShiftPressed, len, sel, t;
+    forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
+    if (this.$el.hasClass('edit-mode')) {
+      return;
+    }
+    t = event.target;
+    for (i = 0, len = forbiddenSelectors.length; i < len; i++) {
+      sel = forbiddenSelectors[i];
+      if ($(t).parents(sel).length !== 0 || t.matches(sel)) {
+        return;
+      }
+    }
+    isShiftPressed = event.shiftKey || false;
+    window.getSelection().removeAllRanges();
+    return this.model.toggleViewSelected(isShiftPressed);
   };
 
   FileView.prototype.onKeyPress = function(e) {
@@ -4343,7 +4575,6 @@ module.exports = FileView = (function(superClass) {
     if (this.model.isNew()) {
       this.blockNameLink();
     }
-    this.hideLoading();
     if (this.hasUploadingChildren) {
       return this.showLoading();
     }
@@ -4393,8 +4624,7 @@ module.exports = FileView = (function(superClass) {
       el: this.$('.tags'),
       model: this.model
     });
-    this.tags.render();
-    return this.tags.hideInput();
+    return this.tags.render();
   };
 
   FileView.prototype.updateTags = function() {
@@ -4447,7 +4677,7 @@ module.exports = FileView = (function(superClass) {
 });
 
 ;require.register("views/files", function(exports, require, module) {
-var BaseView, FileView, FilesView, LongList,
+var BaseView, FileInfo, FileView, FilesView, LongList,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -4456,6 +4686,8 @@ BaseView = require('../lib/base_view');
 FileView = require('./file_view');
 
 LongList = require('../lib/long-list-rows');
+
+FileInfo = require('./file_info');
 
 module.exports = FilesView = (function(superClass) {
   extend(FilesView, superClass);
@@ -4481,6 +4713,9 @@ module.exports = FilesView = (function(superClass) {
     'click #down-size': 'onChangeOrder',
     'click #up-lastModification': 'onChangeOrder',
     'click #down-lastModification': 'onChangeOrder',
+    'click a.link-wrapper': function(e) {
+      return this.viewProxy('onFileLinkClicked', e);
+    },
     'click a.file-tags': function(e) {
       return this.viewProxy('onTagClicked', e);
     },
@@ -4499,9 +4734,6 @@ module.exports = FilesView = (function(superClass) {
     'click a.file-edit-cancel': function(e) {
       return this.viewProxy('onCancelClicked', e);
     },
-    'click a.cancel-upload-button': function(e) {
-      return this.viewProxy('onCancelUploadClicked', e);
-    },
     'click a.file-move': function(e) {
       return this.viewProxy('onMoveClicked', e);
     },
@@ -4511,11 +4743,20 @@ module.exports = FilesView = (function(superClass) {
     'keydown input.file-edit-name': function(e) {
       return this.viewProxy('onKeyPress', e);
     },
+    'click li.itemRow': function(e) {
+      return this.viewProxy('onLineClicked', e);
+    },
+    'click a.cancel-upload-button': function(e) {
+      return this.viewProxy('onCancelUploadClicked', e);
+    },
     'click div.selector-wrapper button': function(e) {
       return this.viewProxy('onSelectClicked', e);
     },
-    'click li.itemRow': function(e) {
-      return this.viewProxy('onLineClicked', e);
+    'mouseenter .icon-type': function(e) {
+      return this.viewProxy('onFileLinkOver', e);
+    },
+    'mouseleave .icon-type': function(e) {
+      return this.viewProxy('onFileLinkOut', e);
     }
   };
 
@@ -4575,13 +4816,14 @@ module.exports = FilesView = (function(superClass) {
       ROW_HEIGHT: 48,
       BUFFER_COEF: 4,
       SAFE_ZONE_COEF: 3,
-      THROTTLE: 150,
-      MAX_SPEED: 2.5,
+      THROTTLE: 60,
+      MAX_SPEED: 1.5,
       onRowsMovedCB: this.onRowsMoved.bind(this)
     };
     viewPortElement = this.$(this.collectionEl)[0];
     this.longList = new LongList(viewPortElement, options);
-    return this.longList.initRows(this.collection.length);
+    this.longList.initRows(this.collection.length);
+    return this.fileInfoCtrlr = new FileInfo(this.$('.file-info')[0]);
   };
 
   FilesView.prototype.onRowsMoved = function(rowsToDecorate) {
@@ -4630,10 +4872,24 @@ module.exports = FilesView = (function(superClass) {
     });
     if (view != null) {
       args = [].splice.call(arguments, 1);
-      return view[methodName].apply(view, args);
+      if (methodName === 'onFileLinkOver') {
+        this.onFileLinkOver(view, args);
+      } else if (methodName === 'onFileLinkOut') {
+        this.onFileLinkOut(view, args);
+      } else {
+        view[methodName].apply(view, args);
+      }
     } else {
 
     }
+  };
+
+  FilesView.prototype.onFileLinkOver = function(targetView, event) {
+    return this.fileInfoCtrlr.onEnterLink(targetView);
+  };
+
+  FilesView.prototype.onFileLinkOut = function(targetView, event) {
+    return this.fileInfoCtrlr.onExitLink(targetView);
   };
 
   FilesView.prototype.updateNbFiles = function() {
@@ -5356,6 +5612,68 @@ module.exports = FolderView = (function(superClass) {
 })(BaseView);
 });
 
+;require.register("views/gallery", function(exports, require, module) {
+
+/**
+ * this module is in charge of displaying a photo gallery when an image is
+ * clicked
+ */
+var Gallery;
+
+module.exports = Gallery = (function() {
+  function Gallery() {}
+
+
+  /**
+   * will open the diaporama when a photo is clicked
+   * @param  {BackboneModel} modelClicked Model of the file clicked
+   */
+
+  Gallery.prototype.show = function(modelClicked) {
+    var a_toSimulateClick, event, gal;
+    gal = document.getElementById('gallery');
+    if (gal === null) {
+      gal = document.createElement('div');
+      gal.id = 'gallery';
+      gal.style.display = 'none';
+      document.body.appendChild(gal);
+    } else {
+      gal.innerHTML = '';
+    }
+    a_toSimulateClick = null;
+    window.app.router.folderView.collection.forEach((function(_this) {
+      return function(model) {
+        var a, attr;
+        attr = model.attributes;
+        if (attr.mime.substr(0, 5) !== 'image') {
+          return;
+        }
+        a = document.createElement('a');
+        a.href = "files/photo/screen/" + attr.id + "/" + attr.name;
+        gal.appendChild(a);
+        if (model === modelClicked) {
+          return a_toSimulateClick = a;
+        }
+      };
+    })(this));
+    window.baguetteBox.run('#gallery', {
+      captions: true,
+      buttons: 'auto',
+      async: false,
+      preload: 2,
+      animation: 'slideIn'
+    });
+    event = document.createEvent('MouseEvent');
+    event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    event.preventDefault();
+    a_toSimulateClick.dispatchEvent(event);
+  };
+
+  return Gallery;
+
+})();
+});
+
 ;require.register("views/modal", function(exports, require, module) {
 var BaseView, ModalView,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -5958,7 +6276,7 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<div role=\"gridcell\" class=\"extensible-column\"><!-- empty by default--><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div class=\"caption\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
@@ -5971,14 +6289,21 @@ else
 {
 buf.push("<i class=\"icon-type type-folder\"></i>");
 }
-buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
+if ( model.binary && model.binary.thumb)
+{
+buf.push("<img" + (jade.attr("src", "files/photo/thumb/" + (model.id) + "", true, false)) + " class=\"icon-type type-thumb\"/>");
+}
+else
+{
+buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+}
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -5987,7 +6312,6 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</i>");
 }
 else
 {
@@ -6004,13 +6328,13 @@ buf.push("</i>");
 }
 if ( !isBroken)
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div></div>");
+buf.push("</a></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -6180,7 +6504,7 @@ var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance
 buf.push("<div role=\"gridcell\" class=\"extensible-column\"><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
 if ( model.type == 'folder')
 {
-buf.push("<div class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div class=\"caption\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( clearance == 'public')
 {
 buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
@@ -6193,14 +6517,21 @@ else
 {
 buf.push("<i class=\"icon-type type-folder\"></i>");
 }
-buf.push("<a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div></div>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div>");
 }
 else if ( model.type == 'file')
 {
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><div class=\"link-wrapper btn-link\"><div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
+buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
 if ( model.mime && this.mimeClasses[model.mime])
 {
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + ">");
+if ( model.binary && model.binary.thumb)
+{
+buf.push("<img" + (jade.attr("src", "files/photo/thumb/" + (model.id) + "", true, false)) + " class=\"icon-type type-thumb\"/>");
+}
+else
+{
+buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
+}
 if ( clearance == 'public')
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
@@ -6209,7 +6540,6 @@ else if ( clearance && clearance.length > 0)
 {
 buf.push("<span class=\"fa fa-globe\"></span>");
 }
-buf.push("</i>");
 }
 else
 {
@@ -6226,13 +6556,13 @@ buf.push("</i>");
 }
 if ( !isBroken)
 {
-buf.push("<a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"btn-link\"><span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
 else
 {
-buf.push("<span class=\"file-name\">" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
+buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
 }
-buf.push("</div></div>");
+buf.push("</a></div>");
 }
 buf.push("<ul class=\"tags\">");
 // iterate model.tags || []
@@ -6322,7 +6652,7 @@ else
 {
 buf.push("<i class=\"fa fa-minus-square-o\"></i>");
 }
-buf.push("</button><a id=\"down-name\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('name')    ) ? "" : jade_interp)) + "</a><a id=\"up-name\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"size-column-cell\"><a id=\"down-size\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a><a id=\"up-size\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"type-column-cell\"><a id=\"down-class\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a><a id=\"up-class\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"date-column-cell\"><a id=\"down-lastModification\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a><a id=\"up-lastModification\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a></div></div><!-- List of elements.--><ul id=\"table-items-body\" role=\"grid\"></ul><!-- Footer.--><footer id=\"file-amount-indicator\"></footer><footer id=\"no-files-indicator\">");
+buf.push("</button><a id=\"down-name\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('name')    ) ? "" : jade_interp)) + "</a><a id=\"up-name\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('name')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"size-column-cell\"><a id=\"down-size\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a><a id=\"up-size\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('size')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"type-column-cell\"><a id=\"down-class\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a><a id=\"up-class\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('type')) ? "" : jade_interp)) + "</a></div><div role=\"columnheader\" class=\"date-column-cell\"><a id=\"down-lastModification\" class=\"btn unactive fa fa-chevron-down\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a><a id=\"up-lastModification\" class=\"btn unactive fa fa-chevron-up\">" + (jade.escape(null == (jade_interp = t('date')) ? "" : jade_interp)) + "</a></div></div><!-- List of elements.--><ul id=\"table-items-body\" role=\"grid\"><!-- the file info display (popover)--><div class=\"file-info\"></div></ul><!-- Footer.--><footer id=\"file-amount-indicator\"></footer><footer id=\"no-files-indicator\">");
 if ( model.type == 'search')
 {
 buf.push("" + (jade.escape((jade_interp = t('no file in search')) == null ? '' : jade_interp)) + "");
@@ -6905,7 +7235,7 @@ module.exports = TagsView = (function(superClass) {
   };
 
   TagsView.prototype.template = function() {
-    return "<input type=\"text\" placeholder=\"" + (t('tag')) + "\">";
+    return "<input type=\"text\" placeholder=\"" + (t('tag')) + "\" style=\"display: none\">";
   };
 
   TagsView.prototype.initialize = function() {
@@ -7052,7 +7382,8 @@ module.exports = TagsView = (function(superClass) {
   };
 
   TagsView.prototype.hideInput = function() {
-    return this.$('input').hide();
+    this.$('input').hide();
+    return console.log('tags.hideInput');
   };
 
   return TagsView;
