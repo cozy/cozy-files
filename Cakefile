@@ -101,7 +101,7 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
                             process.exit 0
 
 task 'tests', 'Run tests for client and server', (opts) ->
-    testsServer opts, -> testsClient opts, -> process.exit 0
+    testsServer opts, -> process.exit 0
 
 # convert JSON lang files to JS
 buildJsInLocales = ->
