@@ -16,7 +16,7 @@ application = module.exports = function(callback) {
     host: process.env.HOST || '127.0.0.1'
   };
   return initialize.beforeStart(function() {
-    return americano.start(options, function(app, server) {
+    return americano.start(options, function(err, app, server) {
       app.server = server;
       app.use(errorHandler);
       return initialize.afterStart(app, server, callback);

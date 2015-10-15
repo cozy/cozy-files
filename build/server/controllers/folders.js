@@ -155,21 +155,16 @@ resetTimeout = function() {
   if (timeout != null) {
     clearTimeout(timeout);
   }
-  return timeout = setTimeout(function() {
-    return updateParents();
-  }, 60 * 1000);
+  return timeout = setTimeout(updateParents, 60 * 1000);
 };
 
 updateParents = function() {
-  var errors, folder, i, len, name, ref;
-  errors = {};
-  ref = Object.keys(folderParent);
-  for (i = 0, len = ref.length; i < len; i++) {
-    name = ref[i];
+  var folder, name;
+  for (name in folderParent) {
     folder = folderParent[name];
     folder.save(function(err) {
       if (err != null) {
-        return errors[folder.name] = err;
+        return log.error(err);
       }
     });
   }
