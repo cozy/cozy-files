@@ -28,17 +28,26 @@ module.exports = class FileInfo
             window.app.gallery.show(@_currentTarget.model)
             event.preventDefault()
 
-        events = []
-        events.push name:'_enterLink' , from:'Init'       , to:'WaitToShow'
-        events.push name:'_enterLink' , from:'WaitToShow' , to:'WaitToShow'
-        events.push name:'_enterLink' , from:'WaitToHide' , to:'Visible'
-        events.push name:'_showTimer' , from:'WaitToShow' , to:'Visible'
-        events.push name:'_exitLink'  , from:'Visible'    , to:'WaitToHide'
-        events.push name:'_exitLink'  , from:'Init'       , to:'Init'
-        events.push name:'_exitLink'  , from:'WaitToShow' , to:'Init'
-        events.push name:'_enterPopo' , from:'WaitToHide' , to:'Visible'
-        events.push name:'_exitPopo'  , from:'Visible'    , to:'WaitToHide'
-        events.push name:'_hideTimer' , from:'WaitToHide' , to:'Init'
+        # we use a finite state model to describe the states and
+        # their transitions
+        # 4 states :
+        #   . Init          : the mouse is not over the link, the popover is hidden
+        #   . WaitingToShow : the mouse is over the link, the popover is not yet visible
+        #   . Visible       : the popopver is visible and the mouse is over the link or the popover
+        #   . WaitingToHide : the popopver is visible and the mouse is neither over the link nor the popover
+
+        events = [
+            { from:'Init'          , to:'WaitingToShow' , name:'_enterLink'  }
+            { from:'Init'          , to:'Init'          , name:'_exitLink'   }
+            { from:'WaitingToShow' , to:'WaitingToShow' , name:'_enterLink'  }
+            { from:'WaitingToShow' , to:'Visible'       , name:'_showTimer'  }
+            { from:'WaitingToShow' , to:'Init'          , name:'_exitLink'   }
+            { from:'Visible'       , to:'WaitingToHide' , name:'_exitLink'   }
+            { from:'Visible'       , to:'WaitingToHide' , name:'_exitPopo'   }
+            { from:'WaitingToHide' , to:'Visible'       , name:'_enterLink'  }
+            { from:'WaitingToHide' , to:'Visible'       , name:'_enterPopo'  }
+            { from:'WaitingToHide' , to:'Init'          , name:'_hideTimer'  }
+        ]
 
         @stateMachine = StateMachine.create
 
@@ -52,33 +61,35 @@ module.exports = class FileInfo
 
             callbacks:
 
+                ####
                 # A/ Callbacks on entering a state
-                onenterWaitToShow: (event,from,to) =>
-                    # console.log '  onenterWaitToShow',event, from, to
+                onenterWaitingToShow: (event,from,to) =>
+                    # console.log '  onenterWaitingToShow',event, from, to
                     if from == 'Init'
                         @_startShowTimer()
 
                 onenterVisible: (event,from,to) =>
                     # console.log '  onenterVisible', event, from, to
-                    if from == 'WaitToShow'
+                    if from == 'WaitingToShow'
                         @_setNewTarget()
                         @_show()
-                    else if from == 'WaitToHide'
+                    else if from == 'WaitingToHide'
                         window.clearTimeout(@hideTimeout)
                         if @_lastEnteredTarget != @_currentTarget
                             @_setNewTarget()
 
-                onenterWaitToHide: (event,from,to) =>
-                    # console.log '  onenterWaitToHide', event, from, to
+                onenterWaitingToHide: (event,from,to) =>
+                    # console.log '  onenterWaitingToHide', event, from, to
                     @_startHideTimer()
 
                 onenterInit: (event,from,to) =>
                     # console.log '  onenterInit', event, from, to
-                    if from == 'WaitToHide'
+                    if from == 'WaitingToHide'
                         @_hide()
-                    else if from == 'WaitToShow'
+                    else if from == 'WaitingToShow'
                         window.clearTimeout(@showTimeout)
 
+                ####
                 # B/ Callbacks on entering an event to cancel it if required
                 onbefore_enterLink: (event,from, to) =>
                     # console.log '  onbefore_enterLink', @_hasInfoToDisplay(@_lastEnteredTarget)
