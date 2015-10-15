@@ -33,6 +33,12 @@ module.exports = {
   'files/:fileid/download/:name': {
     get: files.downloadAttachment
   },
+  'files/photo/thumb/:fileid': {
+    get: files.photoThumb
+  },
+  'files/photo/screen/:fileid/:name': {
+    get: files.photoScreen
+  },
   'folderid': {
     param: folders.fetch
   },
