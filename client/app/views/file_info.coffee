@@ -1,7 +1,7 @@
 
 ###*
  * This module is in charge of displaying the file information in a popover when
- * the user let his mouse over the icon of the file.
+ * the user lets his mouse over the icon of the file.
  * For now we only display the thumbnail of file being an image.
 ###
 

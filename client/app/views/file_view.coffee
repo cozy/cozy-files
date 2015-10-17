@@ -460,11 +460,8 @@ module.exports = class FileView extends BaseView
         # actually created, resulting in an error. Folders don't rely
         # on `isUploading` because it is needless, so they are treated
         # separately.
-        if @model.isNew()
-            @blockNameLink()
-
-        # @hideLoading()
-        @showLoading() if @hasUploadingChildren
+        @blockNameLink() if @model.isNew()
+        @showLoading()   if @hasUploadingChildren
 
 
     afterReDecorate: ->
@@ -514,7 +511,6 @@ module.exports = class FileView extends BaseView
             el: @$ '.tags'
             model: @model
         @tags.render()
-        # @tags.hideInput()
 
 
     # TODO : be more clever :-)
@@ -543,7 +539,6 @@ module.exports = class FileView extends BaseView
     hideLoading: ->
         @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-        # console.log 'file_view.hideLoading'
 
 
     # Get a DOM node with the element's icon properly defined.
