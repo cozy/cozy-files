@@ -5,17 +5,22 @@
  * For now we only display the thumbnail of file being an image.
 ###
 
+ARROW_TOP_OFFSET       = 17  # top offset in pixels for the arrow of the popover
+POPOVER_DEFAULT_HEIGHT = 310 # height of thumbnails
+
 module.exports = class FileInfo
 
     constructor: (elmt) ->
 
-        # DOM
-        @el  = elmt
-        @img = document.createElement('img')
-        @a   = document.createElement('a')
+        # A] DOM of the Popover
+        @el    = elmt
+        @img   = document.createElement('img')
+        @a     = document.createElement('a')
+        @arrow = document.createElement('div')
         @el.appendChild(@a).appendChild(@img)
+        @el.appendChild(@arrow)
 
-        # EVENTS LISTENERS
+        # B] EVENTS LISTENERS ON POPOVER
         elmt.addEventListener 'mouseenter', (event) =>
             @_isIntoPopover = true
             @stateMachine.E3_enterPopo()
@@ -30,12 +35,18 @@ module.exports = class FileInfo
             window.app.gallery.show(@_currentTarget.model)
             event.preventDefault()
 
-        # TRACK MOUSE POSITION to check it is in the column of the files icons,
+        # C] EVENTS LISTENERS ON IMG
+        @_previousPopoverHeight = POPOVER_DEFAULT_HEIGHT
+        @img.onload = (event) =>
+            dim = @el.getBoundingClientRect()
+            if @_previousPopoverHeight != dim.height
+                @_previousPopoverHeight = dim.height
+
+        # D] TRACK MOUSE POSITION to check it is in the column of the files icons,
         # or it goes out of the column (+-10px)
         @_columnGardian.init(@)
 
-
-        # FINITE STATE MACHINE CONFIGURATION
+        # E] FINITE STATE MACHINE CONFIGURATION
         # we use a finite state model to describe the states and
         # their transitions
         # States :
@@ -46,43 +57,41 @@ module.exports = class FileInfo
         #  Events :
         #   . E1_enterLink  :
         #   . E2_exitLink   :
-        #   . E3_enterPopo  :
-        #   . E4_exitPopo   :
+        #   . E3_enterPopo  : Enter popover
+        #   . E4_exitPopo   : Exit popover
         #   . E5_showTimer  :
         #   . E6_hideTimer  :
-        #   . E7_enterCol   :
-        #   . E8_exitCol    :
+        #   . E7_enterCol   : the mouse enters the column of the thumbnail
+        #   . E8_exitCol    : the mouse exits  the column of the thumbnail
         #   . E9_linkNoData :
-
-        events = [
-
-            { from:'S1_Init'          , to:'S2_WaitingToShow' , name:'E1_enterLink'  }
-            { from:'S1_Init'          , to:'S1_Init'          , name:'E4_exitPopo'   } # can occur... why ?
-
-            { from:'S2_WaitingToShow' , to:'S3_Visible'       , name:'E5_showTimer'  }
-            { from:'S2_WaitingToShow' , to:'S1_Init'          , name:'E8_exitCol'    }
-            { from:'S2_WaitingToShow' , to:'S1_Init'          , name:'E2_exitLink'   }
-            { from:'S2_WaitingToShow' , to:'S2_WaitingToShow' , name:'E1_enterLink'  }
-
-            { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E4_exitPopo'   }
-            { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E8_exitCol'    }
-            { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E9_linkNoData' }
-            { from:'S3_Visible'       , to:'S3_Visible'       , name:'E1_enterLink'  }
-            { from:'S3_Visible'       , to:'S3_Visible'       , name:'E3_enterPopo'  }
-            { from:'S3_Visible'       , to:'S3_Visible'       , name:'E7_enterCol'   }
-
-            { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E1_enterLink'  }
-            { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E3_enterPopo'  }
-            { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E7_enterCol'   }
-            { from:'S4_WaitingToHide' , to:'S1_Init'          , name:'E6_hideTimer'  }
-            { from:'S4_WaitingToHide' , to:'S4_WaitingToHide' , name:'E4_exitPopo'   } # can occur... why ?
-        ]
 
         @stateMachine = StateMachine.create
 
             initial: 'S1_Init'
 
-            events : events
+            events : [
+
+                { from:'S1_Init'          , to:'S2_WaitingToShow' , name:'E1_enterLink'  }
+                { from:'S1_Init'          , to:'S1_Init'          , name:'E4_exitPopo'   } # can occur... why ?
+
+                { from:'S2_WaitingToShow' , to:'S3_Visible'       , name:'E5_showTimer'  }
+                { from:'S2_WaitingToShow' , to:'S1_Init'          , name:'E8_exitCol'    }
+                { from:'S2_WaitingToShow' , to:'S1_Init'          , name:'E2_exitLink'   }
+                { from:'S2_WaitingToShow' , to:'S2_WaitingToShow' , name:'E1_enterLink'  }
+
+                { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E4_exitPopo'   }
+                { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E8_exitCol'    }
+                { from:'S3_Visible'       , to:'S4_WaitingToHide' , name:'E9_linkNoData' }
+                { from:'S3_Visible'       , to:'S3_Visible'       , name:'E1_enterLink'  }
+                { from:'S3_Visible'       , to:'S3_Visible'       , name:'E3_enterPopo'  }
+                { from:'S3_Visible'       , to:'S3_Visible'       , name:'E7_enterCol'   }
+
+                { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E1_enterLink'  }
+                { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E3_enterPopo'  }
+                { from:'S4_WaitingToHide' , to:'S3_Visible'       , name:'E7_enterCol'   }
+                { from:'S4_WaitingToHide' , to:'S1_Init'          , name:'E6_hideTimer'  }
+                { from:'S4_WaitingToHide' , to:'S4_WaitingToHide' , name:'E4_exitPopo'   } # can occur... why ?
+            ]
 
             # usefull for debug
             # error: (eventName, from, to, args, errorCode, errorMessage) ->
@@ -91,12 +100,17 @@ module.exports = class FileInfo
             callbacks:
 
                 ####
-                # A/ Callbacks on entering a state
+                # A/ Callbacks on entering or leaving a state
                 onenterS2_WaitingToShow: (event,from,to) =>
                     # console.log '  onenterS2_WaitingToShow',event, from, to
                     if from == 'S1_Init'
                         @_startShowTimer()
+                        @_lastEnteredTarget.el.querySelector('img.type-thumb').style.cursor = 'wait'
                         @_columnGardian.start()
+
+                onleaveS2_WaitingToShow: (event,from,to) =>
+                    # console.log '  onleaveS2_WaitingToShow',event, from, to
+                    @_lastEnteredTarget.el.querySelector('img.type-thumb').style.cursor = ''
 
                 onenterS3_Visible: (event,from,to) =>
                     # console.log '  onenterS3_Visible', event, from, to
@@ -148,15 +162,29 @@ module.exports = class FileInfo
                     else
                         return true
 
-
+    ###*
+     * Moves the popover on its corresponding thumbnail target.
+    ###
     _setNewTarget:() ->
         # console.log '_setNewTarget'
-        # update position
+        # update position (takes care if the thumbnail is too low in the window)
         target          = @_lastEnteredTarget
         @_currentTarget = target
-        topFileInfo     = target.el.offsetTop
-        scrollTop       = target.el.offsetParent.scrollTop
-        @el.style.top   = (topFileInfo - scrollTop) + 'px'
+        el              = target.el
+        topFileInfo     = el.offsetTop
+        scrollTop       = el.offsetParent.scrollTop
+        clientHeight    = el.offsetParent.clientHeight
+        popoverTop      = topFileInfo - scrollTop
+        popoverBottom   = popoverTop + @_previousPopoverHeight
+        clientBottom    = clientHeight + scrollTop
+        if popoverBottom < clientBottom
+            @el.style.top   = popoverTop + 'px'
+            @arrow.style.top = ARROW_TOP_OFFSET + 'px'
+        else
+            @el.style.top   = (clientBottom - @_previousPopoverHeight) + 'px'
+            arrowTop = popoverTop - clientBottom + @_previousPopoverHeight + ARROW_TOP_OFFSET
+            arrowTop = Math.min(arrowTop, @_previousPopoverHeight - 12 )
+            @arrow.style.top = arrowTop + 'px'
         # update content
         attr     = target.model.attributes
         @img.src = "files/photo/thumb/#{attr.id}"
@@ -218,13 +246,19 @@ module.exports = class FileInfo
     _columnGardian :
 
         init: (file_info_ctlr)->
+
             @file_info_ctlr = file_info_ctlr
             @FIC_container = file_info_ctlr.el.parentElement
-            thumb = @FIC_container.querySelector('img.type-thumb')
-            dimensions = thumb.getBoundingClientRect()
-            this.col_left  = dimensions.left - 10
-            this.col_right = this.col_left + dimensions.width + 20
-            this.isInCol = false
+            @_computeColumnWidth()
+
+            # update the col positions when the window is resized
+            computeColAfterResize = _.debounce () =>
+                @_computeColumnWidth()
+            , 1000
+            window.addEventListener("resize", computeColAfterResize, false)
+
+            # callback to track if the mouse remains or not in the column of the
+            # thumbnails.
             @mouseMoved = (ev) =>
                 # console.log '_mouseMoved', ev.pageX, ev.pageY
                 isInCol = this.col_left < ev.pageX
@@ -235,6 +269,12 @@ module.exports = class FileInfo
                     else
                         this.file_info_ctlr.stateMachine.E8_exitCol()
                     this.isInCol = isInCol
+
+        _computeColumnWidth: ()->
+            thumb = @FIC_container.querySelector('img.type-thumb')
+            dimensions = thumb.getBoundingClientRect()
+            this.col_left  = dimensions.left - 10
+            this.col_right = this.col_left + dimensions.width + 20
 
         start: ()->
             @FIC_container.addEventListener("mousemove", @mouseMoved, false)

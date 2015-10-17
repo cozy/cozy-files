@@ -161,11 +161,21 @@
                 margin 0
                 font-size 16px
 
+    // Popover displaying the file information onmouseover
     .file-info
         cursor: pointer
         img
             border-radius 5px
-            border 5px black solid
+            border        5px black solid
+        div /* corresponds to the arrow of the popover */
+            position      : absolute
+            transition    : top 0.2s ease
+            left          : -4px
+            border-bottom : 5px solid transparent  /* left arrow slant */
+            border-top    : 5px solid transparent  /* right arrow slant */
+            border-right  : 5px solid #000000      /* bottom, add background color here */
+            font-size     : 0
+            line-height   : 0
 
 
     // List of elements.
@@ -173,7 +183,6 @@
         list-style-type none
         padding 0
         margin-bottom 0
-
 
         // Specific column styles
         .type-column-cell
