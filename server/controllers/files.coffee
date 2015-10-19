@@ -224,6 +224,10 @@ module.exports.create = (req, res, next) ->
             # request-json requires a path field to be set
             # before uploading
             part.path = file.name
+
+            part.httpVersion = true # hack so form_data use length
+            part.headers['content-length']?= part.byteCount
+
             checksum = crypto.createHash 'sha1'
             checksum.setEncoding 'hex'
             part.pause()
