@@ -230,8 +230,12 @@ module.exports.create = function(req, res, next) {
       });
     };
     attachBinary = function(file) {
-      var checksum, metadata;
+      var base, checksum, metadata;
       part.path = file.name;
+      part.httpVersion = true;
+      if ((base = part.headers)['content-length'] == null) {
+        base['content-length'] = part.byteCount;
+      }
       checksum = crypto.createHash('sha1');
       checksum.setEncoding('hex');
       part.pause();

@@ -2,6 +2,7 @@ language: node_js
 matrix:
     fast_finish: true
     allow_failures:
+        - node_js: 0.12
         - node_js: 4
 node_js:
     - 0.10
@@ -15,7 +16,7 @@ env:
 before_install:
     - git clone git://github.com/cozy/cozy-data-system.git
     - cd cozy-data-system
-    - npm install forever coffee-script casperjs -g
+    - npm install forever coffee-script -g
     - npm install #data-system
     - pwd
     - NAME=data-system TOKEN=token forever start -o forever-ds.log build/server.js

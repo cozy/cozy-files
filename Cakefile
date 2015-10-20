@@ -101,7 +101,7 @@ task 'tests:client', 'Run tests for the client', testsClient=(opts, callback) ->
                             process.exit 0
 
 task 'tests', 'Run tests for client and server', (opts) ->
-    testsServer opts, -> testsClient opts, -> process.exit 0
+    testsServer opts, -> process.exit 0
 
 # convert JSON lang files to JS
 buildJsInLocales = ->
@@ -112,6 +112,13 @@ buildJsInLocales = ->
         exported = "module.exports = #{template};\n"
         name     = file.replace '.json', '.js'
         fs.writeFileSync "./build/client/app/locales/#{name}", exported
+        # server files
+    for file in fs.readdirSync './server/locales/'
+        filename = './server/locales/' + file
+        template = fs.readFileSync filename, 'utf8'
+        exported = "module.exports = #{template};\n"
+        name     = file.replace '.json', '.js'
+        fs.writeFileSync "./build/server/locales/#{name}", exported
         # add locales at the end of app.js
     exec "rm -rf build/client/app/locales/*.json"
 

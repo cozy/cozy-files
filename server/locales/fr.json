@@ -1,4 +1,4 @@
-module.exports = {
+{
   "default user name": "Quelqu'un",
   "email sharing subject": "%{displayName} a partagé \"%{name}\" avec vous",
   "email change subject": "Cozy de %{displayName}: le dossier \"%{itemName}\" a changé",
@@ -16,4 +16,3 @@ module.exports = {
   "404 clippy sorry": "Désolé, je n'ai pas pu trouver le fichier que vous cherchez",
   "404 clippy contact": "Vous pouvez toujours contacter le propriétaire de ce Cozy !"
 }
-;

@@ -23,9 +23,15 @@ div.extensible-column(role="gridcell")
             span= model.name
 
       else if model.type == 'file'
+<<<<<<< HEAD
         .caption(data-file-url="#{attachmentUrl}")
           a.link-wrapper.btn-link(href="#{attachmentUrl}", title="#{t('download file')}", target="_blank")
             div.spinholder(style="display: none")
+=======
+        .caption(data-file-name="#{attachmentUrl.toLowerCase()}", data-file-url="#{attachmentUrl}")
+          div.link-wrapper.btn-link
+            div.spinholder
+>>>>>>> cozy/master
               img(src="images/spinner.svg")
             if model.mime && this.mimeClasses[model.mime]
               if model.binary && model.binary.thumb
