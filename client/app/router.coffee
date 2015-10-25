@@ -50,6 +50,12 @@ module.exports = class Router extends Backbone.Router
         app.baseCollection.getByFolder folderID, (err, folder, collection) =>
             if err? then console.log err
             else
+                # sort by creation date the folder where phones photo are
+                # uploaded
+                if folder.getRepository() == '/Appareils photo'
+                    collection.type = 'lastModification'
+                    collection.order = 'desc'
+                    collection.sort()
                 @_renderFolderView folder, collection
 
     # process the actual render

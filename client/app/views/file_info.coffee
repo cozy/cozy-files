@@ -2,7 +2,7 @@
 ###*
  * This module is in charge of displaying the file information in a popover when
  * the user lets his mouse over the icon of the file.
- * For now we only display the thumbnail of file being an image.
+ * For now we only display the thumbnail of files being an image.
 ###
 
 ARROW_TOP_OFFSET       = 17  # top offset in pixels for the arrow of the popover
@@ -105,12 +105,12 @@ module.exports = class FileInfo
                     # console.log '  onenterS2_WaitingToShow',event, from, to
                     if from == 'S1_Init'
                         @_startShowTimer()
-                        @_lastEnteredTarget.el.querySelector('img.type-thumb').style.cursor = 'wait'
+                        @_lastEnteredTarget.el.querySelector('.icon-type').style.cursor = 'wait'
                         @_columnGardian.start()
 
                 onleaveS2_WaitingToShow: (event,from,to) =>
                     # console.log '  onleaveS2_WaitingToShow',event, from, to
-                    @_lastEnteredTarget.el.querySelector('img.type-thumb').style.cursor = ''
+                    @_lastEnteredTarget.el.querySelector('.icon-type').style.cursor = ''
 
                 onenterS3_Visible: (event,from,to) =>
                     # console.log '  onenterS3_Visible', event, from, to
@@ -271,10 +271,14 @@ module.exports = class FileInfo
                     this.isInCol = isInCol
 
         _computeColumnWidth: ()->
-            thumb = @FIC_container.querySelector('img.type-thumb')
+            thumb = @FIC_container.querySelector('.icon-type')
+            if thumb == null
+                return
             dimensions = thumb.getBoundingClientRect()
             this.col_left  = dimensions.left - 10
             this.col_right = this.col_left + dimensions.width + 20
+            captionWrapper = @FIC_container.querySelector('.caption-wrapper')
+            @file_info_ctlr.el.style.left   = (captionWrapper.offsetLeft + 42) + 'px'
 
         start: ()->
             @FIC_container.addEventListener("mousemove", @mouseMoved, false)

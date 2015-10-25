@@ -1,13 +1,13 @@
-BaseView = require '../lib/base_view'
-FilesView = require './files'
-BreadcrumbsView = require "./breadcrumbs"
+BaseView         = require '../lib/base_view'
+FilesView        = require './files'
+BreadcrumbsView  = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
-Modal = require './modal'
-ModalBulkMove = require './modal_bulk_move'
-ModalConflict = require './modal_conflict'
-ModalShareView = null
+Modal            = require './modal'
+ModalBulkMove    = require './modal_bulk_move'
+ModalConflict    = require './modal_conflict'
+ModalShareView   = null
 
-File = require '../models/file'
+File             = require '../models/file'
 
 BACKSPACE_KEY = 8
 

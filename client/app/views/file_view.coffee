@@ -7,11 +7,10 @@ client         = require "../lib/client"
 
 module.exports = class FileView extends BaseView
 
-    templateNormal : require './templates/file'
-    templateEdit   : require './templates/file_edit'
-    templateSearch : require './templates/file_search'
+    template     : require './templates/file'
+    templateEdit : require './templates/file_edit'
 
-    mimeClasses:
+    mimeClasses  :
         'application/octet-stream'               : 'type-file'
         'application/x-binary'                   : 'type-binary'
         'text/plain'                             : 'type-text'
@@ -80,13 +79,6 @@ module.exports = class FileView extends BaseView
         'multipart/x-gzip'                       : 'type-archive'
 
 
-    template: (args) ->
-        if @isSearchMode
-            @templateSearch args
-        else
-            @templateNormal args
-
-
     getRenderData: ->
         _.extend super(),
             isUploading: @model.isUploading()
@@ -100,7 +92,7 @@ module.exports = class FileView extends BaseView
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
-        @uploadQueue = options.uploadQueue
+        @uploadQueue  = options.uploadQueue
 
         # prevent contacts loading in shared area
         unless app.isPublic
@@ -118,12 +110,58 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = false
 
 
+    afterRender: ->
+        @el.displayMode = 'normal'
+        @filePath    = @$ 'a.file-path'
+        @elementLink = @$ 'a.link-wrapper'
+        @elementName = @elementLink.find '.file-name'
+        @thumb       = (@elementLink.find 'img.thumb')[0]
+        @elementSize = @$ '.size-column-cell span'
+        @elementType = @$ '.type-column-cell span'
+        @elementLastModificationDate = @$ '.date-column-cell span'
+        @elementIcon = @$ '.icon-type'
+
+        @$el.data('cid', @model.cid) # link between the element and the model
+        @$el.addClass('itemRow')
+
+        if @isSearchMode
+            @filePath.show()
+
+        if @model.isUploading() or @model.isServerUploading()
+            @$el.addClass 'uploading'
+            @addProgressBar()
+            @blockDownloadLink()
+            @blockNameLink()
+        else
+            @$el.removeClass 'uploading'
+            @$el.toggleClass 'broken', @model.isBroken()
+
+        # add tags
+        @tags = new TagsView
+            el   : @$ '.tags'
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        @blockNameLink() if @model.isNew()
+        @showLoading()   if @hasUploadingChildren
+        @reDecorate()
+
+
     reDecorate: ->
+        # console.log 'reDecorate, displaymode=', @el.displayMode, @isSearchMode
+
+        # by default a line is not on edit mode. If the moved row was in edit
+        # mode, just re-render the line not to be in edit mode.
+        if @el.displayMode == 'edit'
+            @render()
+            return
+
         @beforeRender()
+
+        # get data
         renderData = @getRenderData()
-
-        @elementName.html renderData.model.name
-
         if @model.isFolder()
             link = "#folders/#{renderData.model.id}"
             size = ""
@@ -131,35 +169,92 @@ module.exports = class FileView extends BaseView
         else
             link = renderData.downloadUrl
             size = renderData.model.size or 0
-            size = filesize size, base: 2
+            size = filesize(size, base: 2)
             type = renderData.model.class
 
-        {lastModification} = renderData.model
-        if lastModification
-            lastModification = moment(lastModification).calendar()
+        # update path if in search mode
+        if @isSearchMode
+            console.log 'search, update path', @model.attributes.path
+            @filePath.html @model.attributes.path
+            # todo : find the parent folder id to that users can click on path
+            # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
+
+
+        # update the icon (file or folder or thumbnail)
+        if @model.isFolder()
+            iconType = "type-folder"
         else
-            lastModification = ""
+            # can be a file or a thumbnail
+            mimeType = @model.get 'mime'
+            mimeClass = @mimeClasses[mimeType]
+            if mimeType? and mimeClass?
+                iconType = mimeClass
+            else
+                iconType = "type-file"
+            if iconType == 'type-image'
+                if renderData.model.binary && renderData.model.binary.thumb
+                    iconType = 'type-thumb'
+        @elementIcon.attr 'class', "icon-type #{iconType}"
+        if iconType == 'type-thumb'
+            @thumb.src = "files/photo/thumb/#{@model.id}"
+        else
+            @thumb.src = ''
 
-        iconClass = @getElementIconClass()
+        # show sharing status icon if necessary
+        if @model.isShared()
+            @elementIcon.addClass 'shared'
+        else
+            @elementIcon.removeClass 'shared'
 
+        # update file link url
         @elementLink.attr 'href', link
+
+        # update tags
+        @tags.refresh(@model)
+
+        # update size and type
         @elementSize.html size
         @elementType.html t(type)
-        @elementLastModificationDate.html lastModification
 
-        # Change element's icon if necessary.
-        unless @elementIcon.hasClass(iconClass)
-            @elementIcon.attr 'class', ''
-            @elementIcon.addClass "icon-type #{iconClass}"
+        # update the name of the the file
+        @elementName.html renderData.model.name
 
-        # Change sharing status icon if necessary.
-        if @model.isShared()
-            if @elementIcon.find('span.fa').length is 0
-                @elementIcon.append $('<span class="fa fa-globe"></span>')
+        # update last modification
+        lastModification = renderData.model.lastModification
+        if lastModification
+            m = moment(lastModification)
+            lastModification = m.calendar()
+            longLastModification = m.format('lll')
         else
-            @elementIcon.empty()
+            lastModification = ''
+            longLastModification = ''
+        @elementLastModificationDate.html lastModification
+        @elementLastModificationDate.attr 'title', longLastModification
 
-        @afterReDecorate()
+        # link between the element and the model
+        @$el.data 'cid', @model.cid
+
+        if @model.isUploading() or @model.isServerUploading()
+            @$el.addClass 'uploading'
+            @addProgressBar()
+            @blockDownloadLink()
+            @blockNameLink()
+        else
+            @$el.removeClass 'uploading'
+            @progressbar.destroy() if @progressbar?
+            @$el.toggleClass 'broken', @model.isBroken()
+
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        if @model.isNew()
+            @blockNameLink()
+
+        # TODO : avoid or adapt to an update operation
+        @hideLoading()
+        @showLoading() if @hasUploadingChildren
 
 
     onUploadComplete: ->
@@ -213,7 +308,7 @@ module.exports = class FileView extends BaseView
 
 
     onTagClicked: ->
-        @tags.toggleInput()
+        @tags.showInput()
 
 
     onDeleteClicked: ->
@@ -228,7 +323,7 @@ module.exports = class FileView extends BaseView
 
 
     onEditClicked: (name) ->
-
+        @el.displayMode = 'edit'
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
@@ -409,7 +504,6 @@ module.exports = class FileView extends BaseView
 
 
 
-
     onKeyPress: (e) =>
         if e.keyCode is 13 # ENTER key
             @onSaveClicked()
@@ -434,61 +528,6 @@ module.exports = class FileView extends BaseView
             @$('.selector-wrapper i').addClass 'fa-square-o'
 
 
-    afterRender: ->
-
-        @elementLink = @$ 'a.btn-link'
-        @elementName = @elementLink.find 'span'
-        @elementSize = @$ '.size-column-cell span'
-        @elementType = @$ '.type-column-cell span'
-        @elementLastModificationDate = @$ '.date-column-cell span'
-        @elementIcon = @$ '.icon-type'
-
-        @$el.data('cid', @model.cid) # link between the element and the model
-        @$el.addClass('itemRow')
-
-        if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
-            @addProgressBar()
-            @blockDownloadLink()
-            @blockNameLink()
-        else
-            @$el.removeClass 'uploading'
-            @$el.toggleClass 'broken', @model.isBroken()
-            @addTags()
-
-        # When folders are drag and drop, they can be clicked before being
-        # actually created, resulting in an error. Folders don't rely
-        # on `isUploading` because it is needless, so they are treated
-        # separately.
-        @blockNameLink() if @model.isNew()
-        @showLoading()   if @hasUploadingChildren
-
-
-    afterReDecorate: ->
-        @$el.data 'cid', @model.cid # link between the element and the model
-
-        if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
-            @addProgressBar()
-            @blockDownloadLink()
-            @blockNameLink()
-        else
-            @$el.removeClass 'uploading'
-            @$el.toggleClass 'broken', @model.isBroken()
-            @updateTags()
-
-        # When folders are drag and drop, they can be clicked before being
-        # actually created, resulting in an error. Folders don't rely
-        # on `isUploading` because it is needless, so they are treated
-        # separately.
-        if @model.isNew()
-            @blockNameLink()
-
-        # TODO : avoid or adapt to an update operation
-        @hideLoading()
-        @showLoading() if @hasUploadingChildren
-
-
     # add and display progress bar.
     addProgressBar: ->
         @$('.type-column-cell').remove()
@@ -500,23 +539,6 @@ module.exports = class FileView extends BaseView
         cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
         cell.append @progressbar.render().$el
         @$('.size-column-cell').after cell
-
-
-    # Add and display tag widget.
-    addTags: ->
-        if @tags?
-            @tags.destroy()
-
-        @tags = new TagsView
-            el: @$ '.tags'
-            model: @model
-        @tags.render()
-
-
-    # TODO : be more clever :-)
-    updateTags: ->
-        if @model.get('tags').length
-            @addTags()
 
 
     # Make download link inactive.
@@ -541,9 +563,8 @@ module.exports = class FileView extends BaseView
         @$('.spinholder').hide()
 
 
-    # Get a DOM node with the element's icon properly defined.
-    getElementIconClass: ->
-
+    # returns the class for the
+    getIconClass: ->
         # Determine the icon based on element's type.
         if @model.isFolder()
             icon = "type-folder"

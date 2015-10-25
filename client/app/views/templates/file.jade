@@ -1,63 +1,72 @@
 div.extensible-column(role="gridcell")
 
   block file-path
-    // empty by default
+    //- displayed only on search mode
+    a.file-path(style="display:none")
 
   div.caption-wrapper
 
     block title
 
-      if model.type == 'folder'
-        .caption
-          a.link-wrapper.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
-            div.spinholder(style="display: none")
-              img(src="images/spinner.svg")
-            if clearance == 'public'
-              i.icon-type.type-folder
-                span.fa.fa-globe
-            else if clearance && clearance.length > 0
-              i.icon-type.type-folder
-                span.fa.fa-globe
-            else
-              i.icon-type.type-folder
-            span= model.name
+      //- if model.type == 'folder'
+      //-   .caption
+      //-     a.link-wrapper.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
+      //-       div.spinholder(style="display: none")
+      //-         img(src="images/spinner.svg")
+      //-       if clearance == 'public'
+      //-         i.icon-type.type-folder
+      //-           span.fa.fa-globe
+      //-       else if clearance && clearance.length > 0
+      //-         i.icon-type.type-folder
+      //-           span.fa.fa-globe
+      //-       else
+      //-         i.icon-type.type-folder
+      //-       span= model.name
 
-      else if model.type == 'file'
-<<<<<<< HEAD
-        .caption(data-file-url="#{attachmentUrl}")
-          a.link-wrapper.btn-link(href="#{attachmentUrl}", title="#{t('download file')}", target="_blank")
-            div.spinholder(style="display: none")
-=======
-        .caption(data-file-name="#{attachmentUrl.toLowerCase()}", data-file-url="#{attachmentUrl}")
-          div.link-wrapper.btn-link
-            div.spinholder
->>>>>>> cozy/master
-              img(src="images/spinner.svg")
-            if model.mime && this.mimeClasses[model.mime]
-              if model.binary && model.binary.thumb
-                img.icon-type.type-thumb(src="files/photo/thumb/#{model.id}")
-              else
-                i(class="icon-type #{this.mimeClasses[model.mime]}")
-              if clearance == 'public'
-                span.fa.fa-globe
-              else if clearance && clearance.length > 0
-                span.fa.fa-globe
-            else
-              i.icon-type.type-file
-                if clearance == 'public'
-                  span.fa.fa-globe
-                else if clearance && clearance.length > 0
-                  span.fa.fa-globe
-            if !isBroken
-                span= model.name
-            else
-              span= model.name
+      //- else if model.type == 'file'
+      //-   .caption(data-file-name="#{attachmentUrl.toLowerCase()}", data-file-url="#{attachmentUrl}")
+      //-     a.link-wrapper.btn-link(href="#{attachmentUrl}", title="#{t('download file')}", target="_blank")
+      //-       div.spinholder(style="display: none")
+      //-         img(src="images/spinner.svg")
+
+      //-       if model.mime && this.mimeClasses[model.mime]
+      //-         if model.binary && model.binary.thumb
+      //-           img.icon-type.type-thumb(src="files/photo/thumb/#{model.id}")
+      //-         else
+      //-           i(class="icon-type #{this.mimeClasses[model.mime]}")
+      //-         if clearance == 'public'
+      //-           span.fa.fa-globe
+      //-         else if clearance && clearance.length > 0
+      //-           span.fa.fa-globe
+      //-       else
+      //-         i.icon-type.type-file
+      //-           if clearance == 'public'
+      //-             span.fa.fa-globe
+      //-           else if clearance && clearance.length > 0
+      //-             span.fa.fa-globe
+      //-       if !isBroken
+      //-           span= model.name
+      //-       else
+      //-         span= model.name
+
+      .caption
+        a.link-wrapper.btn-link
+          div.spinholder(style="display: none")
+            img(src="images/spinner.svg")
+          //- type-folder or type-file or type-thumb or type-image or ... 
+          i.icon-type 
+            img.thumb
+            span.fa.fa-globe
+          //- the name of the file 
+          span.file-name
+
+
 
     block tags
       ul.tags
-        for tag in model.tags || []
-          li.tag #{tag}
-            span.deleter.fa.fa-times
+        //- for tag in model.tags || []
+        //-   li.tag #{tag}
+        //-     span.deleter.fa.fa-times
 
     block empty
       .block-empty
