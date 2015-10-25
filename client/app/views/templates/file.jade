@@ -64,36 +64,55 @@ div.extensible-column(role="gridcell")
 
     block tags
       ul.tags
-        //- for tag in model.tags || []
-        //-   li.tag #{tag}
-        //-     span.deleter.fa.fa-times
 
     block empty
       .block-empty
 
+    //- block actions
+    //-   if !isUploading && !isBroken && !isServerUploading
+    //-     .operations
+    //-       a.file-tags(title="#{t('tooltip tag')}")
+    //-         span.fa.fa-tag
+    //-       a.file-share(title="#{t('tooltip share')}")
+    //-         span.fa.fa-share-alt
+    //-       a.file-edit(title="#{t('tooltip edit')}")
+    //-         span.fa.fa-pencil-square-o
+    //-       a.file-download(
+    //-           href="#{downloadUrl}",
+    //-           target="_blank", title="#{t('tooltip download')}")
+    //-         span.fa.fa-download
+
+    //-   else if isUploading && !isServerUploading
+    //-     // only show cancel button to the client that performs the upload.
+    //-     a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
+
+    //-   else if isBroken
+    //-     .broken-widget
+    //-       span.broken-text #{t('file broken indicator')}
+    //-       a.broken-button(title="#{t('file broken remove')}")
+    //-           span.fa.fa-trash
     block actions
-      if !isUploading && !isBroken && !isServerUploading
-        .operations
-          a.file-tags(title="#{t('tooltip tag')}")
-            span.fa.fa-tag
-          a.file-share(title="#{t('tooltip share')}")
-            span.fa.fa-share-alt
-          a.file-edit(title="#{t('tooltip edit')}")
-            span.fa.fa-pencil-square-o
-          a.file-download(
-              href="#{downloadUrl}",
-              target="_blank", title="#{t('tooltip download')}")
-            span.fa.fa-download
+      .operations
+        a.file-tags(title="#{t('tooltip tag')}")
+          span.fa.fa-tag
+        a.file-share(title="#{t('tooltip share')}")
+          span.fa.fa-share-alt
+        a.file-edit(title="#{t('tooltip edit')}")
+          span.fa.fa-pencil-square-o
+        a.file-download(
+            href="#{downloadUrl}",
+            target="_blank", title="#{t('tooltip download')}")
+          span.fa.fa-download
 
-      else if isUploading && !isServerUploading
-        // only show cancel button to the client that performs the upload.
-        a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
+      //- else if isUploading && !isServerUploading
+      //-   // only show cancel button to the client that performs the upload.
+      //-   a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
 
-      else if isBroken
-        .broken-widget
-          span.broken-text #{t('file broken indicator')}
-          a.broken-button(title="#{t('file broken remove')}")
-              span.fa.fa-trash
+      //- else if isBroken
+      //-   .broken-widget
+      //-     span.broken-text #{t('file broken indicator')}
+      //-     a.broken-button(title="#{t('file broken remove')}")
+      //-         span.fa.fa-trash
 
 div.size-column-cell(role="gridcell")
   if model.type == 'file'

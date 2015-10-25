@@ -380,21 +380,21 @@
                 z-index -1
                 flex    1
 
-            // List of operations.
-            .operations
-                display none
-                flex none
-                margin 0
-                margin-top (4/16)em
-                padding 0
+            // Toggle operations icon's color on hover.
+            &:hover
+                .operations
+                    margin 0
+                    margin-top (4/16)em
+                    padding 0
+                    a
+                        padding-left 10px
+                        color #BBBBBB
+                .operations:hover
+                    a
+                        color blue
 
-                a
-                    padding-left 10px
-                    color blue
-
+                .operations:hover
                     span:hover
                     i:hover
-                        color blue - 20%
-
-                a:hover
-                    color blue - 20%
+                    a:hover
+                        color blue - 30%

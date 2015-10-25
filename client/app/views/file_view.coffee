@@ -81,13 +81,13 @@ module.exports = class FileView extends BaseView
 
     getRenderData: ->
         _.extend super(),
-            isUploading: @model.isUploading()
-            isServerUploading: @model.isServerUploading()
-            isBroken: @model.isBroken()
-            attachmentUrl: @model.getAttachmentUrl()
-            downloadUrl: @model.getDownloadUrl()
-            clearance: @model.getClearance()
-            isViewSelected: @model.isViewSelected()
+            isUploading       : @model.isUploading()
+            isServerUploading : @model.isServerUploading()
+            isBroken          : @model.isBroken()
+            attachmentUrl     : @model.getAttachmentUrl()
+            downloadUrl       : @model.getDownloadUrl()
+            clearance         : @model.getClearance()
+            isViewSelected    : @model.isViewSelected()
 
 
     initialize: (options) ->
@@ -124,17 +124,10 @@ module.exports = class FileView extends BaseView
         @$el.data('cid', @model.cid) # link between the element and the model
         @$el.addClass('itemRow')
 
+        # all displayed files are in searchMode or none. That's why we can set
+        # the line is search mode once for all.
         if @isSearchMode
             @filePath.show()
-
-        if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
-            @addProgressBar()
-            @blockDownloadLink()
-            @blockNameLink()
-        else
-            @$el.removeClass 'uploading'
-            @$el.toggleClass 'broken', @model.isBroken()
 
         # add tags
         @tags = new TagsView
@@ -174,7 +167,6 @@ module.exports = class FileView extends BaseView
 
         # update path if in search mode
         if @isSearchMode
-            console.log 'search, update path', @model.attributes.path
             @filePath.html @model.attributes.path
             # todo : find the parent folder id to that users can click on path
             # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
@@ -235,13 +227,11 @@ module.exports = class FileView extends BaseView
         @$el.data 'cid', @model.cid
 
         if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
             @addProgressBar()
             @blockDownloadLink()
             @blockNameLink()
         else
-            @$el.removeClass 'uploading'
-            @progressbar.destroy() if @progressbar?
+            @removeProgressBar() if @progressbar?
             @$el.toggleClass 'broken', @model.isBroken()
 
 
@@ -530,15 +520,30 @@ module.exports = class FileView extends BaseView
 
     # add and display progress bar.
     addProgressBar: ->
-        @$('.type-column-cell').remove()
-        @$('.date-column-cell').remove()
+        console.log 'addProgressBar', @progressbar
 
-        @progressbar.destroy() if @progressbar?
+        @removeProgressBar() if @progressbar?
+        @$el.addClass 'uploading'
+        @$('.type-column-cell').hide()
+        @$('.date-column-cell').hide()
 
         @progressbar = new ProgressBar model: @model
-        cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
-        cell.append @progressbar.render().$el
-        @$('.size-column-cell').after cell
+        @cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
+        @cell.append @progressbar.render().$el
+        @$('.size-column-cell').after @cell
+
+
+    # remove progress bar.
+    removeProgressBar: ->
+        console.log 'removeProgressBar', @progressbar
+        @$('.type-column-cell').show()
+        @$('.date-column-cell').show()
+        @$el.removeClass 'uploading'
+        if @progressbar?
+            @progressbar.destroy()
+            @progressbar = null
+            console.log  'destroyed?', @progressbar
+        @cell.remove()
 
 
     # Make download link inactive.
