@@ -14,9 +14,9 @@ module.exports = (err, req, res, next) ->
     if err.template? and req?.accepts('html') is 'html'
         templateName = "#{err.template.name}"
         res.render templateName, err.template.params, (err, html) ->
-            res.send statusCode, html
+            res.status(statusCode).send html
     else
-        res.send statusCode, error: message
+        res.status(statusCode).send error: message
 
     if err instanceof Error
         logger.error err.message
