@@ -176,7 +176,6 @@ module.exports = class FileInfo
         clientHeight    = el.offsetParent.clientHeight
         popoverTop      = topFileInfo - scrollTop
         popoverBottom   = popoverTop + @_previousPopoverHeight
-        clientBottom    = clientHeight + scrollTop
         if popoverBottom < clientHeight
             @el.style.top   = popoverTop + 'px'
             @arrow.style.top = ARROW_TOP_OFFSET + 'px'
