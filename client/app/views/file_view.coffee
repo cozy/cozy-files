@@ -169,8 +169,12 @@ module.exports = class FileView extends BaseView
         if @isSearchMode
             @filePath.html @model.attributes.path
             # todo : find the parent folder id to that users can click on path
+            # 2 solutions :
+            #     get the data from the server for the files (perf...)
+            #     get the data only on click : create a route /files/fileid/parent
+            # the first one is less performant
+            # the second gives a path that is not sustainable.
             # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
-
 
         # update the icon (file or folder or thumbnail)
         if @model.isFolder()
@@ -314,6 +318,7 @@ module.exports = class FileView extends BaseView
 
     onEditClicked: (name) ->
         @el.displayMode = 'edit'
+        @$el.addClass('edit-mode')
         width = @$(".caption").width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
@@ -321,16 +326,32 @@ module.exports = class FileView extends BaseView
         if typeof(name) is "string"
             model.name = name
 
-        @$el.html @templateEdit
-            model: model
-            clearance: @model.getClearance()
+        # change the template
+        clearance = @model.getClearance()
+        iconClass = 'icon-type'
+        if clearance == 'public' or (clearance && clearance.length > 0)
+            iconClass += ' shared'
+        if model.binary && model.binary.thumb
+            iconClass += ' type-thumb'
+            thumbSrc   = "files/photo/thumb/#{this.model.id}"
+        else
+            iconClass += ' ' + @mimeClasses[model.mime]
+            thumbSrc   = ''
 
+        @$el.html @templateEdit
+            model     : model
+            iconClass : iconClass
+            thumbSrc  : thumbSrc
+            clearance : clearance
+
+        # manage input
         input = @$(".file-edit-name")[0]
         if name is ''
             input.placeholder = t "new folder"
         @$(".file-edit-name").width width
         @$(".file-edit-name").focus()
 
+        # manage selection in the input :
         # we only want to select the part before the file extension
         lastIndexOfDot = model.name.lastIndexOf '.'
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
@@ -347,7 +368,6 @@ module.exports = class FileView extends BaseView
             range.moveEnd "character", lastIndexOfDot
             range.select()
 
-        @$el.addClass 'edit-mode'
 
 
     onShareClicked: ->
