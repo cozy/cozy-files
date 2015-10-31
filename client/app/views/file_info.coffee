@@ -177,12 +177,12 @@ module.exports = class FileInfo
         popoverTop      = topFileInfo - scrollTop
         popoverBottom   = popoverTop + @_previousPopoverHeight
         clientBottom    = clientHeight + scrollTop
-        if popoverBottom < clientBottom
+        if popoverBottom < clientHeight
             @el.style.top   = popoverTop + 'px'
             @arrow.style.top = ARROW_TOP_OFFSET + 'px'
         else
-            @el.style.top   = (clientBottom - @_previousPopoverHeight) + 'px'
-            arrowTop = popoverTop - clientBottom + @_previousPopoverHeight + ARROW_TOP_OFFSET
+            @el.style.top   = (clientHeight - @_previousPopoverHeight) + 'px'
+            arrowTop = popoverTop - clientHeight + @_previousPopoverHeight + ARROW_TOP_OFFSET
             arrowTop = Math.min(arrowTop, @_previousPopoverHeight - 12 )
             @arrow.style.top = arrowTop + 'px'
         # update content

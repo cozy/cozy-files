@@ -96,7 +96,7 @@ module.exports = class FileView extends BaseView
 
         # prevent contacts loading in shared area
         unless app.isPublic
-            ModalShareView ?= require "./modal_share"
+            ModalShareView ?= require './modal_share'
 
 
     beforeRender: ->
@@ -116,9 +116,9 @@ module.exports = class FileView extends BaseView
         @elementLink = @$ 'a.link-wrapper'
         @elementName = @elementLink.find '.file-name'
         @thumb       = (@elementLink.find 'img.thumb')[0]
-        @elementSize = @$ '.size-column-cell span'
-        @elementType = @$ '.type-column-cell span'
-        @elementLastModificationDate = @$ '.date-column-cell span'
+        @elementSize = @$ '.size-column-cell'
+        @elementType = @$ '.type-column-cell'
+        @elementLastModificationDate = @$ '.date-column-cell'
         @elementIcon = @$ '.icon-type'
 
         @$el.data('cid', @model.cid) # link between the element and the model
@@ -157,8 +157,8 @@ module.exports = class FileView extends BaseView
         renderData = @getRenderData()
         if @model.isFolder()
             link = "#folders/#{renderData.model.id}"
-            size = ""
-            type = "folder"
+            size = ''
+            type = 'folder'
         else
             link = renderData.downloadUrl
             size = renderData.model.size or 0
@@ -171,14 +171,15 @@ module.exports = class FileView extends BaseView
             # todo : find the parent folder id to that users can click on path
             # 2 solutions :
             #     get the data from the server for the files (perf...)
-            #     get the data only on click : create a route /files/fileid/parent
-            # the first one is less performant
+            #     get the data only on click : create a special route to point
+            #     on the parent, exemple : /files/fileid/parent
+            # the first one is less performant and more complex (async)
             # the second gives a path that is not sustainable.
             # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
 
         # update the icon (file or folder or thumbnail)
         if @model.isFolder()
-            iconType = "type-folder"
+            iconType = 'type-folder'
         else
             # can be a file or a thumbnail
             mimeType = @model.get 'mime'
@@ -186,7 +187,7 @@ module.exports = class FileView extends BaseView
             if mimeType? and mimeClass?
                 iconType = mimeClass
             else
-                iconType = "type-file"
+                iconType = 'type-file'
             if iconType == 'type-image'
                 if renderData.model.binary && renderData.model.binary.thumb
                     iconType = 'type-thumb'
@@ -208,12 +209,10 @@ module.exports = class FileView extends BaseView
         # update tags
         @tags.refresh(@model)
 
-        # update size and type
+        # update name, size and type
+        @elementName.html renderData.model.name
         @elementSize.html size
         @elementType.html t(type)
-
-        # update the name of the the file
-        @elementName.html renderData.model.name
 
         # update last modification
         lastModification = renderData.model.lastModification
@@ -306,24 +305,24 @@ module.exports = class FileView extends BaseView
 
 
     onDeleteClicked: ->
-        new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
+        new ModalView t('modal are you sure'), t('modal delete msg'), t('modal delete ok'), t('modal cancel'), (confirm) =>
             if confirm
                 window.pendingOperations.deletion++
                 @model.destroy
                     success: -> window.pendingOperations.deletion--
                     error: ->
                         window.pendingOperations.deletion--
-                        ModalView.error t "modal delete error"
+                        ModalView.error t 'modal delete error'
 
 
     onEditClicked: (name) ->
         @el.displayMode = 'edit'
         @$el.addClass('edit-mode')
-        width = @$(".caption").width() + 10
+        width = @$('.caption').width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
 
-        if typeof(name) is "string"
+        if typeof(name) is 'string'
             model.name = name
 
         # change the template
@@ -345,18 +344,18 @@ module.exports = class FileView extends BaseView
             clearance : clearance
 
         # manage input
-        input = @$(".file-edit-name")[0]
+        input = @$('.file-edit-name')[0]
         if name is ''
-            input.placeholder = t "new folder"
-        @$(".file-edit-name").width width
-        @$(".file-edit-name").focus()
+            input.placeholder = t 'new folder'
+        @$('.file-edit-name').width width
+        @$('.file-edit-name').focus()
 
         # manage selection in the input :
         # we only want to select the part before the file extension
         lastIndexOfDot = model.name.lastIndexOf '.'
         lastIndexOfDot = model.name.length if lastIndexOfDot is -1
 
-        if typeof input.selectionStart isnt "undefined"
+        if typeof input.selectionStart isnt 'undefined'
             input.selectionStart = 0
             input.selectionEnd = lastIndexOfDot
         else if document.selection and document.selection.createRange
@@ -364,8 +363,8 @@ module.exports = class FileView extends BaseView
             input.select()
             range = document.selection.createRange()
             range.collapse true
-            range.moveStart "character", 0
-            range.moveEnd "character", lastIndexOfDot
+            range.moveStart 'character', 0
+            range.moveEnd 'character', lastIndexOfDot
             range.select()
 
 
@@ -452,7 +451,7 @@ module.exports = class FileView extends BaseView
 
         # If the input is empty, show an error.
         else
-            @displayError t("modal error empty name")
+            @displayError t('modal error empty name')
 
 
     onCancelClicked: ->

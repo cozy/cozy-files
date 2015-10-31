@@ -6,7 +6,8 @@ path = require "path"
  * PARAMETERS
 ###
 numberOfFilesToCreate = process.argv[2] or 5
-content = fs.readFileSync './test/fixtures/files/test.txt'
+folderTargetPath = './fixtures/big-folder'
+content = fs.readFileSync './fixtures/files/test.txt'
 
 
 ###*
@@ -21,7 +22,7 @@ rmdirSync = (dir) ->
       # Skip
     else if stat.isDirectory()
       # Remove directory recursively
-      rmdir filename
+      rmdirSync filename
     else
       # Remove file
       fs.unlinkSync filename
@@ -32,14 +33,14 @@ rmdirSync = (dir) ->
  * PREPARE THE FOLDER
 ###
 try
-    stats = fs.lstatSync('./test/fixtures/big-folder')
+    stats = fs.lstatSync(folderTargetPath)
     console.log "dir exists, delete it"
-    rmdirSync('./test/fixtures/big-folder')
+    rmdirSync(folderTargetPath)
 catch e
-    console.log "dir doesn't exists, nothing to do", e
+
 finally
     console.log "create dir"
-    fs.mkdirSync('./test/fixtures/big-folder')
+    fs.mkdirSync(folderTargetPath)
 
 
 ###*
@@ -49,4 +50,6 @@ for i in [0..numberOfFilesToCreate-1] by 1
     # rank = if i < 10 then "0#{i}" else i
     rkTXT = Array(7 - "#{i}".length).join('0') + i
     filename = "test-#{rkTXT}"
-    fs.writeFileSync "./test/fixtures/big-folder/#{filename}", content
+    fs.writeFileSync folderTargetPath + '/' + filename, content
+
+console.log numberOfFilesToCreate, 'files created in', folderTargetPath+'/'
