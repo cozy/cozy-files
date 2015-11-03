@@ -17,7 +17,10 @@ html(style="height:100%;")
                       img(src="https://cozy.io/assets/images/cozy-logo.png" width="63" height="48" style="padding: 12px 0; margin: auto;")
                   tr
                     // TODO: add user's email inside the brackets #{displayEmail}
-                    td(style="padding: 1.5em;") #{displayName} (#{displayEmail}) a partagé le #{localization.t(type)} appelé "#{doc.name}" avec vous via Cozy Cloud.
+                    td(style="padding: 1.5em;")
+                      | #{displayName} (#{displayEmail}) a partagé le #{localization.t(type)} appelé
+                      a(href=url, style="color: #34A6FF; text-decoration: none;") "#{doc.name}"
+                      | avec vous via Cozy Cloud.
                   tr
                     td(style="padding: 0.5em 1.5em 2em; width: 100%;")
                       a(href=url, style="display: block; width: 60%; margin: 0 auto; padding: 1.2em 2em; background-color: #34A6FF; border-radius: 5px; color: #FFF; text-decoration: none; text-align: center; font-size: 1em; font-weight: bold; cursor:pointer;")
