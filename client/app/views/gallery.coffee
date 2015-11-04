@@ -24,9 +24,9 @@ module.exports = class Gallery
         # 2/ populate the div with the links to the photo to display
         a_toSimulateClick = null
         window.app.router.folderView.collection.forEach (model)=>
-            attr = model.attributes
-            if attr.mime.substr(0,5) != 'image'
+            if !model.isImage()
                 return
+            attr = model.attributes
             a      = document.createElement('a')
             a.href = "files/photo/screen/#{attr.id}/#{attr.name}"
             gal.appendChild a

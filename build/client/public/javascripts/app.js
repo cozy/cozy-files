@@ -3150,6 +3150,10 @@ module.exports = File = (function(superClass) {
     return this.get('type') === 'file';
   };
 
+  File.prototype.isImage = function() {
+    return this.get('type') === 'file' && this.get('class') === 'image';
+  };
+
   File.prototype.isSearch = function() {
     return this.get('type') === 'search';
   };
@@ -4418,7 +4422,11 @@ module.exports = FileView = (function(superClass) {
       size = '';
       type = 'folder';
     } else {
-      link = renderData.downloadUrl;
+      if (this.model.isImage()) {
+        link = renderData.attachmentUrl;
+      } else {
+        link = renderData.downloadUrl;
+      }
       size = renderData.model.size || 0;
       size = filesize(size, {
         base: 2
@@ -5785,10 +5793,10 @@ module.exports = Gallery = (function() {
     window.app.router.folderView.collection.forEach((function(_this) {
       return function(model) {
         var a, attr;
-        attr = model.attributes;
-        if (attr.mime.substr(0, 5) !== 'image') {
+        if (!model.isImage()) {
           return;
         }
+        attr = model.attributes;
         a = document.createElement('a');
         a.href = "files/photo/screen/" + attr.id + "/" + attr.name;
         gal.appendChild(a);

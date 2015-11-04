@@ -160,7 +160,10 @@ module.exports = class FileView extends BaseView
             size = ''
             type = 'folder'
         else
-            link = renderData.downloadUrl
+            if @model.isImage()
+                link = renderData.attachmentUrl
+            else
+                link = renderData.downloadUrl
             size = renderData.model.size or 0
             size = filesize(size, base: 2)
             type = renderData.model.class

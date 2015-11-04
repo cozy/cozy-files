@@ -2282,7 +2282,7 @@ body.error-404 .error-frame .headline {
 #files .itemRow [role="gridcell"] .caption span + span {
   margin-left: 5px;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper {
   display: -webkit-box;
   display: -moz-box;
   display: -webkit-flex;
@@ -2297,41 +2297,41 @@ body.error-404 .error-frame .headline {
   align-items: center;
   position: relative;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper:hover {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper:hover {
   border: 0;
   text-decoration: none;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper:hover a {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper:hover a {
   color: #008af6;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper:hover a:focus {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper:hover a:focus {
   color: #fff;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper .btn-link {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper .btn-link {
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 @media (min-width: 75.0625em) {
-  #files .itemRow [role="gridcell"] .caption .link-wrapper .btn-link {
+  #files .itemRow [role="gridcell"] .caption a.link-wrapper .btn-link {
     max-width: 40em;
   }
 }
 @media (max-width: 75em) {
-  #files .itemRow [role="gridcell"] .caption .link-wrapper .btn-link {
+  #files .itemRow [role="gridcell"] .caption a.link-wrapper .btn-link {
     max-width: calc(100vw - 26em);
   }
 }
 @media (max-width: 62.5em) {
-  #files .itemRow [role="gridcell"] .caption .link-wrapper .btn-link {
+  #files .itemRow [role="gridcell"] .caption a.link-wrapper .btn-link {
     max-width: calc(100vw - 5em);
   }
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper .btn-link span {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper .btn-link span {
   color: #333;
 }
-#files .itemRow [role="gridcell"] .caption .link-wrapper:hover span {
+#files .itemRow [role="gridcell"] .caption a.link-wrapper:hover span {
   color: #34a6ff;
 }
 #files .itemRow [role="gridcell"] .caption.caption-edit {

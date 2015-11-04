@@ -58,11 +58,12 @@ module.exports = class File extends Backbone.Model
         name = @get 'name'
         return "#{path}/#{name}"
 
-    isFolder: -> return @get('type') is 'folder'
-    isFile: -> return @get('type') is 'file'
-    isSearch: -> return @get('type') is 'search'
-    isRoot: -> return @get('id') is 'root'
-    isShared: ->
+    isFolder : -> return @get('type') is 'folder'
+    isFile   : -> return @get('type') is 'file'
+    isImage  : -> return @get('type') is 'file' and @get('class') is 'image'
+    isSearch : -> return @get('type') is 'search'
+    isRoot   : -> return @get('id') is 'root'
+    isShared : ->
         clearance = @get 'clearance'
         return clearance? and (clearance is 'public' or clearance.length > 0)
 
