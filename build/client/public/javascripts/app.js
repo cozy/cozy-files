@@ -2586,7 +2586,7 @@ module.exports = {
   "no": "No",
   "ok": "Ok",
   "name": "Name",
-  "type": "Type",
+  "type": "Kind",
   "size": "Size",
   "date": "Last update",
   "download": "Download all",
