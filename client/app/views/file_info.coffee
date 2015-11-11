@@ -185,9 +185,8 @@ module.exports = class FileInfo
             arrowTop = Math.min(arrowTop, @_previousPopoverHeight - 12 )
             @arrow.style.top = arrowTop + 'px'
         # update content
-        attr     = target.model.attributes
-        @img.src = "files/photo/thumb/#{attr.id}"
-        @a.href  = "files/#{attr.id}/attach/#{attr.name}"
+        @img.src = target.model.getThumbUrl()
+        @a.href  = target.model.getAttachmentUrl()
 
 
     _show: () ->

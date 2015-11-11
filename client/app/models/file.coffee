@@ -43,6 +43,75 @@ module.exports = class File extends Backbone.Model
     # Valid values for `uploadStatus`.
     @VALID_STATUSES: [null, 'uploading', 'uploaded', 'errored', 'conflict']
 
+    mimeClasses  :
+        'application/octet-stream'               : 'type-file'
+        'application/x-binary'                   : 'type-binary'
+        'text/plain'                             : 'type-text'
+        'text/richtext'                          : 'type-text'
+        'application/x-rtf'                      : 'type-text'
+        'application/rtf'                        : 'type-text'
+        'application/msword'                     : 'type-text'
+        'application/x-iwork-pages-sffpages'     : 'type-text'
+        'application/mspowerpoint'               : 'type-presentation'
+        'application/vnd.ms-powerpoint'          : 'type-presentation'
+        'application/x-mspowerpoint'             : 'type-presentation'
+        'application/x-iwork-keynote-sffkey'     : 'type-presentation'
+        'application/excel'                      : 'type-spreadsheet'
+        'application/x-excel'                    : 'type-spreadsheet'
+        'aaplication/vnd.ms-excel'               : 'type-spreadsheet'
+        'application/x-msexcel'                  : 'type-spreadsheet'
+        'application/x-iwork-numbers-sffnumbers' : 'type-spreadsheet'
+        'application/pdf'                        : 'type-pdf'
+        'text/html'                              : 'type-code'
+        'text/asp'                               : 'type-code'
+        'text/css'                               : 'type-code'
+        'application/x-javascript'               : 'type-code'
+        'application/x-lisp'                     : 'type-code'
+        'application/xml'                        : 'type-code'
+        'text/xml'                               : 'type-code'
+        'application/x-sh'                       : 'type-code'
+        'text/x-script.python'                   : 'type-code'
+        'application/x-bytecode.python'          : 'type-code'
+        'text/x-java-source'                     : 'type-code'
+        'application/postscript'                 : 'type-image'
+        'image/gif'                              : 'type-image'
+        'image/jpg'                              : 'type-image'
+        'image/jpeg'                             : 'type-image'
+        'image/pjpeg'                            : 'type-image'
+        'image/x-pict'                           : 'type-image'
+        'image/pict'                             : 'type-image'
+        'image/png'                              : 'type-image'
+        'image/x-pcx'                            : 'type-image'
+        'image/x-portable-pixmap'                : 'type-image'
+        'image/x-tiff'                           : 'type-image'
+        'image/tiff'                             : 'type-image'
+        'audio/aiff'                             : 'type-audio'
+        'audio/x-aiff'                           : 'type-audio'
+        'audio/midi'                             : 'type-audio'
+        'audio/x-midi'                           : 'type-audio'
+        'audio/x-mid'                            : 'type-audio'
+        'audio/mpeg'                             : 'type-audio'
+        'audio/x-mpeg'                           : 'type-audio'
+        'audio/mpeg3'                            : 'type-audio'
+        'audio/x-mpeg3'                          : 'type-audio'
+        'audio/wav'                              : 'type-audio'
+        'audio/x-wav'                            : 'type-audio'
+        'video/avi'                              : 'type-video'
+        'video/mpeg'                             : 'type-video'
+        'video/mp4'                              : 'type-video'
+        'application/zip'                        : 'type-archive'
+        'multipart/x-zip'                        : 'type-archive'
+        'multipart/x-zip'                        : 'type-archive'
+        'application/x-bzip'                     : 'type-archive'
+        'application/x-bzip2'                    : 'type-archive'
+        'application/x-gzip'                     : 'type-archive'
+        'application/x-compress'                 : 'type-archive'
+        'application/x-compressed'               : 'type-archive'
+        'application/x-zip-compressed'           : 'type-archive'
+        'application/x-apple-diskimage'          : 'type-archive'
+        'multipart/x-gzip'                       : 'type-archive'
+
+
     constructor: (options) ->
         doctype = options.docType?.toLowerCase()
         if doctype? and doctype in ['file', 'folder']
@@ -208,12 +277,14 @@ module.exports = class File extends Backbone.Model
         else
             prefix + 'files/'
 
+
     # Overrides the url method to append the key if it's public mode
     url: (toAppend = '') ->
         url = super()
         key = if app.isPublic then window.location.search else ''
 
         return url + toAppend + key
+
 
     getPublicURL: (key) ->
         link = "#{app.domain}#{@urlRoot()}#{@id}"
@@ -222,11 +293,13 @@ module.exports = class File extends Backbone.Model
             link = "#{link}/attach/#{name}"
         return link
 
+
     # Only relevant if model is a folder
     getZipURL: ->
         if @isFolder()
             toAppend = "/zip/#{encodeURIComponent @get 'name'}"
             @url toAppend
+
 
     # Only relevant if model is a file
     getAttachmentUrl: ->
@@ -237,12 +310,47 @@ module.exports = class File extends Backbone.Model
             toAppend = "/attach/#{encodeURIComponent @get 'name'}"
             @url toAppend
 
+
     getDownloadUrl: ->
         if @isFile()
             toAppend = "/download/#{encodeURIComponent @get 'name'}"
             @url toAppend
         else if @isFolder()
             @getZipURL()
+
+
+    getThumbUrl: () ->
+        if @attributes.binary && @attributes.binary.thumb
+            return @url "/thumb"
+        else
+            return ''
+
+
+    getScreenUrl: () ->
+        if @attributes.binary && @attributes.binary.screen
+            return @url "/screen/#{encodeURIComponent @get 'name'}"
+        else
+            return ''
+
+
+    # Returns the type of icon. Can be :
+    #    . type-folder
+    #    . type-file      : generic when the mime is unknown
+    #    . #{a mime type} : a file with a known mime (type-pdf, type-code...)
+    #    . type-thumb     : if a file has a thumbnail
+    getIconType: () ->
+        if @isFolder()
+            return 'type-folder'
+        mimeType  = @get 'mime'
+        mimeClass = @mimeClasses[mimeType]
+        if mimeType? and mimeClass?
+            iconType = mimeClass
+        else
+            iconType = 'type-file'
+        if @attributes.binary && @attributes.binary.thumb
+            iconType = 'type-thumb'
+        return iconType
+
 
     validate: (attrs) ->
         errors = []

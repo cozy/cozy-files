@@ -26,9 +26,8 @@ module.exports = class Gallery
         window.app.router.folderView.collection.forEach (model)=>
             if !model.isImage()
                 return
-            attr = model.attributes
             a      = document.createElement('a')
-            a.href = "files/photo/screen/#{attr.id}/#{attr.name}"
+            a.href = model.getScreenUrl()
             gal.appendChild a
             if model == modelClicked
                 a_toSimulateClick = a
