@@ -70,14 +70,28 @@ LocalizationManager = (function() {
   };
 
   LocalizationManager.prototype.getEmailTemplate = function(name) {
-    var filePath, templatefile;
-    filePath = "../views/" + this.polyglot.currentLocale + "/" + name;
-    templatefile = require('path').join(__dirname, filePath);
+    var getPath, templatePath;
+    getPath = function(lang) {
+      var filePath, templatefile;
+      filePath = "../views/" + lang + "/" + name;
+      templatefile = require('path').join(__dirname, filePath);
+      if (ext !== 'jade') {
+        templatefile = templatefile.replace('jade', 'js');
+      }
+      if (fs.existsSync(templatefile)) {
+        return templatefile;
+      } else {
+        return null;
+      }
+    };
+    templatePath = getPath(this.polyglot.currentLocale);
+    if (templatePath == null) {
+      templatePath = getPath('en');
+    }
     if (ext === 'jade') {
-      return jade.compile(fs.readFileSync(templatefile, 'utf8'));
+      return jade.compile(fs.readFileSync(templatePath, 'utf8'));
     } else {
-      templatefile = templatefile.replace('jade', 'js');
-      return require(templatefile);
+      return require(templatePath);
     }
   };
 
