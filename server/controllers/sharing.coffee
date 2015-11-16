@@ -4,6 +4,7 @@ User = require '../models/user'
 helpers = require '../helpers/sharing'
 clearance = require 'cozy-clearance'
 async = require 'async'
+fs = require 'fs'
 
 localization = require '../lib/localization_manager'
 
@@ -14,24 +15,36 @@ clearanceCtl = clearance.controller
     mailTemplate: (options, callback) ->
         # Use async to retrieve all wanted informations
         User.getUserInfo (err, user) ->
-            options.type         = options.doc.docType.toLowerCase()
-            options.displayName  = user.name \
-                                   or localization.t 'default user name'
-            options.displayEmail = user.email
-            options.localization = localization
-            options.displayLabel = localization.t "view #{options.type}"
+            if err?
+                callback err
+            else
+                options.type         = options.doc.docType.toLowerCase()
+                options.displayName  = user.name \
+                                       or localization.t 'default user name'
+                options.displayEmail = user.email
+                options.localization = localization
+                options.displayLabel = localization.t "view #{options.type}"
 
-            callback null, mailTemplate options
+                callback null, mailTemplate options
 
 
     mailSubject: (options, callback) ->
         type = options.doc.docType.toLowerCase()
         name = options.doc.name
         User.getDisplayName (err, displayName) ->
-            displayName = displayName or localization.t 'default user name'
-            callback null, localization.t 'email sharing subject',
-                                displayName: displayName
-                                name: name
+            if err?
+                callback err
+            else
+                displayName = displayName or localization.t 'default user name'
+                callback null, localization.t 'email sharing subject',
+                                    displayName: displayName
+                                    name: name
+
+    attachments: [
+        path: fs.realpathSync './build/client/public/images/cozy-logo.png'
+        filename: 'cozy-logo.png'
+        cid: 'cozy-logo'
+    ]
 
 
 # fetch file or folder, put it in req.doc
