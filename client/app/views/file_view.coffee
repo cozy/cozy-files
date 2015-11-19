@@ -237,7 +237,9 @@ module.exports = class FileView extends BaseView
                         window.pendingOperations.deletion--
                         ModalView.error t 'modal delete error'
 
-
+    ###*
+     * Triggers the input to rename the file/folder
+    ###
     onEditClicked: (name) ->
         @el.displayMode = 'edit'
         @$el.addClass('edit-mode')
@@ -267,28 +269,34 @@ module.exports = class FileView extends BaseView
             clearance : clearance
 
         # manage input
-        input = @$('.file-edit-name')[0]
+        input$ = @$('.file-edit-name')
+        input  = input$[0]
         if name is ''
             input.placeholder = t 'new folder'
-        @$('.file-edit-name').width width
-        @$('.file-edit-name').focus()
+        input$.width width
+        input$.focus()
+        input$.focusout () =>
+            @onSaveClicked()
+
 
         # manage selection in the input :
         # we only want to select the part before the file extension
-        lastIndexOfDot = model.name.lastIndexOf '.'
-        lastIndexOfDot = model.name.length if lastIndexOfDot is -1
+        # (the timeout otherwise there is a pb with the selection)
+        setTimeout () ->
+            lastIndexOfDot = model.name.lastIndexOf '.'
+            lastIndexOfDot = model.name.length if lastIndexOfDot is -1
 
-        if typeof input.selectionStart isnt 'undefined'
-            input.selectionStart = 0
-            input.selectionEnd = lastIndexOfDot
-        else if document.selection and document.selection.createRange
-            # IE Branch...
-            input.select()
-            range = document.selection.createRange()
-            range.collapse true
-            range.moveStart 'character', 0
-            range.moveEnd 'character', lastIndexOfDot
-            range.select()
+            if typeof input.selectionStart isnt 'undefined'
+                input.selectionStart = 0
+                input.selectionEnd = lastIndexOfDot
+            else if document.selection and document.selection.createRange
+                # IE Branch...
+                input.select()
+                range = document.selection.createRange()
+                range.collapse true
+                range.moveStart 'character', 0
+                range.moveEnd 'character', lastIndexOfDot
+                range.select()
 
 
 
@@ -435,7 +443,9 @@ module.exports = class FileView extends BaseView
         @model.toggleViewSelected isShiftPressed
 
 
+    ###
     # called when the user edits the name of the file or folder
+    ###
     onKeyPress: (e) =>
 
         if e.keyCode is 13 # ENTER key
