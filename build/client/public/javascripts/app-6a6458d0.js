@@ -2605,7 +2605,7 @@ module.exports = {
   "no": "No",
   "ok": "Ok",
   "name": "Name",
-  "type": "Kind",
+  "type": "Type",
   "size": "Size",
   "date": "Last update",
   "download": "Download all",
@@ -3141,6 +3141,75 @@ module.exports = File = (function(superClass) {
 
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
+  File.prototype.mimeClasses = {
+    'application/octet-stream': 'type-file',
+    'application/x-binary': 'type-binary',
+    'text/plain': 'type-text',
+    'text/richtext': 'type-text',
+    'application/x-rtf': 'type-text',
+    'application/rtf': 'type-text',
+    'application/msword': 'type-text',
+    'application/x-iwork-pages-sffpages': 'type-text',
+    'application/mspowerpoint': 'type-presentation',
+    'application/vnd.ms-powerpoint': 'type-presentation',
+    'application/x-mspowerpoint': 'type-presentation',
+    'application/x-iwork-keynote-sffkey': 'type-presentation',
+    'application/excel': 'type-spreadsheet',
+    'application/x-excel': 'type-spreadsheet',
+    'aaplication/vnd.ms-excel': 'type-spreadsheet',
+    'application/x-msexcel': 'type-spreadsheet',
+    'application/x-iwork-numbers-sffnumbers': 'type-spreadsheet',
+    'application/pdf': 'type-pdf',
+    'text/html': 'type-code',
+    'text/asp': 'type-code',
+    'text/css': 'type-code',
+    'application/x-javascript': 'type-code',
+    'application/x-lisp': 'type-code',
+    'application/xml': 'type-code',
+    'text/xml': 'type-code',
+    'application/x-sh': 'type-code',
+    'text/x-script.python': 'type-code',
+    'application/x-bytecode.python': 'type-code',
+    'text/x-java-source': 'type-code',
+    'application/postscript': 'type-image',
+    'image/gif': 'type-image',
+    'image/jpg': 'type-image',
+    'image/jpeg': 'type-image',
+    'image/pjpeg': 'type-image',
+    'image/x-pict': 'type-image',
+    'image/pict': 'type-image',
+    'image/png': 'type-image',
+    'image/x-pcx': 'type-image',
+    'image/x-portable-pixmap': 'type-image',
+    'image/x-tiff': 'type-image',
+    'image/tiff': 'type-image',
+    'audio/aiff': 'type-audio',
+    'audio/x-aiff': 'type-audio',
+    'audio/midi': 'type-audio',
+    'audio/x-midi': 'type-audio',
+    'audio/x-mid': 'type-audio',
+    'audio/mpeg': 'type-audio',
+    'audio/x-mpeg': 'type-audio',
+    'audio/mpeg3': 'type-audio',
+    'audio/x-mpeg3': 'type-audio',
+    'audio/wav': 'type-audio',
+    'audio/x-wav': 'type-audio',
+    'video/avi': 'type-video',
+    'video/mpeg': 'type-video',
+    'video/mp4': 'type-video',
+    'application/zip': 'type-archive',
+    'multipart/x-zip': 'type-archive',
+    'multipart/x-zip': 'type-archive',
+    'application/x-bzip': 'type-archive',
+    'application/x-bzip2': 'type-archive',
+    'application/x-gzip': 'type-archive',
+    'application/x-compress': 'type-archive',
+    'application/x-compressed': 'type-archive',
+    'application/x-zip-compressed': 'type-archive',
+    'application/x-apple-diskimage': 'type-archive',
+    'multipart/x-gzip': 'type-archive'
+  };
+
   function File(options) {
     this.sync = bind(this.sync, this);
     var doctype, ref;
@@ -3167,6 +3236,10 @@ module.exports = File = (function(superClass) {
 
   File.prototype.isFile = function() {
     return this.get('type') === 'file';
+  };
+
+  File.prototype.isImage = function() {
+    return this.get('type') === 'file' && this.get('class') === 'image';
   };
 
   File.prototype.isSearch = function() {
@@ -3425,6 +3498,40 @@ module.exports = File = (function(superClass) {
     } else if (this.isFolder()) {
       return this.getZipURL();
     }
+  };
+
+  File.prototype.getThumbUrl = function() {
+    if (this.attributes.binary && this.attributes.binary.thumb) {
+      return this.url("/thumb");
+    } else {
+      return '';
+    }
+  };
+
+  File.prototype.getScreenUrl = function() {
+    if (this.attributes.binary && this.attributes.binary.screen) {
+      return this.url("/screen/" + (encodeURIComponent(this.get('name'))));
+    } else {
+      return '';
+    }
+  };
+
+  File.prototype.getIconType = function() {
+    var iconType, mimeClass, mimeType;
+    if (this.isFolder()) {
+      return 'type-folder';
+    }
+    mimeType = this.get('mime');
+    mimeClass = this.mimeClasses[mimeType];
+    if ((mimeType != null) && (mimeClass != null)) {
+      iconType = mimeClass;
+    } else {
+      iconType = 'type-file';
+    }
+    if (this.attributes.binary && this.attributes.binary.thumb) {
+      iconType = 'type-thumb';
+    }
+    return iconType;
   };
 
   File.prototype.validate = function(attrs) {
@@ -4131,7 +4238,7 @@ module.exports = FileInfo = (function() {
    */
 
   FileInfo.prototype._setNewTarget = function() {
-    var arrowTop, attr, clientBottom, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
+    var arrowTop, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
     target = this._lastEnteredTarget;
     this._currentTarget = target;
     el = target.el;
@@ -4140,7 +4247,6 @@ module.exports = FileInfo = (function() {
     clientHeight = el.offsetParent.clientHeight;
     popoverTop = topFileInfo - scrollTop;
     popoverBottom = popoverTop + this._previousPopoverHeight;
-    clientBottom = clientHeight + scrollTop;
     if (popoverBottom < clientHeight) {
       this.el.style.top = popoverTop + 'px';
       this.arrow.style.top = ARROW_TOP_OFFSET + 'px';
@@ -4150,9 +4256,8 @@ module.exports = FileInfo = (function() {
       arrowTop = Math.min(arrowTop, this._previousPopoverHeight - 12);
       this.arrow.style.top = arrowTop + 'px';
     }
-    attr = target.model.attributes;
-    this.img.src = "files/photo/thumb/" + attr.id;
-    return this.a.href = "files/" + attr.id + "/attach/" + attr.name;
+    this.img.src = target.model.getThumbUrl();
+    return this.a.href = target.model.getAttachmentUrl();
   };
 
   FileInfo.prototype._show = function() {
@@ -4298,75 +4403,6 @@ module.exports = FileView = (function(superClass) {
 
   FileView.prototype.templateEdit = require('./templates/file_edit');
 
-  FileView.prototype.mimeClasses = {
-    'application/octet-stream': 'type-file',
-    'application/x-binary': 'type-binary',
-    'text/plain': 'type-text',
-    'text/richtext': 'type-text',
-    'application/x-rtf': 'type-text',
-    'application/rtf': 'type-text',
-    'application/msword': 'type-text',
-    'application/x-iwork-pages-sffpages': 'type-text',
-    'application/mspowerpoint': 'type-presentation',
-    'application/vnd.ms-powerpoint': 'type-presentation',
-    'application/x-mspowerpoint': 'type-presentation',
-    'application/x-iwork-keynote-sffkey': 'type-presentation',
-    'application/excel': 'type-spreadsheet',
-    'application/x-excel': 'type-spreadsheet',
-    'aaplication/vnd.ms-excel': 'type-spreadsheet',
-    'application/x-msexcel': 'type-spreadsheet',
-    'application/x-iwork-numbers-sffnumbers': 'type-spreadsheet',
-    'application/pdf': 'type-pdf',
-    'text/html': 'type-code',
-    'text/asp': 'type-code',
-    'text/css': 'type-code',
-    'application/x-javascript': 'type-code',
-    'application/x-lisp': 'type-code',
-    'application/xml': 'type-code',
-    'text/xml': 'type-code',
-    'application/x-sh': 'type-code',
-    'text/x-script.python': 'type-code',
-    'application/x-bytecode.python': 'type-code',
-    'text/x-java-source': 'type-code',
-    'application/postscript': 'type-image',
-    'image/gif': 'type-image',
-    'image/jpg': 'type-image',
-    'image/jpeg': 'type-image',
-    'image/pjpeg': 'type-image',
-    'image/x-pict': 'type-image',
-    'image/pict': 'type-image',
-    'image/png': 'type-image',
-    'image/x-pcx': 'type-image',
-    'image/x-portable-pixmap': 'type-image',
-    'image/x-tiff': 'type-image',
-    'image/tiff': 'type-image',
-    'audio/aiff': 'type-audio',
-    'audio/x-aiff': 'type-audio',
-    'audio/midi': 'type-audio',
-    'audio/x-midi': 'type-audio',
-    'audio/x-mid': 'type-audio',
-    'audio/mpeg': 'type-audio',
-    'audio/x-mpeg': 'type-audio',
-    'audio/mpeg3': 'type-audio',
-    'audio/x-mpeg3': 'type-audio',
-    'audio/wav': 'type-audio',
-    'audio/x-wav': 'type-audio',
-    'video/avi': 'type-video',
-    'video/mpeg': 'type-video',
-    'video/mp4': 'type-video',
-    'application/zip': 'type-archive',
-    'multipart/x-zip': 'type-archive',
-    'multipart/x-zip': 'type-archive',
-    'application/x-bzip': 'type-archive',
-    'application/x-bzip2': 'type-archive',
-    'application/x-gzip': 'type-archive',
-    'application/x-compress': 'type-archive',
-    'application/x-compressed': 'type-archive',
-    'application/x-zip-compressed': 'type-archive',
-    'application/x-apple-diskimage': 'type-archive',
-    'multipart/x-gzip': 'type-archive'
-  };
-
   FileView.prototype.getRenderData = function() {
     return _.extend(FileView.__super__.getRenderData.call(this), {
       isUploading: this.model.isUploading(),
@@ -4426,7 +4462,7 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.reDecorate = function() {
-    var iconType, lastModification, link, longLastModification, m, mimeClass, mimeType, renderData, size, type;
+    var iconType, lastModification, link, longLastModification, m, renderData, size, type;
     if (this.el.displayMode === 'edit') {
       this.render();
       return;
@@ -4438,7 +4474,11 @@ module.exports = FileView = (function(superClass) {
       size = '';
       type = 'folder';
     } else {
-      link = renderData.downloadUrl;
+      if (this.model.isImage()) {
+        link = renderData.attachmentUrl;
+      } else {
+        link = renderData.downloadUrl;
+      }
       size = renderData.model.size || 0;
       size = filesize(size, {
         base: 2
@@ -4448,27 +4488,10 @@ module.exports = FileView = (function(superClass) {
     if (this.isSearchMode) {
       this.filePath.html(this.model.attributes.path);
     }
-    if (this.model.isFolder()) {
-      iconType = 'type-folder';
-    } else {
-      mimeType = this.model.get('mime');
-      mimeClass = this.mimeClasses[mimeType];
-      if ((mimeType != null) && (mimeClass != null)) {
-        iconType = mimeClass;
-      } else {
-        iconType = 'type-file';
-      }
-      if (iconType === 'type-image') {
-        if (renderData.model.binary && renderData.model.binary.thumb) {
-          iconType = 'type-thumb';
-        }
-      }
-    }
+    iconType = this.model.getIconType();
     this.elementIcon.attr('class', "icon-type " + iconType);
     if (iconType === 'type-thumb') {
-      this.thumb.src = "files/photo/thumb/" + this.model.id;
-    } else {
-      this.thumb.src = '';
+      this.thumb.src = this.model.getThumbUrl();
     }
     if (this.model.isShared()) {
       this.elementIcon.addClass('shared');
@@ -4587,8 +4610,13 @@ module.exports = FileView = (function(superClass) {
     })(this));
   };
 
+
+  /**
+   * Triggers the input to rename the file/folder
+   */
+
   FileView.prototype.onEditClicked = function(name) {
-    var clearance, iconClass, input, lastIndexOfDot, model, range, thumbSrc, width;
+    var clearance, iconClass, iconType, input, input$, model, thumbSrc, width;
     this.el.displayMode = 'edit';
     this.$el.addClass('edit-mode');
     width = this.$('.caption').width() + 10;
@@ -4604,11 +4632,11 @@ module.exports = FileView = (function(superClass) {
     if (clearance === 'public' || (clearance && clearance.length > 0)) {
       iconClass += ' shared';
     }
-    if (model.binary && model.binary.thumb) {
-      iconClass += ' type-thumb';
-      thumbSrc = "files/photo/thumb/" + this.model.id;
+    iconType = this.model.getIconType();
+    iconClass += ' ' + iconType;
+    if (iconType === 'type-thumb') {
+      thumbSrc = this.model.getThumbUrl();
     } else {
-      iconClass += ' ' + this.mimeClasses[model.mime];
       thumbSrc = '';
     }
     this.$el.html(this.templateEdit({
@@ -4617,27 +4645,36 @@ module.exports = FileView = (function(superClass) {
       thumbSrc: thumbSrc,
       clearance: clearance
     }));
-    input = this.$('.file-edit-name')[0];
+    input$ = this.$('.file-edit-name');
+    input = input$[0];
     if (name === '') {
       input.placeholder = t('new folder');
     }
-    this.$('.file-edit-name').width(width);
-    this.$('.file-edit-name').focus();
-    lastIndexOfDot = model.name.lastIndexOf('.');
-    if (lastIndexOfDot === -1) {
-      lastIndexOfDot = model.name.length;
-    }
-    if (typeof input.selectionStart !== 'undefined') {
-      input.selectionStart = 0;
-      return input.selectionEnd = lastIndexOfDot;
-    } else if (document.selection && document.selection.createRange) {
-      input.select();
-      range = document.selection.createRange();
-      range.collapse(true);
-      range.moveStart('character', 0);
-      range.moveEnd('character', lastIndexOfDot);
-      return range.select();
-    }
+    input$.width(width);
+    input$.focus();
+    input$.focusout((function(_this) {
+      return function() {
+        return _this.onSaveClicked();
+      };
+    })(this));
+    return setTimeout(function() {
+      var lastIndexOfDot, range;
+      lastIndexOfDot = model.name.lastIndexOf('.');
+      if (lastIndexOfDot === -1) {
+        lastIndexOfDot = model.name.length;
+      }
+      if (typeof input.selectionStart !== 'undefined') {
+        input.selectionStart = 0;
+        return input.selectionEnd = lastIndexOfDot;
+      } else if (document.selection && document.selection.createRange) {
+        input.select();
+        range = document.selection.createRange();
+        range.collapse(true);
+        range.moveStart('character', 0);
+        range.moveEnd('character', lastIndexOfDot);
+        return range.select();
+      }
+    });
   };
 
   FileView.prototype.onShareClicked = function() {
@@ -4738,11 +4775,31 @@ module.exports = FileView = (function(superClass) {
     return this.model.toggleViewSelected(isShiftPressed);
   };
 
+
+  /*
+   * called when the user edits the name of the file or folder
+   */
+
   FileView.prototype.onKeyPress = function(e) {
+    var next, prev;
     if (e.keyCode === 13) {
       return this.onSaveClicked();
     } else if (e.keyCode === 27) {
       return this.onCancelClicked();
+    } else if (e.keyCode === 40) {
+      next = this.$el.next();
+      if (next.length === 0) {
+        return;
+      }
+      this.onSaveClicked();
+      return next.find('a.file-edit').click();
+    } else if (e.keyCode === 38) {
+      prev = this.$el.prev();
+      if (prev.length === 0) {
+        return;
+      }
+      this.onSaveClicked();
+      return prev.find('a.file-edit').click();
     }
   };
 
@@ -4814,22 +4871,6 @@ module.exports = FileView = (function(superClass) {
   FileView.prototype.hideLoading = function() {
     this.$('.link-wrapper .fa').removeClass('hidden');
     return this.$('.spinholder').hide();
-  };
-
-  FileView.prototype.getIconClass = function() {
-    var icon, mimeClass, mimeType;
-    if (this.model.isFolder()) {
-      icon = "type-folder";
-    } else {
-      mimeType = this.model.get('mime');
-      mimeClass = this.mimeClasses[mimeType];
-      if ((mimeType != null) && (mimeClass != null)) {
-        icon = mimeClass;
-      } else {
-        icon = "type-file";
-      }
-    }
-    return icon;
   };
 
   return FileView;
@@ -5804,13 +5845,12 @@ module.exports = Gallery = (function() {
     a_toSimulateClick = null;
     window.app.router.folderView.collection.forEach((function(_this) {
       return function(model) {
-        var a, attr;
-        attr = model.attributes;
-        if (attr.mime.substr(0, 5) !== 'image') {
+        var a;
+        if (!model.isImage()) {
           return;
         }
         a = document.createElement('a');
-        a.href = "files/photo/screen/" + attr.id + "/" + attr.name;
+        a.href = model.getScreenUrl();
         gal.appendChild(a);
         if (model === modelClicked) {
           return a_toSimulateClick = a;

@@ -176,7 +176,6 @@ module.exports = class FileInfo
         clientHeight    = el.offsetParent.clientHeight
         popoverTop      = topFileInfo - scrollTop
         popoverBottom   = popoverTop + @_previousPopoverHeight
-        clientBottom    = clientHeight + scrollTop
         if popoverBottom < clientHeight
             @el.style.top   = popoverTop + 'px'
             @arrow.style.top = ARROW_TOP_OFFSET + 'px'
@@ -186,9 +185,8 @@ module.exports = class FileInfo
             arrowTop = Math.min(arrowTop, @_previousPopoverHeight - 12 )
             @arrow.style.top = arrowTop + 'px'
         # update content
-        attr     = target.model.attributes
-        @img.src = "files/photo/thumb/#{attr.id}"
-        @a.href  = "files/#{attr.id}/attach/#{attr.name}"
+        @img.src = target.model.getThumbUrl()
+        @a.href  = target.model.getAttachmentUrl()
 
 
     _show: () ->

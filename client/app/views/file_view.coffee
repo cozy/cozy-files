@@ -10,75 +10,6 @@ module.exports = class FileView extends BaseView
     template     : require './templates/file'
     templateEdit : require './templates/file_edit'
 
-    mimeClasses  :
-        'application/octet-stream'               : 'type-file'
-        'application/x-binary'                   : 'type-binary'
-        'text/plain'                             : 'type-text'
-        'text/richtext'                          : 'type-text'
-        'application/x-rtf'                      : 'type-text'
-        'application/rtf'                        : 'type-text'
-        'application/msword'                     : 'type-text'
-        'application/x-iwork-pages-sffpages'     : 'type-text'
-        'application/mspowerpoint'               : 'type-presentation'
-        'application/vnd.ms-powerpoint'          : 'type-presentation'
-        'application/x-mspowerpoint'             : 'type-presentation'
-        'application/x-iwork-keynote-sffkey'     : 'type-presentation'
-        'application/excel'                      : 'type-spreadsheet'
-        'application/x-excel'                    : 'type-spreadsheet'
-        'aaplication/vnd.ms-excel'               : 'type-spreadsheet'
-        'application/x-msexcel'                  : 'type-spreadsheet'
-        'application/x-iwork-numbers-sffnumbers' : 'type-spreadsheet'
-        'application/pdf'                        : 'type-pdf'
-        'text/html'                              : 'type-code'
-        'text/asp'                               : 'type-code'
-        'text/css'                               : 'type-code'
-        'application/x-javascript'               : 'type-code'
-        'application/x-lisp'                     : 'type-code'
-        'application/xml'                        : 'type-code'
-        'text/xml'                               : 'type-code'
-        'application/x-sh'                       : 'type-code'
-        'text/x-script.python'                   : 'type-code'
-        'application/x-bytecode.python'          : 'type-code'
-        'text/x-java-source'                     : 'type-code'
-        'application/postscript'                 : 'type-image'
-        'image/gif'                              : 'type-image'
-        'image/jpg'                              : 'type-image'
-        'image/jpeg'                             : 'type-image'
-        'image/pjpeg'                            : 'type-image'
-        'image/x-pict'                           : 'type-image'
-        'image/pict'                             : 'type-image'
-        'image/png'                              : 'type-image'
-        'image/x-pcx'                            : 'type-image'
-        'image/x-portable-pixmap'                : 'type-image'
-        'image/x-tiff'                           : 'type-image'
-        'image/tiff'                             : 'type-image'
-        'audio/aiff'                             : 'type-audio'
-        'audio/x-aiff'                           : 'type-audio'
-        'audio/midi'                             : 'type-audio'
-        'audio/x-midi'                           : 'type-audio'
-        'audio/x-mid'                            : 'type-audio'
-        'audio/mpeg'                             : 'type-audio'
-        'audio/x-mpeg'                           : 'type-audio'
-        'audio/mpeg3'                            : 'type-audio'
-        'audio/x-mpeg3'                          : 'type-audio'
-        'audio/wav'                              : 'type-audio'
-        'audio/x-wav'                            : 'type-audio'
-        'video/avi'                              : 'type-video'
-        'video/mpeg'                             : 'type-video'
-        'video/mp4'                              : 'type-video'
-        'application/zip'                        : 'type-archive'
-        'multipart/x-zip'                        : 'type-archive'
-        'multipart/x-zip'                        : 'type-archive'
-        'application/x-bzip'                     : 'type-archive'
-        'application/x-bzip2'                    : 'type-archive'
-        'application/x-gzip'                     : 'type-archive'
-        'application/x-compress'                 : 'type-archive'
-        'application/x-compressed'               : 'type-archive'
-        'application/x-zip-compressed'           : 'type-archive'
-        'application/x-apple-diskimage'          : 'type-archive'
-        'multipart/x-gzip'                       : 'type-archive'
-
-
     getRenderData: ->
         _.extend super(),
             isUploading       : @model.isUploading()
@@ -160,7 +91,10 @@ module.exports = class FileView extends BaseView
             size = ''
             type = 'folder'
         else
-            link = renderData.downloadUrl
+            if @model.isImage()
+                link = renderData.attachmentUrl
+            else
+                link = renderData.downloadUrl
             size = renderData.model.size or 0
             size = filesize(size, base: 2)
             type = renderData.model.class
@@ -177,25 +111,14 @@ module.exports = class FileView extends BaseView
             # the second gives a path that is not sustainable.
             # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
 
-        # update the icon (file or folder or thumbnail)
-        if @model.isFolder()
-            iconType = 'type-folder'
-        else
-            # can be a file or a thumbnail
-            mimeType = @model.get 'mime'
-            mimeClass = @mimeClasses[mimeType]
-            if mimeType? and mimeClass?
-                iconType = mimeClass
-            else
-                iconType = 'type-file'
-            if iconType == 'type-image'
-                if renderData.model.binary && renderData.model.binary.thumb
-                    iconType = 'type-thumb'
+        # update the icon.
+        # Can be a file (its mime type) or a folder or an image or a thumbnail.
+        iconType = @model.getIconType()
         @elementIcon.attr 'class', "icon-type #{iconType}"
+
+        # in case of a thumbnail, update src
         if iconType == 'type-thumb'
-            @thumb.src = "files/photo/thumb/#{@model.id}"
-        else
-            @thumb.src = ''
+            @thumb.src = @model.getThumbUrl()
 
         # show sharing status icon if necessary
         if @model.isShared()
@@ -314,7 +237,9 @@ module.exports = class FileView extends BaseView
                         window.pendingOperations.deletion--
                         ModalView.error t 'modal delete error'
 
-
+    ###*
+     * Triggers the input to rename the file/folder
+    ###
     onEditClicked: (name) ->
         @el.displayMode = 'edit'
         @$el.addClass('edit-mode')
@@ -330,12 +255,12 @@ module.exports = class FileView extends BaseView
         iconClass = 'icon-type'
         if clearance == 'public' or (clearance && clearance.length > 0)
             iconClass += ' shared'
-        if model.binary && model.binary.thumb
-            iconClass += ' type-thumb'
-            thumbSrc   = "files/photo/thumb/#{this.model.id}"
+        iconType = @model.getIconType()
+        iconClass += ' ' + iconType
+        if iconType == 'type-thumb'
+            thumbSrc = @model.getThumbUrl()
         else
-            iconClass += ' ' + @mimeClasses[model.mime]
-            thumbSrc   = ''
+            thumbSrc = ''
 
         @$el.html @templateEdit
             model     : model
@@ -344,28 +269,34 @@ module.exports = class FileView extends BaseView
             clearance : clearance
 
         # manage input
-        input = @$('.file-edit-name')[0]
+        input$ = @$('.file-edit-name')
+        input  = input$[0]
         if name is ''
             input.placeholder = t 'new folder'
-        @$('.file-edit-name').width width
-        @$('.file-edit-name').focus()
+        input$.width width
+        input$.focus()
+        input$.focusout () =>
+            @onSaveClicked()
+
 
         # manage selection in the input :
         # we only want to select the part before the file extension
-        lastIndexOfDot = model.name.lastIndexOf '.'
-        lastIndexOfDot = model.name.length if lastIndexOfDot is -1
+        # (the timeout otherwise there is a pb with the selection)
+        setTimeout () ->
+            lastIndexOfDot = model.name.lastIndexOf '.'
+            lastIndexOfDot = model.name.length if lastIndexOfDot is -1
 
-        if typeof input.selectionStart isnt 'undefined'
-            input.selectionStart = 0
-            input.selectionEnd = lastIndexOfDot
-        else if document.selection and document.selection.createRange
-            # IE Branch...
-            input.select()
-            range = document.selection.createRange()
-            range.collapse true
-            range.moveStart 'character', 0
-            range.moveEnd 'character', lastIndexOfDot
-            range.select()
+            if typeof input.selectionStart isnt 'undefined'
+                input.selectionStart = 0
+                input.selectionEnd = lastIndexOfDot
+            else if document.selection and document.selection.createRange
+                # IE Branch...
+                input.select()
+                range = document.selection.createRange()
+                range.collapse true
+                range.moveStart 'character', 0
+                range.moveEnd 'character', lastIndexOfDot
+                range.select()
 
 
 
@@ -512,12 +443,30 @@ module.exports = class FileView extends BaseView
         @model.toggleViewSelected isShiftPressed
 
 
-
+    ###
+    # called when the user edits the name of the file or folder
+    ###
     onKeyPress: (e) =>
+
         if e.keyCode is 13 # ENTER key
             @onSaveClicked()
+
         else if e.keyCode is 27 # ESCAPE key
             @onCancelClicked()
+
+        else if e.keyCode is 40 # DOWN key : edit next file
+            next = this.$el.next()
+            if next.length == 0
+                return
+            @onSaveClicked()
+            next.find('a.file-edit').click()
+
+        else if e.keyCode is 38 # UP key : edit previous file
+            prev = this.$el.prev()
+            if prev.length == 0
+                return
+            @onSaveClicked()
+            prev.find('a.file-edit').click()
 
 
     onSelectClicked: (event) ->
@@ -585,18 +534,3 @@ module.exports = class FileView extends BaseView
     hideLoading: ->
         @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-
-
-    # returns the class for the
-    getIconClass: ->
-        # Determine the icon based on element's type.
-        if @model.isFolder()
-            icon = "type-folder"
-        else
-            mimeType = @model.get 'mime'
-            mimeClass = @mimeClasses[mimeType]
-            if mimeType? and mimeClass?
-                icon = mimeClass
-            else
-                icon = "type-file"
-        return icon

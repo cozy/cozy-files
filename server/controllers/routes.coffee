@@ -24,9 +24,9 @@ module.exports =
         get: files.getAttachment
     'files/:fileid/download/:name':
         get: files.downloadAttachment
-    'files/photo/thumb/:fileid':
+    'files/:fileid/thumb':
         get: files.photoThumb
-    'files/photo/screen/:fileid/:name':
+    'files/:fileid/screen/:name':
         get: files.photoScreen
 
     'folderid':
@@ -99,6 +99,11 @@ module.exports =
         get: [public_auth.checkClearance('r', 'file'), files.getAttachment]
     'public/files/:fileid/download/:name':
         get: [public_auth.checkClearance('r', 'file'), files.downloadAttachment]
+    'public/files/:fileid/thumb':
+        get: [public_auth.checkClearance('r', 'file'), files.photoThumb]
+    'public/files/:fileid/screen/:name':
+        get: [public_auth.checkClearance('r', 'file'), files.photoScreen]
+
     'public/files/:fileid':
         get: [public_auth.checkClearance('r', 'file'), files.find]
 

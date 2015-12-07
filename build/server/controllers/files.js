@@ -531,8 +531,8 @@ module.exports.photoThumb = function(req, res, next) {
 
 
 /**
- * Returns "screens" (image reduced in ) for given file.
- * there is a bug : when the browser cancels many downloads, some are not
+ * Returns "screens" (image reduced ) for a given file.
+ * There is a bug : when the browser cancels many downloads, some are not
  * cancelled, what leads to saturate the stack of threads and blocks the
  * download of thumbs.
  * Cf comments bellow to reproduce easily
