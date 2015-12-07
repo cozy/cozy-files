@@ -2369,157 +2369,156 @@ module.exports = ViewCollection = (function(superClass) {
 
 ;require.register("locales/de", function(exports, require, module) {
 module.exports = {
-  "file broken indicator": "Abgebrochene Datei",
-  "file broken remove": "Abgebrochene Datei entfernen",
-  "or": "oder",
-  "modal error": "Fehler",
-  "modal ok": "OK",
-  "modal error get files": "Fehler beim Holen von Dateien vom Server",
-  "modal error get folders": "Fehler beim Holen von Ordnern vom Server",
-  "modal error get content": "Ein Fehler ist aufgetreten während dem abholen des Inhalts von Ordner \"%{folderName}\" vom Server",
-  "modal error empty name": "Der Name kann nicht lerr sein",
-  "modal error file invalid": "es scheint eine gültige Datei zu sein",
-  "modal error firefox dragdrop folder": "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
-  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
-  "root folder name": "root",
-  "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
-  "breadcrumbs search title": "Suche",
-  "modal error file exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
-  "modal error size": "Entschuldigung, es steht nicht genug Speicherplatz zur Verfügung",
-  "modal error file upload": "Datei konnte nicht zum Server gesendet werden",
-  "modal error folder create": "Ordner konnte nicht erstellt werden",
-  "modal error folder exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
-  "modal error zip empty folder": "Ein leerer Ordner kann nicht als ZIP herunter geladen werden.",
-  "upload running": "Hochladen ist noch aktiv. Schließen Sie nicht den Browser",
-  "modal are you sure": "Sind Sie sicher?",
-  "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
-  "modal delete ok": "Löschen",
-  "modal cancel": "Abbrechen",
-  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
-  "modal error in use": "Name ist schon in Gebrauch",
-  "modal error rename": "Name kann nicht geändert werden",
-  "modal error empty name": "Name kann nicht leer sein",
-  "modal error no data": "Kein Name und kein Ordner zum hochladen",
-  "tag": "Tag",
-  "file edit save": "Speichern",
-  "file edit cancel": "Abbrechen",
-  "tooltip delete": "Löschen",
-  "tooltip edit": "Umbennen",
-  "tooltip download": "Herunterladen",
-  "tooltip share": "Teilen",
-  "tooltip tag": "Tag",
-  "and x files": "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
-  "already exists": "Existiert bereit.",
-  "failed to upload": "kann nicht zum Server gesendet werden.",
-  "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
-  "chrome error dragdrop title": "Dateien werden ignoriert",
-  "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files}\naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files}\naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
-  "chrome error submit": "Ok",
-  "upload caption": "Neue Datei hochladen",
-  "upload msg": "Ziehen Sie die Dateien oder klicken Sie hier zum auswählen.",
-  "upload msg selected": "Sie haben die Datei %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen. ||||\nSie haben die Dateien %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen..",
-  "upload close": "Schließen",
-  "upload send": "Hinzufügen",
-  "upload button": "Eine Datei hochladen",
-  "upload success": "Hochladen erfolgreich beendet!",
-  "upload end button": "Schließen",
-  "total progress": "wird ausgeführt…",
-  "new folder caption": "Neuen Ordner hinzufügen",
-  "new folder msg": "Ordner mit folgendem Namen erstellen:",
-  "new folder close": "Schließen",
-  "new folder send": "Ordner erstellen",
-  "new folder button": "Neuen Ordner erstellen",
-  "new folder": "Neuer Ordner",
-  "download all": "Auswahl herunterladen",
-  "move all": "Auswahl verschieben",
-  "remove all": "Auswahl löschen",
-  "drop message": "Legen Sie Ihre Dateien hier ab um sich automatisch hinzuzufügen",
-  "upload folder msg": "Einen Ordner hochladen",
-  "upload folder separator": "oder",
-  "overwrite modal title": "Eine Datei existiert bereist",
-  "overwrite modal content": "Möchten Sie \"%{fileName}\" überschreiben?",
-  "overwrite modal remember label": "Bestätigen Sie diese Entscheidung für alle Konflikte",
-  "overwrite modal yes button": "Überschreiben",
-  "overwrite modal no button": "Auslassen",
-  "folder": "Ordner",
-  "image": "Bild",
-  "document": "Dokument",
-  "music": "Musik",
-  "video": "Video",
-  "yes": "Ja",
-  "no": "Nein",
-  "ok": "Ok",
-  "name": "Name",
-  "type": "Typ",
-  "size": "Größe",
-  "date": "Letzte Aktualisierung",
-  "download": "Alles Herunterladen",
-  "MB": "MB",
-  "KB": "KB",
-  "B": "B",
-  "files": "Dateien",
-  "element": "%{smart_count} Element |||| %{smart_count} Elemente",
-  "no file in folder": "Dieser Ordner is leer.",
-  "no file in search": "Ihre Suche ergabe keine Übereinstimmung mit Dokumenten.",
-  "enable notifications": "Mitteilungen freigeben",
-  "disable notifications": "Mitteilungen sperrem",
-  "notifications enabled": "Mitteilungen freigegeben",
-  "notifications disabled": "Mitteilungen gesperrt",
-  "open folder": "Ordner öffnen",
-  "download file": "Datei betrachten",
-  "also have access": "Diese Leute haben ebenso Zugriff, da Sie Zugriff zum übergeordnet Ordner haben",
-  "cancel": "Abbrechen",
-  "copy paste link": "Um Ihrem Kontakt Zugriff zu geben, senden Sie Ihr/Ihm den Link unten:",
-  "details": "Details",
-  "inherited from": "geerbt von",
-  "modal question folder shareable": "Wählen Sie Teilen Modus für diesen Ordner",
-  "modal shared folder custom msg": "E-Mail eintragen und Enter drücken",
-  "modal shared public link msg": "Senden Sie diesen Link um Leuten Zugriff zu diesem Ordner zu gewähren:",
-  "modal shared with people msg": "Geben Sie einer Auswahl von Leuten Zugriff. Tippen Sie Ihre E-Mail oder Namen in das Feld und drücken Enter (eine E-Mail wird versandt mit schliessen des Fensters):",
-  "modal send mails": "Mitteilung senden",
-  "modal question file shareable": "Wählen Sie Teilen Modus für diese Datei",
-  "modal shared file custom msg": "E-Mail eintragen und Enter drücken",
-  "modal shared file link msg": "Senden Sie diesen Link um Leuten Zugriff zu dieser Datei zu gewähren",
-  "only you can see": "Nur Sie haben Zugriff auf diese Resource",
-  "public": "Public",
-  "private": "Private",
-  "shared": "Shared",
-  "share": "Teilen",
-  "save": "Sicher",
-  "see link": "Siehe Link",
-  "send mails question": "Sende Mitteilungs E-Mail zu to:",
-  "sharing": "Teilen",
-  "revoke": "Absagen",
-  "forced public": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird.",
-  "forced shared": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird. Hier ist die Lsite der Gäste mit Zugriff:",
-  "confirm": "Bestätigen",
-  "share add": "Hinzufügen",
-  "share forgot add": "Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken",
-  "share confirm save": "Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?",
-  "mail not sent": "Mail not sent",
-  "postfix error": "Postfix error",
-  "yes forgot": "Zurück",
-  "no forgot": "es ist ok",
-  "perm": "Kann ",
-  "perm r file": "Diese Datei herunterladen",
-  "perm r folder": "Diesen Ordner durchblättern",
-  "perm rw folder": "Dateien durchblättern und hochladen",
-  "change notif": "Diesen Kasten anwählen um benachrichtigt zu werden, wenn eine Kontakt\neine Datei zu diesem Ordner hinzufügt.",
-  "send email hint": "Mitteilungs E-Mails werden einmalig beim Speichern gesendet",
-  "move": "Verschieben",
-  "tooltip move": "Element zu einem anderen Ordner verschieben.",
-  "moving...": "Verschieben...",
-  "move element to": "Elment verschieben zu",
-  "error occured canceling move": "Ein Fehler ist während dem abbrechen des Verschiebens aufgetreten.",
-  "error occured while moving element": "Ein Fehler ist während dem Verschieben eines Elements aufgetreten",
-  "file successfully moved to": "Datei erfolgreich verschoben zu",
-  "plugin modal close": "Schließen",
-  "moving selected elements": "Ausgewählte Elemente verschieben",
-  "move elements to": "Elemente verschieben zu",
-  "elements successfully moved to": "Elemente erfolgreich verschoben zu",
-  "close": "Schließen"
-}
-;
+    "file broken indicator": "Abgebrochene Datei",
+    "file broken remove": "Abgebrochene Datei entfernen",
+    "or": "oder",
+    "modal error": "Fehler",
+    "modal ok": "OK",
+    "modal error get files": "Fehler beim Holen von Dateien vom Server",
+    "modal error get folders": "Fehler beim Holen von Ordnern vom Server",
+    "modal error get content": "Ein Fehler ist aufgetreten während dem abholen des Inhalts von Ordner \"%{folderName}\" vom Server",
+    "modal error empty name": "Name kann nicht leer sein",
+    "modal error file invalid": "es scheint eine gültige Datei zu sein",
+    "modal error firefox dragdrop folder": "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
+    "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
+    "root folder name": "root",
+    "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
+    "breadcrumbs search title": "Suche",
+    "modal error file exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
+    "modal error size": "Entschuldigung, es steht nicht genug Speicherplatz zur Verfügung",
+    "modal error file upload": "Datei konnte nicht zum Server gesendet werden",
+    "modal error folder create": "Ordner konnte nicht erstellt werden",
+    "modal error folder exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
+    "modal error zip empty folder": "Ein leerer Ordner kann nicht als ZIP herunter geladen werden.",
+    "upload running": "Upload is in progress. Do not close your browser",
+    "modal are you sure": "Sind Sie sicher?",
+    "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
+    "modal delete ok": "Löschen",
+    "modal cancel": "Abbrechen",
+    "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
+    "modal error in use": "Name ist schon in Gebrauch",
+    "modal error rename": "Name kann nicht geändert werden",
+    "modal error no data": "Kein Name und kein Ordner zum hochladen",
+    "tag": "Tag",
+    "file edit save": "Speichern",
+    "file edit cancel": "Abbrechen",
+    "tooltip delete": "Löschen",
+    "tooltip edit": "Umbennen",
+    "tooltip download": "Herunterladen",
+    "tooltip share": "Teilen",
+    "tooltip tag": "Tag",
+    "tooltip preview": "Preview",
+    "and x files": "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
+    "already exists": "Existiert bereit.",
+    "failed to upload": "kann nicht zum Server gesendet werden.",
+    "upload complete": "Eine Datei wurde erfolgreich hochgeladen. ||||\n%{smart_count} Dateien erfolgreich hochgeladen.",
+    "chrome error dragdrop title": "Dateien werden ignoriert",
+    "chrome error dragdrop content": "Druch einen Bug in Chrome, wird die folgende Datei: %{files} \naufgrund eines Akzent im Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen. ||||\nDruch einen Bug in Chrome, werden die folgenden Dateien: %{files} \naufgrund eines Akzent in deren Namen ignoriert. Sie können diese mit\nder Schaltfläche oben rechts im Bild weiterhin hinzufügen.",
+    "chrome error submit": "Ok",
+    "upload caption": "Neue Datei hochladen",
+    "upload msg": "Ziehen Sie die Dateien oder klicken Sie hier zum auswählen.",
+    "upload msg selected": "Sie haben die Datei %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen. ||||\nSie haben die Dateien %{smart_count} ausgewählt, klicken Sie Hinzufügen um diese hochzuladen..",
+    "upload close": "Schließen",
+    "upload send": "Hinzufügen",
+    "upload button": "Eine Datei hochladen",
+    "upload success": "Hochladen erfolgreich beendet!",
+    "upload end button": "Schließen",
+    "total progress": "wird ausgeführt…",
+    "new folder caption": "Neuen Ordner hinzufügen",
+    "new folder msg": "Ordner mit folgendem Namen erstellen:",
+    "new folder close": "Schließen",
+    "new folder send": "Ordner erstellen",
+    "new folder button": "Neuen Ordner erstellen",
+    "new folder": "Neuer Ordner",
+    "download all": "Auswahl herunterladen",
+    "move all": "Auswahl verschieben",
+    "remove all": "Auswahl löschen",
+    "drop message": "Legen Sie Ihre Dateien hier ab um sich automatisch hinzuzufügen",
+    "upload folder msg": "Einen Ordner hochladen",
+    "upload folder separator": "oder",
+    "overwrite modal title": "Eine Datei existiert bereist",
+    "overwrite modal content": "Möchten Sie \"%{fileName}\" überschreiben?",
+    "overwrite modal remember label": "Bestätigen Sie diese Entscheidung für alle Konflikte",
+    "overwrite modal yes button": "Überschreiben",
+    "overwrite modal no button": "Auslassen",
+    "folder": "Ordner",
+    "image": "Bild",
+    "document": "Dokument",
+    "music": "Musik",
+    "video": "Video",
+    "yes": "Ja",
+    "no": "Nein",
+    "ok": "Ok",
+    "name": "Name",
+    "type": "Kind",
+    "size": "Größe",
+    "date": "Letzte Aktualisierung",
+    "download": "Alles Herunterladen",
+    "MB": "MB",
+    "KB": "KB",
+    "B": "B",
+    "files": "Dateien",
+    "element": "%{smart_count} Element |||| %{smart_count} Elemente",
+    "no file in folder": "Dieser Ordner is leer.",
+    "no file in search": "Ihre Suche ergabe keine Übereinstimmung mit Dokumenten.",
+    "enable notifications": "Mitteilungen freigeben",
+    "disable notifications": "Mitteilungen sperrem",
+    "notifications enabled": "Mitteilungen freigegeben",
+    "notifications disabled": "Mitteilungen gesperrt",
+    "open folder": "Ordner öffnen",
+    "download file": "Datei betrachten",
+    "also have access": "Diese Leute haben ebenso Zugriff, da Sie Zugriff zum übergeordnet Ordner haben",
+    "cancel": "Abbrechen",
+    "copy paste link": "Um Ihrem Kontakt Zugriff zu geben, senden Sie Ihr/Ihm den Link unten:",
+    "details": "Details",
+    "inherited from": "geerbt von",
+    "modal question folder shareable": "Wählen Sie Teilen Modus für diesen Ordner",
+    "modal shared folder custom msg": "E-Mail eintragen und Enter drücken",
+    "modal shared public link msg": "Senden Sie diesen Link um Leuten Zugriff zu diesem Ordner zu gewähren:",
+    "modal shared with people msg": "Geben Sie einer Auswahl von Leuten Zugriff. Tippen Sie Ihre E-Mail oder Namen in das Feld und drücken Enter (eine E-Mail wird versandt mit schliessen des Fensters):",
+    "modal send mails": "Mitteilung senden",
+    "modal question file shareable": "Wählen Sie Teilen Modus für diese Datei",
+    "modal shared file custom msg": "E-Mail eintragen und Enter drücken",
+    "modal shared file link msg": "Senden Sie diesen Link um Leuten Zugriff zu dieser Datei zu gewähren",
+    "only you can see": "Nur Sie haben Zugriff auf diese Resource",
+    "public": "Public",
+    "private": "Private",
+    "shared": "Shared",
+    "share": "Teilen",
+    "save": "Sicher",
+    "see link": "Siehe Link",
+    "send mails question": "Sende Mitteilungs E-Mail zu to:",
+    "sharing": "Teilen",
+    "revoke": "Absagen",
+    "forced public": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird.",
+    "forced shared": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird. Hier ist die Lsite der Gäste mit Zugriff:",
+    "confirm": "Bestätigen",
+    "share add": "Add",
+    "share forgot add": "Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken",
+    "share confirm save": "Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?",
+    "mail not sent": "Mail not sent",
+    "postfix error": "Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
+    "yes forgot": "Zurück",
+    "no forgot": "es ist ok",
+    "perm": "Kann",
+    "perm r file": "Diese Datei herunterladen",
+    "perm r folder": "Diesen Ordner durchblättern",
+    "perm rw folder": "Dateien durchblättern und hochladen",
+    "change notif": "Diesen Kasten anwählen um benachrichtigt zu werden, wenn eine Kontakt\neine Datei zu diesem Ordner hinzufügt.",
+    "send email hint": "Mitteilungs E-Mails werden einmalig beim Speichern gesendet",
+    "move": "Verschieben",
+    "tooltip move": "Element zu einem anderen Ordner verschieben.",
+    "moving...": "Verschieben...",
+    "move element to": "Elment verschieben zu",
+    "error occured canceling move": "Ein Fehler ist während dem abbrechen des Verschiebens aufgetreten.",
+    "error occured while moving element": "Ein Fehler ist während dem Verschieben eines Elements aufgetreten",
+    "file successfully moved to": "Datei erfolgreich verschoben zu",
+    "plugin modal close": "Schließen",
+    "moving selected elements": "Ausgewählte Elemente verschieben",
+    "move elements to": "Elemente verschieben zu",
+    "elements successfully moved to": "Elemente erfolgreich verschoben zu",
+    "close": "Schließen"
+};
 });
 
 require.register("locales/en", function(exports, require, module) {
@@ -2680,310 +2679,310 @@ module.exports = {
 
 require.register("locales/es", function(exports, require, module) {
 module.exports = {
-  "file broken indicator": "Archivo estropeado",
-  "file broken remove": "Suprimir el archivo estropeado",
-  "or": "o",
-  "modal error": "Error",
-  "modal ok": "Ok",
-  "modal error get files": "Se produjo un error al recuperar los archivos del servidor",
-  "modal error get folders": "Se produjo un error al recuperar los dossiers del servidor",
-  "modal error get content": "Se produjo un error al recuperar del servidor el contenido del dossier \"%{folderName}\"",
-  "modal error empty name": "La casilla del nombre no puede estar vacía",
-  "modal error file invalid": "El archivo no parece válido",
-  "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
-  "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
-  "root folder name": "root",
-  "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
-  "breadcrumbs search title": "Buscar",
-  "modal error file exists": "Lo siento, un archivo o un dossier tiene ya el mismo nombre",
-  "modal error size": "Lo siento, usted no dispone de espacio suficiente de almacenamiento",
-  "modal error file upload": "No se ha podido enviar el archivo al servidor",
-  "modal error folder create": "No se ha podido crear la carpeta",
-  "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
-  "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
-  "upload running": "Una descarga está en curso. No cierre su navegador.",
-  "modal are you sure": "¿Está usted seguro(a)?",
-  "modal delete msg": "Suprimir es definitivo",
-  "modal delete ok": "Suprimir",
-  "modal cancel": "anular",
-  "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
-  "modal error in use": "Ese nombre ya se ha utilizado",
-  "modal error rename": "No se ha podido modificar el nombre",
-  "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
-  "tag": "etiqueta",
-  "file edit save": "Guardar",
-  "file edit cancel": "anular",
-  "tooltip delete": "Suprimir",
-  "tooltip edit": "Renombrar",
-  "tooltip download": "Descargar",
-  "tooltip share": "Compartir",
-  "tooltip tag": "Etiqueta",
-  "and x files": "y %{smart_count} archivo ||||\ny %{smart_count} archivos",
-  "already exists": "ya existen.",
-  "failed to upload": "no se ha podido enviar al servidor.",
-  "upload complete": "Un archivo cargado con éxito.||||\n%{smart_count} archivos cargados con éxito.",
-  "chrome error dragdrop title": "Algunos archivos no se tendrán en cuenta",
-  "chrome error dragdrop content": "A causa de un bug de Chrome, el archivo siguiente : %{files} será\nignorado pués su nombre tiene un acento marcado. Añádalo haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla. ||||\nA causa de un bug de Chrome, los archivos siguientes : %{files} serán\n ignorados pués sus nombres tienen un acento marcado. Añádalos haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla.",
-  "chrome error submit": "Ok",
-  "upload caption": "Añadir un archivo",
-  "upload msg": "Arrastrar archivos o hacer clic aquí para seleccionar los archivos que quiere poner en línea.",
-  "upload msg selected": "Usted ha seleccionado %{smart_count} archivo, haga clic en Añadir para cargarlo.||||\nUsted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarlos.",
-  "upload close": "Cerrar",
-  "upload send": "Añadir",
-  "upload button": "Cargar un archivo",
-  "upload success": "¡Descarga completa exitosa!",
-  "upload end button": "Cerrar",
-  "total progress": "en curso...",
-  "new folder caption": "Añadir una carpeta",
-  "new folder msg": "Crear una carpeta de nombre:",
-  "new folder close": "Cerrar",
-  "new folder send": "Crear una Carpeta",
-  "new folder button": "Crear una carpeta",
-  "new folder": "nueva carpeta",
-  "download all": "Descargar la selección",
-  "move all": "Desplazar la selección",
-  "remove all": "Suprimir la selección",
-  "drop message": "Pegar aquí sus archivos para añadirlos",
-  "upload folder msg": "Cargar una carpeta",
-  "upload folder separator": "o",
-  "overwrite modal title": "Ya existe un archivo",
-  "overwrite modal content": "¿Quiere usted sobrescribir \"%{fileName}\"?",
-  "overwrite modal remember label": "Aplique esta decisión a todos los conflictos",
-  "overwrite modal yes button": "Sobreescribir",
-  "overwrite modal no button": "Ignorar",
-  "folder": "Carpeta",
-  "image": "Imagen",
-  "document": "Documento",
-  "music": "Música",
-  "video": "Video",
-  "yes": "Si",
-  "no": "No",
-  "ok": "Ok",
-  "name": "Nombre",
-  "type": "Tipo",
-  "size": "Tamaño",
-  "date": "Última modificación",
-  "download": "Descargar todos los archivos",
-  "MB": "Mo",
-  "KB": "Ko",
-  "B": "o",
-  "files": "archivos",
-  "element": "%{smart_count} elemento |||| %{smart_count} elementos",
-  "no file in folder": "Esta carpeta está vacía.",
-  "no file in search": "No se ha encontrado un documento que corresponda.",
-  "enable notifications": "Activar las notificaciones",
-  "disable notifications": "Desactivar las notificaciones",
-  "notifications enabled": "Notificaciones activadas",
-  "notifications disabled": "Notificaciones desactivadas",
-  "open folder": "Abrir la carpeta",
-  "download file": "Consultar el archivo",
-  "also have access": "Esas personas tienen igualmente acceso, ya que pueden acceder a un dossier padre",
-  "cancel": "Anular",
-  "copy paste link": "Para que su contacto pueda acceder, enviarle este enlace : ",
-  "details": "Detalles",
-  "inherited from": "heredado de",
-  "modal question folder shareable": "Escoger la manera de compartir esta carpeta",
-  "modal shared folder custom msg": "Escribir el correo electrónico y pulsar en Enter",
-  "modal shared public link msg": "Enviar este enlace para que puedan acceder a esta carpeta:",
-  "modal shared with people msg": "Permitir acceder a unos contactos seleccionados. Escribir sus correos electrónicos o el nombre en la casilla y pulsar Enter (se les enviará un mensaje cuando usted cierre esta ventana):",
-  "modal send mails": "Enviar una notificación",
-  "modal question file shareable": "Escoger  la manera de compartir este archivo",
-  "modal shared file custom msg": "Escriba el correo electrónico y pulsar en Enter",
-  "modal shared file link msg": "Enviar este enlace para que puedan acceder a este archivo",
-  "only you can see": "Sólo usted puede acceder a este recurso.",
-  "public": "Público",
-  "private": "Privado",
-  "shared": "Compartido",
-  "share": "Compartir",
-  "save": "Guardar",
-  "see link": "Ver el enlace",
-  "send mails question": "Enviar una notificación por correo electrónico a:",
-  "sharing": "Compartiendo",
-  "revoke": "Revocar",
-  "forced public": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido.",
-  "forced shared": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :",
-  "confirm": "Confirmar",
-  "share add": "Añadir",
-  "share forgot add": "Parece que a usted se le ha olvidado pulsar el botón Añadir",
-  "share confirm save": "Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?",
-  "yes forgot": "Atrás",
-  "no forgot": "Ok",
-  "perm": "puede ",
-  "perm r file": "cargar este archivo",
-  "perm r folder": "navegar en la carpeta",
-  "perm rw folder": "navegar en la carpeta y cargar archivos",
-  "change notif": "Desplazar",
-  "send email hint": "Se notificará por correo electrónico cuando se guarde.",
-  "move": "Desplazar",
-  "tooltip move": "Desplazar el elemento a otra carpeta.",
-  "moving...": "Desplazamiento en curso...",
-  "move element to": "Desplazar el elemento a",
-  "error occured canceling move": "Se produjo un error al anular el desplazamiento.",
-  "error occured while moving element": "Se produjo un error al desplazar el elemento.",
-  "file successfully moved to": "Archivos desplazados con éxito a",
-  "plugin modal close": "Cerrar",
-  "moving selected elements": "Desplazando los elementos seleccionados",
-  "move elements to": "Desplazar los elementos a",
-  "elements successfully moved to": "Elementos desplazados con éxito a",
-  "close": "Cerrar"
-}
-;
+    "file broken indicator": "Archivo estropeado",
+    "file broken remove": "Suprimir el archivo estropeado",
+    "or": "o",
+    "modal error": "Error",
+    "modal ok": "Ok",
+    "modal error get files": "Se produjo un error al recuperar los archivos del servidor",
+    "modal error get folders": "Se produjo un error al recuperar los dossiers del servidor",
+    "modal error get content": "Se produjo un error al recuperar del servidor el contenido del dossier \\\"%{folderName}\\\"",
+    "modal error empty name": "La casilla del nombre no puede estar vacía",
+    "modal error file invalid": "El archivo no parece válido",
+    "modal error firefox dragdrop folder": "Mozilla Firefox no administra la carga de dossiers. Si usted necesita\nesta función, los navegadores Chromium, Chrome y Safari disponen de ella.",
+    "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
+    "root folder name": "root",
+    "confirmation reload": "Una operación se halla en curso. ¿Está usted seguro(a) que quiere recargar la página?",
+    "breadcrumbs search title": "Buscar",
+    "modal error file exists": "Lo siento, un archivo o un dossier tiene ya el mismo nombre",
+    "modal error size": "Lo siento, usted no dispone de espacio suficiente de almacenamiento",
+    "modal error file upload": "No se ha podido enviar el archivo al servidor",
+    "modal error folder create": "No se ha podido crear la carpeta",
+    "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
+    "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
+    "upload running": "Upload is in progress. Do not close your browser",
+    "modal are you sure": "¿Está usted seguro(a)?",
+    "modal delete msg": "Suprimir es definitivo",
+    "modal delete ok": "Suprimir",
+    "modal cancel": "anular",
+    "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
+    "modal error in use": "Ese nombre ya se ha utilizado",
+    "modal error rename": "No se ha podido modificar el nombre",
+    "modal error no data": "La casilla del nombre de la carpeta no puede estar vacía",
+    "tag": "etiqueta",
+    "file edit save": "Guardar",
+    "file edit cancel": "anular",
+    "tooltip delete": "Suprimir",
+    "tooltip edit": "Renombrar",
+    "tooltip download": "Descargar",
+    "tooltip share": "Compartir",
+    "tooltip tag": "Etiqueta",
+    "tooltip preview": "Preview",
+    "and x files": "y %{smart_count} archivo ||||\n y %{smart_count} archivos",
+    "already exists": "ya existen.",
+    "failed to upload": "no se ha podido enviar al servidor.",
+    "upload complete": "Un archivo cargado con éxito.||||\n%{smart_count} archivos cargados con éxito.",
+    "chrome error dragdrop title": "Algunos archivos no se tendrán en cuenta",
+    "chrome error dragdrop content": "A causa de un bug de Chrome, el archivo siguiente : %{files} será\nignorado pués su nombre tiene un acento marcado. Añádalo haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla. ||||\nA causa de un bug de Chrome, los archivos siguientes : %{files} serán\n ignorados pués sus nombres tienen un acento marcado. Añádalos haciendo clic en\nel botón que se encuentra arriba y a la derecha de su pantalla.",
+    "chrome error submit": "Ok",
+    "upload caption": "Añadir un archivo",
+    "upload msg": "Arrastrar archivos o hacer clic aquí para seleccionar los archivos que quiere poner en línea.",
+    "upload msg selected": "Usted ha seleccionado %{smart_count} archivo, haga clic en Añadir para cargarlo.||||\nUsted ha seleccionado %{smart_count} archivos, haga clic en Añadir para cargarlos.",
+    "upload close": "Cerrar",
+    "upload send": "Añadir",
+    "upload button": "Cargar un archivo",
+    "upload success": "¡Descarga completa exitosa!",
+    "upload end button": "Cerrar",
+    "total progress": "en curso...",
+    "new folder caption": "Añadir una carpeta",
+    "new folder msg": "Crear una carpeta de nombre:",
+    "new folder close": "Cerrar",
+    "new folder send": "Crear una Carpeta",
+    "new folder button": "Crear una carpeta",
+    "new folder": "nueva carpeta",
+    "download all": "Descargar la selección",
+    "move all": "Desplazar la selección",
+    "remove all": "Suprimir la selección",
+    "drop message": "Pegar aquí sus archivos para añadirlos",
+    "upload folder msg": "Cargar una carpeta",
+    "upload folder separator": "o",
+    "overwrite modal title": "Ya existe un archivo",
+    "overwrite modal content": "¿Quiere usted sobrescribir \\\"%{fileName}\\\"?",
+    "overwrite modal remember label": "Aplique esta decisión a todos los conflictos",
+    "overwrite modal yes button": "Sobreescribir",
+    "overwrite modal no button": "Ignorar",
+    "folder": "Carpeta",
+    "image": "Imagen",
+    "document": "Documento",
+    "music": "Música",
+    "video": "Video",
+    "yes": "Si",
+    "no": "No",
+    "ok": "Ok",
+    "name": "Nombre",
+    "type": "Kind",
+    "size": "Tamaño",
+    "date": "Última modificación",
+    "download": "Descargar todos los archivos",
+    "MB": "Mo",
+    "KB": "Ko",
+    "B": "o",
+    "files": "archivos",
+    "element": "%{smart_count} elemento |||| %{smart_count} elementos",
+    "no file in folder": "Esta carpeta está vacía.",
+    "no file in search": "No se ha encontrado un documento que corresponda.",
+    "enable notifications": "Activar las notificaciones",
+    "disable notifications": "Desactivar las notificaciones",
+    "notifications enabled": "Notificaciones activadas",
+    "notifications disabled": "Notificaciones desactivadas",
+    "open folder": "Abrir la carpeta",
+    "download file": "Consultar el archivo",
+    "also have access": "Esas personas tienen igualmente acceso, ya que pueden acceder a un dossier padre",
+    "cancel": "Anular",
+    "copy paste link": "Para que su contacto pueda acceder, enviarle este enlace : ",
+    "details": "Detalles",
+    "inherited from": "heredado de",
+    "modal question folder shareable": "Escoger la manera de compartir esta carpeta",
+    "modal shared folder custom msg": "Escribir el correo electrónico y pulsar en Enter",
+    "modal shared public link msg": "Enviar este enlace para que puedan acceder a esta carpeta:",
+    "modal shared with people msg": "Permitir acceder a unos contactos seleccionados. Escribir sus correos electrónicos o el nombre en la casilla y pulsar Enter (se les enviará un mensaje cuando usted cierre esta ventana):",
+    "modal send mails": "Enviar una notificación",
+    "modal question file shareable": "Escoger  la manera de compartir este archivo",
+    "modal shared file custom msg": "Escriba el correo electrónico y pulsar en Enter",
+    "modal shared file link msg": "Enviar este enlace para que puedan acceder a este archivo",
+    "only you can see": "Sólo usted puede acceder a este recurso.",
+    "public": "Público",
+    "private": "Privado",
+    "shared": "Compartido",
+    "share": "Compartir",
+    "save": "Guardar",
+    "see link": "Ver el enlace",
+    "send mails question": "Enviar una notificación por correo electrónico a:",
+    "sharing": "Compartiendo",
+    "revoke": "Revocar",
+    "forced public": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido.",
+    "forced shared": "Esta(e) carpeta/archivo es compartido ya que uno de sus dossiers padre es compartido. A continuación la lista de las personas con las cuales se comparte :",
+    "confirm": "Confirmar",
+    "share add": "Add",
+    "share forgot add": "Parece que a usted se le ha olvidado pulsar el botón Añadir",
+    "share confirm save": "Los cambios efectuados en los permisos no se tendrán en cuenta. ¿Lo confirma?",
+    "mail not sent": "Mail not sent",
+    "postfix error": "Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
+    "yes forgot": "Atrás",
+    "no forgot": "Ok",
+    "perm": "puede",
+    "perm r file": "cargar este archivo",
+    "perm r folder": "navegar en la carpeta",
+    "perm rw folder": "navegar en la carpeta y cargar archivos",
+    "change notif": "Desplazar",
+    "send email hint": "Se notificará por correo electrónico cuando se guarde.",
+    "move": "Desplazar",
+    "tooltip move": "Desplazar el elemento a otra carpeta.",
+    "moving...": "Desplazamiento en curso...",
+    "move element to": "Desplazar el elemento a",
+    "error occured canceling move": "Se produjo un error al anular el desplazamiento.",
+    "error occured while moving element": "Se produjo un error al desplazar el elemento.",
+    "file successfully moved to": "Archivos desplazados con éxito a",
+    "plugin modal close": "Cerrar",
+    "moving selected elements": "Desplazando los elementos seleccionados",
+    "move elements to": "Desplazar los elementos a",
+    "elements successfully moved to": "Elementos desplazados con éxito a",
+    "close": "Cerrar"
+};
 });
 
 require.register("locales/fr", function(exports, require, module) {
 module.exports = {
-  "file broken indicator": "Fichier cassé",
-  "file broken remove": "Supprimer le fichier cassé",
-  "or": "ou",
-  "modal error": "Erreur",
-  "modal ok": "OK",
-  "modal error get files": "Une erreur s'est produite en récupérant les fichiers du serveur",
-  "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
-  "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
-  "modal error empty name": "Le nom ne peut pas être vide",
-  "modal error no data": "Pas de noms et de dossier à envoyer",
-  "modal error file invalid": "Le fichier ne parait pas être valide",
-  "modal error firefox dragdrop folder": "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
-  "modal error existing folder": "Le dossier \"%{name}\" existe déjà. Il n'est pas encore possible d'écraser un dossier.",
-  "root folder name": "racine",
-  "confirmation reload": "Une opération est en cours. Êtes-vous sûr(e) de vouloir recharger la page ?",
-  "breadcrumbs search title": "Recherche",
-  "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
-  "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
-  "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
-  "modal error folder create": "Le dossier n'a pas pu être créé",
-  "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
-  "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
-  "upload running": "Upload en cours. Ne quittez pas votre navigateur.",
-  "modal are you sure": "Êtes-vous sûr(e) ?",
-  "modal delete msg": "La suppression ne pourra pas être annulée",
-  "modal delete ok": "Supprimer",
-  "modal cancel": "Annuler",
-  "modal delete error": "%{smart_count} suppression a échoué, l'élément correspondant a été ré-intégré. |||| %{smart_count} suppressions ont échoué, les fichiers et répertoires correspondant ont été ré-intégrés.",
-  "modal error in use": "Ce nom est déjà utilisé",
-  "modal error rename": "Le nom n'a pas pu être modifié",
-  "modal error empty name": "Le nom du dossier ne peut pas être vide",
-  "tag": "étiquette",
-  "tooltip delete": "Supprimer",
-  "tooltip edit": "Renommer",
-  "tooltip download": "Télécharger",
-  "tooltip share": "Partager",
-  "tooltip tag": "Etiquette",
-  "tooltip preview": "Prévisualiser",
-  "file edit save": "Sauvegarder",
-  "file edit cancel": "Annuler",
-  "and x files": "et un autre fichier ||||\net %{smart_count} autres fichiers",
-  "already exists": "existent déjà.",
-  "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
-  "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
-  "chrome error dragdrop title": "Des fichiers vont être ignorés",
-  "chrome error dragdrop content": "À cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez-les en cliquant sur\nle bouton en haut à droite de votre écran. ||||\nÀ cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez-le en cliquant sur\nle bouton en haut à droite de votre écran.",
-  "chrome error submit": "Ok",
-  "upload caption": "Ajouter des fichiers",
-  "upload msg": "Faites glisser des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
-  "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
-  "upload close": "Annuler",
-  "upload send": "Ajouter",
-  "upload button": "Ajouter un fichier",
-  "upload success": "Ajouté avec succès !",
-  "upload end button": "Fermer",
-  "total progress": "Progression",
-  "new folder caption": "Créer un nouveau dossier",
-  "new folder msg": "Entrer le nom du dossier :",
-  "new folder close": "Annuler",
-  "new folder send": "Créer",
-  "new folder button": "Créer un nouveau dossier",
-  "new folder": "nouveau dossier",
-  "download all": "Télécharger la sélection",
-  "move all": "Déplacer la sélection",
-  "remove all": "Supprimer la sélection",
-  "drop message": "Déposez ici vos fichiers pour les ajouter",
-  "upload folder msg": "Mettre en ligne un dossier",
-  "upload folder separator": "ou",
-  "overwrite modal title": "Un fichier existe déjà",
-  "overwrite modal content": "Voulez-vous écraser \"%{fileName}\" ?",
-  "overwrite modal remember label": "Appliquer cette décision à tous les conflits",
-  "overwrite modal yes button": "Écraser",
-  "overwrite modal no button": "Ignorer",
-  "folder": "Dossier",
-  "image": "Image",
-  "document": "Document",
-  "music": "Musique",
-  "video": "Vidéo",
-  "yes": "Oui",
-  "no": "Non",
-  "ok": "Ok",
-  "name": "Nom",
-  "type": "Type",
-  "size": "Taille",
-  "date": "Dernière modification",
-  "download": "Télécharger tous les fichiers",
-  "MB": "Mo",
-  "KB": "Ko",
-  "B": "o",
-  "files": "fichiers",
-  "element": "%{smart_count} élément |||| %{smart_count} éléments",
-  "no file in folder": "Ce dossier est vide.",
-  "no file in search": "Votre recherche ne correspond à aucun document.",
-  "enable notifications": "Activer les notifications",
-  "disable notifications": "Désactiver les notifications",
-  "notifications enabled": "Notifications activées",
-  "notifications disabled": "Notifications désactivées",
-  "open folder": "Ouvrir le dossier",
-  "download file": "Consulter le fichier",
-  "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
-  "cancel": "Annuler",
-  "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien :",
-  "details": "Détails",
-  "inherited from": "hérité de",
-  "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
-  "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
-  "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
-  "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
-  "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
-  "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier:",
-  "modal shared with people msg": "Invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé) :",
-  "only you can see": "Vous seul(e) pouvez accéder à cette ressource.",
-  "public": "Public",
-  "private": "Privé",
-  "shared": "Partagé",
-  "share": "Partager",
-  "save": "Sauvegarder",
-  "see link": "Voir le lien",
-  "sharing": "Partage",
-  "revoke": "Révoquer la permission",
-  "send mails question": "Envoyer un email de notification à :",
-  "modal send mails": "Envoyer une notification",
-  "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
-  "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
-  "confirm": "Confirmer",
-  "share add": "Ajouter",
-  "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Ajouter",
-  "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Êtes-vous sûr(e) ?",
-  "mail not sent": "Le mail n'a pas pu être envoyé",
-  "postfix error": " Le mail n'a pas pu être envoyé.\nVérifiez que les adresses de tous les destinataires sont valides\net que votre Cozy est bien configuré pour envoyer des messages.",
-  "yes forgot": "Retour",
-  "no forgot": "Ok",
-  "perm": "peut ",
-  "perm r file": "consulter ce fichier",
-  "perm r folder": "parcourir ce dossier",
-  "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
-  "change notif": "Cocher cette case pour recevoir une notification cozy quand un contact\najoute un fichier à ce dossier.",
-  "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
-  "move": "Déplacer",
-  "tooltip move": "Déplacer l'élément dans un autre dossier.",
-  "moving...": "Déplacement en cours…",
-  "move element to": "Déplacer l'élément vers",
-  "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
-  "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
-  "file successfully moved to": "Fichier déplacé avec succès vers",
-  "plugin modal close": "Fermer",
-  "moving selected elements": "Déplacer des éléments",
-  "move elements to": "Déplacer les éléments vers",
-  "elements successfully moved to": "Eléments déplacés avec succès vers",
-  "close": "Fermer"
-}
-;
+    "file broken indicator": "Fichier cassé",
+    "file broken remove": "Supprimer le fichier cassé",
+    "or": "ou",
+    "modal error": "Erreur",
+    "modal ok": "OK",
+    "modal error get files": "Une erreur s'est produite en récupérant les fichiers du serveur",
+    "modal error get folders": "Une erreur s'est produite en récupérant les dossiers du serveur",
+    "modal error get content": "Une erreur s'est produite en récupérant le contenu du dossier \"%{folderName}\" sur le serveur",
+    "modal error empty name": "Le nom du dossier ne peut pas être vide",
+    "modal error file invalid": "Le fichier ne parait pas être valide",
+    "modal error firefox dragdrop folder": "Mozilla Firefox ne gère pas le téléversement de dossiers. Si vous avez besoin\nde cette fonctionnalité, elle est disponible avec les navigateurs Chromium,\nChrome et Safari.",
+    "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
+    "root folder name": "racine",
+    "confirmation reload": "Une opération est en cours. Voulez-vous vraiment recharger la page ?",
+    "breadcrumbs search title": "Recherche",
+    "modal error file exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+    "modal error size": "Désolé, vous n'avez pas assez d'espace de stockage",
+    "modal error file upload": "Le fichier n'a pas pu être envoyé au serveur",
+    "modal error folder create": "Le dossier n'a pas pu être créé",
+    "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
+    "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
+    "upload running": "Upload is in progress. Do not close your browser",
+    "modal are you sure": "Êtes-vous sûr(e) ?",
+    "modal delete msg": "La suppression ne pourra pas être annulée",
+    "modal delete ok": "Supprimer",
+    "modal cancel": "Annuler",
+    "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
+    "modal error in use": "Ce nom est déjà utilisé",
+    "modal error rename": "Le nom n'a pas pu être modifié",
+    "modal error no data": "Pas de nom et aucun dossier à envoyer",
+    "tag": "étiquette",
+    "file edit save": "Sauvegarder",
+    "file edit cancel": "Annuler",
+    "tooltip delete": "Supprimer",
+    "tooltip edit": "Renommer",
+    "tooltip download": "Télécharger",
+    "tooltip share": "Partager",
+    "tooltip tag": "Étiquette",
+    "tooltip preview": "Preview",
+    "and x files": "et un autre fichier ||||\net %{smart_count} autres fichiers",
+    "already exists": "existent déjà.",
+    "failed to upload": "n'a pas pu être envoyé au serveur |||| n'ont pas pu être envoyés au serveur",
+    "upload complete": "Le fichier a été transféré. ||||\n%{smart_count} fichiers ont été transférés.",
+    "chrome error dragdrop title": "Des fichiers vont être ignorés",
+    "chrome error dragdrop content": "À cause d'un bug de Chrome, les fichiers suivants : %{files} seront\nignorés car leur nom contient un accent. Ajoutez-les en cliquant sur\nle bouton en haut à droite de votre écran. ||||\nÀ cause d'un bug de Chrome, le fichier suivant : %{files} sera\nignoré car son nom contient un accent. Ajoutez-le en cliquant sur\nle bouton en haut à droite de votre écran.",
+    "chrome error submit": "Ok",
+    "upload caption": "Ajouter des fichiers",
+    "upload msg": "Faites glisser des fichiers ou cliquez ici pour sélectionner des fichiers à mettre en ligne.",
+    "upload msg selected": "Vous avez sélectionné %{smart_count} fichier, cliquez sur \"Ajouter\" pour les mettre en ligne. ||||\nVous avez sélectionné %{smart_count} fichiers, cliquez sur \"Ajouter\" pour les mettre en ligne.",
+    "upload close": "Annuler",
+    "upload send": "Ajouter",
+    "upload button": "Ajouter un fichier",
+    "upload success": "Ajouté avec succès !",
+    "upload end button": "Fermer",
+    "total progress": "Progression",
+    "new folder caption": "Créer un nouveau dossier",
+    "new folder msg": "Entrer le nom du dossier :",
+    "new folder close": "Annuler",
+    "new folder send": "Créer",
+    "new folder button": "Créer un nouveau dossier",
+    "new folder": "nouveau dossier",
+    "download all": "Télécharger la sélection",
+    "move all": "Déplacer la sélection",
+    "remove all": "Supprimer la sélection",
+    "drop message": "Déposez ici vos fichiers pour les ajouter",
+    "upload folder msg": "Mettre en ligne un dossier",
+    "upload folder separator": "ou",
+    "overwrite modal title": "Un fichier existe déjà",
+    "overwrite modal content": "Voulez-vous écraser \"%{fileName}\" ?",
+    "overwrite modal remember label": "Appliquer cette décision à tous les conflits",
+    "overwrite modal yes button": "Écraser",
+    "overwrite modal no button": "Ignorer",
+    "folder": "Dossier",
+    "image": "Image",
+    "document": "Document",
+    "music": "Musique",
+    "video": "Vidéo",
+    "yes": "Oui",
+    "no": "Non",
+    "ok": "Ok",
+    "name": "Nom",
+    "type": "Kind",
+    "size": "Taille",
+    "date": "Dernière modification",
+    "download": "Télécharger tous les fichiers",
+    "MB": "Mo",
+    "KB": "Ko",
+    "B": "o",
+    "files": "fichiers",
+    "element": "%{smart_count} élément |||| %{smart_count} éléments",
+    "no file in folder": "Ce dossier est vide.",
+    "no file in search": "Votre recherche ne correspond à aucun document.",
+    "enable notifications": "Activer les notifications",
+    "disable notifications": "Désactiver les notifications",
+    "notifications enabled": "Notifications activées",
+    "notifications disabled": "Notifications désactivées",
+    "open folder": "Ouvrir le dossier",
+    "download file": "Consulter le fichier",
+    "also have access": "Ces personnes ont également accès, car elles ont accès à un dossier parent",
+    "cancel": "Annuler",
+    "copy paste link": "Pour donner accès à votre contact envoyez-lui ce lien :",
+    "details": "Détails",
+    "inherited from": "hérité de",
+    "modal question folder shareable": "Choisissez le mode de partage pour ce dossier",
+    "modal shared folder custom msg": "Entrez un email et appuyez sur Entrée",
+    "modal shared public link msg": "Envoyez ce lien pour partager ce dossier ou fichier :",
+    "modal shared with people msg": "Invitez une sélection de contacts à y accéder. Saisissez l'email dans le champ et appuyez sur entrée (un email pour les prévenir leur sera envoyé) :",
+    "modal send mails": "Envoyer une notification",
+    "modal question file shareable": "Choisissez le mode de partage pour ce fichier",
+    "modal shared file custom msg": "Entrez un email et appuyez sur Entrée",
+    "modal shared file link msg": "Envoyez ce lien pour qu'elles puissent accéder à ce dossier",
+    "only you can see": "Vous seul(e) pouvez accéder à cette ressource.",
+    "public": "Public",
+    "private": "Privé",
+    "shared": "Partagé",
+    "share": "Partager",
+    "save": "Sauvegarder",
+    "see link": "Voir le lien",
+    "send mails question": "Envoyer un email de notification à :",
+    "sharing": "Partage",
+    "revoke": "Révoquer la permission",
+    "forced public": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé.",
+    "forced shared": "Ce dossier/fichier est partagé car un de ses dossiers parents est partagé. Voici la liste des personnes avec lesquelles il est partagé :",
+    "confirm": "Confirmer",
+    "share add": "Add",
+    "share forgot add": "Il semble que vous ayez oublié d'appuyer sur le bouton Ajouter",
+    "share confirm save": "Les changements effectués sur les permissions ne seront pas sauvegardés. Vous confirmez ?",
+    "mail not sent": "Mail not sent",
+    "postfix error": "Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
+    "yes forgot": "Retour",
+    "no forgot": "Ok",
+    "perm": "peut",
+    "perm r file": "consulter ce fichier",
+    "perm r folder": "parcourir ce dossier",
+    "perm rw folder": "parcourir ce dossier et ajouter des fichiers",
+    "change notif": "Cocher cette case pour recevoir une notification de Cozy quand un contact\najoute un fichier à ce dossier.",
+    "send email hint": "Des emails de notification seront envoyés lors de la première sauvegarde.",
+    "move": "Déplacer",
+    "tooltip move": "Déplacer l'élément dans un autre dossier.",
+    "moving...": "Déplacement en cours…",
+    "move element to": "Déplacer l'élément vers",
+    "error occured canceling move": "Une erreur est survenue en annulant le déplacement.",
+    "error occured while moving element": "Une erreur est survenue en déplaçant l'élément.",
+    "file successfully moved to": "Fichier déplacé avec succès vers",
+    "plugin modal close": "Fermer",
+    "moving selected elements": "Déplacer des éléments",
+    "move elements to": "Déplacer les éléments vers",
+    "elements successfully moved to": "Eléments déplacés avec succès vers",
+    "close": "Fermer"
+};
 });
 
 require.register("locales/ro", function(exports, require, module) {
@@ -3623,9 +3622,16 @@ module.exports = Router = (function(superClass) {
     }
     return app.baseCollection.getByFolder(folderID, (function(_this) {
       return function(err, folder, collection) {
+        var path;
         if (err != null) {
           return console.log(err);
         } else {
+          path = folder.getRepository();
+          if (path === '/Appareils photo' || path === '/Photos from devices') {
+            collection.type = 'lastModification';
+            collection.order = 'desc';
+            collection.sort();
+          }
           return _this._renderFolderView(folder, collection);
         }
       };
@@ -3698,7 +3704,7 @@ helpers = {
   getFiles: function(extensions, node) {
     var selector;
     selector = extensions.map(function(f) {
-      return "[data-file-url$=" + f + "]";
+      return "[data-file-name$=" + f + "]";
     }).join(',');
     if (node == null) {
       node = document;
@@ -3918,26 +3924,33 @@ module.exports = BreadcrumbsView = (function(superClass) {
 
 /**
  * This module is in charge of displaying the file information in a popover when
- * the user let his mouse over the icon of the file.
- * For now we only display the thumbnail of file being an image.
+ * the user lets his mouse over the icon of the file.
+ * For now we only display the thumbnail of files being an image.
  */
-var FileInfo;
+var ARROW_TOP_OFFSET, FileInfo, POPOVER_DEFAULT_HEIGHT;
+
+ARROW_TOP_OFFSET = 17;
+
+POPOVER_DEFAULT_HEIGHT = 310;
 
 module.exports = FileInfo = (function() {
   function FileInfo(elmt) {
-    var events;
     this.el = elmt;
     this.img = document.createElement('img');
     this.a = document.createElement('a');
+    this.arrow = document.createElement('div');
     this.el.appendChild(this.a).appendChild(this.img);
+    this.el.appendChild(this.arrow);
     elmt.addEventListener('mouseenter', (function(_this) {
       return function(event) {
-        return _this.stateMachine._enterPopo();
+        _this._isIntoPopover = true;
+        return _this.stateMachine.E3_enterPopo();
       };
     })(this));
     elmt.addEventListener('mouseleave', (function(_this) {
       return function(event) {
-        return _this.stateMachine._exitPopo();
+        _this._isIntoPopover = false;
+        return _this.stateMachine.E4_exitPopo();
       };
     })(this));
     this.a.addEventListener('click', (function(_this) {
@@ -3949,74 +3962,111 @@ module.exports = FileInfo = (function() {
         return event.preventDefault();
       };
     })(this));
-    events = [];
-    events.push({
-      name: '_enterLink',
-      from: 'Init',
-      to: 'WaitToShow'
-    });
-    events.push({
-      name: '_enterLink',
-      from: 'WaitToShow',
-      to: 'WaitToShow'
-    });
-    events.push({
-      name: '_enterLink',
-      from: 'WaitToHide',
-      to: 'Visible'
-    });
-    events.push({
-      name: '_showTimer',
-      from: 'WaitToShow',
-      to: 'Visible'
-    });
-    events.push({
-      name: '_exitLink',
-      from: 'Visible',
-      to: 'WaitToHide'
-    });
-    events.push({
-      name: '_exitLink',
-      from: 'Init',
-      to: 'Init'
-    });
-    events.push({
-      name: '_exitLink',
-      from: 'WaitToShow',
-      to: 'Init'
-    });
-    events.push({
-      name: '_enterPopo',
-      from: 'WaitToHide',
-      to: 'Visible'
-    });
-    events.push({
-      name: '_exitPopo',
-      from: 'Visible',
-      to: 'WaitToHide'
-    });
-    events.push({
-      name: '_hideTimer',
-      from: 'WaitToHide',
-      to: 'Init'
-    });
+    this._previousPopoverHeight = POPOVER_DEFAULT_HEIGHT;
+    this.img.onload = (function(_this) {
+      return function(event) {
+        var dim;
+        dim = _this.el.getBoundingClientRect();
+        if (_this._previousPopoverHeight !== dim.height) {
+          return _this._previousPopoverHeight = dim.height;
+        }
+      };
+    })(this);
+    this._columnGardian.init(this);
     this.stateMachine = StateMachine.create({
-      initial: 'Init',
-      events: events,
+      initial: 'S1_Init',
+      events: [
+        {
+          from: 'S1_Init',
+          to: 'S2_WaitingToShow',
+          name: 'E1_enterLink'
+        }, {
+          from: 'S1_Init',
+          to: 'S1_Init',
+          name: 'E4_exitPopo'
+        }, {
+          from: 'S2_WaitingToShow',
+          to: 'S3_Visible',
+          name: 'E5_showTimer'
+        }, {
+          from: 'S2_WaitingToShow',
+          to: 'S1_Init',
+          name: 'E8_exitCol'
+        }, {
+          from: 'S2_WaitingToShow',
+          to: 'S1_Init',
+          name: 'E2_exitLink'
+        }, {
+          from: 'S2_WaitingToShow',
+          to: 'S2_WaitingToShow',
+          name: 'E1_enterLink'
+        }, {
+          from: 'S3_Visible',
+          to: 'S4_WaitingToHide',
+          name: 'E4_exitPopo'
+        }, {
+          from: 'S3_Visible',
+          to: 'S4_WaitingToHide',
+          name: 'E8_exitCol'
+        }, {
+          from: 'S3_Visible',
+          to: 'S4_WaitingToHide',
+          name: 'E9_linkNoData'
+        }, {
+          from: 'S3_Visible',
+          to: 'S3_Visible',
+          name: 'E1_enterLink'
+        }, {
+          from: 'S3_Visible',
+          to: 'S3_Visible',
+          name: 'E3_enterPopo'
+        }, {
+          from: 'S3_Visible',
+          to: 'S3_Visible',
+          name: 'E7_enterCol'
+        }, {
+          from: 'S4_WaitingToHide',
+          to: 'S3_Visible',
+          name: 'E1_enterLink'
+        }, {
+          from: 'S4_WaitingToHide',
+          to: 'S3_Visible',
+          name: 'E3_enterPopo'
+        }, {
+          from: 'S4_WaitingToHide',
+          to: 'S3_Visible',
+          name: 'E7_enterCol'
+        }, {
+          from: 'S4_WaitingToHide',
+          to: 'S1_Init',
+          name: 'E6_hideTimer'
+        }, {
+          from: 'S4_WaitingToHide',
+          to: 'S4_WaitingToHide',
+          name: 'E4_exitPopo'
+        }
+      ],
       callbacks: {
-        onenterWaitToShow: (function(_this) {
+        onenterS2_WaitingToShow: (function(_this) {
           return function(event, from, to) {
-            if (from === 'Init') {
-              return _this._startShowTimer();
+            if (from === 'S1_Init') {
+              _this._startShowTimer();
+              _this._lastEnteredTarget.el.querySelector('.icon-type').style.cursor = 'wait';
+              return _this._columnGardian.start();
             }
           };
         })(this),
-        onenterVisible: (function(_this) {
+        onleaveS2_WaitingToShow: (function(_this) {
           return function(event, from, to) {
-            if (from === 'WaitToShow') {
+            return _this._lastEnteredTarget.el.querySelector('.icon-type').style.cursor = '';
+          };
+        })(this),
+        onenterS3_Visible: (function(_this) {
+          return function(event, from, to) {
+            if (from === 'S2_WaitingToShow') {
               _this._setNewTarget();
               return _this._show();
-            } else if (from === 'WaitToHide') {
+            } else if (from === 'S4_WaitingToHide') {
               window.clearTimeout(_this.hideTimeout);
               if (_this._lastEnteredTarget !== _this._currentTarget) {
                 return _this._setNewTarget();
@@ -4024,33 +4074,50 @@ module.exports = FileInfo = (function() {
             }
           };
         })(this),
-        onenterWaitToHide: (function(_this) {
+        onenterS4_WaitingToHide: (function(_this) {
           return function(event, from, to) {
             return _this._startHideTimer();
           };
         })(this),
-        onenterInit: (function(_this) {
+        onenterS1_Init: (function(_this) {
           return function(event, from, to) {
-            if (from === 'WaitToHide') {
-              return _this._hide();
-            } else if (from === 'WaitToShow') {
-              return window.clearTimeout(_this.showTimeout);
+            if (from === 'S4_WaitingToHide') {
+              _this._hide();
+              return _this._columnGardian.stop();
+            } else if (from === 'S2_WaitingToShow') {
+              window.clearTimeout(_this.showTimeout);
+              return _this._columnGardian.stop();
             }
           };
         })(this),
-        onbefore_enterLink: (function(_this) {
+        onbeforeE1_enterLink: (function(_this) {
+          return function(event, from, to) {
+            if (_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
+              if ((from === to && to === 'S3_Visible')) {
+                _this._setNewTarget();
+              }
+              return true;
+            } else {
+              if (from === 'S3_Visible') {
+                _this.stateMachine.E9_linkNoData();
+              }
+              return false;
+            }
+          };
+        })(this),
+        onbeforeE2_exitLink: (function(_this) {
           return function(event, from, to) {
             if (!_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
+              return false;
+            }
+          };
+        })(this),
+        onbeforeE8_exitCol: (function(_this) {
+          return function(event, from, to) {
+            if (_this._isIntoPopover) {
               return false;
             } else {
               return true;
-            }
-          };
-        })(this),
-        onbefore_exitLink: (function(_this) {
-          return function(event, from, to) {
-            if (!_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
-              return false;
             }
           };
         })(this)
@@ -4058,13 +4125,31 @@ module.exports = FileInfo = (function() {
     });
   }
 
+
+  /**
+   * Moves the popover on its corresponding thumbnail target.
+   */
+
   FileInfo.prototype._setNewTarget = function() {
-    var attr, scrollTop, target, topFileInfo;
+    var arrowTop, attr, clientBottom, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
     target = this._lastEnteredTarget;
     this._currentTarget = target;
-    topFileInfo = target.el.offsetTop;
-    scrollTop = target.el.offsetParent.scrollTop;
-    this.el.style.top = (topFileInfo - scrollTop) + 'px';
+    el = target.el;
+    topFileInfo = el.offsetTop;
+    scrollTop = el.offsetParent.scrollTop;
+    clientHeight = el.offsetParent.clientHeight;
+    popoverTop = topFileInfo - scrollTop;
+    popoverBottom = popoverTop + this._previousPopoverHeight;
+    clientBottom = clientHeight + scrollTop;
+    if (popoverBottom < clientHeight) {
+      this.el.style.top = popoverTop + 'px';
+      this.arrow.style.top = ARROW_TOP_OFFSET + 'px';
+    } else {
+      this.el.style.top = (clientHeight - this._previousPopoverHeight) + 'px';
+      arrowTop = popoverTop - clientHeight + this._previousPopoverHeight + ARROW_TOP_OFFSET;
+      arrowTop = Math.min(arrowTop, this._previousPopoverHeight - 12);
+      this.arrow.style.top = arrowTop + 'px';
+    }
     attr = target.model.attributes;
     this.img.src = "files/photo/thumb/" + attr.id;
     return this.a.href = "files/" + attr.id + "/attach/" + attr.name;
@@ -4083,7 +4168,7 @@ module.exports = FileInfo = (function() {
   FileInfo.prototype._startShowTimer = function() {
     return this.showTimeout = window.setTimeout((function(_this) {
       return function() {
-        return _this.stateMachine._showTimer();
+        return _this.stateMachine.E5_showTimer();
       };
     })(this), 700);
   };
@@ -4091,7 +4176,7 @@ module.exports = FileInfo = (function() {
   FileInfo.prototype._startHideTimer = function() {
     return this.hideTimeout = window.setTimeout((function(_this) {
       return function() {
-        return _this.stateMachine._hideTimer();
+        return _this.stateMachine.E6_hideTimer();
       };
     })(this), 300);
   };
@@ -4119,11 +4204,62 @@ module.exports = FileInfo = (function() {
       el: targetView.el,
       model: targetView.model
     };
-    return this.stateMachine._enterLink();
+    return this.stateMachine.E1_enterLink();
   };
 
   FileInfo.prototype.onExitLink = function(targetView) {
-    return this.stateMachine._exitLink();
+    if (this.stateMachine.current === 'S2_WaitingToShow') {
+      return this.stateMachine.E2_exitLink();
+    }
+  };
+
+  FileInfo.prototype._columnGardian = {
+    init: function(file_info_ctlr) {
+      var computeColAfterResize;
+      this.file_info_ctlr = file_info_ctlr;
+      this.FIC_container = file_info_ctlr.el.parentElement;
+      this._computeColumnWidth();
+      computeColAfterResize = _.debounce((function(_this) {
+        return function() {
+          return _this._computeColumnWidth();
+        };
+      })(this), 1000);
+      window.addEventListener("resize", computeColAfterResize, false);
+      return this.mouseMoved = (function(_this) {
+        return function(ev) {
+          var isInCol;
+          isInCol = _this.col_left < ev.pageX;
+          isInCol = isInCol && ev.pageX < _this.col_right;
+          if (_this.isInCol !== isInCol) {
+            if (isInCol) {
+              _this.file_info_ctlr.stateMachine.E7_enterCol();
+            } else {
+              _this.file_info_ctlr.stateMachine.E8_exitCol();
+            }
+            return _this.isInCol = isInCol;
+          }
+        };
+      })(this);
+    },
+    _computeColumnWidth: function() {
+      var captionWrapper, dimensions, thumb;
+      thumb = this.FIC_container.querySelector('.icon-type');
+      if (thumb === null) {
+        return;
+      }
+      dimensions = thumb.getBoundingClientRect();
+      this.col_left = dimensions.left - 10;
+      this.col_right = this.col_left + dimensions.width + 20;
+      captionWrapper = this.FIC_container.querySelector('.caption-wrapper');
+      return this.file_info_ctlr.el.style.left = (captionWrapper.offsetLeft + 42) + 'px';
+    },
+    start: function() {
+      this.FIC_container.addEventListener("mousemove", this.mouseMoved, false);
+      return this.isInCol = true;
+    },
+    stop: function() {
+      return this.FIC_container.removeEventListener("mousemove", this.mouseMoved, false);
+    }
   };
 
   return FileInfo;
@@ -4158,11 +4294,9 @@ module.exports = FileView = (function(superClass) {
     return FileView.__super__.constructor.apply(this, arguments);
   }
 
-  FileView.prototype.templateNormal = require('./templates/file');
+  FileView.prototype.template = require('./templates/file');
 
   FileView.prototype.templateEdit = require('./templates/file_edit');
-
-  FileView.prototype.templateSearch = require('./templates/file_search');
 
   FileView.prototype.mimeClasses = {
     'application/octet-stream': 'type-file',
@@ -4233,14 +4367,6 @@ module.exports = FileView = (function(superClass) {
     'multipart/x-gzip': 'type-archive'
   };
 
-  FileView.prototype.template = function(args) {
-    if (this.isSearchMode) {
-      return this.templateSearch(args);
-    } else {
-      return this.templateNormal(args);
-    }
-  };
-
   FileView.prototype.getRenderData = function() {
     return _.extend(FileView.__super__.getRenderData.call(this), {
       isUploading: this.model.isUploading(),
@@ -4257,7 +4383,7 @@ module.exports = FileView = (function(superClass) {
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
     if (!app.isPublic) {
-      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+      return ModalShareView != null ? ModalShareView : ModalShareView = require('./modal_share');
     }
   };
 
@@ -4272,15 +4398,45 @@ module.exports = FileView = (function(superClass) {
     }
   };
 
+  FileView.prototype.afterRender = function() {
+    this.el.displayMode = 'normal';
+    this.filePath = this.$('a.file-path');
+    this.elementLink = this.$('a.link-wrapper');
+    this.elementName = this.elementLink.find('.file-name');
+    this.thumb = (this.elementLink.find('img.thumb'))[0];
+    this.elementSize = this.$('.size-column-cell');
+    this.elementType = this.$('.type-column-cell');
+    this.elementLastModificationDate = this.$('.date-column-cell');
+    this.elementIcon = this.$('.icon-type');
+    this.$el.data('cid', this.model.cid);
+    this.$el.addClass('itemRow');
+    if (this.isSearchMode) {
+      this.filePath.show();
+    }
+    this.tags = new TagsView({
+      el: this.$('.tags')
+    });
+    if (this.model.isNew()) {
+      this.blockNameLink();
+    }
+    if (this.hasUploadingChildren) {
+      this.showLoading();
+    }
+    return this.reDecorate();
+  };
+
   FileView.prototype.reDecorate = function() {
-    var iconClass, lastModification, link, renderData, size, type;
+    var iconType, lastModification, link, longLastModification, m, mimeClass, mimeType, renderData, size, type;
+    if (this.el.displayMode === 'edit') {
+      this.render();
+      return;
+    }
     this.beforeRender();
     renderData = this.getRenderData();
-    this.elementName.html(renderData.model.name);
     if (this.model.isFolder()) {
       link = "#folders/" + renderData.model.id;
-      size = "";
-      type = "folder";
+      size = '';
+      type = 'folder';
     } else {
       link = renderData.downloadUrl;
       size = renderData.model.size || 0;
@@ -4289,29 +4445,70 @@ module.exports = FileView = (function(superClass) {
       });
       type = renderData.model["class"];
     }
-    lastModification = renderData.model.lastModification;
-    if (lastModification) {
-      lastModification = moment(lastModification).calendar();
-    } else {
-      lastModification = "";
+    if (this.isSearchMode) {
+      this.filePath.html(this.model.attributes.path);
     }
-    iconClass = this.getElementIconClass();
-    this.elementLink.attr('href', link);
-    this.elementSize.html(size);
-    this.elementType.html(t(type));
-    this.elementLastModificationDate.html(lastModification);
-    if (!this.elementIcon.hasClass(iconClass)) {
-      this.elementIcon.attr('class', '');
-      this.elementIcon.addClass("icon-type " + iconClass);
+    if (this.model.isFolder()) {
+      iconType = 'type-folder';
+    } else {
+      mimeType = this.model.get('mime');
+      mimeClass = this.mimeClasses[mimeType];
+      if ((mimeType != null) && (mimeClass != null)) {
+        iconType = mimeClass;
+      } else {
+        iconType = 'type-file';
+      }
+      if (iconType === 'type-image') {
+        if (renderData.model.binary && renderData.model.binary.thumb) {
+          iconType = 'type-thumb';
+        }
+      }
+    }
+    this.elementIcon.attr('class', "icon-type " + iconType);
+    if (iconType === 'type-thumb') {
+      this.thumb.src = "files/photo/thumb/" + this.model.id;
+    } else {
+      this.thumb.src = '';
     }
     if (this.model.isShared()) {
-      if (this.elementIcon.find('span.fa').length === 0) {
-        this.elementIcon.append($('<span class="fa fa-globe"></span>'));
-      }
+      this.elementIcon.addClass('shared');
     } else {
-      this.elementIcon.empty();
+      this.elementIcon.removeClass('shared');
     }
-    return this.afterReDecorate();
+    this.elementLink.attr('href', link);
+    this.tags.refresh(this.model);
+    this.elementName.html(renderData.model.name);
+    this.elementSize.html(size);
+    this.elementType.html(t(type));
+    lastModification = renderData.model.lastModification;
+    if (lastModification) {
+      m = moment(lastModification);
+      lastModification = m.calendar();
+      longLastModification = m.format('lll');
+    } else {
+      lastModification = '';
+      longLastModification = '';
+    }
+    this.elementLastModificationDate.html(lastModification);
+    this.elementLastModificationDate.attr('title', longLastModification);
+    this.$el.data('cid', this.model.cid);
+    if (this.model.isUploading() || this.model.isServerUploading()) {
+      this.addProgressBar();
+      this.blockDownloadLink();
+      this.blockNameLink();
+    } else {
+      if (this.progressbar != null) {
+        this.removeProgressBar();
+      }
+      this.$el.toggleClass('broken', this.model.isBroken());
+    }
+    if (this.model.isNew()) {
+      this.blockNameLink();
+    }
+    this.hideLoading();
+    if (this.hasUploadingChildren) {
+      return this.showLoading();
+    }
   };
 
   FileView.prototype.onUploadComplete = function() {
@@ -4368,11 +4565,11 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onTagClicked = function() {
-    return this.tags.toggleInput();
+    return this.tags.showInput();
   };
 
   FileView.prototype.onDeleteClicked = function() {
-    return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
+    return new ModalView(t('modal are you sure'), t('modal delete msg'), t('modal delete ok'), t('modal cancel'), (function(_this) {
       return function(confirm) {
         if (confirm) {
           window.pendingOperations.deletion++;
@@ -4382,7 +4579,7 @@ module.exports = FileView = (function(superClass) {
             },
             error: function() {
               window.pendingOperations.deletion--;
-              return ModalView.error(t("modal delete error"));
+              return ModalView.error(t('modal delete error'));
             }
           });
         }
@@ -4391,41 +4588,56 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onEditClicked = function(name) {
-    var input, lastIndexOfDot, model, range, width;
-    width = this.$(".caption").width() + 10;
+    var clearance, iconClass, input, lastIndexOfDot, model, range, thumbSrc, width;
+    this.el.displayMode = 'edit';
+    this.$el.addClass('edit-mode');
+    width = this.$('.caption').width() + 10;
     model = this.model.toJSON();
     if (model["class"] == null) {
       model["class"] = 'folder';
     }
-    if (typeof name === "string") {
+    if (typeof name === 'string') {
       model.name = name;
+    }
+    clearance = this.model.getClearance();
+    iconClass = 'icon-type';
+    if (clearance === 'public' || (clearance && clearance.length > 0)) {
+      iconClass += ' shared';
+    }
+    if (model.binary && model.binary.thumb) {
+      iconClass += ' type-thumb';
+      thumbSrc = "files/photo/thumb/" + this.model.id;
+    } else {
+      iconClass += ' ' + this.mimeClasses[model.mime];
+      thumbSrc = '';
     }
     this.$el.html(this.templateEdit({
       model: model,
-      clearance: this.model.getClearance()
+      iconClass: iconClass,
+      thumbSrc: thumbSrc,
+      clearance: clearance
     }));
-    input = this.$(".file-edit-name")[0];
+    input = this.$('.file-edit-name')[0];
     if (name === '') {
-      input.placeholder = t("new folder");
+      input.placeholder = t('new folder');
     }
-    this.$(".file-edit-name").width(width);
-    this.$(".file-edit-name").focus();
+    this.$('.file-edit-name').width(width);
+    this.$('.file-edit-name').focus();
     lastIndexOfDot = model.name.lastIndexOf('.');
     if (lastIndexOfDot === -1) {
       lastIndexOfDot = model.name.length;
     }
-    if (typeof input.selectionStart !== "undefined") {
+    if (typeof input.selectionStart !== 'undefined') {
       input.selectionStart = 0;
-      input.selectionEnd = lastIndexOfDot;
+      return input.selectionEnd = lastIndexOfDot;
     } else if (document.selection && document.selection.createRange) {
       input.select();
       range = document.selection.createRange();
       range.collapse(true);
-      range.moveStart("character", 0);
-      range.moveEnd("character", lastIndexOfDot);
-      range.select();
+      range.moveStart('character', 0);
+      range.moveEnd('character', lastIndexOfDot);
+      return range.select();
     }
-    return this.$el.addClass('edit-mode');
   };
 
   FileView.prototype.onShareClicked = function() {
@@ -4480,7 +4692,7 @@ module.exports = FileView = (function(superClass) {
         })(this)
       });
     } else {
-      return this.displayError(t("modal error empty name"));
+      return this.displayError(t('modal error empty name'));
     }
   };
 
@@ -4553,84 +4765,33 @@ module.exports = FileView = (function(superClass) {
     }
   };
 
-  FileView.prototype.afterRender = function() {
-    this.elementLink = this.$('a.btn-link');
-    this.elementName = this.elementLink.find('span');
-    this.elementSize = this.$('.size-column-cell span');
-    this.elementType = this.$('.type-column-cell span');
-    this.elementLastModificationDate = this.$('.date-column-cell span');
-    this.elementIcon = this.$('.icon-type');
-    this.$el.data('cid', this.model.cid);
-    this.$el.addClass('itemRow');
-    if (this.model.isUploading() || this.model.isServerUploading()) {
-      this.$el.addClass('uploading');
-      this.addProgressBar();
-      this.blockDownloadLink();
-      this.blockNameLink();
-    } else {
-      this.$el.removeClass('uploading');
-      this.$el.toggleClass('broken', this.model.isBroken());
-      this.addTags();
-    }
-    if (this.model.isNew()) {
-      this.blockNameLink();
-    }
-    if (this.hasUploadingChildren) {
-      return this.showLoading();
-    }
-  };
-
-  FileView.prototype.afterReDecorate = function() {
-    this.$el.data('cid', this.model.cid);
-    if (this.model.isUploading() || this.model.isServerUploading()) {
-      this.$el.addClass('uploading');
-      this.addProgressBar();
-      this.blockDownloadLink();
-      this.blockNameLink();
-    } else {
-      this.$el.removeClass('uploading');
-      this.$el.toggleClass('broken', this.model.isBroken());
-      this.updateTags();
-    }
-    if (this.model.isNew()) {
-      this.blockNameLink();
-    }
-    this.hideLoading();
-    if (this.hasUploadingChildren) {
-      return this.showLoading();
-    }
-  };
-
   FileView.prototype.addProgressBar = function() {
-    var cell;
-    this.$('.type-column-cell').remove();
-    this.$('.date-column-cell').remove();
+    console.log('addProgressBar', this.progressbar);
     if (this.progressbar != null) {
-      this.progressbar.destroy();
+      this.removeProgressBar();
     }
+    this.$el.addClass('uploading');
+    this.$('.type-column-cell').hide();
+    this.$('.date-column-cell').hide();
     this.progressbar = new ProgressBar({
       model: this.model
     });
-    cell = $('<td colspan="2" class="progressbar-cell" role="gridcell"></td>');
-    cell.append(this.progressbar.render().$el);
-    return this.$('.size-column-cell').after(cell);
+    this.cell = $('<td colspan="2" class="progressbar-cell" role="gridcell"></td>');
+    this.cell.append(this.progressbar.render().$el);
+    return this.$('.size-column-cell').after(this.cell);
   };
 
-  FileView.prototype.addTags = function() {
-    if (this.tags != null) {
-      this.tags.destroy();
+  FileView.prototype.removeProgressBar = function() {
+    console.log('removeProgressBar', this.progressbar);
+    this.$('.type-column-cell').show();
+    this.$('.date-column-cell').show();
+    this.$el.removeClass('uploading');
+    if (this.progressbar != null) {
+      this.progressbar.destroy();
+      this.progressbar = null;
+      console.log('destroyed?', this.progressbar);
     }
-    this.tags = new TagsView({
-      el: this.$('.tags'),
-      model: this.model
-    });
-    return this.tags.render();
-  };
-
-  FileView.prototype.updateTags = function() {
-    if (this.model.get('tags').length) {
-      return this.addTags();
-    }
+    return this.cell.remove();
   };
 
   FileView.prototype.blockDownloadLink = function() {
@@ -4655,7 +4816,7 @@ module.exports = FileView = (function(superClass) {
     return this.$('.spinholder').hide();
   };
 
-  FileView.prototype.getElementIconClass = function() {
+  FileView.prototype.getIconClass = function() {
     var icon, mimeClass, mimeType;
     if (this.model.isFolder()) {
       icon = "type-folder";
@@ -5877,9 +6038,9 @@ module.exports = ModalBulkMoveView = (function(superClass) {
       return client.put(type + "s/" + id, {
         path: newPath
       }, cb);
-    }, function() {
+    }, function(err) {
       window.pendingOperations.move--;
-      return callback();
+      return callback(err);
     });
   };
 
@@ -6272,127 +6433,8 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><!-- empty by default--><div class=\"caption-wrapper\">");
-if ( model.type == 'folder')
-{
-buf.push("<div class=\"caption\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-if ( clearance == 'public')
-{
-buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-folder\"></i>");
-}
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div>");
-}
-else if ( model.type == 'file')
-{
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-if ( model.binary && model.binary.thumb)
-{
-buf.push("<img" + (jade.attr("src", "files/photo/thumb/" + (model.id) + "", true, false)) + " class=\"icon-type type-thumb\"/>");
-}
-else
-{
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
-}
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-}
-else
-{
-buf.push("<i class=\"icon-type type-file\">");
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-buf.push("</i>");
-}
-if ( !isBroken)
-{
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
-}
-buf.push("</a></div>");
-}
-buf.push("<ul class=\"tags\">");
-// iterate model.tags || []
-;(function(){
-  var $$obj = model.tags || [];
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  }
-}).call(this);
-
-buf.push("</ul><div class=\"block-empty\"></div>");
-if ( !isUploading && !isBroken && !isServerUploading)
-{
-buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
-}
-else if ( isUploading && !isServerUploading)
-{
-buf.push("<!-- only show cancel button to the client that performs the upload.--><a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
-}
-else if ( isBroken)
-{
-buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
-}
-buf.push("</div></div><div role=\"gridcell\" class=\"size-column-cell\">");
-if ( model.type == 'file')
-{
-options = {base: 2}
-buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
-if ( model.type == 'folder')
-{
-buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
-if ( model.lastModification)
-{
-buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div>");;return buf.join("");
+var locals_ = (locals || {}),downloadUrl = locals_.downloadUrl;
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"icon-type\"><img class=\"thumb\"/><span class=\"fa fa-globe\"></span></i><span class=\"file-name\"></span></a></div><ul class=\"tags\"></ul><div class=\"block-empty\"></div><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -6410,217 +6452,8 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,options = locals_.options;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><!-- empty by default--><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
-if ( model.type && model.type == "folder")
-{
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"icon-type type-folder\"></i>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"icon-type type-folder\"></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-folder\"></i>");
-}
-buf.push("<div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-}
-else
-{
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-file\"></i>");
-}
-}
-buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\">");
-// iterate model.tags || []
-;(function(){
-  var $$obj = model.tags || [];
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  }
-}).call(this);
-
-buf.push("</ul><div class=\"block-empty\"></div><!-- empty!--></div></div><div role=\"gridcell\" class=\"size-column-cell\">");
-if ( model.type == 'file')
-{
-options = {base: 2}
-buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
-if ( model.type == 'folder')
-{
-buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
-if ( model.lastModification)
-{
-buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div>");;return buf.join("");
-};
-if (typeof define === 'function' && define.amd) {
-  define([], function() {
-    return __templateData;
-  });
-} else if (typeof module === 'object' && module && module.exports) {
-  module.exports = __templateData;
-} else {
-  __templateData;
-}
-});
-
-;require.register("views/templates/file_search", function(exports, require, module) {
-var __templateData = function template(locals) {
-var buf = [];
-var jade_mixins = {};
-var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,attachmentUrl = locals_.attachmentUrl,isBroken = locals_.isBroken,isUploading = locals_.isUploading,isServerUploading = locals_.isServerUploading,downloadUrl = locals_.downloadUrl,options = locals_.options;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><p class=\"file-path\">" + (jade.escape((jade_interp = model.path) == null ? '' : jade_interp)) + "/</p><div class=\"caption-wrapper\">");
-if ( model.type == 'folder')
-{
-buf.push("<div class=\"caption\"><a" + (jade.attr("href", "#folders/" + (model.id) + "", true, false)) + (jade.attr("title", "" + (t('open folder')) + "", true, false)) + " class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-if ( clearance == 'public')
-{
-buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<i class=\"icon-type type-folder\"><span class=\"fa fa-globe\"></span></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-folder\"></i>");
-}
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span></a></div>");
-}
-else if ( model.type == 'file')
-{
-buf.push("<div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><a" + (jade.attr("href", "" + (attachmentUrl) + "", true, false)) + (jade.attr("title", "" + (t('download file')) + "", true, false)) + " target=\"_blank\" class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-if ( model.mime && this.mimeClasses[model.mime])
-{
-if ( model.binary && model.binary.thumb)
-{
-buf.push("<img" + (jade.attr("src", "files/photo/thumb/" + (model.id) + "", true, false)) + " class=\"icon-type type-thumb\"/>");
-}
-else
-{
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
-}
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-}
-else
-{
-buf.push("<i class=\"icon-type type-file\">");
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span>");
-}
-buf.push("</i>");
-}
-if ( !isBroken)
-{
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape(null == (jade_interp = model.name) ? "" : jade_interp)) + "</span>");
-}
-buf.push("</a></div>");
-}
-buf.push("<ul class=\"tags\">");
-// iterate model.tags || []
-;(function(){
-  var $$obj = model.tags || [];
-  if ('number' == typeof $$obj.length) {
-
-    for (var $index = 0, $$l = $$obj.length; $index < $$l; $index++) {
-      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  } else {
-    var $$l = 0;
-    for (var $index in $$obj) {
-      $$l++;      var tag = $$obj[$index];
-
-buf.push("<li class=\"tag\">" + (jade.escape((jade_interp = tag) == null ? '' : jade_interp)) + "<span class=\"deleter fa fa-times\"></span></li>");
-    }
-
-  }
-}).call(this);
-
-buf.push("</ul><div class=\"block-empty\"></div>");
-if ( !isUploading && !isBroken && !isServerUploading)
-{
-buf.push("<div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div>");
-}
-else if ( isUploading && !isServerUploading)
-{
-buf.push("<!-- only show cancel button to the client that performs the upload.--><a class=\"cancel-upload-button btn btn-link\">" + (jade.escape((jade_interp = t('file edit cancel')) == null ? '' : jade_interp)) + "</a>");
-}
-else if ( isBroken)
-{
-buf.push("<div class=\"broken-widget\"><span class=\"broken-text\">" + (jade.escape((jade_interp = t('file broken indicator')) == null ? '' : jade_interp)) + "</span><a" + (jade.attr("title", "" + (t('file broken remove')) + "", true, false)) + " class=\"broken-button\"><span class=\"fa fa-trash\"></span></a></div>");
-}
-buf.push("</div></div><div role=\"gridcell\" class=\"size-column-cell\">");
-if ( model.type == 'file')
-{
-options = {base: 2}
-buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
-if ( model.type == 'folder')
-{
-buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
-if ( model.lastModification)
-{
-buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div>");;return buf.join("");
+var locals_ = (locals || {}),iconClass = locals_.iconClass,thumbSrc = locals_.thumbSrc,model = locals_.model;
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i" + (jade.cls(["" + (iconClass) + ""], [true])) + "><img" + (jade.attr("src", "" + (thumbSrc) + "", true, false)) + " class=\"thumb\"/><span class=\"fa fa-globe\"></span></i></a></div><input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\"></ul><div class=\"block-empty\"></div><!-- empty!--></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -6978,180 +6811,6 @@ module.exports = UploadStatusView = (function(superClass) {
 })(BaseView);
 });
 
-;require.register("widgets/autocomplete", function(exports, require, module) {
-var ARROW_DOWN_KEY, ARROW_UP_KEY, Autocomplete, BaseView, ENTER_KEY,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty,
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-BaseView = require('../lib/base_view');
-
-ENTER_KEY = 13;
-
-ARROW_UP_KEY = 38;
-
-ARROW_DOWN_KEY = 40;
-
-module.exports = Autocomplete = (function(superClass) {
-  extend(Autocomplete, superClass);
-
-  function Autocomplete() {
-    this.unbind = bind(this.unbind, this);
-    this.delayedUnbind = bind(this.delayedUnbind, this);
-    this.onInputKeyDown = bind(this.onInputKeyDown, this);
-    return Autocomplete.__super__.constructor.apply(this, arguments);
-  }
-
-  Autocomplete.prototype.className = 'autocomplete';
-
-  Autocomplete.prototype.tagName = 'ul';
-
-  Autocomplete.prototype.events = function() {
-    return {
-      'click li': 'onClick'
-    };
-  };
-
-  Autocomplete.prototype.onInputKeyDown = function(e) {
-    var delta, ref;
-    if ((ref = e.keyCode) === ARROW_UP_KEY || ref === ARROW_DOWN_KEY) {
-      delta = e.keyCode - 39;
-      this.select(this.selectedIndex + delta);
-      e.preventDefault();
-      return e.stopPropagation();
-    }
-  };
-
-  Autocomplete.prototype.onClick = function(e) {
-    var event;
-    this.input.val(e.target.dataset.value);
-    event = $.Event('keydown');
-    event.keyCode = ENTER_KEY;
-    this.input.trigger(event);
-    e.preventDefault();
-    e.stopPropagation();
-    this.unbindCancel = true;
-    this.input.parents('.itemRow').addClass('pseudohover');
-    return this.input.focus();
-  };
-
-  Autocomplete.prototype.initialize = function(options) {
-    if (options == null) {
-      options = {};
-    }
-    this.limit = options.limit || 10;
-    if (window.tags == null) {
-      window.tags = [];
-    }
-    return this.tags = window.tags.map(function(value, idx) {
-      var el, lc;
-      el = document.createElement('li');
-      el.textContent = value;
-      el.dataset.value = value;
-      el.dataset.index = idx;
-      lc = value.toLowerCase();
-      return {
-        value: value,
-        el: el,
-        lc: lc
-      };
-    });
-  };
-
-  Autocomplete.prototype.position = function() {
-    var pos;
-    pos = this.input.offset();
-    pos.top += this.input.height() + 2;
-    pos.width = this.input.width() + 2;
-    return this.$el.appendTo($('body')).css(pos).show();
-  };
-
-  Autocomplete.prototype.refresh = function(search, existings) {
-    var i, len, ref, ref1, selected, tag;
-    search = this.input.val();
-    selected = (ref = this.visible) != null ? ref[this.selectedIndex] : void 0;
-    if (existings == null) {
-      existings = [];
-    }
-    ref1 = this.tags;
-    for (i = 0, len = ref1.length; i < len; i++) {
-      tag = ref1[i];
-      tag.el.classList.remove('selected');
-    }
-    this.visible = this.tags.filter((function(_this) {
-      return function(tag, index) {
-        var ref2;
-        return (ref2 = tag.value, indexOf.call(existings, ref2) < 0) && (tag.lc != null) && ~tag.lc.indexOf(search.toLowerCase()) && index < _this.limit;
-      };
-    })(this));
-    if (selected && indexOf.call(this.visible, selected) >= 0) {
-      this.selectedIndex = this.visible.indexOf(selected);
-    } else {
-      this.selectedIndex = -1;
-    }
-    this.$el.empty().append(_.pluck(this.visible, 'el'));
-    return this.$el.toggleClass('empty', this.visible.length === 0);
-  };
-
-  Autocomplete.prototype.select = function(index) {
-    var i, len, ref, tag, visibleElement;
-    ref = this.tags;
-    for (i = 0, len = ref.length; i < len; i++) {
-      tag = ref[i];
-      tag.el.classList.remove('selected');
-    }
-    index = (index + this.visible.length) % this.visible.length;
-    this.selectedIndex = index;
-    visibleElement = this.visible[this.selectedIndex];
-    if (visibleElement != null) {
-      visibleElement.el.classList.add('selected');
-      return this.input.val(visibleElement.value);
-    }
-  };
-
-  Autocomplete.prototype.bind = function($target) {
-    if ($target === this.$target) {
-      return;
-    }
-    if (this.$target) {
-      this.unbind();
-    }
-    this.$target = $target;
-    this.input = this.$target.find('input');
-    this.position();
-    this.input.on('keydown', this.onInputKeyDown);
-    this.input.on('blur', this.delayedUnbind);
-    return this.selectedIndex = -1;
-  };
-
-  Autocomplete.prototype.delayedUnbind = function() {
-    this.unbindCancel = false;
-    if (this.delayedUnbindTimeout) {
-      clearTimeout(this.delayedUnbindTimeout);
-    }
-    return this.delayedUnbindTimeout = setTimeout(this.unbind, 100);
-  };
-
-  Autocomplete.prototype.unbind = function() {
-    if (this.unbindCancel || !this.input) {
-      return;
-    }
-    this.input.off('keydown', this.onInputKeyDown);
-    this.input.off('blur', this.delayedUnbind);
-    this.input.parents('.itemRow').removeClass('pseudohover');
-    this.input.val('');
-    this.$target = null;
-    this.$el.hide();
-    this.$el.detach();
-    return this.selectedIndex = -1;
-  };
-
-  return Autocomplete;
-
-})(BaseView);
-});
-
 ;require.register("widgets/progressbar", function(exports, require, module) {
 var BaseView, ProgressbarView,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -7200,7 +6859,7 @@ module.exports = ProgressbarView = (function(superClass) {
 });
 
 ;require.register("widgets/tags", function(exports, require, module) {
-var Autocomplete, BaseView, TagsView,
+var BaseView, TagsView2, highlightItem, lastQuery, regExpHistory, trackCharsToHighlight,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
@@ -7208,127 +6867,99 @@ var Autocomplete, BaseView, TagsView,
 
 BaseView = require('../lib/base_view');
 
-Autocomplete = require('./autocomplete');
+module.exports = TagsView2 = (function(superClass) {
+  extend(TagsView2, superClass);
 
-module.exports = TagsView = (function(superClass) {
-  extend(TagsView, superClass);
-
-  function TagsView() {
+  function TagsView2() {
+    this.showAutoComp = bind(this.showAutoComp, this);
+    this.showInput = bind(this.showInput, this);
     this.hideInput = bind(this.hideInput, this);
-    this.toggleInput = bind(this.toggleInput, this);
     this.refresh = bind(this.refresh, this);
     this.deleteTag = bind(this.deleteTag, this);
     this.setTags = bind(this.setTags, this);
-    this.refreshAutocomplete = bind(this.refreshAutocomplete, this);
     this.onKeyDown = bind(this.onKeyDown, this);
-    return TagsView.__super__.constructor.apply(this, arguments);
+    this.onBlur = bind(this.onBlur, this);
+    return TagsView2.__super__.constructor.apply(this, arguments);
   }
 
-  TagsView.prototype.events = function() {
+  TagsView2.prototype.events = function() {
     return {
       'click .tag': 'tagClicked',
       'click .tag .deleter': 'deleteTag',
       'focus input': 'onFocus',
-      'keydown input': 'onKeyDown',
-      'keyup input': 'refreshAutocomplete'
+      'blur input': 'onBlur',
+      'keydown input': 'onKeyDown'
     };
   };
 
-  TagsView.prototype.template = function() {
-    return "<input type=\"text\" placeholder=\"" + (t('tag')) + "\" style=\"display: none\">";
+  TagsView2.prototype.inputTemplate = function() {
+    return "<input type=\"text\" placeholder=\"" + (t('tag')) + "\">";
   };
 
-  TagsView.prototype.initialize = function() {
-    var i, len, tag, tags;
-    tags = this.model.get('tags');
-    if (tags == null) {
-      tags = [];
-    }
+  TagsView2.prototype.initialize = function() {
     this.tags = [];
-    for (i = 0, len = tags.length; i < len; i++) {
-      tag = tags[i];
-      if (tag != null) {
-        this.tags.push(tag);
+    this.lastHideInputTime = 0;
+    this.lastSelectTime = 0;
+    return this.input = null;
+  };
+
+  TagsView2.prototype.onBlur = function(e) {
+    if (this.input) {
+      this.hideInput();
+    }
+    return e.stopPropagation();
+  };
+
+  TagsView2.prototype.onKeyDown = function(e) {
+    var ref, ref1, time, val;
+    val = this.input.val();
+    if (e.keyCode === 27) {
+      if (this.lastNavigatedItem === null) {
+        this.input.blur();
+      } else {
+        this.input.typeahead('open');
       }
     }
-    return this.listenTo(this.model, 'change:tags', (function(_this) {
-      return function() {
-        _this.tags = _this.model.get('tags');
-        return _this.refresh();
-      };
-    })(this));
-  };
-
-  TagsView.prototype.onFocus = function(e) {
-    TagsView.autocomplete.bind(this.$el);
-    TagsView.autocomplete.refresh('', this.tags);
-    if (this.input.val() === '') {
-      return TagsView.autocomplete.$el.hide();
-    } else {
-      return TagsView.autocomplete.$el.show();
-    }
-  };
-
-  TagsView.prototype.onKeyDown = function(e) {
-    var ref, ref1, ref2, val;
-    val = this.input.val();
-    if (val === '' && e.keyCode === 8) {
-      this.setTags(this.tags.slice(0, -1));
-      this.refresh();
-      TagsView.autocomplete.refresh('', this.tags);
-      TagsView.autocomplete.position();
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    if (val && ((ref = e.keyCode) === 188 || ref === 32 || ref === 9 || ref === 13)) {
+    if (val && ((ref = e.keyCode) === 9 || ref === 13)) {
       if (this.tags == null) {
         this.tags = [];
       }
-      if (indexOf.call(this.tags, val) < 0) {
-        this.tags.push(val);
+      if (indexOf.call(this.tags, val) >= 0) {
+        return;
       }
+      this.tags.push(val);
+      window.tags.push(val);
+      window.tags.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      });
       this.setTags(this.tags);
-      this.input.val('');
-      this.refresh();
-      TagsView.autocomplete.refresh('', this.tags);
-      TagsView.autocomplete.position();
+      this.input.typeahead('val', '');
+      this.lastNavigatedItem = null;
       e.preventDefault();
       e.stopPropagation();
       return;
     }
-    if ((ref1 = e.keyCode) === 188 || ref1 === 32 || ref1 === 9 || ref1 === 13) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
+    if (val === '' && e.keyCode === 13) {
+      time = new Date();
+      if (time - this.lastSelectTime < 200) {
+        return;
+      }
+      this.input.blur();
     }
-    if ((ref2 = e.keyCode) === 40 || ref2 === 38) {
-      return true;
-    }
-    if (val && e.keyCode !== 8) {
-      this.refreshAutocomplete();
-      return true;
+    if ((ref1 = e.keyCode) === 40 || ref1 === 38) {
+      return this.lastNavigatedItem = val;
+    } else {
+      return this.lastNavigatedItem = null;
     }
   };
 
-  TagsView.prototype.refreshAutocomplete = function(e) {
-    var ref;
-    if (this.input.val() !== '') {
-      TagsView.autocomplete.$el.show();
-    }
-    if ((ref = e != null ? e.keyCode : void 0) === 40 || ref === 38 || ref === 8) {
-      return;
-    }
-    return TagsView.autocomplete.refresh(this.input.val(), this.tags);
-  };
-
-  TagsView.prototype.tagClicked = function(e) {
+  TagsView2.prototype.tagClicked = function(e) {
     var tag;
     tag = e.target.dataset.value;
     return $("#search-box").val("tag:" + tag).trigger('keyup');
   };
 
-  TagsView.prototype.setTags = function(newTags) {
+  TagsView2.prototype.setTags = function(newTags) {
     this.tags = newTags;
     if (this.tags == null) {
       this.tags = [];
@@ -7344,7 +6975,7 @@ module.exports = TagsView = (function(superClass) {
     })(this), 1000);
   };
 
-  TagsView.prototype.deleteTag = function(e) {
+  TagsView2.prototype.deleteTag = function(e) {
     var tag;
     tag = e.target.parentNode.dataset.value;
     this.setTags(_.without(this.tags, tag));
@@ -7352,14 +6983,18 @@ module.exports = TagsView = (function(superClass) {
     return e.preventDefault();
   };
 
-  TagsView.prototype.afterRender = function() {
-    this.refresh();
-    this.tags = this.model.get('tags');
-    return this.input = this.$('input');
-  };
-
-  TagsView.prototype.refresh = function() {
+  TagsView2.prototype.refresh = function(model) {
     var html, tag;
+    if (model != null) {
+      this.model = model;
+      this.tags = this.model.get('tags');
+      this.listenTo(this.model, 'change:tags', (function(_this) {
+        return function() {
+          _this.tags = _this.model.get('tags');
+          return _this.refresh();
+        };
+      })(this));
+    }
     this.$('.tag').remove();
     html = ((function() {
       var i, len, ref, results;
@@ -7374,27 +7009,230 @@ module.exports = TagsView = (function(superClass) {
     return this.$el.prepend(html);
   };
 
-  TagsView.prototype.toggleInput = function() {
-    this.$('input').toggle();
-    if (this.$('input').is(':visible')) {
-      return this.$('input').focus();
+  TagsView2.prototype.hideInput = function() {
+    console.log('tags.hideInput');
+    if (!this.input) {
+      return;
+    }
+    this.lastHideInputTime = new Date();
+    this.input.typeahead('destroy');
+    this.input.remove();
+    return this.input = null;
+  };
+
+  TagsView2.prototype.showInput = function() {
+    var time;
+    time = new Date();
+    if (time - this.lastHideInputTime < 200) {
+      return;
+    }
+    if (this.input) {
+      return this.input.typeahead('open');
+    } else {
+      this.$el.append(this.inputTemplate);
+      this.input = this.$el.children().last();
+      return this.showAutoComp();
     }
   };
 
-  TagsView.prototype.hideInput = function() {
-    this.$('input').hide();
-    return console.log('tags.hideInput');
+  TagsView2.prototype.showAutoComp = function() {
+    var substringMatcher, suggestionTemplator;
+    console.log('showAutoComp');
+    this.possibleTags = _.difference(window.tags, this.tags);
+
+    /**
+     * in charge to evaluate the items matching the query (string type by
+     * the user in the input
+     */
+    substringMatcher = (function(_this) {
+      return function(query, cb) {
+        var i, item, itemMatched, items, j, k, lastQuery, len, len1, len2, matches, queryWords, reg, regExp, regExpList, word;
+        items = _this.possibleTags;
+        lastQuery = query;
+        if (query === '') {
+          cb(items);
+          return;
+        }
+        matches = [];
+        queryWords = query.toLowerCase().trim().split(' ');
+        regExpList = [];
+        for (i = 0, len = queryWords.length; i < len; i++) {
+          word = queryWords[i];
+          if (!(reg = regExpHistory[word])) {
+            reg = new RegExp(word.split('').join('.*?'), 'g');
+            regExpHistory[word] = reg;
+          }
+          regExpList.push(reg);
+        }
+        for (j = 0, len1 = items.length; j < len1; j++) {
+          item = items[j];
+          itemMatched = true;
+          for (k = 0, len2 = regExpList.length; k < len2; k++) {
+            regExp = regExpList[k];
+            if (!regExp.test(item.toLowerCase())) {
+              itemMatched = false;
+              break;
+            }
+            regExp.lastIndex = 0;
+          }
+          if (itemMatched) {
+            matches.push(item);
+          }
+        }
+        return cb(matches);
+      };
+    })(this);
+
+    /**
+     * in charge to produce the html for a suggestion line
+     * @param  {String} item the suggestion text
+     * @return {String}      html string
+     */
+    suggestionTemplator = (function(_this) {
+      return function(item) {
+        var fullWordMatch_N, fullWordsToHighlight, fuzzyWordsToHighlight, html, i, isToHighlight, itemLC, j, len, len1, match, n, queryWords, val, word, wordRegexp;
+        val = _this.input.typeahead('val');
+        if (val === '') {
+          return html = "<p>" + item + "</p>";
+        }
+        queryWords = val.toLowerCase().trim().split(' ');
+        itemLC = item.toLowerCase();
+        fullWordsToHighlight = Array(item.length);
+        for (i = 0, len = queryWords.length; i < len; i++) {
+          word = queryWords[i];
+          wordRegexp = regExpHistory[word];
+          wordRegexp.lastIndex = 0;
+          fullWordMatch_N = 0;
+          fuzzyWordsToHighlight = Array(item.length);
+          while (match = wordRegexp.exec(itemLC)) {
+            if (match[0].length === word.length) {
+              fullWordMatch_N++;
+              trackCharsToHighlight(itemLC, fullWordsToHighlight, match.index, word);
+            } else if (fullWordMatch_N === 0) {
+              trackCharsToHighlight(itemLC, fuzzyWordsToHighlight, match.index, word);
+            }
+          }
+          if (fullWordMatch_N === 0) {
+            for (n = j = 0, len1 = fuzzyWordsToHighlight.length; j < len1; n = ++j) {
+              isToHighlight = fuzzyWordsToHighlight[n];
+              if (isToHighlight) {
+                fullWordsToHighlight[n] = true;
+              }
+            }
+          }
+        }
+        return html = highlightItem(item, fullWordsToHighlight);
+      };
+    })(this);
+
+    /**
+     * instanciation of the autocomplete (typeahead.js)
+     */
+    this.input.typeahead({
+      hint: true,
+      highlight: true,
+      minLength: 0
+    }, {
+      limit: 20,
+      name: "tag",
+      source: substringMatcher,
+      templates: {
+        suggestion: suggestionTemplator
+      }
+    });
+
+    /**
+     * listen to selections (mouse click in the suggestions)
+     */
+    this.input.bind('typeahead:select', (function(_this) {
+      return function(ev, suggestion) {
+        _this.lastSelectTime = new Date();
+        if (_this.tags == null) {
+          _this.tags = [];
+        }
+        if (indexOf.call(_this.tags, suggestion) >= 0) {
+          return;
+        }
+        _this.tags.push(suggestion);
+        _this.possibleTags = _.without(_this.possibleTags, suggestion);
+        _this.setTags(_this.tags);
+        _this.input.typeahead('val', 'qsfqsdgf');
+        _this.input.typeahead('val', '');
+        return _this.lastNavigatedItem = null;
+      };
+    })(this));
+
+    /**
+     * listen when the suggestions are closed in order to reopen it if it is
+     * a click (select) that triggered the close.
+     */
+    this.input.bind('typeahead:close', (function(_this) {
+      return function(ev, suggestion) {
+        var time;
+        time = new Date();
+        if (time - _this.lastSelectTime < 200) {
+          _this.input.typeahead('open');
+        }
+      };
+    })(this));
+    this.input.focus();
+    return this.lastNavigatedItem = null;
   };
 
-  return TagsView;
+  return TagsView2;
 
 })(BaseView);
 
-TagsView.autocomplete = new Autocomplete({
-  id: 'tagsAutocomplete'
-});
 
-TagsView.autocomplete.render();
+/*
+    functions for the auto complete (highliths helpers)
+ */
+
+regExpHistory = {};
+
+lastQuery = '';
+
+trackCharsToHighlight = function(item, charsToHighlight, startIndex, word) {
+  var char, charIndex, nChars, wordIndex;
+  charsToHighlight[startIndex] = true;
+  nChars = item.length;
+  charIndex = startIndex;
+  wordIndex = 1;
+  while (charIndex < nChars) {
+    char = item[charIndex];
+    if (char === word[wordIndex]) {
+      charsToHighlight[charIndex] = true;
+      if (++wordIndex >= word.length) {
+        return;
+      }
+    }
+    charIndex++;
+  }
+};
+
+highlightItem = function(item, charsToHighlight) {
+  var i, isToHighlight, len, n, previousWasToHighlight, res;
+  res = '<p>';
+  previousWasToHighlight = void 0;
+  for (n = i = 0, len = charsToHighlight.length; i < len; n = ++i) {
+    isToHighlight = charsToHighlight[n];
+    if (isToHighlight === previousWasToHighlight) {
+      res += item[n];
+    } else {
+      if (previousWasToHighlight) {
+        res += '</strong>' + item[n];
+      } else {
+        res += '<strong class="tt-highlight">' + item[n];
+      }
+    }
+    previousWasToHighlight = isToHighlight;
+  }
+  if (previousWasToHighlight) {
+    return res += '</strong></p>';
+  } else {
+    return res += '</p>';
+  }
+};
 });
 
 ;
