@@ -21,13 +21,6 @@ baseController = new cozydb.SimpleController
     reqParamID: 'fileid'
 
 
-## FOR TESTS - TO BE DELETED ##
-module.exports.destroyBroken = (req, res) ->
-    res.send 400,
-        error: true
-        msg: "Deletion error for tests"
-
-
 ## Helpers ##
 
 
@@ -212,11 +205,10 @@ module.exports.create = (req, res, next) ->
                 # nothing more we can do with delerr
                 log.error delerr if delerr
                 if isStorageError err
-                    res.send
+                    res.status(400).send
                         error: true
                         code: 'ESTORAGE'
                         msg: "modal error size"
-                    , 400
                 else
                     next err
 
@@ -298,11 +290,10 @@ module.exports.create = (req, res, next) ->
                         attachBinary file
                 else
                     upload = false
-                    return res.send
+                    return res.status(400).send
                         error: true
                         code: 'EEXISTS'
                         msg: "This file already exists"
-                    , 400
 
             # Generate file metadata.
             data =

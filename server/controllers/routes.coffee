@@ -19,7 +19,6 @@ module.exports =
         get: files.find
         put: files.modify
         delete: files.destroy
-        # delete: files.destroyBroken # for tests
     'files/:fileid/attach/:name':
         get: files.getAttachment
     'files/:fileid/download/:name':

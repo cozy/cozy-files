@@ -36,10 +36,13 @@
     "decompress": "2.1.1",
     "form-data": "^0.2.0",
     "mocha": "2.1.0",
+    "nodemon": "1.8.1",
     "rimraf": "2.2.8"
   },
   "scripts": {
-    "test": "cake --use-js --use-server tests",
+    "test": "npm run test:server",
+    "test:build": "env USE_JS=true npm run test:server",
+    "test:server": "env NODE_ENV=test PORT=4444 mocha --reporter spec --compilers coffee:coffee-script/register test/*_test.coffee",
     "start": "node build/server.js",
     "dev:client": "cd client && brunch w",
     "dev:server": "nodemon server.coffee --ignore client/",
