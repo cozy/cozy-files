@@ -103,7 +103,7 @@ module.exports.create = (req, res, next) ->
                         sharing.notifyChanges who, newFolder, (err) ->
                             # ignore this error
                             console.log err if err
-                            res.send newFolder, 200
+                            res.status(200).send newFolder
 
                 # inherit its tags
                 if parents.length > 0
@@ -141,7 +141,7 @@ module.exports.tree = (req, res, next) ->
     folderChild.getParents (err, folders) ->
         if err then next err
         else
-            res.send folders, 200
+            res.status(200).send folders
 
 # Get path for all folders
 module.exports.list = (req, res, next) ->
@@ -159,7 +159,7 @@ module.exports.modify = (req, res, next) ->
             and (not req.body.public?) \
             and (not req.body.tags?) \
             and (not req.body.path?)
-        return res.send error: true, msg: "Data required", 400
+        return res.status(400).send error: true, msg: "Data required"
 
     previousName = folder.name
     newName = if body.name? then body.name else previousName
@@ -216,7 +216,7 @@ module.exports.modify = (req, res, next) ->
 
                     folder.index ["name"], (err) ->
                         log.raw err if err
-                        res.send success: 'File succesfuly modified', 200
+                        res.status(200).send success: 'File succesfuly modified'
 
     updateFoldersAndFiles = (folders)->
         # update all folders
@@ -237,7 +237,7 @@ module.exports.modify = (req, res, next) ->
 
         if sameFolders.length > 0 and \
                 sameFolders[0].id isnt req.body.id
-            res.send error: true, msg: "The name already in use", 400
+            res.status(400).send error: true, msg: "The name already in use"
         else
             Folder.all (err, folders) ->
                 return next err if err
@@ -288,7 +288,7 @@ module.exports.findFiles = (req, res, next) ->
             File.byFolder key: key ,(err, files) ->
                 if err then next err
                 else
-                    res.send files, 200
+                    res.status(200).send files
 
 module.exports.allFolders = (req, res, next) ->
     Folder.all (err, folders) ->
@@ -345,7 +345,7 @@ module.exports.findContent = (req, res, next) ->
                     comparator = folderContentComparatorFactory('name', 'asc')
                     content.sort comparator
 
-                    res.send 200, {content, parents}
+                    res.status(200).send {content, parents}
 
 module.exports.findFolders = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
@@ -354,7 +354,7 @@ module.exports.findFolders = (req, res, next) ->
             Folder.byFolder key: key ,(err, files) ->
                 if err then next err
                 else
-                    res.send files, 200
+                    res.status(200).send files
 
 
 module.exports.search = (req, res, next) ->
@@ -417,7 +417,7 @@ module.exports.searchContent = (req, res, next) ->
                 [folders, files] = results
                 content = folders.concat files
 
-                sendResults = (results) -> res.send 200, results
+                sendResults = (results) -> res.status(200).send results
 
                 # if there is a key we must filter the results so it doesn't
                 # display unshared files and folders

@@ -269,7 +269,7 @@ module.exports.create = (req, res, next) ->
                                 # Retrieve binary metadat
                                 File.find file.id, (err, file) ->
                                     log.debug err if err
-                                    res.send file, 200
+                                    res.status(200).send file
 
         now = moment().toISOString()
 
@@ -378,7 +378,7 @@ module.exports.modify = (req, res, next) ->
                 next new Error "Cannot change tags: #{err}"
             else
                 log.info "Tags changed for #{file.name}: #{tags}"
-                res.send success: 'Tags successfully changed', 200
+                res.status(200).send success: 'Tags successfully changed'
 
     else if (not body.name or body.name is "") and not body.path?
         log.info "No arguments, no modification performed for #{req.file.name}"
@@ -407,7 +407,7 @@ module.exports.modify = (req, res, next) ->
 
             if sameFiles.length > 0
                 log.info "No modification: Name #{newName} already exists."
-                res.send 400,
+                res.status(400).send
                     error: true
                     msg: "The name is already in use."
             else

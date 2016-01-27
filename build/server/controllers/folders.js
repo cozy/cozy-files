@@ -132,7 +132,7 @@ module.exports.create = function(req, res, next) {
               if (err) {
                 console.log(err);
               }
-              return res.send(newFolder, 200);
+              return res.status(200).send(newFolder);
             });
           });
         };
@@ -184,7 +184,7 @@ module.exports.tree = function(req, res, next) {
     if (err) {
       return next(err);
     } else {
-      return res.send(folders, 200);
+      return res.status(200).send(folders);
     }
   });
 };
@@ -207,10 +207,10 @@ module.exports.modify = function(req, res, next) {
   }
   folder = req.folder;
   if ((req.body.name == null) && (req.body["public"] == null) && (req.body.tags == null) && (req.body.path == null)) {
-    return res.send({
+    return res.status(400).send({
       error: true,
       msg: "Data required"
-    }, 400);
+    });
   }
   previousName = folder.name;
   newName = body.name != null ? body.name : previousName;
@@ -272,9 +272,9 @@ module.exports.modify = function(req, res, next) {
             if (err) {
               log.raw(err);
             }
-            return res.send({
+            return res.status(200).send({
               success: 'File succesfuly modified'
-            }, 200);
+            });
           });
         });
       });
@@ -308,10 +308,10 @@ module.exports.modify = function(req, res, next) {
       return next(err);
     }
     if (sameFolders.length > 0 && sameFolders[0].id !== req.body.id) {
-      return res.send({
+      return res.status(400).send({
         error: true,
         msg: "The name already in use"
-      }, 400);
+      });
     } else {
       return Folder.all(function(err, folders) {
         if (err) {
@@ -384,7 +384,7 @@ module.exports.findFiles = function(req, res, next) {
         if (err) {
           return next(err);
         } else {
-          return res.send(files, 200);
+          return res.status(200).send(files);
         }
       });
     }
@@ -460,7 +460,7 @@ module.exports.findContent = function(req, res, next) {
           content = folders.concat(files);
           comparator = folderContentComparatorFactory('name', 'asc');
           content.sort(comparator);
-          return res.send(200, {
+          return res.status(200).send({
             content: content,
             parents: parents
           });
@@ -481,7 +481,7 @@ module.exports.findFolders = function(req, res, next) {
         if (err) {
           return next(err);
         } else {
-          return res.send(files, 200);
+          return res.status(200).send(files);
         }
       });
     }
@@ -569,7 +569,7 @@ module.exports.searchContent = function(req, res, next) {
         folders = results[0], files = results[1];
         content = folders.concat(files);
         sendResults = function(results) {
-          return res.send(200, results);
+          return res.status(200).send(results);
         };
         if (key != null) {
           isAuthorized = function(element, callback) {

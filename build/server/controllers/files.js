@@ -274,7 +274,7 @@ module.exports.create = function(req, res, next) {
                   if (err) {
                     log.debug(err);
                   }
-                  return res.send(file, 200);
+                  return res.status(200).send(file);
                 });
               });
             });
@@ -387,9 +387,9 @@ module.exports.modify = function(req, res, next) {
         return next(new Error("Cannot change tags: " + err));
       } else {
         log.info("Tags changed for " + file.name + ": " + tags);
-        return res.send({
+        return res.status(200).send({
           success: 'Tags successfully changed'
-        }, 200);
+        });
       }
     });
   } else if ((!body.name || body.name === "") && (body.path == null)) {
@@ -424,7 +424,7 @@ module.exports.modify = function(req, res, next) {
       };
       if (sameFiles.length > 0) {
         log.info("No modification: Name " + newName + " already exists.");
-        return res.send(400, {
+        return res.status(400).send({
           error: true,
           msg: "The name is already in use."
         });

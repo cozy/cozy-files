@@ -80,7 +80,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Kind",
+    "type": "Typ",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -148,4 +148,5 @@ module.exports = {
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
     "close": "Schließen"
-};
+}
+;

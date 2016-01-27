@@ -80,7 +80,7 @@ module.exports = {
     "no": "No",
     "ok": "Ok",
     "name": "Nombre",
-    "type": "Kind",
+    "type": "Tipo",
     "size": "Tamaño",
     "date": "Última modificación",
     "download": "Descargar todos los archivos",
@@ -148,4 +148,5 @@ module.exports = {
     "move elements to": "Desplazar los elementos a",
     "elements successfully moved to": "Elementos desplazados con éxito a",
     "close": "Cerrar"
-};
+}
+;
