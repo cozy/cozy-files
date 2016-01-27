@@ -2450,7 +2450,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Kind",
+    "type": "Typ",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -2518,7 +2518,8 @@ module.exports = {
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
     "close": "Schließen"
-};
+}
+;
 });
 
 require.register("locales/en", function(exports, require, module) {
@@ -2760,7 +2761,7 @@ module.exports = {
     "no": "No",
     "ok": "Ok",
     "name": "Nombre",
-    "type": "Kind",
+    "type": "Tipo",
     "size": "Tamaño",
     "date": "Última modificación",
     "download": "Descargar todos los archivos",
@@ -2828,7 +2829,8 @@ module.exports = {
     "move elements to": "Desplazar los elementos a",
     "elements successfully moved to": "Elementos desplazados con éxito a",
     "close": "Cerrar"
-};
+}
+;
 });
 
 require.register("locales/fr", function(exports, require, module) {
@@ -2914,7 +2916,7 @@ module.exports = {
     "no": "Non",
     "ok": "Ok",
     "name": "Nom",
-    "type": "Kind",
+    "type": "Type",
     "size": "Taille",
     "date": "Dernière modification",
     "download": "Télécharger tous les fichiers",
@@ -2982,7 +2984,8 @@ module.exports = {
     "move elements to": "Déplacer les éléments vers",
     "elements successfully moved to": "Eléments déplacés avec succès vers",
     "close": "Fermer"
-};
+}
+;
 });
 
 require.register("locales/ro", function(exports, require, module) {

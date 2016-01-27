@@ -1057,7 +1057,6 @@ textarea:active {
 }
 .edit-mode .icon-type {
   display: inline-block;
-  margin-left: -1px;
 }
 html,
 body {

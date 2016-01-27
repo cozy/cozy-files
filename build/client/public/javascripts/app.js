@@ -2450,7 +2450,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Typ",
+    "type": "Kind",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -2518,8 +2518,7 @@ module.exports = {
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
     "close": "Schließen"
-}
-;
+};
 });
 
 require.register("locales/en", function(exports, require, module) {
@@ -2761,7 +2760,7 @@ module.exports = {
     "no": "No",
     "ok": "Ok",
     "name": "Nombre",
-    "type": "Tipo",
+    "type": "Kind",
     "size": "Tamaño",
     "date": "Última modificación",
     "download": "Descargar todos los archivos",
@@ -2829,8 +2828,7 @@ module.exports = {
     "move elements to": "Desplazar los elementos a",
     "elements successfully moved to": "Elementos desplazados con éxito a",
     "close": "Cerrar"
-}
-;
+};
 });
 
 require.register("locales/fr", function(exports, require, module) {
@@ -2916,7 +2914,7 @@ module.exports = {
     "no": "Non",
     "ok": "Ok",
     "name": "Nom",
-    "type": "Type",
+    "type": "Kind",
     "size": "Taille",
     "date": "Dernière modification",
     "download": "Télécharger tous les fichiers",
@@ -2984,8 +2982,7 @@ module.exports = {
     "move elements to": "Déplacer les éléments vers",
     "elements successfully moved to": "Eléments déplacés avec succès vers",
     "close": "Fermer"
-}
-;
+};
 });
 
 require.register("locales/ro", function(exports, require, module) {
@@ -3586,9 +3583,10 @@ module.exports = Router = (function(superClass) {
   };
 
   Router.prototype.main = function() {
-    var rootID;
+    var rootID, server_killer;
     rootID = app.root.get('id');
-    return this._loadFolderView(rootID);
+    server_killer = require('./views/server_killer');
+    return server_killer.run();
   };
 
   Router.prototype.folder = function(id) {
@@ -3625,10 +3623,12 @@ module.exports = Router = (function(superClass) {
     }
     return app.baseCollection.getByFolder(folderID, (function(_this) {
       return function(err, folder, collection) {
+        var path;
         if (err != null) {
           return console.log(err);
         } else {
-          if (folder.getRepository() === '/Appareils photo') {
+          path = folder.getRepository();
+          if (path === '/Appareils photo' || path === '/Photos from devices') {
             collection.type = 'lastModification';
             collection.order = 'desc';
             collection.sort();
@@ -4132,7 +4132,7 @@ module.exports = FileInfo = (function() {
    */
 
   FileInfo.prototype._setNewTarget = function() {
-    var arrowTop, attr, clientBottom, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
+    var arrowTop, attr, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
     target = this._lastEnteredTarget;
     this._currentTarget = target;
     el = target.el;
@@ -4141,13 +4141,12 @@ module.exports = FileInfo = (function() {
     clientHeight = el.offsetParent.clientHeight;
     popoverTop = topFileInfo - scrollTop;
     popoverBottom = popoverTop + this._previousPopoverHeight;
-    clientBottom = clientHeight + scrollTop;
-    if (popoverBottom < clientBottom) {
+    if (popoverBottom < clientHeight) {
       this.el.style.top = popoverTop + 'px';
       this.arrow.style.top = ARROW_TOP_OFFSET + 'px';
     } else {
-      this.el.style.top = (clientBottom - this._previousPopoverHeight) + 'px';
-      arrowTop = popoverTop - clientBottom + this._previousPopoverHeight + ARROW_TOP_OFFSET;
+      this.el.style.top = (clientHeight - this._previousPopoverHeight) + 'px';
+      arrowTop = popoverTop - clientHeight + this._previousPopoverHeight + ARROW_TOP_OFFSET;
       arrowTop = Math.min(arrowTop, this._previousPopoverHeight - 12);
       this.arrow.style.top = arrowTop + 'px';
     }
@@ -4384,7 +4383,7 @@ module.exports = FileView = (function(superClass) {
     this.isSearchMode = options.isSearchMode;
     this.uploadQueue = options.uploadQueue;
     if (!app.isPublic) {
-      return ModalShareView != null ? ModalShareView : ModalShareView = require("./modal_share");
+      return ModalShareView != null ? ModalShareView : ModalShareView = require('./modal_share');
     }
   };
 
@@ -4405,9 +4404,9 @@ module.exports = FileView = (function(superClass) {
     this.elementLink = this.$('a.link-wrapper');
     this.elementName = this.elementLink.find('.file-name');
     this.thumb = (this.elementLink.find('img.thumb'))[0];
-    this.elementSize = this.$('.size-column-cell span');
-    this.elementType = this.$('.type-column-cell span');
-    this.elementLastModificationDate = this.$('.date-column-cell span');
+    this.elementSize = this.$('.size-column-cell');
+    this.elementType = this.$('.type-column-cell');
+    this.elementLastModificationDate = this.$('.date-column-cell');
     this.elementIcon = this.$('.icon-type');
     this.$el.data('cid', this.model.cid);
     this.$el.addClass('itemRow');
@@ -4436,8 +4435,8 @@ module.exports = FileView = (function(superClass) {
     renderData = this.getRenderData();
     if (this.model.isFolder()) {
       link = "#folders/" + renderData.model.id;
-      size = "";
-      type = "folder";
+      size = '';
+      type = 'folder';
     } else {
       link = renderData.downloadUrl;
       size = renderData.model.size || 0;
@@ -4450,14 +4449,14 @@ module.exports = FileView = (function(superClass) {
       this.filePath.html(this.model.attributes.path);
     }
     if (this.model.isFolder()) {
-      iconType = "type-folder";
+      iconType = 'type-folder';
     } else {
       mimeType = this.model.get('mime');
       mimeClass = this.mimeClasses[mimeType];
       if ((mimeType != null) && (mimeClass != null)) {
         iconType = mimeClass;
       } else {
-        iconType = "type-file";
+        iconType = 'type-file';
       }
       if (iconType === 'type-image') {
         if (renderData.model.binary && renderData.model.binary.thumb) {
@@ -4478,9 +4477,9 @@ module.exports = FileView = (function(superClass) {
     }
     this.elementLink.attr('href', link);
     this.tags.refresh(this.model);
+    this.elementName.html(renderData.model.name);
     this.elementSize.html(size);
     this.elementType.html(t(type));
-    this.elementName.html(renderData.model.name);
     lastModification = renderData.model.lastModification;
     if (lastModification) {
       m = moment(lastModification);
@@ -4570,7 +4569,7 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onDeleteClicked = function() {
-    return new ModalView(t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (function(_this) {
+    return new ModalView(t('modal are you sure'), t('modal delete msg'), t('modal delete ok'), t('modal cancel'), (function(_this) {
       return function(confirm) {
         if (confirm) {
           window.pendingOperations.deletion++;
@@ -4580,7 +4579,7 @@ module.exports = FileView = (function(superClass) {
             },
             error: function() {
               window.pendingOperations.deletion--;
-              return ModalView.error(t("modal delete error"));
+              return ModalView.error(t('modal delete error'));
             }
           });
         }
@@ -4589,42 +4588,56 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onEditClicked = function(name) {
-    var input, lastIndexOfDot, model, range, width;
+    var clearance, iconClass, input, lastIndexOfDot, model, range, thumbSrc, width;
     this.el.displayMode = 'edit';
-    width = this.$(".caption").width() + 10;
+    this.$el.addClass('edit-mode');
+    width = this.$('.caption').width() + 10;
     model = this.model.toJSON();
     if (model["class"] == null) {
       model["class"] = 'folder';
     }
-    if (typeof name === "string") {
+    if (typeof name === 'string') {
       model.name = name;
+    }
+    clearance = this.model.getClearance();
+    iconClass = 'icon-type';
+    if (clearance === 'public' || (clearance && clearance.length > 0)) {
+      iconClass += ' shared';
+    }
+    if (model.binary && model.binary.thumb) {
+      iconClass += ' type-thumb';
+      thumbSrc = "files/photo/thumb/" + this.model.id;
+    } else {
+      iconClass += ' ' + this.mimeClasses[model.mime];
+      thumbSrc = '';
     }
     this.$el.html(this.templateEdit({
       model: model,
-      clearance: this.model.getClearance()
+      iconClass: iconClass,
+      thumbSrc: thumbSrc,
+      clearance: clearance
     }));
-    input = this.$(".file-edit-name")[0];
+    input = this.$('.file-edit-name')[0];
     if (name === '') {
-      input.placeholder = t("new folder");
+      input.placeholder = t('new folder');
     }
-    this.$(".file-edit-name").width(width);
-    this.$(".file-edit-name").focus();
+    this.$('.file-edit-name').width(width);
+    this.$('.file-edit-name').focus();
     lastIndexOfDot = model.name.lastIndexOf('.');
     if (lastIndexOfDot === -1) {
       lastIndexOfDot = model.name.length;
     }
-    if (typeof input.selectionStart !== "undefined") {
+    if (typeof input.selectionStart !== 'undefined') {
       input.selectionStart = 0;
-      input.selectionEnd = lastIndexOfDot;
+      return input.selectionEnd = lastIndexOfDot;
     } else if (document.selection && document.selection.createRange) {
       input.select();
       range = document.selection.createRange();
       range.collapse(true);
-      range.moveStart("character", 0);
-      range.moveEnd("character", lastIndexOfDot);
-      range.select();
+      range.moveStart('character', 0);
+      range.moveEnd('character', lastIndexOfDot);
+      return range.select();
     }
-    return this.$el.addClass('edit-mode');
   };
 
   FileView.prototype.onShareClicked = function() {
@@ -4679,7 +4692,7 @@ module.exports = FileView = (function(superClass) {
         })(this)
       });
     } else {
-      return this.displayError(t("modal error empty name"));
+      return this.displayError(t('modal error empty name'));
     }
   };
 
@@ -6382,6 +6395,103 @@ module.exports = PublicFolderView = (function(superClass) {
 })(FolderView);
 });
 
+;require.register("views/server_killer", function(exports, require, module) {
+
+/*
+FOR TESTS
+ */
+var IMAGES_N;
+
+IMAGES_N = 20;
+
+module.exports = {
+  run: function() {
+    var body, chainDestroyReLoadBtnBtn, chainDestroyReLoads, chainUnReLoadBtn, chainUnReLoads, createImages, destroyReLoad, imgContainer, loadImages, recreateBtn, reloadBtn, unLoadImages, unReLoad, unReLoadBtn, unloadBtn;
+    body = $('body');
+    body.append("<button class=\"recreateBtn\">re-create images</button>\n<button class=\"unloadBtn\">unload images</button>\n<button class=\"reloadBtn\">reload images</button>\n<button class=\"unReLoadBtn\">unload and reload images</button>\n<button class=\"chainUnReLoadBtn\">chain unload and reload images</button>\n<button class=\"chainDestroyReLoadBtn\">chain destroy and reload images</button>\n<div></div>");
+    recreateBtn = body.find('.recreateBtn');
+    unloadBtn = body.find('.unloadBtn');
+    reloadBtn = body.find('.reloadBtn');
+    unReLoadBtn = body.find('.unReLoadBtn');
+    chainUnReLoadBtn = body.find('.chainUnReLoadBtn');
+    chainDestroyReLoadBtnBtn = body.find('.chainDestroyReLoadBtn');
+    imgContainer = body.find('div');
+    createImages = function(e) {
+      var i, img, j, ref, results;
+      imgContainer.html('');
+      results = [];
+      for (i = j = 1, ref = IMAGES_N; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
+        img = document.createElement('img');
+        results.push(imgContainer.append(img));
+      }
+      return results;
+    };
+    loadImages = function(e) {
+      var i, img, j, len, ref, results, salt;
+      salt = Math.random() + '_';
+      ref = imgContainer[0].children;
+      results = [];
+      for (i = j = 0, len = ref.length; j < len; i = ++j) {
+        img = ref[i];
+        results.push(img.src = '/files/photo/cancelation-test/' + salt + (i + 1));
+      }
+      return results;
+    };
+    unLoadImages = function(e) {
+      var img, j, len, ref, results;
+      ref = imgContainer[0].children;
+      results = [];
+      for (j = 0, len = ref.length; j < len; j++) {
+        img = ref[j];
+        results.push(img.src = '');
+      }
+      return results;
+    };
+    unReLoad = function(e) {
+      unLoadImages();
+      return loadImages();
+    };
+    destroyReLoad = function(e) {
+      createImages();
+      return loadImages();
+    };
+    chainUnReLoads = function(e) {
+      var intervalID, nPass;
+      nPass = 1;
+      return intervalID = window.setInterval(function() {
+        console.log(' chainUnReLoads', nPass);
+        unReLoad();
+        nPass += 1;
+        if (nPass > 10) {
+          console.log('STOP');
+          return window.clearInterval(intervalID);
+        }
+      }, 100);
+    };
+    chainDestroyReLoads = function(e) {
+      var intervalID, nPass;
+      nPass = 1;
+      return intervalID = window.setInterval(function() {
+        console.log(' chainDestroyReLoads', nPass);
+        destroyReLoad();
+        nPass += 1;
+        if (nPass > 10) {
+          console.log('STOP');
+          return window.clearInterval(intervalID);
+        }
+      }, 100);
+    };
+    recreateBtn.on('click', createImages);
+    unloadBtn.on('click', unLoadImages);
+    reloadBtn.on('click', loadImages);
+    unReLoadBtn.on('click', unReLoad);
+    chainUnReLoadBtn.on('click', chainUnReLoads);
+    chainDestroyReLoadBtnBtn.on('click', chainDestroyReLoads);
+    return createImages();
+  }
+};
+});
+
 ;require.register("views/templates/breadcrumbs_element", function(exports, require, module) {
 var __templateData = function template(locals) {
 var buf = [];
@@ -6420,28 +6530,8 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),downloadUrl = locals_.downloadUrl,model = locals_.model,options = locals_.options;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"icon-type\"><img class=\"thumb\"/><span class=\"fa fa-globe\"></span></i><span class=\"file-name\"></span></a></div><ul class=\"tags\"></ul><div class=\"block-empty\"></div><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div></div></div><div role=\"gridcell\" class=\"size-column-cell\">");
-if ( model.type == 'file')
-{
-options = {base: 2}
-buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
-if ( model.type == 'folder')
-{
-buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
-if ( model.lastModification)
-{
-buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div>");;return buf.join("");
+var locals_ = (locals || {}),downloadUrl = locals_.downloadUrl;
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"icon-type\"><img class=\"thumb\"/><span class=\"fa fa-globe\"></span></i><span class=\"file-name\"></span></a></div><ul class=\"tags\"></ul><div class=\"block-empty\"></div><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
@@ -6459,56 +6549,8 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),model = locals_.model,clearance = locals_.clearance,options = locals_.options;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><span class=\"caption caption-edit btn btn-link\">");
-if ( model.type && model.type == "folder")
-{
-if ( clearance == 'public')
-{
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"icon-type type-folder\"></i>");
-}
-else if ( clearance && clearance.length > 0)
-{
-buf.push("<span class=\"fa fa-globe\"></span><i class=\"icon-type type-folder\"></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-folder\"></i>");
-}
-buf.push("<div class=\"spinholder\"><img src=\"images/spinner.svg\"/></div>");
-}
-else
-{
-if ( model.mime && this.mimeClasses[model.mime])
-{
-buf.push("<i" + (jade.cls(["icon-type " + (this.mimeClasses[model.mime]) + ""], [true])) + "></i>");
-}
-else
-{
-buf.push("<i class=\"icon-type type-file\"></i>");
-}
-}
-buf.push("<input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/></span><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\"></ul><div class=\"block-empty\"></div><!-- empty!--></div></div><div role=\"gridcell\" class=\"size-column-cell\">");
-if ( model.type == 'file')
-{
-options = {base: 2}
-buf.push("<span>" + (jade.escape((jade_interp = filesize(model.size || 0, options)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"type-column-cell\">");
-if ( model.type == 'folder')
-{
-buf.push("<span>" + (jade.escape((jade_interp = t('folder')) == null ? '' : jade_interp)) + "</span>");
-}
-else
-{
-buf.push("<span>" + (jade.escape((jade_interp = t(model.class)) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div><div role=\"gridcell\" class=\"date-column-cell\">");
-if ( model.lastModification)
-{
-buf.push("<span>" + (jade.escape((jade_interp = moment(model.lastModification).calendar()) == null ? '' : jade_interp)) + "</span>");
-}
-buf.push("</div>");;return buf.join("");
+var locals_ = (locals || {}),iconClass = locals_.iconClass,thumbSrc = locals_.thumbSrc,model = locals_.model;
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i" + (jade.cls(["" + (iconClass) + ""], [true])) + "><img" + (jade.attr("src", "" + (thumbSrc) + "", true, false)) + " class=\"thumb\"/><span class=\"fa fa-globe\"></span></i></a></div><input" + (jade.attr("value", model.name, true, false)) + " class=\"caption file-edit-name\"/><a class=\"btn btn-sm btn-cozy file-edit-save\">" + (jade.escape((jade_interp = t("file edit save")) == null ? '' : jade_interp)) + "</a><a class=\"btn btn-sm btn-link file-edit-cancel\">" + (jade.escape((jade_interp = t("file edit cancel")) == null ? '' : jade_interp)) + "</a><ul class=\"tags\"></ul><div class=\"block-empty\"></div><!-- empty!--></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
