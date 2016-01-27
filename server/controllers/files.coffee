@@ -464,18 +464,16 @@ module.exports.photoThumb = (req, res, next) ->
         if err
             console.log err
             next(err)
-            stream.on 'data', () ->
-            stream.on 'end', () ->
+            stream.on 'data', ->
+            stream.on 'end', ->
             stream.resume()
             return
 
-    req.on 'close', () ->
-        stream.abort()
-
-    res.on 'close', () ->
-        stream.abort()
-
+    req.on 'close', -> stream.abort()
+    res.on 'close', -> stream.abort()
     stream.pipe res
+
+
 ###*
  * Returns "screens" (image reduced ) for a given file.
  * There is a bug : when the browser cancels many downloads, some are not
@@ -489,73 +487,11 @@ module.exports.photoScreen = (req, res, next) ->
         if err
             console.log err
             next(err)
-            stream.on 'data', () ->
-            stream.on 'end', () ->
+            stream.on 'data', ->
+            stream.on 'end', ->
             stream.resume()
             return
 
-    req.on 'close', () ->
-        stream.abort()
-
-    res.on 'close', () ->
-        stream.abort()
-
+    req.on 'close', -> stream.abort()
+    res.on 'close', -> stream.abort()
     stream.pipe res
-    ##
-    # there is a bug : when the browser cancels many downloads, some are not
-    # cancelled, what leads to saturate the stack of threads and blocks the
-    # download of thumbs.
-    # The code bellow makes it easy to reproduce the problem : just by delaying
-    # the response, if you move the scrollbar in the browser, it will cancel
-    # many photos...
-    #
-    # setTimeout(() ->
-    #     stream = req.file.getBinary which, (err) ->
-    #         if err
-    #             console.log err
-    #             next(err)
-    #             stream.on 'data', () ->
-    #             stream.on 'end', () ->
-    #             stream.resume()
-    #             return
-
-    #     req.on 'close', () ->
-    #         console.log "reQ.on close"
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     req.connection.on 'close', () ->
-    #         console.log 'reQ.connection.on close'
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     req.on 'end', () ->
-    #         console.log 'reQ.on end'
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     res.on 'close', () ->
-    #         console.log "reS.on close"
-    #         stream.abort()
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     res.connection.on 'close', () ->
-    #         console.log 'reS.connection.on close'
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     res.on 'end', () ->
-    #         console.log 'reS.on end'
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     stream.on 'close', () ->
-    #         console.log 'stream.on close'
-    #         stream.destroy()
-    #         stream.abort()
-
-    #     stream.pipe res
-    # , 5000
-    # )
-    #
