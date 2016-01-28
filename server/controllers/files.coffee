@@ -459,6 +459,9 @@ module.exports.search = (req, res, next) ->
  * Cf comments bellow to reproduce easily
 ###
 module.exports.photoThumb = (req, res, next) ->
+    if !res.connection or res.connection.destroyed
+        return
+
     which = if req.file.binary.thumb then 'thumb' else 'file'
     stream = req.file.getBinary which, (err) ->
         if err
@@ -482,6 +485,9 @@ module.exports.photoThumb = (req, res, next) ->
  * Cf comments bellow to reproduce easily
 ###
 module.exports.photoScreen = (req, res, next) ->
+    if !res.connection or res.connection.destroyed
+        return
+
     which = if req.file.binary.screen then 'screen' else 'file'
     stream = req.file.getBinary which, (err) ->
         if err
