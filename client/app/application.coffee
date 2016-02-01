@@ -2,7 +2,7 @@ FileCollection = require './collections/files'
 UploadQueue    = require './collections/upload_queue'
 File           = require './models/file'
 SocketListener = require '../lib/socket'
-
+Gallery        = require './views/gallery'
 
 ###
 Initialize the model and start the actual code
@@ -16,6 +16,8 @@ module.exports =
         @isPublic = window.location.pathname.indexOf('/public/') is 0
 
         # the base collection holds all the files and folders of the application
+        # this collection is a local cache : the content of already visited
+        # folders will remain in this collection.
         @baseCollection = new FileCollection()
 
         # queue to allow new uploads while uploading
@@ -48,8 +50,11 @@ module.exports =
 
         Backbone.history.start()
 
+        # prepare the photo gallery
+        window.app.gallery = new Gallery()
+
         # Makes this object immuable.
-        Object.freeze this if typeof Object.freeze is 'function'
+        Object.freeze? @
 
         document.body.addEventListener 'click', (event) =>
             if event.target.tagName is 'BODY'

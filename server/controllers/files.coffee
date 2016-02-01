@@ -21,13 +21,6 @@ baseController = new cozydb.SimpleController
     reqParamID: 'fileid'
 
 
-## FOR TESTS - TO BE DELETED ##
-module.exports.destroyBroken = (req, res) ->
-    res.send 400,
-        error: true
-        msg: "Deletion error for tests"
-
-
 ## Helpers ##
 
 
@@ -212,11 +205,10 @@ module.exports.create = (req, res, next) ->
                 # nothing more we can do with delerr
                 log.error delerr if delerr
                 if isStorageError err
-                    res.send
+                    res.status(400).send
                         error: true
                         code: 'ESTORAGE'
                         msg: "modal error size"
-                    , 400
                 else
                     next err
 
@@ -298,11 +290,10 @@ module.exports.create = (req, res, next) ->
                         attachBinary file
                 else
                     upload = false
-                    return res.send
+                    return res.status(400).send
                         error: true
                         code: 'EEXISTS'
                         msg: "This file already exists"
-                    , 400
 
             # Generate file metadata.
             data =
@@ -458,3 +449,55 @@ module.exports.search = (req, res, next) ->
         File.request 'byTag', key: tag, sendResults
     else
         File.search "*#{query}*", sendResults
+
+
+###*
+ * Returns thumb for given file.
+ * there is a bug : when the browser cancels many downloads, some are not
+ * cancelled, what leads to saturate the stack of threads and blocks the
+ * download of thumbs.
+ * Cf comments bellow to reproduce easily
+###
+module.exports.photoThumb = (req, res, next) ->
+    if !res.connection or res.connection.destroyed
+        return
+
+    which = if req.file.binary.thumb then 'thumb' else 'file'
+    stream = req.file.getBinary which, (err) ->
+        if err
+            console.log err
+            next(err)
+            stream.on 'data', ->
+            stream.on 'end', ->
+            stream.resume()
+            return
+
+    req.on 'close', -> stream.abort()
+    res.on 'close', -> stream.abort()
+    stream.pipe res
+
+
+###*
+ * Returns "screens" (image reduced ) for a given file.
+ * There is a bug : when the browser cancels many downloads, some are not
+ * cancelled, what leads to saturate the stack of threads and blocks the
+ * download of thumbs.
+ * Cf comments bellow to reproduce easily
+###
+module.exports.photoScreen = (req, res, next) ->
+    if !res.connection or res.connection.destroyed
+        return
+
+    which = if req.file.binary.screen then 'screen' else 'file'
+    stream = req.file.getBinary which, (err) ->
+        if err
+            console.log err
+            next(err)
+            stream.on 'data', ->
+            stream.on 'end', ->
+            stream.resume()
+            return
+
+    req.on 'close', -> stream.abort()
+    res.on 'close', -> stream.abort()
+    stream.pipe res

@@ -81,11 +81,10 @@ module.exports.create = (req, res, next) ->
         Folder.all (err, folders) ->
             available = pathHelpers.checkIfPathAvailable folder, folders
             if not available
-                res.send
+                res.status(400).send
                     code: 'EEXISTS',
                     error: true,
-                    msg: "This folder already exists",
-                    400
+                    msg: "This folder already exists"
             else
                 fullPath = folder.path
                 parents = folders.filter (tested) ->
@@ -279,7 +278,7 @@ module.exports.destroy = (req, res, next) ->
                     else
                         currentFolder.updateParentModifDate (err) ->
                             log.raw err if err?
-                            res.send 204
+                            res.sendStatus 204
 
 module.exports.findFiles = (req, res, next) ->
     getFolderPath req.body.id, (err, key) ->
@@ -524,7 +523,7 @@ module.exports.changeNotificationsState = (req, res, next) ->
                 rule.notifications = r.notifications = notif
                 folder.updateAttributes clearance: clearance, (err) ->
                     if err? then next err
-                    else res.send 201
+                    else res.sendStatus 201
 
 
 module.exports.publicList = (req, res, next) ->

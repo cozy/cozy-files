@@ -7,104 +7,27 @@ client         = require "../lib/client"
 
 module.exports = class FileView extends BaseView
 
-    templateNormal : require './templates/file'
-    templateEdit   : require './templates/file_edit'
-    templateSearch : require './templates/file_search'
-
-    mimeClasses:
-        'application/octet-stream'      : 'type-file'
-        'application/x-binary'          : 'type-binary'
-        'text/plain'                    : 'type-text'
-        'text/richtext'                 : 'type-text'
-        'application/x-rtf'             : 'type-text'
-        'application/rtf'               : 'type-text'
-        'application/msword'            : 'type-text'
-        'application/x-iwork-pages-sffpages' : 'type-text'
-        'application/mspowerpoint'      : 'type-presentation'
-        'application/vnd.ms-powerpoint' : 'type-presentation'
-        'application/x-mspowerpoint'    : 'type-presentation'
-        'application/x-iwork-keynote-sffkey' : 'type-presentation'
-        'application/excel'             : 'type-spreadsheet'
-        'application/x-excel'           : 'type-spreadsheet'
-        'aaplication/vnd.ms-excel'      : 'type-spreadsheet'
-        'application/x-msexcel'         : 'type-spreadsheet'
-        'application/x-iwork-numbers-sffnumbers' : 'type-spreadsheet'
-        'application/pdf'               : 'type-pdf'
-        'text/html'                     : 'type-code'
-        'text/asp'                      : 'type-code'
-        'text/css'                      : 'type-code'
-        'application/x-javascript'      : 'type-code'
-        'application/x-lisp'            : 'type-code'
-        'application/xml'               : 'type-code'
-        'text/xml'                      : 'type-code'
-        'application/x-sh'              : 'type-code'
-        'text/x-script.python'          : 'type-code'
-        'application/x-bytecode.python' : 'type-code'
-        'text/x-java-source'            : 'type-code'
-        'application/postscript'        : 'type-image'
-        'image/gif'                     : 'type-image'
-        'image/jpg'                     : 'type-image'
-        'image/jpeg'                    : 'type-image'
-        'image/pjpeg'                   : 'type-image'
-        'image/x-pict'                  : 'type-image'
-        'image/pict'                    : 'type-image'
-        'image/png'                     : 'type-image'
-        'image/x-pcx'                   : 'type-image'
-        'image/x-portable-pixmap'       : 'type-image'
-        'image/x-tiff'                  : 'type-image'
-        'image/tiff'                    : 'type-image'
-        'audio/aiff'                    : 'type-audio'
-        'audio/x-aiff'                  : 'type-audio'
-        'audio/midi'                    : 'type-audio'
-        'audio/x-midi'                  : 'type-audio'
-        'audio/x-mid'                   : 'type-audio'
-        'audio/mpeg'                    : 'type-audio'
-        'audio/x-mpeg'                  : 'type-audio'
-        'audio/mpeg3'                   : 'type-audio'
-        'audio/x-mpeg3'                 : 'type-audio'
-        'audio/wav'                     : 'type-audio'
-        'audio/x-wav'                   : 'type-audio'
-        'video/avi'                     : 'type-video'
-        'video/mpeg'                    : 'type-video'
-        'video/mp4'                     : 'type-video'
-        'application/zip'               : 'type-archive'
-        'multipart/x-zip'               : 'type-archive'
-        'multipart/x-zip'               : 'type-archive'
-        'application/x-bzip'            : 'type-archive'
-        'application/x-bzip2'           : 'type-archive'
-        'application/x-gzip'            : 'type-archive'
-        'application/x-compress'        : 'type-archive'
-        'application/x-compressed'      : 'type-archive'
-        'application/x-zip-compressed'  : 'type-archive'
-        'application/x-apple-diskimage' : 'type-archive'
-        'multipart/x-gzip'              : 'type-archive'
-
-
-    template: (args) ->
-        if @isSearchMode
-            @templateSearch args
-        else
-            @templateNormal args
-
+    template     : require './templates/file'
+    templateEdit : require './templates/file_edit'
 
     getRenderData: ->
         _.extend super(),
-            isUploading: @model.isUploading()
-            isServerUploading: @model.isServerUploading()
-            isBroken: @model.isBroken()
-            attachmentUrl: @model.getAttachmentUrl()
-            downloadUrl: @model.getDownloadUrl()
-            clearance: @model.getClearance()
-            isViewSelected: @model.isViewSelected()
+            isUploading       : @model.isUploading()
+            isServerUploading : @model.isServerUploading()
+            isBroken          : @model.isBroken()
+            attachmentUrl     : @model.getAttachmentUrl()
+            downloadUrl       : @model.getDownloadUrl()
+            clearance         : @model.getClearance()
+            isViewSelected    : @model.isViewSelected()
 
 
     initialize: (options) ->
         @isSearchMode = options.isSearchMode
-        @uploadQueue = options.uploadQueue
+        @uploadQueue  = options.uploadQueue
 
         # prevent contacts loading in shared area
         unless app.isPublic
-            ModalShareView ?= require "./modal_share"
+            ModalShareView ?= require './modal_share'
 
 
     beforeRender: ->
@@ -118,48 +41,134 @@ module.exports = class FileView extends BaseView
             @hasUploadingChildren = false
 
 
+    afterRender: ->
+        @el.displayMode = 'normal'
+        @filePath    = @$ 'a.file-path'
+        @elementLink = @$ 'a.link-wrapper'
+        @elementName = @elementLink.find '.file-name'
+        @thumb       = (@elementLink.find 'img.thumb')[0]
+        @elementSize = @$ '.size-column-cell'
+        @elementType = @$ '.type-column-cell'
+        @elementLastModificationDate = @$ '.date-column-cell'
+        @elementIcon = @$ '.icon-type'
+
+        @$el.data('cid', @model.cid) # link between the element and the model
+        @$el.addClass('itemRow')
+
+        # all displayed files are in searchMode or none. That's why we can set
+        # the line is search mode once for all.
+        if @isSearchMode
+            @filePath.show()
+
+        # add tags
+        @tags = new TagsView
+            el   : @$ '.tags'
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        @blockNameLink() if @model.isNew()
+        @showLoading()   if @hasUploadingChildren
+        @reDecorate()
+
+
     reDecorate: ->
+        # by default a line is not on edit mode. If the moved row was in edit
+        # mode, just re-render the line not to be in edit mode.
+        if @el.displayMode is 'edit'
+            @render()
+            return
+
         @beforeRender()
+
+        # get data
         renderData = @getRenderData()
-
-        @elementName.html renderData.model.name
-
         if @model.isFolder()
             link = "#folders/#{renderData.model.id}"
-            size = ""
-            type = "folder"
+            size = ''
+            type = 'folder'
         else
-            link = renderData.downloadUrl
+            if @model.isImage()
+                link = renderData.attachmentUrl
+            else
+                link = renderData.downloadUrl
             size = renderData.model.size or 0
-            size = filesize size, base: 2
+            size = filesize(size, base: 2)
             type = renderData.model.class
 
-        {lastModification} = renderData.model
-        if lastModification
-            lastModification = moment(lastModification).calendar()
+        # update path if in search mode
+        if @isSearchMode
+            @filePath.html @model.attributes.path
+            # todo : find the parent folder id to that users can click on path
+            # 2 solutions :
+            #     get the data from the server for the files (perf...)
+            #     get the data only on click : create a special route to point
+            #     on the parent, exemple : /files/fileid/parent
+            # the first one is less performant and more complex (async)
+            # the second gives a path that is not sustainable.
+            # @filePath[0].href = "/#folders/" + @model.attributes.parentFolderID
+
+        # update the icon.
+        # Can be a file (its mime type) or a folder or an image or a thumbnail.
+        iconType = @model.getIconType()
+        @elementIcon.attr 'class', "icon-type #{iconType}"
+
+        # in case of a thumbnail, update src
+        if iconType is 'type-thumb'
+            @thumb.src = @model.getThumbUrl()
+
+        # show sharing status icon if necessary
+        if @model.isShared()
+            @elementIcon.addClass 'shared'
         else
-            lastModification = ""
+            @elementIcon.removeClass 'shared'
 
-        iconClass = @getElementIconClass()
-
+        # update file link url
         @elementLink.attr 'href', link
+
+        # update tags
+        @tags.refresh(@model)
+
+        # update name, size and type
+        @elementName.html renderData.model.name
         @elementSize.html size
         @elementType.html t(type)
-        @elementLastModificationDate.html lastModification
 
-        # Change element's icon if necessary.
-        unless @elementIcon.hasClass(iconClass)
-            @elementIcon.attr 'class', ''
-            @elementIcon.addClass "icon-type #{iconClass}"
-
-        # Change sharing status icon if necessary.
-        if @model.isShared()
-            if @elementIcon.find('span.fa').length is 0
-                @elementIcon.append $('<span class="fa fa-globe"></span>')
+        # update last modification
+        lastModification = renderData.model.lastModification
+        if lastModification
+            m = moment(lastModification)
+            lastModification = m.calendar()
+            longLastModification = m.format('lll')
         else
-            @elementIcon.empty()
+            lastModification = ''
+            longLastModification = ''
+        @elementLastModificationDate.html lastModification
+        @elementLastModificationDate.attr 'title', longLastModification
 
-        @afterReDecorate()
+        # link between the element and the model
+        @$el.data 'cid', @model.cid
+
+        if @model.isUploading() or @model.isServerUploading()
+            @addProgressBar()
+            @blockDownloadLink()
+            @blockNameLink()
+        else
+            @removeProgressBar() if @progressbar?
+            @$el.toggleClass 'broken', @model.isBroken()
+
+
+        # When folders are drag and drop, they can be clicked before being
+        # actually created, resulting in an error. Folders don't rely
+        # on `isUploading` because it is needless, so they are treated
+        # separately.
+        if @model.isNew()
+            @blockNameLink()
+
+        # TODO : avoid or adapt to an update operation
+        @hideLoading()
+        @showLoading() if @hasUploadingChildren
 
 
     onUploadComplete: ->
@@ -213,56 +222,80 @@ module.exports = class FileView extends BaseView
 
 
     onTagClicked: ->
-        @tags.toggleInput()
+        @tags.showInput()
 
 
     onDeleteClicked: ->
-        new ModalView t("modal are you sure"), t("modal delete msg"), t("modal delete ok"), t("modal cancel"), (confirm) =>
+        new ModalView t('modal are you sure'), t('modal delete msg'), t('modal delete ok'), t('modal cancel'), (confirm) =>
             if confirm
                 window.pendingOperations.deletion++
                 @model.destroy
                     success: -> window.pendingOperations.deletion--
                     error: ->
                         window.pendingOperations.deletion--
-                        ModalView.error t "modal delete error"
+                        ModalView.error t 'modal delete error'
 
-
+    ###*
+     * Triggers the input to rename the file/folder
+    ###
     onEditClicked: (name) ->
-
-        width = @$(".caption").width() + 10
+        @el.displayMode = 'edit'
+        @$el.addClass('edit-mode')
+        width = @$('.caption').width() + 10
         model = @model.toJSON()
         model.class = 'folder' unless model.class?
 
-        if typeof(name) is "string"
+        if typeof(name) is 'string'
             model.name = name
 
+        # change the template
+        clearance = @model.getClearance()
+        iconClass = 'icon-type'
+        if clearance is 'public' or (clearance && clearance.length > 0)
+            iconClass += ' shared'
+        iconType = @model.getIconType()
+        iconClass += ' ' + iconType
+        if iconType is 'type-thumb'
+            thumbSrc = @model.getThumbUrl()
+        else
+            thumbSrc = ''
+
         @$el.html @templateEdit
-            model: model
-            clearance: @model.getClearance()
+            model     : model
+            iconClass : iconClass
+            thumbSrc  : thumbSrc
+            clearance : clearance
 
-        input = @$(".file-edit-name")[0]
+        # manage input
+        input$ = @$('.file-edit-name')
+        input  = input$[0]
         if name is ''
-            input.placeholder = t "new folder"
-        @$(".file-edit-name").width width
-        @$(".file-edit-name").focus()
+            input.placeholder = t 'new folder'
+        input$.width width
+        input$.focus()
+        input$.focusout () =>
+            @onSaveClicked()
 
+
+        # manage selection in the input :
         # we only want to select the part before the file extension
-        lastIndexOfDot = model.name.lastIndexOf '.'
-        lastIndexOfDot = model.name.length if lastIndexOfDot is -1
+        # (the timeout otherwise there is a pb with the selection)
+        setTimeout ->
+            lastIndexOfDot = model.name.lastIndexOf '.'
+            lastIndexOfDot = model.name.length if lastIndexOfDot is -1
 
-        if typeof input.selectionStart isnt "undefined"
-            input.selectionStart = 0
-            input.selectionEnd = lastIndexOfDot
-        else if document.selection and document.selection.createRange
-            # IE Branch...
-            input.select()
-            range = document.selection.createRange()
-            range.collapse true
-            range.moveStart "character", 0
-            range.moveEnd "character", lastIndexOfDot
-            range.select()
+            if typeof input.selectionStart isnt 'undefined'
+                input.selectionStart = 0
+                input.selectionEnd = lastIndexOfDot
+            else if document.selection and document.selection.createRange
+                # IE Branch...
+                input.select()
+                range = document.selection.createRange()
+                range.collapse true
+                range.moveStart 'character', 0
+                range.moveEnd 'character', lastIndexOfDot
+                range.select()
 
-        @$el.addClass 'edit-mode'
 
 
     onShareClicked: ->
@@ -347,7 +380,7 @@ module.exports = class FileView extends BaseView
 
         # If the input is empty, show an error.
         else
-            @displayError t("modal error empty name")
+            @displayError t('modal error empty name')
 
 
     onCancelClicked: ->
@@ -368,11 +401,23 @@ module.exports = class FileView extends BaseView
         @uploadQueue.abort @model
 
 
+    # when a file link (icon or name) is clicked, choose the action to lauch
+    onFileLinkClicked: (e)=>
+        # if an image, launch the gallerie viewer, otherwise let the browser
+        # open the link in a new window
+        if @model.attributes.mime?.substr(0,5) is 'image'
+            # ctrl + click on an img => open in new window, nothing to do
+            if e.ctrlKey
+                return
+            window.app.gallery.show(@model)
+            e.preventDefault()
+
+
     # When a line is clicked, it should mark the item as selected, unless the
     # user clicked a button.
     onLineClicked: (event) ->
         # List of selectors that will prevent the selection if they, or one
-        # of their children, are clicked.
+        # of their children, have been clicked.
         forbiddenSelectors = [
             '.operations'
             '.tags'
@@ -383,28 +428,43 @@ module.exports = class FileView extends BaseView
             '.selector-wrapper'
         ]
 
-        # Map them to an actual DOM element.
-        forbiddenElements = forbiddenSelectors.map (selector) =>
-            return @$(selector)?[0] or null
+        if @$el.hasClass('edit-mode')
+            return
 
-        # For each forbidden element, check if it, or one of its children, has
-        # been clicked.
-        results = forbiddenElements.filter (element) ->
-            return element? and
-                (element is event.target or $.contains(element, event.target))
+        for sel in forbiddenSelectors
+            if $(event.target).parents(sel).length != 0 or
+                    event.target.matches(sel)
+                return
 
-        # If none of the forbidden elements has been clicked, we can select the
-        # checkbox.
-        if results.length is 0 and not @$el.hasClass('edit-mode')
-            isShiftPressed = event.shiftKey or false
-            @model.toggleViewSelected isShiftPressed
+        isShiftPressed = event.shiftKey or false
+        window.getSelection().removeAllRanges()
+        @model.toggleViewSelected isShiftPressed
 
 
+    ###
+    # called when the user edits the name of the file or folder
+    ###
     onKeyPress: (e) =>
+
         if e.keyCode is 13 # ENTER key
             @onSaveClicked()
+
         else if e.keyCode is 27 # ESCAPE key
             @onCancelClicked()
+
+        else if e.keyCode is 40 # DOWN key : edit next file
+            next = this.$el.next()
+            if next.length == 0
+                return
+            @onSaveClicked()
+            next.find('a.file-edit').click()
+
+        else if e.keyCode is 38 # UP key : edit previous file
+            prev = this.$el.prev()
+            if prev.length is 0
+                return
+            @onSaveClicked()
+            prev.find('a.file-edit').click()
 
 
     onSelectClicked: (event) ->
@@ -424,92 +484,28 @@ module.exports = class FileView extends BaseView
             @$('.selector-wrapper i').addClass 'fa-square-o'
 
 
-    afterRender: ->
-
-        @elementLink = @$ 'a.btn-link'
-        @elementName = @elementLink.find 'span'
-        @elementSize = @$ '.size-column-cell span'
-        @elementType = @$ '.type-column-cell span'
-        @elementLastModificationDate = @$ '.date-column-cell span'
-        @elementIcon = @$ '.icon-type'
-
-        @$el.data('cid', @model.cid) # link between the element and the model
-        @$el.addClass('itemRow')
-
-        if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
-            @addProgressBar()
-            @blockDownloadLink()
-            @blockNameLink()
-        else
-            @$el.removeClass 'uploading'
-            @$el.toggleClass 'broken', @model.isBroken()
-            @addTags()
-
-        # When folders are drag and drop, they can be clicked before being
-        # actually created, resulting in an error. Folders don't rely
-        # on `isUploading` because it is needless, so they are treated
-        # separately.
-        if @model.isNew()
-            @blockNameLink()
-
-        @hideLoading()
-        @showLoading() if @hasUploadingChildren
-
-    afterReDecorate: ->
-        @$el.data 'cid', @model.cid # link between the element and the model
-
-        if @model.isUploading() or @model.isServerUploading()
-            @$el.addClass 'uploading'
-            @addProgressBar()
-            @blockDownloadLink()
-            @blockNameLink()
-        else
-            @$el.removeClass 'uploading'
-            @$el.toggleClass 'broken', @model.isBroken()
-            @updateTags()
-
-        # When folders are drag and drop, they can be clicked before being
-        # actually created, resulting in an error. Folders don't rely
-        # on `isUploading` because it is needless, so they are treated
-        # separately.
-        if @model.isNew()
-            @blockNameLink()
-
-        # TODO : avoid or adapt to an update operation
-        @hideLoading()
-        @showLoading() if @hasUploadingChildren
-
-
     # add and display progress bar.
     addProgressBar: ->
-        @$('.type-column-cell').remove()
-        @$('.date-column-cell').remove()
-
-        @progressbar.destroy() if @progressbar?
+        @removeProgressBar() if @progressbar?
+        @$el.addClass 'uploading'
+        @$('.type-column-cell').hide()
+        @$('.date-column-cell').hide()
 
         @progressbar = new ProgressBar model: @model
-        cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
-        cell.append @progressbar.render().$el
-        @$('.size-column-cell').after cell
+        @cell = $ '<td colspan="2" class="progressbar-cell" role="gridcell"></td>'
+        @cell.append @progressbar.render().$el
+        @$('.size-column-cell').after @cell
 
 
-    # Add and display tag widget.
-    addTags: ->
-        if @tags?
-            @tags.destroy()
-
-        @tags = new TagsView
-            el: @$ '.tags'
-            model: @model
-        @tags.render()
-        @tags.hideInput()
-
-
-    # TODO : be more clever :-)
-    updateTags: ->
-        if @model.get('tags').length
-            @addTags()
+    # remove progress bar.
+    removeProgressBar: ->
+        @$('.type-column-cell').show()
+        @$('.date-column-cell').show()
+        @$el.removeClass 'uploading'
+        if @progressbar?
+            @progressbar.destroy()
+            @progressbar = null
+        @cell.remove()
 
 
     # Make download link inactive.
@@ -532,19 +528,3 @@ module.exports = class FileView extends BaseView
     hideLoading: ->
         @$('.link-wrapper .fa').removeClass 'hidden'
         @$('.spinholder').hide()
-
-
-    # Get a DOM node with the element's icon properly defined.
-    getElementIconClass: ->
-
-        # Determine the icon based on element's type.
-        if @model.isFolder()
-            icon = "type-folder"
-        else
-            mimeType = @model.get 'mime'
-            mimeClass = @mimeClasses[mimeType]
-            if mimeType? and mimeClass?
-                icon = mimeClass
-            else
-                icon = "type-file"
-        return icon

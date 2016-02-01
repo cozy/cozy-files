@@ -498,3 +498,63 @@ module.exports.search = function(req, res, next) {
     return File.search("*" + query + "*", sendResults);
   }
 };
+
+
+/**
+ * Returns thumb for given file.
+ * there is a bug : when the browser cancels many downloads, some are not
+ * cancelled, what leads to saturate the stack of threads and blocks the
+ * download of thumbs.
+ * Cf comments bellow to reproduce easily
+ */
+
+module.exports.photoThumb = function(req, res, next) {
+  var stream, which;
+  which = req.file.binary.thumb ? 'thumb' : 'file';
+  stream = req.file.getBinary(which, function(err) {
+    if (err) {
+      console.log(err);
+      next(err);
+      stream.on('data', function() {});
+      stream.on('end', function() {});
+      stream.resume();
+    }
+  });
+  req.on('close', function() {
+    return stream.abort();
+  });
+  res.on('close', function() {
+    return stream.abort();
+  });
+  return stream.pipe(res);
+};
+
+
+/**
+ * Returns "screens" (image reduced ) for a given file.
+ * There is a bug : when the browser cancels many downloads, some are not
+ * cancelled, what leads to saturate the stack of threads and blocks the
+ * download of thumbs.
+ * Cf comments bellow to reproduce easily
+ */
+
+module.exports.photoScreen = function(req, res, next) {
+  var stream, which;
+  which = req.file.binary.screen ? 'screen' : 'file';
+  stream = req.file.getBinary(which, function(err) {
+    if (err) {
+      console.log(err);
+      next(err);
+      stream.on('data', function() {});
+      stream.on('end', function() {});
+      stream.resume();
+    }
+  });
+  req.on('close', function() {
+    return stream.abort();
+  });
+  res.on('close', function() {
+    return stream.abort();
+  });
+  return stream.pipe(res);
+};

@@ -8,3 +8,4 @@
 *.transifex.coffee
 
 /test/fixtures/big-folder/
+/test/fixtures/big-folder-of-folders/

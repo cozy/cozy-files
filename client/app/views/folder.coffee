@@ -1,13 +1,13 @@
-BaseView = require '../lib/base_view'
-FilesView = require './files'
-BreadcrumbsView = require "./breadcrumbs"
+BaseView         = require '../lib/base_view'
+FilesView        = require './files'
+BreadcrumbsView  = require "./breadcrumbs"
 UploadStatusView = require './upload_status'
-Modal = require './modal'
-ModalBulkMove = require './modal_bulk_move'
-ModalConflict = require './modal_conflict'
-ModalShareView = null
+Modal            = require './modal'
+ModalBulkMove    = require './modal_bulk_move'
+ModalConflict    = require './modal_conflict'
+ModalShareView   = null
 
-File = require '../models/file'
+File             = require '../models/file'
 
 BACKSPACE_KEY = 8
 
@@ -565,7 +565,11 @@ module.exports = class FolderView extends BaseView
             # download only file selected
             a = document.createElement 'a'
             a.href = selectedElements[0].getDownloadUrl()
-            a.dispatchEvent(new window.MouseEvent('click', 'view': window, 'bubbles': true, 'cancelable': true ))
+            options =
+                view: window
+                bubbles: true
+                cancelable: true
+            a.dispatchEvent(new window.MouseEvent 'click', options)
 
 
     ###

@@ -1,97 +1,47 @@
 div.extensible-column(role="gridcell")
 
   block file-path
-    // empty by default
+    //- displayed only on search mode
+    a.file-path(style="display:none")
 
   div.caption-wrapper
 
     block title
-      if model.type == 'folder'
-        .caption
-          div.link-wrapper.btn-link
-            div.spinholder
-              img(src="images/spinner.svg")
-            if clearance == 'public'
-              i.icon-type.type-folder
-                span.fa.fa-globe
-            else if clearance && clearance.length > 0
-              i.icon-type.type-folder
-                span.fa.fa-globe
-            else
-              i.icon-type.type-folder
-            a.btn-link(href="#folders/#{model.id}", title="#{t('open folder')}")
-              span= model.name
 
-      else if model.type == 'file'
-        .caption(data-file-name="#{attachmentUrl.toLowerCase()}", data-file-url="#{attachmentUrl}")
-          div.link-wrapper.btn-link
-            div.spinholder
-              img(src="images/spinner.svg")
-            if model.mime && this.mimeClasses[model.mime]
-              i(class="icon-type #{this.mimeClasses[model.mime]}")
-                if clearance == 'public'
-                  span.fa.fa-globe
-                else if clearance && clearance.length > 0
-                  span.fa.fa-globe
-            else
-              i.icon-type.type-file
-                if clearance == 'public'
-                  span.fa.fa-globe
-                else if clearance && clearance.length > 0
-                  span.fa.fa-globe
-            if !isBroken
-                a.btn-link(
-                  href="#{attachmentUrl}",
-                  title="#{t('download file')}", target="_blank")
-                    span= model.name
-    
-            else
-              span.file-name= model.name
+      .caption
+        a.link-wrapper.btn-link
+          div.spinholder(style="display: none")
+            img(src="images/spinner.svg")
+          //- type-folder or type-file or type-thumb or type-image or ... 
+          i.icon-type 
+            img.thumb
+            span.fa.fa-globe
+          //- the name of the file 
+          span.file-name
+
+
 
     block tags
       ul.tags
-        for tag in model.tags || []
-          li.tag #{tag}
-            span.deleter.fa.fa-times
 
     block empty
       .block-empty
 
     block actions
-      if !isUploading && !isBroken && !isServerUploading
-        .operations
-          a.file-tags(title="#{t('tooltip tag')}")
-            span.fa.fa-tag
-          a.file-share(title="#{t('tooltip share')}")
-            span.fa.fa-share-alt
-          a.file-edit(title="#{t('tooltip edit')}")
-            span.fa.fa-pencil-square-o
-          a.file-download(
-              href="#{downloadUrl}",
-              target="_blank", title="#{t('tooltip download')}")
-            span.fa.fa-download
-
-      else if isUploading && !isServerUploading
-        // only show cancel button to the client that performs the upload.
-        a.cancel-upload-button.btn.btn-link #{t('file edit cancel')}
-
-      else if isBroken
-        .broken-widget
-          span.broken-text #{t('file broken indicator')}
-          a.broken-button(title="#{t('file broken remove')}")
-              span.fa.fa-trash
+      .operations
+        a.file-tags(title="#{t('tooltip tag')}")
+          span.fa.fa-tag
+        a.file-share(title="#{t('tooltip share')}")
+          span.fa.fa-share-alt
+        a.file-edit(title="#{t('tooltip edit')}")
+          span.fa.fa-pencil-square-o
+        a.file-download(
+            href="#{downloadUrl}",
+            target="_blank", title="#{t('tooltip download')}")
+          span.fa.fa-download
 
 div.size-column-cell(role="gridcell")
-  if model.type == 'file'
-    - options = {base: 2}
-    span #{filesize(model.size || 0, options)}
 
 div.type-column-cell(role="gridcell")
-  if model.type == 'folder'
-    span #{t('folder')}
-  else
-    span #{t(model.class)}
 
 div.date-column-cell(role="gridcell")
-  if model.lastModification
-    span #{moment(model.lastModification).calendar()}

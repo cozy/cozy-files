@@ -10,8 +10,16 @@
     display flex
     flex-direction column
 
+    .file-info
+        position : absolute
+        z-index  : 1000
+        display  : none
+    .ease
+        transition: top 0.2s ease
+
     [role="grid"]
         flex 1
+        position relative
 
     footer
         margin-top auto
@@ -151,12 +159,29 @@
                 margin 0
                 font-size 16px
 
+    // Popover displaying the file information onmouseover
+    .file-info
+        cursor: pointer
+        img
+            border-radius 5px
+            border        5px black solid
+            background-color black
+        div /* corresponds to the arrow of the popover */
+            position      : absolute
+            transition    : top 0.2s ease
+            left          : -4px
+            border-bottom : 5px solid transparent  /* left arrow slant */
+            border-top    : 5px solid transparent  /* right arrow slant */
+            border-right  : 5px solid #000000      /* bottom, add background color here */
+            font-size     : 0
+            line-height   : 0
+
+
     // List of elements.
     [role="grid"]
         list-style-type none
         padding 0
         margin-bottom 0
-
 
         // Specific column styles
         .type-column-cell
@@ -175,6 +200,25 @@
         // min-height 40px
         padding 0.425em 2rem
         border-bottom 1px solid #e5e5e5
+
+        // the pacman (arrow) in charge to indicate where is the line selected by the focus.
+        // &:before
+        //     pacmanSize=6px
+        //     pacmanColor=#6BD8FF
+        //     content : ''
+        //     width    : 0px
+        //     height   : 0px
+        //     position : relative
+        //     left     :-7px
+        //     top      : 11px
+        //     border-right               : pacmanSize solid transparent
+        //     border-top                 : pacmanSize solid pacmanColor
+        //     border-left                : pacmanSize solid pacmanColor
+        //     border-bottom              : pacmanSize solid pacmanColor
+        //     border-top-left-radius     : pacmanSize
+        //     border-top-right-radius    : pacmanSize
+        //     border-bottom-left-radius  : pacmanSize
+        //     border-bottom-right-radius : pacmanSize
 
         &:last-of-type
             border 0
@@ -219,7 +263,7 @@
             // Link to element.
             .caption
                 font-size 16px
-                font-family 'Source Sans Pro', sans-serif
+                font-family 'Source Sans Pro' , sans-serif
                 padding 0
                 margin-left 0px
                 margin-right 10px
@@ -228,7 +272,7 @@
                 span + span
                     margin-left 5px
 
-                .link-wrapper
+                a.link-wrapper
                     display     flex
                     align-items center
                     // related to the position absolute of .spinholder
@@ -267,18 +311,6 @@
                     &:hover span
                         color basecolor
 
-                // Shared icon on list view
-                .fa-globe
-                    z-index 10
-                    position absolute
-                    top 19px
-                    left -6px
-                    padding 0.1em
-                    background-color #fff
-                    border-radius 50%
-                    font-size 14px
-                    color blue - 20%
-
                 // Rename folder/file + create new folder
                 &.caption-edit
                     display flex
@@ -291,18 +323,54 @@
                 margin-bottom 0
                 margin-left 3px
 
+            // the input field to edit the name of the file/folder
+            .file-edit-name
+                min-width 150px
+                margin-left : -11px
+
             // Tags list.
             .tags
-                margin: 0
-                margin-top: 5px
-                padding: 0
-                border: none
-                font-size: 1.3rem
+                margin     : 0
+                margin-top : 5px
+                padding    : 0
+                border     : none
+                font-size  : 1.3rem
 
                 input
-                    padding-left: 5px
-                    width: 100px
+                    padding-left  :   5px
+                    width         : 120px
+                    border-radius :   4px
 
+                // typehead autocomplete
+                .tt-hint
+                  color: #999
+
+                .tt-menu
+                    width            : 360px
+                    max-height       : 250px
+                    overflow-y       : auto
+                    margin           :   7px 0
+                    padding          :   8px 0
+                    background-color : #fff
+                    border           :   1px solid #ccc
+                    border-radius    :   8px
+                    box-shadow       : 0 5px 10px rgba(0,0,0,.2)
+
+                .tt-suggestion
+                    padding     : 3px 20px
+                    font-size   : 15px
+                    line-height : 20px
+
+                .tt-suggestion:hover
+                    cursor           : pointer
+                    color            : #fff
+                    background-color : #0097cf
+
+                .tt-suggestion.tt-cursor
+                    color: #fff
+                    background-color: #0097cf
+
+                // style for the tags
                 li.tag
                     display inline-block
                     padding 0.2em 0.5em
@@ -314,18 +382,21 @@
                     user-select none
                     cursor pointer
 
+                    &:hover
+                        background-color #d5d5d5
+                        color #333
+                        .deleter
+                            color #FB8A8A
+
                     // delete icon
                     .deleter
                         cursor pointer
                         font-size (12/16)em
                         transform translate(0px, -1px)
+                        color : #D0D0D0
 
                         &:hover
-                            color #111
-
-                    &:hover
-                        background-color #d5d5d5
-                        color #333
+                            color red
 
                     &:focus
                     &:active
@@ -336,21 +407,21 @@
                 z-index -1
                 flex    1
 
-            // List of operations.
-            .operations
-                display none
-                flex none
-                margin 0
-                margin-top (4/16)em
-                padding 0
+            // Toggle operations icon's color on hover.
+            &:hover
+                .operations
+                    margin 0
+                    margin-top (4/16)em
+                    padding 0
+                    a
+                        padding-left 10px
+                        color #BBBBBB
+                .operations:hover
+                    a
+                        color blue
 
-                a
-                    padding-left 10px
-                    color blue
-
+                .operations:hover
                     span:hover
                     i:hover
-                        color blue - 20%
-
-                a:hover
-                    color blue - 20%
+                    a:hover
+                        color blue - 30%

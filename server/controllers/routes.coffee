@@ -19,12 +19,14 @@ module.exports =
         get: files.find
         put: files.modify
         delete: files.destroy
-        # delete: files.destroyBroken # for tests
     'files/:fileid/attach/:name':
         get: files.getAttachment
     'files/:fileid/download/:name':
         get: files.downloadAttachment
-
+    'files/:fileid/thumb':
+        get: files.photoThumb
+    'files/:fileid/screen/:name':
+        get: files.photoScreen
 
     'folderid':
         param: folders.fetch
@@ -96,6 +98,11 @@ module.exports =
         get: [public_auth.checkClearance('r', 'file'), files.getAttachment]
     'public/files/:fileid/download/:name':
         get: [public_auth.checkClearance('r', 'file'), files.downloadAttachment]
+    'public/files/:fileid/thumb':
+        get: [public_auth.checkClearance('r', 'file'), files.photoThumb]
+    'public/files/:fileid/screen/:name':
+        get: [public_auth.checkClearance('r', 'file'), files.photoScreen]
+
     'public/files/:fileid':
         get: [public_auth.checkClearance('r', 'file'), files.find]
 

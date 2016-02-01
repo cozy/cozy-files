@@ -23,6 +23,28 @@
     height           32px
     background-image url("../images/sprite-files-type.svg")
 
+    .thumb
+        display none
+        width            32px
+        height           32px
+
+
+    .fa-globe
+        display none
+        z-index 10
+        position absolute
+        top 19px
+        left -6px
+        padding 0.1em
+        background-color #fff
+        border-radius 50%
+        font-size 14px
+        color blue - 20%
+
+    &.shared
+        .fa-globe
+            display block
+
     &.type-folder
         background-position 0 0
 
@@ -59,9 +81,18 @@
     &.type-image
         background-position -352px 0
 
+    &.type-thumb
+        background-position -352px 0
+        .thumb
+            border             1px solid #727272
+            border-radius      3px
+            background-color   #727272
+            display block
+
+
+
+
 .edit-mode .icon-type
     // display the folder icon when creating a new folder
     display inline-block
-    // fix horizontal positioning
-    margin-left -1px
 

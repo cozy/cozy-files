@@ -2,6 +2,7 @@
 BaseView = require '../lib/base_view'
 FileView = require './file_view'
 LongList = require '../lib/long-list-rows'
+FileInfo = require './file_info'
 
 module.exports = class FilesView extends BaseView #ViewCollection
     template: require './templates/files'
@@ -21,18 +22,21 @@ module.exports = class FilesView extends BaseView #ViewCollection
         'click #down-lastModification' : 'onChangeOrder'
 
         # Event delegation.
-        'click a.file-tags': (e) -> @viewProxy 'onTagClicked', e
-        'click a.file-delete': (e) -> @viewProxy 'onDeleteClicked', e
-        'click a.file-share': (e) -> @viewProxy 'onShareClicked', e
-        'click a.file-edit': (e) -> @viewProxy 'onEditClicked', e
-        'click a.file-edit-save': (e) -> @viewProxy 'onSaveClicked', e
-        'click a.file-edit-cancel': (e) -> @viewProxy 'onCancelClicked', e
-        'click a.cancel-upload-button': (e) -> @viewProxy 'onCancelUploadClicked', e
-        'click a.file-move': (e) -> @viewProxy 'onMoveClicked', e
-        'click a.broken-button': (e) -> @viewProxy 'onDeleteClicked', e
-        'keydown input.file-edit-name': (e) -> @viewProxy 'onKeyPress', e
-        'click div.selector-wrapper button': (e) -> @viewProxy 'onSelectClicked', e
-        'click li.itemRow': (e) -> @viewProxy 'onLineClicked', e
+        'click a.link-wrapper'              : (e) -> @viewProxy 'onFileLinkClicked'    , e
+        'click a.file-tags'                 : (e) -> @viewProxy 'onTagClicked'         , e
+        'click a.file-delete'               : (e) -> @viewProxy 'onDeleteClicked'      , e
+        'click a.file-share'                : (e) -> @viewProxy 'onShareClicked'       , e
+        'click a.file-edit'                 : (e) -> @viewProxy 'onEditClicked'        , e
+        'click a.file-edit-save'            : (e) -> @viewProxy 'onSaveClicked'        , e
+        'click a.file-edit-cancel'          : (e) -> @viewProxy 'onCancelClicked'      , e
+        'click a.file-move'                 : (e) -> @viewProxy 'onMoveClicked'        , e
+        'click a.broken-button'             : (e) -> @viewProxy 'onDeleteClicked'      , e
+        'keydown input.file-edit-name'      : (e) -> @viewProxy 'onKeyPress'           , e
+        'click li.itemRow'                  : (e) -> @viewProxy 'onLineClicked'        , e
+        'click a.cancel-upload-button'      : (e) -> @viewProxy 'onCancelUploadClicked', e
+        'click div.selector-wrapper button' : (e) -> @viewProxy 'onSelectClicked'      , e
+        'mouseenter .icon-type': (e) -> @viewProxy 'onFileLinkOver'       , e
+        'mouseleave .icon-type': (e) -> @viewProxy 'onFileLinkOut'        , e
 
     initialize: (options) ->
         super options
@@ -106,11 +110,11 @@ module.exports = class FilesView extends BaseView #ViewCollection
             SAFE_ZONE_COEF  : 3
 
             # minimum duration between two refresh after scroll (ms)
-            THROTTLE        : 150
+            THROTTLE        : 60
 
             # max number of viewport height by seconds : beyond this speed the
             # refresh is delayed to the nex throttle
-            MAX_SPEED       : 2.5
+            MAX_SPEED       : 1.5
 
             # call back when a row of the buffer is moved and must be completly
             # redecorated
@@ -122,6 +126,9 @@ module.exports = class FilesView extends BaseView #ViewCollection
         # Initialize the list.
         @longList = new LongList viewPortElement, options
         @longList.initRows @collection.length
+
+        # init the file info popover
+        this.fileInfoCtrlr = new FileInfo(@$('.file-info')[0])
 
 
     # Handler called when the list must update.
@@ -164,10 +171,8 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if object.cid?
             cid = object.cid
         else
-            cid = @$(object.target).parents('li').data 'cid'
-
-            unless cid?
-                cid = @$(object.currentTarget).data 'cid'
+            cid  = @$(object.target).parents('li').data 'cid'
+            cid ?= @$(object.currentTarget).data 'cid'
 
         # Get the view.
         view = _.find @pool, (view) -> view.model.cid is cid
@@ -177,9 +182,27 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if view?
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
-            view[methodName].apply view, args
+            if methodName is 'onFileLinkOver'
+                @onFileLinkOver view, args
+                return
+            else if methodName is 'onFileLinkOut'
+                @onFileLinkOut view, args
+                return
+            else
+                view[methodName].apply view, args
+                return
         else
+            return
 
+
+    # display file info popover if relevant
+    onFileLinkOver: (targetView, event) ->
+        @fileInfoCtrlr.onEnterLink(targetView)
+
+
+    # hide file info popover if relevant
+    onFileLinkOut: (targetView, event) ->
+        @fileInfoCtrlr.onExitLink(targetView)
 
 
     updateNbFiles: ->
