@@ -36,9 +36,7 @@ module.exports = class TagsView2 extends BaseView
 
 
     onKeyDown: (e) =>
-
         val = @input.val()
-        # console.log e.keyCode, val
 
         # ESC
         if e.keyCode is 27
@@ -66,10 +64,9 @@ module.exports = class TagsView2 extends BaseView
             return
 
         # ENTER and no value
-        if val=='' and e.keyCode is 13
+        if val is '' and e.keyCode is 13
             time = new Date()
             if time - @lastSelectTime < 200
-                # console.log "close asked too quick !"
                 return
             @input.blur()
 
@@ -94,7 +91,7 @@ module.exports = class TagsView2 extends BaseView
         clearTimeout @saveLater
         @saveLater = setTimeout =>
             @model.save tags: @tags
-        , 1000 # 3s
+        , 1000
 
 
     deleteTag: (e) =>
@@ -123,7 +120,6 @@ module.exports = class TagsView2 extends BaseView
 
 
     hideInput: =>
-        console.log 'tags.hideInput'
         if !@input
             return
         @lastHideInputTime = new Date()
@@ -137,7 +133,6 @@ module.exports = class TagsView2 extends BaseView
         # if you click on the show button while the input has focus)
         time = new Date()
         if time - @lastHideInputTime < 200
-            # console.log "show asked too quick !"
             return
         if @input
             @input.typeahead('open')
@@ -148,7 +143,6 @@ module.exports = class TagsView2 extends BaseView
 
 
     showAutoComp: () =>
-        console.log 'showAutoComp'
         @possibleTags = _.difference(window.tags,@tags)
 
         ###*
@@ -159,7 +153,7 @@ module.exports = class TagsView2 extends BaseView
             items = @possibleTags
             lastQuery = query
 
-            if query == ''
+            if query is ''
                 cb items
                 return
 
@@ -197,7 +191,7 @@ module.exports = class TagsView2 extends BaseView
         ###
         suggestionTemplator = (item)=>
             val = @input.typeahead('val')
-            if val == ''
+            if val is ''
                 return html = "<p>#{item}</p>"
             queryWords = val.toLowerCase().trim().split(' ')
             itemLC = item.toLowerCase()
@@ -213,15 +207,15 @@ module.exports = class TagsView2 extends BaseView
                 # highlight
                 while match = wordRegexp.exec(itemLC)
                     # if the occurence is a contiguous string, keep it
-                    if match[0].length == word.length
+                    if match[0].length is word.length
                         fullWordMatch_N++
                         trackCharsToHighlight(itemLC, fullWordsToHighlight,match.index,word)
                     # else keep it only if so far there was no full match
-                    else if fullWordMatch_N == 0
+                    else if fullWordMatch_N is 0
                         trackCharsToHighlight(itemLC, fuzzyWordsToHighlight,match.index,word)
                 # if there were only fuzzy match, fusionnates the fuzzy
                 # chars to highllight with the full match chars.
-                if fullWordMatch_N == 0
+                if fullWordMatch_N is 0
                     for isToHighlight,n in fuzzyWordsToHighlight
                         if isToHighlight
                             fullWordsToHighlight[n] = true
@@ -246,7 +240,6 @@ module.exports = class TagsView2 extends BaseView
          * listen to selections (mouse click in the suggestions)
         ###
         @input.bind 'typeahead:select', (ev, suggestion) =>
-            # console.log('typeahead:select ' + suggestion)
             @lastSelectTime = new Date()
             @tags ?= []
             if suggestion in @tags
@@ -265,10 +258,8 @@ module.exports = class TagsView2 extends BaseView
          * a click (select) that triggered the close.
         ###
         @input.bind 'typeahead:close', (ev, suggestion) =>
-            # console.log('typeahead:close ' + suggestion)
             time = new Date()
             if time - @lastSelectTime < 200
-                # console.log "close asked too quick !"
                 @input.typeahead('open')
                 return
             # un-comment for debug so that the autocomplete suggestion doesn't
@@ -298,7 +289,7 @@ trackCharsToHighlight = (item, charsToHighlight,startIndex,word)->
     wordIndex = 1
     while charIndex < nChars
         char = item[charIndex]
-        if  char == word[wordIndex]
+        if  char is word[wordIndex]
             charsToHighlight[charIndex] = true
             if ++wordIndex >= word.length
                 return
@@ -310,7 +301,7 @@ highlightItem = (item,charsToHighlight) ->
     res = '<p>'
     previousWasToHighlight = undefined
     for isToHighlight, n in charsToHighlight
-        if isToHighlight == previousWasToHighlight
+        if isToHighlight is previousWasToHighlight
            res +=  item[n]
         else
             if previousWasToHighlight

@@ -12,14 +12,14 @@ module.exports = class Gallery
     show: (modelClicked) ->
 
         # 1/ preprare the div of a fake thumbnail (input for baguettebox.js)
-        gal = document.getElementById('gallery')
-        if gal == null
-            gal = document.createElement('div')
-            gal.id = 'gallery'
-            gal.style.display = 'none'
-            document.body.appendChild gal
+        gallery = document.getElementById('gallery')
+        if gallery is null
+            gallery = document.createElement('div')
+            gallery.id = 'gallery'
+            gallery.style.display = 'none'
+            document.body.appendChild gallery
         else
-            gal.innerHTML = ''
+            gallery.innerHTML = ''
 
         # 2/ populate the div with the links to the photo to display
         a_toSimulateClick = null
@@ -28,8 +28,8 @@ module.exports = class Gallery
                 return
             a      = document.createElement('a')
             a.href = model.getScreenUrl()
-            gal.appendChild a
-            if model == modelClicked
+            gallery.appendChild a
+            if model is modelClicked
                 a_toSimulateClick = a
 
         # 3/ run baguetteBox

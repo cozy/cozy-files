@@ -28,12 +28,10 @@ module.exports = class FileInfo
             @_isIntoPopover = false
             @stateMachine.E4_exitPopo()
         @a.addEventListener 'click', (event) =>
-            # if ctrl => open link in new window : nothing to do
-            if event.ctrlKey
-                return
-            # else show gallery
-            window.app.gallery.show(@_currentTarget.model)
-            event.preventDefault()
+            unless event.ctrlKey
+                # Show the gallery
+                window.app.gallery.show(@_currentTarget.model)
+                event.preventDefault()
 
         # C] EVENTS LISTENERS ON IMG
         @_previousPopoverHeight = POPOVER_DEFAULT_HEIGHT
@@ -102,54 +100,47 @@ module.exports = class FileInfo
                 ####
                 # A/ Callbacks on entering or leaving a state
                 onenterS2_WaitingToShow: (event,from,to) =>
-                    # console.log '  onenterS2_WaitingToShow',event, from, to
-                    if from == 'S1_Init'
+                    if from is 'S1_Init'
                         @_startShowTimer()
                         @_lastEnteredTarget.el.querySelector('.icon-type').style.cursor = 'wait'
                         @_columnGardian.start()
 
                 onleaveS2_WaitingToShow: (event,from,to) =>
-                    # console.log '  onleaveS2_WaitingToShow',event, from, to
                     @_lastEnteredTarget.el.querySelector('.icon-type').style.cursor = ''
 
                 onenterS3_Visible: (event,from,to) =>
-                    # console.log '  onenterS3_Visible', event, from, to
-                    if from == 'S2_WaitingToShow'
+                    if from is 'S2_WaitingToShow'
                         @_setNewTarget()
                         @_show()
-                    else if from == 'S4_WaitingToHide'
+                    else if from is 'S4_WaitingToHide'
                         window.clearTimeout(@hideTimeout)
                         if @_lastEnteredTarget != @_currentTarget
                             @_setNewTarget()
 
                 onenterS4_WaitingToHide: (event,from,to) =>
-                    # console.log '  onenterS4_WaitingToHide', event, from, to
                     @_startHideTimer()
 
                 onenterS1_Init: (event,from,to) =>
-                    # console.log '  onenterInit', event, from, to
-                    if from == 'S4_WaitingToHide'
+                    if from is 'S4_WaitingToHide'
                         @_hide()
                         @_columnGardian.stop()
-                    else if from == 'S2_WaitingToShow'
+                    else if from is 'S2_WaitingToShow'
                         window.clearTimeout(@showTimeout)
                         @_columnGardian.stop()
 
                 ####
                 # B/ Callbacks on entering an event to cancel it if required
                 onbeforeE1_enterLink: (event,from, to) =>
-                    # console.log '  onbeforeE1_enterLink', @_hasInfoToDisplay(@_lastEnteredTarget), from, to
                     if @_hasInfoToDisplay(@_lastEnteredTarget)
-                        if from == to == 'S3_Visible'
+                        if from is to and to is 'S3_Visible'
                             @_setNewTarget()
                         return true
                     else
-                        if from == 'S3_Visible'
+                        if from is 'S3_Visible'
                             @stateMachine.E9_linkNoData()
                         return false
 
                 onbeforeE2_exitLink: (event,from, to) =>
-                    # console.log '  onbeforeE2_exitLink', @_hasInfoToDisplay(@_lastEnteredTarget), from, to
                     if !@_hasInfoToDisplay(@_lastEnteredTarget)
                         return false
 
@@ -157,16 +148,12 @@ module.exports = class FileInfo
                     # exit col can occur after enterPopover because the widht of
                     # the column is over the popover... So exit the column is
                     # after the entre popover event.
-                    if @_isIntoPopover
-                        return false
-                    else
-                        return true
+                    return !@_isIntoPopover
 
     ###*
      * Moves the popover on its corresponding thumbnail target.
     ###
     _setNewTarget:() ->
-        # console.log '_setNewTarget'
         # update position (takes care if the thumbnail is too low in the window)
         target          = @_lastEnteredTarget
         @_currentTarget = target
@@ -190,13 +177,11 @@ module.exports = class FileInfo
 
 
     _show: () ->
-        # console.log '_show'
         @el.style.display = 'block'
         @el.classList.add('ease')
 
 
     _hide: () ->
-        # console.log '_hide'
         @el.style.display = 'none'
         @el.classList.remove('ease')
 
@@ -220,14 +205,10 @@ module.exports = class FileInfo
      *                    popover, false otherwise.
     ###
     _hasInfoToDisplay: (targetView)->
-        if targetView.model.attributes.binary?.thumb?
-            return true
-        else
-            return false
+        return targetView.model.attributes.binary?.thumb?
 
 
     onEnterLink: (targetView)->
-        # console.log 'onEnterLink', @stateMachine.current
         @_lastEnteredTarget =
             el    : targetView.el
             model : targetView.model
@@ -235,8 +216,7 @@ module.exports = class FileInfo
 
 
     onExitLink: (targetView)->
-        # console.log 'onExitLink', @stateMachine.current
-        if @stateMachine.current == 'S2_WaitingToShow'
+        if @stateMachine.current is 'S2_WaitingToShow'
             @stateMachine.E2_exitLink()
 
 
@@ -258,7 +238,6 @@ module.exports = class FileInfo
             # callback to track if the mouse remains or not in the column of the
             # thumbnails.
             @mouseMoved = (ev) =>
-                # console.log '_mouseMoved', ev.pageX, ev.pageY
                 isInCol = this.col_left < ev.pageX
                 isInCol = isInCol &&  ev.pageX < this.col_right
                 if this.isInCol != isInCol
@@ -270,8 +249,7 @@ module.exports = class FileInfo
 
         _computeColumnWidth: ()->
             thumb = @FIC_container.querySelector('.icon-type')
-            if thumb == null
-                return
+            return if thumb is null
             dimensions = thumb.getBoundingClientRect()
             this.col_left  = dimensions.left - 10
             this.col_right = this.col_left + dimensions.width + 20

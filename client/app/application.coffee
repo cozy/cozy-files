@@ -54,7 +54,7 @@ module.exports =
         window.app.gallery = new Gallery()
 
         # Makes this object immuable.
-        Object.freeze this if typeof Object.freeze is 'function'
+        Object.freeze? @
 
         document.body.addEventListener 'click', (event) =>
             if event.target.tagName is 'BODY'

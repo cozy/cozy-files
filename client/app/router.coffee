@@ -53,7 +53,7 @@ module.exports = class Router extends Backbone.Router
                 # sort by creation date the folder where phones photo are
                 # uploaded
                 path = folder.getRepository()
-                if  path == '/Appareils photo' or path == '/Photos from devices'
+                if  path in ['/Appareils photo', '/Photos from devices']
                     collection.type = 'lastModification'
                     collection.order = 'desc'
                     collection.sort()

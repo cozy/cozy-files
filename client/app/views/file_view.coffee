@@ -74,11 +74,9 @@ module.exports = class FileView extends BaseView
 
 
     reDecorate: ->
-        # console.log 'reDecorate, displaymode=', @el.displayMode, @isSearchMode
-
         # by default a line is not on edit mode. If the moved row was in edit
         # mode, just re-render the line not to be in edit mode.
-        if @el.displayMode == 'edit'
+        if @el.displayMode is 'edit'
             @render()
             return
 
@@ -117,7 +115,7 @@ module.exports = class FileView extends BaseView
         @elementIcon.attr 'class', "icon-type #{iconType}"
 
         # in case of a thumbnail, update src
-        if iconType == 'type-thumb'
+        if iconType is 'type-thumb'
             @thumb.src = @model.getThumbUrl()
 
         # show sharing status icon if necessary
@@ -253,11 +251,11 @@ module.exports = class FileView extends BaseView
         # change the template
         clearance = @model.getClearance()
         iconClass = 'icon-type'
-        if clearance == 'public' or (clearance && clearance.length > 0)
+        if clearance is 'public' or (clearance && clearance.length > 0)
             iconClass += ' shared'
         iconType = @model.getIconType()
         iconClass += ' ' + iconType
-        if iconType == 'type-thumb'
+        if iconType is 'type-thumb'
             thumbSrc = @model.getThumbUrl()
         else
             thumbSrc = ''
@@ -282,7 +280,7 @@ module.exports = class FileView extends BaseView
         # manage selection in the input :
         # we only want to select the part before the file extension
         # (the timeout otherwise there is a pb with the selection)
-        setTimeout () ->
+        setTimeout ->
             lastIndexOfDot = model.name.lastIndexOf '.'
             lastIndexOfDot = model.name.length if lastIndexOfDot is -1
 
@@ -407,7 +405,7 @@ module.exports = class FileView extends BaseView
     onFileLinkClicked: (e)=>
         # if an image, launch the gallerie viewer, otherwise let the browser
         # open the link in a new window
-        if @model.attributes.mime?.substr(0,5)=='image'
+        if @model.attributes.mime?.substr(0,5) is 'image'
             # ctrl + click on an img => open in new window, nothing to do
             if e.ctrlKey
                 return
@@ -433,9 +431,9 @@ module.exports = class FileView extends BaseView
         if @$el.hasClass('edit-mode')
             return
 
-        t = event.target
         for sel in forbiddenSelectors
-            if $(t).parents(sel).length != 0 or t.matches(sel)
+            if $(event.target).parents(sel).length != 0 or
+                    event.target.matches(sel)
                 return
 
         isShiftPressed = event.shiftKey or false
@@ -463,7 +461,7 @@ module.exports = class FileView extends BaseView
 
         else if e.keyCode is 38 # UP key : edit previous file
             prev = this.$el.prev()
-            if prev.length == 0
+            if prev.length is 0
                 return
             @onSaveClicked()
             prev.find('a.file-edit').click()
@@ -488,8 +486,6 @@ module.exports = class FileView extends BaseView
 
     # add and display progress bar.
     addProgressBar: ->
-        console.log 'addProgressBar', @progressbar
-
         @removeProgressBar() if @progressbar?
         @$el.addClass 'uploading'
         @$('.type-column-cell').hide()
@@ -503,14 +499,12 @@ module.exports = class FileView extends BaseView
 
     # remove progress bar.
     removeProgressBar: ->
-        console.log 'removeProgressBar', @progressbar
         @$('.type-column-cell').show()
         @$('.date-column-cell').show()
         @$el.removeClass 'uploading'
         if @progressbar?
             @progressbar.destroy()
             @progressbar = null
-            console.log  'destroyed?', @progressbar
         @cell.remove()
 
 

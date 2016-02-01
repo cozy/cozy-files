@@ -171,10 +171,8 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if object.cid?
             cid = object.cid
         else
-            cid = @$(object.target).parents('li').data 'cid'
-
-            unless cid?
-                cid = @$(object.currentTarget).data 'cid'
+            cid  = @$(object.target).parents('li').data 'cid'
+            cid ?= @$(object.currentTarget).data 'cid'
 
         # Get the view.
         view = _.find @pool, (view) -> view.model.cid is cid
@@ -184,10 +182,10 @@ module.exports = class FilesView extends BaseView #ViewCollection
         if view?
             # Call `methodName` on the related view.
             args = [].splice.call arguments, 1
-            if methodName == 'onFileLinkOver'
+            if methodName is 'onFileLinkOver'
                 @onFileLinkOver view, args
                 return
-            else if methodName == 'onFileLinkOut'
+            else if methodName is 'onFileLinkOut'
                 @onFileLinkOut view, args
                 return
             else

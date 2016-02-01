@@ -565,7 +565,11 @@ module.exports = class FolderView extends BaseView
             # download only file selected
             a = document.createElement 'a'
             a.href = selectedElements[0].getDownloadUrl()
-            a.dispatchEvent(new window.MouseEvent('click', 'view': window, 'bubbles': true, 'cancelable': true ))
+            options =
+                view: window
+                bubbles: true
+                cancelable: true
+            a.dispatchEvent(new window.MouseEvent 'click', options)
 
 
     ###
