@@ -107,11 +107,11 @@ module.exports.create = function(req, res, next) {
       var available, createFolder, fullPath, now, parent, parents;
       available = pathHelpers.checkIfPathAvailable(folder, folders);
       if (!available) {
-        return res.send({
+        return res.status(400).send({
           code: 'EEXISTS',
           error: true,
           msg: "This folder already exists"
-        }, 400);
+        });
       } else {
         fullPath = folder.path;
         parents = folders.filter(function(tested) {
@@ -364,7 +364,7 @@ module.exports.destroy = function(req, res, next) {
               if (err != null) {
                 log.raw(err);
               }
-              return res.send(204);
+              return res.sendStatus(204);
             });
           }
         });
@@ -686,7 +686,7 @@ module.exports.changeNotificationsState = function(req, res, next) {
           if (err != null) {
             return next(err);
           } else {
-            return res.send(201);
+            return res.sendStatus(201);
           }
         }));
       }

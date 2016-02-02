@@ -154,7 +154,7 @@ module.exports = {
     window.app = this;
     Backbone.history.start();
     window.app.gallery = new Gallery();
-    if (typeof Object.freeze === 'function') {
+    if (typeof Object.freeze === "function") {
       Object.freeze(this);
     }
     return document.body.addEventListener('click', (function(_this) {
@@ -4065,11 +4065,10 @@ module.exports = FileInfo = (function() {
     })(this));
     this.a.addEventListener('click', (function(_this) {
       return function(event) {
-        if (event.ctrlKey) {
-          return;
+        if (!event.ctrlKey) {
+          window.app.gallery.show(_this._currentTarget.model);
+          return event.preventDefault();
         }
-        window.app.gallery.show(_this._currentTarget.model);
-        return event.preventDefault();
       };
     })(this));
     this._previousPopoverHeight = POPOVER_DEFAULT_HEIGHT;
@@ -4203,7 +4202,7 @@ module.exports = FileInfo = (function() {
         onbeforeE1_enterLink: (function(_this) {
           return function(event, from, to) {
             if (_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
-              if ((from === to && to === 'S3_Visible')) {
+              if (from === to && to === 'S3_Visible') {
                 _this._setNewTarget();
               }
               return true;
@@ -4224,11 +4223,7 @@ module.exports = FileInfo = (function() {
         })(this),
         onbeforeE8_exitCol: (function(_this) {
           return function(event, from, to) {
-            if (_this._isIntoPopover) {
-              return false;
-            } else {
-              return true;
-            }
+            return !_this._isIntoPopover;
           };
         })(this)
       }
@@ -4300,11 +4295,7 @@ module.exports = FileInfo = (function() {
 
   FileInfo.prototype._hasInfoToDisplay = function(targetView) {
     var ref;
-    if (((ref = targetView.model.attributes.binary) != null ? ref.thumb : void 0) != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return ((ref = targetView.model.attributes.binary) != null ? ref.thumb : void 0) != null;
   };
 
   FileInfo.prototype.onEnterLink = function(targetView) {
@@ -4761,15 +4752,14 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onLineClicked = function(event) {
-    var forbiddenSelectors, i, isShiftPressed, len, sel, t;
+    var forbiddenSelectors, i, isShiftPressed, len, sel;
     forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
     if (this.$el.hasClass('edit-mode')) {
       return;
     }
-    t = event.target;
     for (i = 0, len = forbiddenSelectors.length; i < len; i++) {
       sel = forbiddenSelectors[i];
-      if ($(t).parents(sel).length !== 0 || t.matches(sel)) {
+      if ($(event.target).parents(sel).length !== 0 || event.target.matches(sel)) {
         return;
       }
     }
@@ -4826,7 +4816,6 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.addProgressBar = function() {
-    console.log('addProgressBar', this.progressbar);
     if (this.progressbar != null) {
       this.removeProgressBar();
     }
@@ -4842,14 +4831,12 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.removeProgressBar = function() {
-    console.log('removeProgressBar', this.progressbar);
     this.$('.type-column-cell').show();
     this.$('.date-column-cell').show();
     this.$el.removeClass('uploading');
     if (this.progressbar != null) {
       this.progressbar.destroy();
       this.progressbar = null;
-      console.log('destroyed?', this.progressbar);
     }
     return this.cell.remove();
   };
@@ -5737,7 +5724,7 @@ module.exports = FolderView = (function(superClass) {
   };
 
   FolderView.prototype.bulkDownload = function() {
-    var a, form, inputValue, selectedElements, selectedPaths, serializedSelection, url;
+    var a, form, inputValue, options, selectedElements, selectedPaths, serializedSelection, url;
     selectedElements = this.getSelectedElements();
     if (selectedElements.length > 1) {
       selectedPaths = selectedElements.map(function(element) {
@@ -5757,11 +5744,12 @@ module.exports = FolderView = (function(superClass) {
     } else {
       a = document.createElement('a');
       a.href = selectedElements[0].getDownloadUrl();
-      return a.dispatchEvent(new window.MouseEvent('click', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      }));
+      options = {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      };
+      return a.dispatchEvent(new window.MouseEvent('click', options));
     }
   };
 
@@ -5835,15 +5823,15 @@ module.exports = Gallery = (function() {
    */
 
   Gallery.prototype.show = function(modelClicked) {
-    var a_toSimulateClick, event, gal;
-    gal = document.getElementById('gallery');
-    if (gal === null) {
-      gal = document.createElement('div');
-      gal.id = 'gallery';
-      gal.style.display = 'none';
-      document.body.appendChild(gal);
+    var a_toSimulateClick, event, gallery;
+    gallery = document.getElementById('gallery');
+    if (gallery === null) {
+      gallery = document.createElement('div');
+      gallery.id = 'gallery';
+      gallery.style.display = 'none';
+      document.body.appendChild(gallery);
     } else {
-      gal.innerHTML = '';
+      gallery.innerHTML = '';
     }
     a_toSimulateClick = null;
     window.app.router.folderView.collection.forEach((function(_this) {
@@ -5854,7 +5842,7 @@ module.exports = Gallery = (function() {
         }
         a = document.createElement('a');
         a.href = model.getScreenUrl();
-        gal.appendChild(a);
+        gallery.appendChild(a);
         if (model === modelClicked) {
           return a_toSimulateClick = a;
         }
@@ -7053,7 +7041,6 @@ module.exports = TagsView2 = (function(superClass) {
   };
 
   TagsView2.prototype.hideInput = function() {
-    console.log('tags.hideInput');
     if (!this.input) {
       return;
     }
@@ -7080,7 +7067,6 @@ module.exports = TagsView2 = (function(superClass) {
 
   TagsView2.prototype.showAutoComp = function() {
     var substringMatcher, suggestionTemplator;
-    console.log('showAutoComp');
     this.possibleTags = _.difference(window.tags, this.tags);
 
     /**

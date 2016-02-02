@@ -154,7 +154,7 @@ module.exports = {
     window.app = this;
     Backbone.history.start();
     window.app.gallery = new Gallery();
-    if (typeof Object.freeze === 'function') {
+    if (typeof Object.freeze === "function") {
       Object.freeze(this);
     }
     return document.body.addEventListener('click', (function(_this) {
@@ -2450,7 +2450,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Kind",
+    "type": "Typ",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -2518,7 +2518,8 @@ module.exports = {
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
     "close": "Schließen"
-};
+}
+;
 });
 
 require.register("locales/en", function(exports, require, module) {
@@ -2605,7 +2606,7 @@ module.exports = {
   "no": "No",
   "ok": "Ok",
   "name": "Name",
-  "type": "Kind",
+  "type": "Type",
   "size": "Size",
   "date": "Last update",
   "download": "Download all",
@@ -2760,7 +2761,7 @@ module.exports = {
     "no": "No",
     "ok": "Ok",
     "name": "Nombre",
-    "type": "Kind",
+    "type": "Tipo",
     "size": "Tamaño",
     "date": "Última modificación",
     "download": "Descargar todos los archivos",
@@ -2828,7 +2829,8 @@ module.exports = {
     "move elements to": "Desplazar los elementos a",
     "elements successfully moved to": "Elementos desplazados con éxito a",
     "close": "Cerrar"
-};
+}
+;
 });
 
 require.register("locales/fr", function(exports, require, module) {
@@ -2914,7 +2916,7 @@ module.exports = {
     "no": "Non",
     "ok": "Ok",
     "name": "Nom",
-    "type": "Kind",
+    "type": "Type",
     "size": "Taille",
     "date": "Dernière modification",
     "download": "Télécharger tous les fichiers",
@@ -2982,7 +2984,8 @@ module.exports = {
     "move elements to": "Déplacer les éléments vers",
     "elements successfully moved to": "Eléments déplacés avec succès vers",
     "close": "Fermer"
-};
+}
+;
 });
 
 require.register("locales/ro", function(exports, require, module) {
@@ -3141,6 +3144,75 @@ module.exports = File = (function(superClass) {
 
   File.VALID_STATUSES = [null, 'uploading', 'uploaded', 'errored', 'conflict'];
 
+  File.prototype.mimeClasses = {
+    'application/octet-stream': 'type-file',
+    'application/x-binary': 'type-binary',
+    'text/plain': 'type-text',
+    'text/richtext': 'type-text',
+    'application/x-rtf': 'type-text',
+    'application/rtf': 'type-text',
+    'application/msword': 'type-text',
+    'application/x-iwork-pages-sffpages': 'type-text',
+    'application/mspowerpoint': 'type-presentation',
+    'application/vnd.ms-powerpoint': 'type-presentation',
+    'application/x-mspowerpoint': 'type-presentation',
+    'application/x-iwork-keynote-sffkey': 'type-presentation',
+    'application/excel': 'type-spreadsheet',
+    'application/x-excel': 'type-spreadsheet',
+    'aaplication/vnd.ms-excel': 'type-spreadsheet',
+    'application/x-msexcel': 'type-spreadsheet',
+    'application/x-iwork-numbers-sffnumbers': 'type-spreadsheet',
+    'application/pdf': 'type-pdf',
+    'text/html': 'type-code',
+    'text/asp': 'type-code',
+    'text/css': 'type-code',
+    'application/x-javascript': 'type-code',
+    'application/x-lisp': 'type-code',
+    'application/xml': 'type-code',
+    'text/xml': 'type-code',
+    'application/x-sh': 'type-code',
+    'text/x-script.python': 'type-code',
+    'application/x-bytecode.python': 'type-code',
+    'text/x-java-source': 'type-code',
+    'application/postscript': 'type-image',
+    'image/gif': 'type-image',
+    'image/jpg': 'type-image',
+    'image/jpeg': 'type-image',
+    'image/pjpeg': 'type-image',
+    'image/x-pict': 'type-image',
+    'image/pict': 'type-image',
+    'image/png': 'type-image',
+    'image/x-pcx': 'type-image',
+    'image/x-portable-pixmap': 'type-image',
+    'image/x-tiff': 'type-image',
+    'image/tiff': 'type-image',
+    'audio/aiff': 'type-audio',
+    'audio/x-aiff': 'type-audio',
+    'audio/midi': 'type-audio',
+    'audio/x-midi': 'type-audio',
+    'audio/x-mid': 'type-audio',
+    'audio/mpeg': 'type-audio',
+    'audio/x-mpeg': 'type-audio',
+    'audio/mpeg3': 'type-audio',
+    'audio/x-mpeg3': 'type-audio',
+    'audio/wav': 'type-audio',
+    'audio/x-wav': 'type-audio',
+    'video/avi': 'type-video',
+    'video/mpeg': 'type-video',
+    'video/mp4': 'type-video',
+    'application/zip': 'type-archive',
+    'multipart/x-zip': 'type-archive',
+    'multipart/x-zip': 'type-archive',
+    'application/x-bzip': 'type-archive',
+    'application/x-bzip2': 'type-archive',
+    'application/x-gzip': 'type-archive',
+    'application/x-compress': 'type-archive',
+    'application/x-compressed': 'type-archive',
+    'application/x-zip-compressed': 'type-archive',
+    'application/x-apple-diskimage': 'type-archive',
+    'multipart/x-gzip': 'type-archive'
+  };
+
   function File(options) {
     this.sync = bind(this.sync, this);
     var doctype, ref;
@@ -3167,6 +3239,10 @@ module.exports = File = (function(superClass) {
 
   File.prototype.isFile = function() {
     return this.get('type') === 'file';
+  };
+
+  File.prototype.isImage = function() {
+    return this.get('type') === 'file' && this.get('class') === 'image';
   };
 
   File.prototype.isSearch = function() {
@@ -3427,6 +3503,40 @@ module.exports = File = (function(superClass) {
     }
   };
 
+  File.prototype.getThumbUrl = function() {
+    if (this.attributes.binary && this.attributes.binary.thumb) {
+      return this.url("/thumb");
+    } else {
+      return '';
+    }
+  };
+
+  File.prototype.getScreenUrl = function() {
+    if (this.attributes.binary && this.attributes.binary.screen) {
+      return this.url("/screen/" + (encodeURIComponent(this.get('name'))));
+    } else {
+      return '';
+    }
+  };
+
+  File.prototype.getIconType = function() {
+    var iconType, mimeClass, mimeType;
+    if (this.isFolder()) {
+      return 'type-folder';
+    }
+    mimeType = this.get('mime');
+    mimeClass = this.mimeClasses[mimeType];
+    if ((mimeType != null) && (mimeClass != null)) {
+      iconType = mimeClass;
+    } else {
+      iconType = 'type-file';
+    }
+    if (this.attributes.binary && this.attributes.binary.thumb) {
+      iconType = 'type-thumb';
+    }
+    return iconType;
+  };
+
   File.prototype.validate = function(attrs) {
     var errors;
     errors = [];
@@ -3583,10 +3693,9 @@ module.exports = Router = (function(superClass) {
   };
 
   Router.prototype.main = function() {
-    var rootID, server_killer;
+    var rootID;
     rootID = app.root.get('id');
-    server_killer = require('./views/server_killer');
-    return server_killer.run();
+    return this._loadFolderView(rootID);
   };
 
   Router.prototype.folder = function(id) {
@@ -3956,11 +4065,10 @@ module.exports = FileInfo = (function() {
     })(this));
     this.a.addEventListener('click', (function(_this) {
       return function(event) {
-        if (event.ctrlKey) {
-          return;
+        if (!event.ctrlKey) {
+          window.app.gallery.show(_this._currentTarget.model);
+          return event.preventDefault();
         }
-        window.app.gallery.show(_this._currentTarget.model);
-        return event.preventDefault();
       };
     })(this));
     this._previousPopoverHeight = POPOVER_DEFAULT_HEIGHT;
@@ -4094,7 +4202,7 @@ module.exports = FileInfo = (function() {
         onbeforeE1_enterLink: (function(_this) {
           return function(event, from, to) {
             if (_this._hasInfoToDisplay(_this._lastEnteredTarget)) {
-              if ((from === to && to === 'S3_Visible')) {
+              if (from === to && to === 'S3_Visible') {
                 _this._setNewTarget();
               }
               return true;
@@ -4115,11 +4223,7 @@ module.exports = FileInfo = (function() {
         })(this),
         onbeforeE8_exitCol: (function(_this) {
           return function(event, from, to) {
-            if (_this._isIntoPopover) {
-              return false;
-            } else {
-              return true;
-            }
+            return !_this._isIntoPopover;
           };
         })(this)
       }
@@ -4132,7 +4236,7 @@ module.exports = FileInfo = (function() {
    */
 
   FileInfo.prototype._setNewTarget = function() {
-    var arrowTop, attr, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
+    var arrowTop, clientHeight, el, popoverBottom, popoverTop, scrollTop, target, topFileInfo;
     target = this._lastEnteredTarget;
     this._currentTarget = target;
     el = target.el;
@@ -4150,9 +4254,8 @@ module.exports = FileInfo = (function() {
       arrowTop = Math.min(arrowTop, this._previousPopoverHeight - 12);
       this.arrow.style.top = arrowTop + 'px';
     }
-    attr = target.model.attributes;
-    this.img.src = "files/photo/thumb/" + attr.id;
-    return this.a.href = "files/" + attr.id + "/attach/" + attr.name;
+    this.img.src = target.model.getThumbUrl();
+    return this.a.href = target.model.getAttachmentUrl();
   };
 
   FileInfo.prototype._show = function() {
@@ -4192,11 +4295,7 @@ module.exports = FileInfo = (function() {
 
   FileInfo.prototype._hasInfoToDisplay = function(targetView) {
     var ref;
-    if (((ref = targetView.model.attributes.binary) != null ? ref.thumb : void 0) != null) {
-      return true;
-    } else {
-      return false;
-    }
+    return ((ref = targetView.model.attributes.binary) != null ? ref.thumb : void 0) != null;
   };
 
   FileInfo.prototype.onEnterLink = function(targetView) {
@@ -4298,75 +4397,6 @@ module.exports = FileView = (function(superClass) {
 
   FileView.prototype.templateEdit = require('./templates/file_edit');
 
-  FileView.prototype.mimeClasses = {
-    'application/octet-stream': 'type-file',
-    'application/x-binary': 'type-binary',
-    'text/plain': 'type-text',
-    'text/richtext': 'type-text',
-    'application/x-rtf': 'type-text',
-    'application/rtf': 'type-text',
-    'application/msword': 'type-text',
-    'application/x-iwork-pages-sffpages': 'type-text',
-    'application/mspowerpoint': 'type-presentation',
-    'application/vnd.ms-powerpoint': 'type-presentation',
-    'application/x-mspowerpoint': 'type-presentation',
-    'application/x-iwork-keynote-sffkey': 'type-presentation',
-    'application/excel': 'type-spreadsheet',
-    'application/x-excel': 'type-spreadsheet',
-    'aaplication/vnd.ms-excel': 'type-spreadsheet',
-    'application/x-msexcel': 'type-spreadsheet',
-    'application/x-iwork-numbers-sffnumbers': 'type-spreadsheet',
-    'application/pdf': 'type-pdf',
-    'text/html': 'type-code',
-    'text/asp': 'type-code',
-    'text/css': 'type-code',
-    'application/x-javascript': 'type-code',
-    'application/x-lisp': 'type-code',
-    'application/xml': 'type-code',
-    'text/xml': 'type-code',
-    'application/x-sh': 'type-code',
-    'text/x-script.python': 'type-code',
-    'application/x-bytecode.python': 'type-code',
-    'text/x-java-source': 'type-code',
-    'application/postscript': 'type-image',
-    'image/gif': 'type-image',
-    'image/jpg': 'type-image',
-    'image/jpeg': 'type-image',
-    'image/pjpeg': 'type-image',
-    'image/x-pict': 'type-image',
-    'image/pict': 'type-image',
-    'image/png': 'type-image',
-    'image/x-pcx': 'type-image',
-    'image/x-portable-pixmap': 'type-image',
-    'image/x-tiff': 'type-image',
-    'image/tiff': 'type-image',
-    'audio/aiff': 'type-audio',
-    'audio/x-aiff': 'type-audio',
-    'audio/midi': 'type-audio',
-    'audio/x-midi': 'type-audio',
-    'audio/x-mid': 'type-audio',
-    'audio/mpeg': 'type-audio',
-    'audio/x-mpeg': 'type-audio',
-    'audio/mpeg3': 'type-audio',
-    'audio/x-mpeg3': 'type-audio',
-    'audio/wav': 'type-audio',
-    'audio/x-wav': 'type-audio',
-    'video/avi': 'type-video',
-    'video/mpeg': 'type-video',
-    'video/mp4': 'type-video',
-    'application/zip': 'type-archive',
-    'multipart/x-zip': 'type-archive',
-    'multipart/x-zip': 'type-archive',
-    'application/x-bzip': 'type-archive',
-    'application/x-bzip2': 'type-archive',
-    'application/x-gzip': 'type-archive',
-    'application/x-compress': 'type-archive',
-    'application/x-compressed': 'type-archive',
-    'application/x-zip-compressed': 'type-archive',
-    'application/x-apple-diskimage': 'type-archive',
-    'multipart/x-gzip': 'type-archive'
-  };
-
   FileView.prototype.getRenderData = function() {
     return _.extend(FileView.__super__.getRenderData.call(this), {
       isUploading: this.model.isUploading(),
@@ -4426,7 +4456,7 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.reDecorate = function() {
-    var iconType, lastModification, link, longLastModification, m, mimeClass, mimeType, renderData, size, type;
+    var iconType, lastModification, link, longLastModification, m, renderData, size, type;
     if (this.el.displayMode === 'edit') {
       this.render();
       return;
@@ -4438,7 +4468,11 @@ module.exports = FileView = (function(superClass) {
       size = '';
       type = 'folder';
     } else {
-      link = renderData.downloadUrl;
+      if (this.model.isImage()) {
+        link = renderData.attachmentUrl;
+      } else {
+        link = renderData.downloadUrl;
+      }
       size = renderData.model.size || 0;
       size = filesize(size, {
         base: 2
@@ -4448,27 +4482,10 @@ module.exports = FileView = (function(superClass) {
     if (this.isSearchMode) {
       this.filePath.html(this.model.attributes.path);
     }
-    if (this.model.isFolder()) {
-      iconType = 'type-folder';
-    } else {
-      mimeType = this.model.get('mime');
-      mimeClass = this.mimeClasses[mimeType];
-      if ((mimeType != null) && (mimeClass != null)) {
-        iconType = mimeClass;
-      } else {
-        iconType = 'type-file';
-      }
-      if (iconType === 'type-image') {
-        if (renderData.model.binary && renderData.model.binary.thumb) {
-          iconType = 'type-thumb';
-        }
-      }
-    }
+    iconType = this.model.getIconType();
     this.elementIcon.attr('class', "icon-type " + iconType);
     if (iconType === 'type-thumb') {
-      this.thumb.src = "files/photo/thumb/" + this.model.id;
-    } else {
-      this.thumb.src = '';
+      this.thumb.src = this.model.getThumbUrl();
     }
     if (this.model.isShared()) {
       this.elementIcon.addClass('shared');
@@ -4587,8 +4604,13 @@ module.exports = FileView = (function(superClass) {
     })(this));
   };
 
+
+  /**
+   * Triggers the input to rename the file/folder
+   */
+
   FileView.prototype.onEditClicked = function(name) {
-    var clearance, iconClass, input, lastIndexOfDot, model, range, thumbSrc, width;
+    var clearance, iconClass, iconType, input, input$, model, thumbSrc, width;
     this.el.displayMode = 'edit';
     this.$el.addClass('edit-mode');
     width = this.$('.caption').width() + 10;
@@ -4604,11 +4626,11 @@ module.exports = FileView = (function(superClass) {
     if (clearance === 'public' || (clearance && clearance.length > 0)) {
       iconClass += ' shared';
     }
-    if (model.binary && model.binary.thumb) {
-      iconClass += ' type-thumb';
-      thumbSrc = "files/photo/thumb/" + this.model.id;
+    iconType = this.model.getIconType();
+    iconClass += ' ' + iconType;
+    if (iconType === 'type-thumb') {
+      thumbSrc = this.model.getThumbUrl();
     } else {
-      iconClass += ' ' + this.mimeClasses[model.mime];
       thumbSrc = '';
     }
     this.$el.html(this.templateEdit({
@@ -4617,27 +4639,36 @@ module.exports = FileView = (function(superClass) {
       thumbSrc: thumbSrc,
       clearance: clearance
     }));
-    input = this.$('.file-edit-name')[0];
+    input$ = this.$('.file-edit-name');
+    input = input$[0];
     if (name === '') {
       input.placeholder = t('new folder');
     }
-    this.$('.file-edit-name').width(width);
-    this.$('.file-edit-name').focus();
-    lastIndexOfDot = model.name.lastIndexOf('.');
-    if (lastIndexOfDot === -1) {
-      lastIndexOfDot = model.name.length;
-    }
-    if (typeof input.selectionStart !== 'undefined') {
-      input.selectionStart = 0;
-      return input.selectionEnd = lastIndexOfDot;
-    } else if (document.selection && document.selection.createRange) {
-      input.select();
-      range = document.selection.createRange();
-      range.collapse(true);
-      range.moveStart('character', 0);
-      range.moveEnd('character', lastIndexOfDot);
-      return range.select();
-    }
+    input$.width(width);
+    input$.focus();
+    input$.focusout((function(_this) {
+      return function() {
+        return _this.onSaveClicked();
+      };
+    })(this));
+    return setTimeout(function() {
+      var lastIndexOfDot, range;
+      lastIndexOfDot = model.name.lastIndexOf('.');
+      if (lastIndexOfDot === -1) {
+        lastIndexOfDot = model.name.length;
+      }
+      if (typeof input.selectionStart !== 'undefined') {
+        input.selectionStart = 0;
+        return input.selectionEnd = lastIndexOfDot;
+      } else if (document.selection && document.selection.createRange) {
+        input.select();
+        range = document.selection.createRange();
+        range.collapse(true);
+        range.moveStart('character', 0);
+        range.moveEnd('character', lastIndexOfDot);
+        return range.select();
+      }
+    });
   };
 
   FileView.prototype.onShareClicked = function() {
@@ -4721,15 +4752,14 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.onLineClicked = function(event) {
-    var forbiddenSelectors, i, isShiftPressed, len, sel, t;
+    var forbiddenSelectors, i, isShiftPressed, len, sel;
     forbiddenSelectors = ['.operations', '.tags', '.link-wrapper', 'a.file-edit-save', 'a.file-edit-cancel', 'span.error', '.selector-wrapper'];
     if (this.$el.hasClass('edit-mode')) {
       return;
     }
-    t = event.target;
     for (i = 0, len = forbiddenSelectors.length; i < len; i++) {
       sel = forbiddenSelectors[i];
-      if ($(t).parents(sel).length !== 0 || t.matches(sel)) {
+      if ($(event.target).parents(sel).length !== 0 || event.target.matches(sel)) {
         return;
       }
     }
@@ -4738,11 +4768,31 @@ module.exports = FileView = (function(superClass) {
     return this.model.toggleViewSelected(isShiftPressed);
   };
 
+
+  /*
+   * called when the user edits the name of the file or folder
+   */
+
   FileView.prototype.onKeyPress = function(e) {
+    var next, prev;
     if (e.keyCode === 13) {
       return this.onSaveClicked();
     } else if (e.keyCode === 27) {
       return this.onCancelClicked();
+    } else if (e.keyCode === 40) {
+      next = this.$el.next();
+      if (next.length === 0) {
+        return;
+      }
+      this.onSaveClicked();
+      return next.find('a.file-edit').click();
+    } else if (e.keyCode === 38) {
+      prev = this.$el.prev();
+      if (prev.length === 0) {
+        return;
+      }
+      this.onSaveClicked();
+      return prev.find('a.file-edit').click();
     }
   };
 
@@ -4766,7 +4816,6 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.addProgressBar = function() {
-    console.log('addProgressBar', this.progressbar);
     if (this.progressbar != null) {
       this.removeProgressBar();
     }
@@ -4782,14 +4831,12 @@ module.exports = FileView = (function(superClass) {
   };
 
   FileView.prototype.removeProgressBar = function() {
-    console.log('removeProgressBar', this.progressbar);
     this.$('.type-column-cell').show();
     this.$('.date-column-cell').show();
     this.$el.removeClass('uploading');
     if (this.progressbar != null) {
       this.progressbar.destroy();
       this.progressbar = null;
-      console.log('destroyed?', this.progressbar);
     }
     return this.cell.remove();
   };
@@ -4814,22 +4861,6 @@ module.exports = FileView = (function(superClass) {
   FileView.prototype.hideLoading = function() {
     this.$('.link-wrapper .fa').removeClass('hidden');
     return this.$('.spinholder').hide();
-  };
-
-  FileView.prototype.getIconClass = function() {
-    var icon, mimeClass, mimeType;
-    if (this.model.isFolder()) {
-      icon = "type-folder";
-    } else {
-      mimeType = this.model.get('mime');
-      mimeClass = this.mimeClasses[mimeType];
-      if ((mimeType != null) && (mimeClass != null)) {
-        icon = mimeClass;
-      } else {
-        icon = "type-file";
-      }
-    }
-    return icon;
   };
 
   return FileView;
@@ -5693,7 +5724,7 @@ module.exports = FolderView = (function(superClass) {
   };
 
   FolderView.prototype.bulkDownload = function() {
-    var a, form, inputValue, selectedElements, selectedPaths, serializedSelection, url;
+    var a, form, inputValue, options, selectedElements, selectedPaths, serializedSelection, url;
     selectedElements = this.getSelectedElements();
     if (selectedElements.length > 1) {
       selectedPaths = selectedElements.map(function(element) {
@@ -5713,11 +5744,12 @@ module.exports = FolderView = (function(superClass) {
     } else {
       a = document.createElement('a');
       a.href = selectedElements[0].getDownloadUrl();
-      return a.dispatchEvent(new window.MouseEvent('click', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      }));
+      options = {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      };
+      return a.dispatchEvent(new window.MouseEvent('click', options));
     }
   };
 
@@ -5791,27 +5823,26 @@ module.exports = Gallery = (function() {
    */
 
   Gallery.prototype.show = function(modelClicked) {
-    var a_toSimulateClick, event, gal;
-    gal = document.getElementById('gallery');
-    if (gal === null) {
-      gal = document.createElement('div');
-      gal.id = 'gallery';
-      gal.style.display = 'none';
-      document.body.appendChild(gal);
+    var a_toSimulateClick, event, gallery;
+    gallery = document.getElementById('gallery');
+    if (gallery === null) {
+      gallery = document.createElement('div');
+      gallery.id = 'gallery';
+      gallery.style.display = 'none';
+      document.body.appendChild(gallery);
     } else {
-      gal.innerHTML = '';
+      gallery.innerHTML = '';
     }
     a_toSimulateClick = null;
     window.app.router.folderView.collection.forEach((function(_this) {
       return function(model) {
-        var a, attr;
-        attr = model.attributes;
-        if (attr.mime.substr(0, 5) !== 'image') {
+        var a;
+        if (!model.isImage()) {
           return;
         }
         a = document.createElement('a');
-        a.href = "files/photo/screen/" + attr.id + "/" + attr.name;
-        gal.appendChild(a);
+        a.href = model.getScreenUrl();
+        gallery.appendChild(a);
         if (model === modelClicked) {
           return a_toSimulateClick = a;
         }
@@ -6393,103 +6424,6 @@ module.exports = PublicFolderView = (function(superClass) {
   return PublicFolderView;
 
 })(FolderView);
-});
-
-;require.register("views/server_killer", function(exports, require, module) {
-
-/*
-FOR TESTS
- */
-var IMAGES_N;
-
-IMAGES_N = 20;
-
-module.exports = {
-  run: function() {
-    var body, chainDestroyReLoadBtnBtn, chainDestroyReLoads, chainUnReLoadBtn, chainUnReLoads, createImages, destroyReLoad, imgContainer, loadImages, recreateBtn, reloadBtn, unLoadImages, unReLoad, unReLoadBtn, unloadBtn;
-    body = $('body');
-    body.append("<button class=\"recreateBtn\">re-create images</button>\n<button class=\"unloadBtn\">unload images</button>\n<button class=\"reloadBtn\">reload images</button>\n<button class=\"unReLoadBtn\">unload and reload images</button>\n<button class=\"chainUnReLoadBtn\">chain unload and reload images</button>\n<button class=\"chainDestroyReLoadBtn\">chain destroy and reload images</button>\n<div></div>");
-    recreateBtn = body.find('.recreateBtn');
-    unloadBtn = body.find('.unloadBtn');
-    reloadBtn = body.find('.reloadBtn');
-    unReLoadBtn = body.find('.unReLoadBtn');
-    chainUnReLoadBtn = body.find('.chainUnReLoadBtn');
-    chainDestroyReLoadBtnBtn = body.find('.chainDestroyReLoadBtn');
-    imgContainer = body.find('div');
-    createImages = function(e) {
-      var i, img, j, ref, results;
-      imgContainer.html('');
-      results = [];
-      for (i = j = 1, ref = IMAGES_N; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
-        img = document.createElement('img');
-        results.push(imgContainer.append(img));
-      }
-      return results;
-    };
-    loadImages = function(e) {
-      var i, img, j, len, ref, results, salt;
-      salt = Math.random() + '_';
-      ref = imgContainer[0].children;
-      results = [];
-      for (i = j = 0, len = ref.length; j < len; i = ++j) {
-        img = ref[i];
-        results.push(img.src = '/files/photo/cancelation-test/' + salt + (i + 1));
-      }
-      return results;
-    };
-    unLoadImages = function(e) {
-      var img, j, len, ref, results;
-      ref = imgContainer[0].children;
-      results = [];
-      for (j = 0, len = ref.length; j < len; j++) {
-        img = ref[j];
-        results.push(img.src = '');
-      }
-      return results;
-    };
-    unReLoad = function(e) {
-      unLoadImages();
-      return loadImages();
-    };
-    destroyReLoad = function(e) {
-      createImages();
-      return loadImages();
-    };
-    chainUnReLoads = function(e) {
-      var intervalID, nPass;
-      nPass = 1;
-      return intervalID = window.setInterval(function() {
-        console.log(' chainUnReLoads', nPass);
-        unReLoad();
-        nPass += 1;
-        if (nPass > 10) {
-          console.log('STOP');
-          return window.clearInterval(intervalID);
-        }
-      }, 100);
-    };
-    chainDestroyReLoads = function(e) {
-      var intervalID, nPass;
-      nPass = 1;
-      return intervalID = window.setInterval(function() {
-        console.log(' chainDestroyReLoads', nPass);
-        destroyReLoad();
-        nPass += 1;
-        if (nPass > 10) {
-          console.log('STOP');
-          return window.clearInterval(intervalID);
-        }
-      }, 100);
-    };
-    recreateBtn.on('click', createImages);
-    unloadBtn.on('click', unLoadImages);
-    reloadBtn.on('click', loadImages);
-    unReLoadBtn.on('click', unReLoad);
-    chainUnReLoadBtn.on('click', chainUnReLoads);
-    chainDestroyReLoadBtnBtn.on('click', chainDestroyReLoads);
-    return createImages();
-  }
-};
 });
 
 ;require.register("views/templates/breadcrumbs_element", function(exports, require, module) {
@@ -7107,7 +7041,6 @@ module.exports = TagsView2 = (function(superClass) {
   };
 
   TagsView2.prototype.hideInput = function() {
-    console.log('tags.hideInput');
     if (!this.input) {
       return;
     }
@@ -7134,7 +7067,6 @@ module.exports = TagsView2 = (function(superClass) {
 
   TagsView2.prototype.showAutoComp = function() {
     var substringMatcher, suggestionTemplator;
-    console.log('showAutoComp');
     this.possibleTags = _.difference(window.tags, this.tags);
 
     /**

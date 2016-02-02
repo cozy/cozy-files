@@ -37,13 +37,6 @@ baseController = new cozydb.SimpleController({
   reqParamID: 'fileid'
 });
 
-module.exports.destroyBroken = function(req, res) {
-  return res.send(400, {
-    error: true,
-    msg: "Deletion error for tests"
-  });
-};
-
 module.exports.fetch = function(req, res, next, id) {
   return File.request('all', {
     key: id
@@ -219,11 +212,11 @@ module.exports.create = function(req, res, next) {
           log.error(delerr);
         }
         if (isStorageError(err)) {
-          return res.send({
+          return res.status(400).send({
             error: true,
             code: 'ESTORAGE',
             msg: "modal error size"
-          }, 400);
+          });
         } else {
           return next(err);
         }
@@ -308,11 +301,11 @@ module.exports.create = function(req, res, next) {
           });
         } else {
           upload = false;
-          return res.send({
+          return res.status(400).send({
             error: true,
             code: 'EEXISTS',
             msg: "This file already exists"
-          }, 400);
+          });
         }
       }
       data = {
@@ -510,6 +503,9 @@ module.exports.search = function(req, res, next) {
 
 module.exports.photoThumb = function(req, res, next) {
   var stream, which;
+  if (!res.connection || res.connection.destroyed) {
+    return;
+  }
   which = req.file.binary.thumb ? 'thumb' : 'file';
   stream = req.file.getBinary(which, function(err) {
     if (err) {
@@ -540,6 +536,9 @@ module.exports.photoThumb = function(req, res, next) {
 
 module.exports.photoScreen = function(req, res, next) {
   var stream, which;
+  if (!res.connection || res.connection.destroyed) {
+    return;
+  }
   which = req.file.binary.screen ? 'screen' : 'file';
   stream = req.file.getBinary(which, function(err) {
     if (err) {
