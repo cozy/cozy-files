@@ -11,7 +11,7 @@
     "type": "git",
     "url": "https://github.com/cozy/cozy-files.git"
   },
-  "main": "server.js",
+  "main": "build/server.js",
   "dependencies": {
     "americano": "0.4.4",
     "archiver": "0.10.1",
@@ -30,6 +30,7 @@
     "request-json": "0.5.5"
   },
   "devDependencies": {
+    "brunch": "1.8.5",
     "chai": "1.9.1",
     "coffee-script": "latest",
     "coffeelint": "1.14.2",
@@ -41,6 +42,9 @@
     "rimraf": "2.2.8"
   },
   "scripts": {
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && brunch b",
+    "build:server": "cake build",
     "lint": "coffeelint -f coffeelint.json --quiet -r server server.coffee",
     "test": "npm run test:server",
     "test:build": "env USE_JS=true npm run test:server",
