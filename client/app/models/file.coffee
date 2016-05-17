@@ -137,6 +137,16 @@ module.exports = class File extends Backbone.Model
     isShared : ->
         clearance = @get 'clearance'
         return clearance? and (clearance is 'public' or clearance.length > 0)
+    # should we try to display the file inline ?
+    # currentrly, we'll try to display multimedia files and PDF
+    isDisplayable: ->
+        type    = @get 'type'
+        subtype = @get 'class'
+        mime    = @get 'mime'
+        return type is 'file' and
+            ( subtype in ['image', 'music', 'video'] or
+                mime is 'application/pdf' )
+
 
     hasBinary: -> return @isFile() and @get('binary')?.file?.id?
     isBroken: -> return @isFile() and not @hasBinary() and not @get('uploading')
