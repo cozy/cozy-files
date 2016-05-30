@@ -4474,7 +4474,7 @@ module.exports = FileView = (function(superClass) {
     this.beforeRender();
     renderData = this.getRenderData();
     if (this.model.isFolder()) {
-      link = "#folders/" + renderData.model.id;
+      this.elementLink.attr('href', link = "#folders/" + renderData.model.id);
       size = '';
       type = 'folder';
     } else {
