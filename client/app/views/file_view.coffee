@@ -85,7 +85,7 @@ module.exports = class FileView extends BaseView
         # get data
         renderData = @getRenderData()
         if @model.isFolder()
-            link = "#folders/#{renderData.model.id}"
+            @elementLink.attr 'href', link = "#folders/#{renderData.model.id}"
             size = ''
             type = 'folder'
         else
