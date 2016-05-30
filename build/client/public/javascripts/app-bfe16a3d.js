@@ -3261,6 +3261,14 @@ module.exports = File = (function(superClass) {
     return (clearance != null) && (clearance === 'public' || clearance.length > 0);
   };
 
+  File.prototype.isDisplayable = function() {
+    var mime, subtype, type;
+    type = this.get('type');
+    subtype = this.get('class');
+    mime = this.get('mime');
+    return type === 'file' && ((subtype === 'image' || subtype === 'music' || subtype === 'video') || mime === 'application/pdf');
+  };
+
   File.prototype.hasBinary = function() {
     var ref, ref1;
     return this.isFile() && (((ref = this.get('binary')) != null ? (ref1 = ref.file) != null ? ref1.id : void 0 : void 0) != null);
@@ -4470,10 +4478,11 @@ module.exports = FileView = (function(superClass) {
       size = '';
       type = 'folder';
     } else {
-      if (this.model.isImage()) {
-        link = renderData.attachmentUrl;
+      if (this.model.isDisplayable()) {
+        this.elementLink.attr('href', renderData.attachmentUrl);
+        this.elementLink.attr('target', '_blank');
       } else {
-        link = renderData.downloadUrl;
+        this.elementLink.attr('href', link = renderData.downloadUrl);
       }
       size = renderData.model.size || 0;
       size = filesize(size, {
@@ -4494,7 +4503,6 @@ module.exports = FileView = (function(superClass) {
     } else {
       this.elementIcon.removeClass('shared');
     }
-    this.elementLink.attr('href', link);
     this.tags.refresh(this.model);
     this.elementName.html(renderData.model.name);
     this.elementSize.html(size);
