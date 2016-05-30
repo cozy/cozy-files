@@ -90,10 +90,10 @@ module.exports = class FileView extends BaseView
             type = 'folder'
         else
             if @model.isDisplayable()
-                @elementLink.attr 'href', renderData.attachmentUrl
+                link = renderData.attachmentUrl
                 @elementLink.attr 'target', '_blank'
             else
-                @elementLink.attr 'href', link = renderData.downloadUrl
+                link = renderData.downloadUrl
             size = renderData.model.size or 0
             size = filesize(size, base: 2)
             type = renderData.model.class
@@ -124,6 +124,9 @@ module.exports = class FileView extends BaseView
             @elementIcon.addClass 'shared'
         else
             @elementIcon.removeClass 'shared'
+
+        # update file link url
+        @elementLink.attr 'href', link
 
         # update tags
         @tags.refresh(@model)
