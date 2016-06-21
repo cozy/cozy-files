@@ -79,6 +79,7 @@ module.exports.create = (req, res, next) ->
         next new Error "Invalid arguments"
     else
         Folder.all (err, folders) ->
+            return next err if err
             available = pathHelpers.checkIfPathAvailable folder, folders
             if not available
                 res.status(400).send
