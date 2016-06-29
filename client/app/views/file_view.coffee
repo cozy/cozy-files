@@ -135,6 +135,7 @@ module.exports = class FileView extends BaseView
         @elementName.html renderData.model.name
         @elementSize.html size
         @elementType.html t(type)
+        @$('.caption')[0].dataset.fileType = type
 
         # update last modification
         lastModification = renderData.model.lastModification
