@@ -43,7 +43,7 @@ helpers =
         return win
     getFiles: (extensions, node) ->
         selector = extensions.map (f) ->
-            "[data-file-name$=" + f + "]"
+            "[data-file-url$=" + f + "]"
         .join ','
         if not node?
             node = document
