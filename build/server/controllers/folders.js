@@ -105,6 +105,9 @@ module.exports.create = function(req, res, next) {
   } else {
     return Folder.all(function(err, folders) {
       var available, createFolder, fullPath, now, parent, parents;
+      if (err) {
+        return next(err);
+      }
       available = pathHelpers.checkIfPathAvailable(folder, folders);
       if (!available) {
         return res.status(400).send({

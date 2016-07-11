@@ -2380,7 +2380,7 @@ module.exports = {
     "modal error empty name": "Name kann nicht leer sein",
     "modal error file invalid": "es scheint eine gültige Datei zu sein",
     "modal error firefox dragdrop folder": "Mozilla Firefox unterstütz kein Hochladen von Ordner. Wenn Sie dieses\nMerkmal benötigen, es ist verfügbar in Chromium, Chrome und Safari Browsern.",
-    "modal error existing folder": "Folder \"%{name}\" already exists. It is currently not possible to overwrite a folder.",
+    "modal error existing folder": "Der Ordner \"%{name}\" existiert bereits. Aktuell ist es nicht möglich einen Ordner zu Überschreiben.",
     "root folder name": "root",
     "confirmation reload": "Eine Opration ist noch aktiv, sind Sie sicher die Seite zu aktualisieren bzw. neu zu laden?",
     "breadcrumbs search title": "Suche",
@@ -2390,12 +2390,12 @@ module.exports = {
     "modal error folder create": "Ordner konnte nicht erstellt werden",
     "modal error folder exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
     "modal error zip empty folder": "Ein leerer Ordner kann nicht als ZIP herunter geladen werden.",
-    "upload running": "Upload is in progress. Do not close your browser",
+    "upload running": "Upload ist aktiv. Bitte schließen Sie den Browser nicht.",
     "modal are you sure": "Sind Sie sicher?",
     "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
     "modal delete ok": "Löschen",
     "modal cancel": "Abbrechen",
-    "modal delete error": "%{smart_count} deletion failed, corresponding file or folder has been re-integrated. |||| %{smart_count} deletions failed, corresponding files and folders have been re-integrated.",
+    "modal delete error": "%{smart_count} löschen Fehlgeschlagen, betriffene Datei oder Ordner wurde wieder integriert. |||| %{smart_count} löschen Fehlgeschlagen, betriffene Datei oder Ordner wurde wieder integriert",
     "modal error in use": "Name ist schon in Gebrauch",
     "modal error rename": "Name kann nicht geändert werden",
     "modal error no data": "Kein Name und kein Ordner zum hochladen",
@@ -2407,7 +2407,7 @@ module.exports = {
     "tooltip download": "Herunterladen",
     "tooltip share": "Teilen",
     "tooltip tag": "Tag",
-    "tooltip preview": "Preview",
+    "tooltip preview": "Vorschau",
     "and x files": "und %{smart_count} andere Datei ||||\nund %{smart_count} andere Dateien",
     "already exists": "Existiert bereit.",
     "failed to upload": "kann nicht zum Server gesendet werden.",
@@ -2450,7 +2450,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Typ",
+    "type": "Art",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -2493,11 +2493,11 @@ module.exports = {
     "forced public": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird.",
     "forced shared": "Aktuelle(r) Datei/Ordner wird geteilt, weil einer der übergeordneten Ordner geteilt wird. Hier ist die Lsite der Gäste mit Zugriff:",
     "confirm": "Bestätigen",
-    "share add": "Add",
+    "share add": "Hinzufügen",
     "share forgot add": "Scheint so als ob Sie vergessen haben die Schaltfläche Hinzufügen zu drücken",
     "share confirm save": "Die Änderungen die Sie an den Rechten vorgenommen haben, werden nicht gespeichert. Möchten Sie fortfahren?",
-    "mail not sent": "Mail not sent",
-    "postfix error": "Mail not sent.\nCan you check that all recipient adresses are correct\nand that your Cozy is well configured to send messages ?",
+    "mail not sent": "E-Mail nicht gesendet",
+    "postfix error": "E-Mail nicht gesendet.\nBitte prüfe ob alle Empfänger richtig sind und das Cozy so \nkonfuguriert, dass es E-Mails versenden kann.",
     "yes forgot": "Zurück",
     "no forgot": "es ist ok",
     "perm": "Kann",
@@ -2518,8 +2518,7 @@ module.exports = {
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
     "close": "Schließen"
-}
-;
+};
 });
 
 require.register("locales/en", function(exports, require, module) {
@@ -3824,7 +3823,7 @@ helpers = {
   getFiles: function(extensions, node) {
     var selector;
     selector = extensions.map(function(f) {
-      return "[data-file-name$=" + f + "]";
+      return "[data-file-url$=" + f + "]";
     }).join(',');
     if (node == null) {
       node = document;
@@ -4479,10 +4478,10 @@ module.exports = FileView = (function(superClass) {
       type = 'folder';
     } else {
       if (this.model.isDisplayable()) {
-        this.elementLink.attr('href', renderData.attachmentUrl);
+        link = renderData.attachmentUrl;
         this.elementLink.attr('target', '_blank');
       } else {
-        this.elementLink.attr('href', link = renderData.downloadUrl);
+        link = renderData.downloadUrl;
       }
       size = renderData.model.size || 0;
       size = filesize(size, {
@@ -4503,10 +4502,12 @@ module.exports = FileView = (function(superClass) {
     } else {
       this.elementIcon.removeClass('shared');
     }
+    this.elementLink.attr('href', link);
     this.tags.refresh(this.model);
     this.elementName.html(renderData.model.name);
     this.elementSize.html(size);
     this.elementType.html(t(type));
+    this.$('.caption')[0].dataset.fileType = type;
     lastModification = renderData.model.lastModification;
     if (lastModification) {
       m = moment(lastModification);
@@ -6474,8 +6475,8 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),downloadUrl = locals_.downloadUrl;
-buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"icon-type\"><img class=\"thumb\"/><span class=\"fa fa-globe\"></span></i><span class=\"file-name\"></span></a></div><ul class=\"tags\"></ul><div class=\"block-empty\"></div><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
+var locals_ = (locals || {}),attachmentUrl = locals_.attachmentUrl,downloadUrl = locals_.downloadUrl;
+buf.push("<div role=\"gridcell\" class=\"extensible-column\"><a style=\"display:none\" class=\"file-path\"></a><div class=\"caption-wrapper\"><div" + (jade.attr("data-file-url", "" + (attachmentUrl) + "", true, false)) + " class=\"caption\"><a class=\"link-wrapper btn-link\"><div style=\"display: none\" class=\"spinholder\"><img src=\"images/spinner.svg\"/></div><i class=\"icon-type\"><img class=\"thumb\"/><span class=\"fa fa-globe\"></span></i><span class=\"file-name\"></span></a></div><ul class=\"tags\"></ul><div class=\"block-empty\"></div><div class=\"operations\"><a" + (jade.attr("title", "" + (t('tooltip tag')) + "", true, false)) + " class=\"file-tags\"><span class=\"fa fa-tag\"></span></a><a" + (jade.attr("title", "" + (t('tooltip share')) + "", true, false)) + " class=\"file-share\"><span class=\"fa fa-share-alt\"></span></a><a" + (jade.attr("title", "" + (t('tooltip edit')) + "", true, false)) + " class=\"file-edit\"><span class=\"fa fa-pencil-square-o\"></span></a><a" + (jade.attr("href", "" + (downloadUrl) + "", true, false)) + " target=\"_blank\"" + (jade.attr("title", "" + (t('tooltip download')) + "", true, false)) + " class=\"file-download\"><span class=\"fa fa-download\"></span></a></div></div></div><div role=\"gridcell\" class=\"size-column-cell\"></div><div role=\"gridcell\" class=\"type-column-cell\"></div><div role=\"gridcell\" class=\"date-column-cell\"></div>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
