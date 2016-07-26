@@ -349,7 +349,8 @@ module.exports = class UploadQueue
                     errorList.push model
 
                 console.log "Upload Error", model.getRepository(), error
-            else
+            else if model.isUploaded()
+                # otherwise, user has canceled upload
                 success++
 
         status = if errorList.length then 'error'
