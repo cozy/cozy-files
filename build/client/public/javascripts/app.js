@@ -691,7 +691,7 @@ module.exports = UploadQueue = (function() {
           errorList.push(model);
         }
         return console.log("Upload Error", model.getRepository(), error);
-      } else {
+      } else if (model.isUploaded()) {
         return success++;
       }
     });
