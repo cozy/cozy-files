@@ -5,7 +5,7 @@
         #crumbs.pull-left
         div.pull-right
             if !isPublic || hasPublicKey
-              input#search-box.pull-right(type="search", value="#{query}", placeholder="Search")
+              input#search-box.pull-right(type="search", value="#{query}", placeholder="#{t('search placeholder')}")
 
             if model.type != 'search'
               #upload-buttons.pull-right
