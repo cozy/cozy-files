@@ -162,9 +162,9 @@ module.exports.modify = (req, res, next) ->
         return res.status(400).send error: true, msg: "Data required"
 
     previousName = folder.name
-    newName = if body.name? then body.name else previousName
+    newName = body.name or previousName
     previousPath = folder.path
-    newPath = if body.path? then body.path else previousPath
+    newPath = body.path or previousPath
 
     oldRealPath = "#{previousPath}/#{previousName}"
     newRealPath = "#{newPath}/#{newName}"
@@ -175,7 +175,10 @@ module.exports.modify = (req, res, next) ->
 
     updateIfIsSubFolder = (file, cb) ->
 
-        if file.path?.indexOf(oldRealPath) is 0
+        if not file.path?
+            cb null
+        else if file.path is oldRealPath or
+                file.path.indexOf("#{oldRealPath}/") is 0
             modifiedPath = file.path.replace oldRealPath, newRealPath
 
             # add new tags from parent, keeping the old ones
@@ -216,7 +219,8 @@ module.exports.modify = (req, res, next) ->
 
                     folder.index ["name"], (err) ->
                         log.raw err if err
-                        res.status(200).send success: 'File succesfuly modified'
+                        res.status(200).send
+                            success: 'File successfully modified'
 
     updateFoldersAndFiles = (folders)->
         # update all folders
