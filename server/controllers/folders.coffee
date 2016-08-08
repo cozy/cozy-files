@@ -174,10 +174,9 @@ module.exports.modify = (req, res, next) ->
     isPublic = req.body.public
 
     updateIfIsSubFolder = (file, cb) ->
-
         if not file.path?
             cb null
-        else if file.path is oldRealPath or
+        else if file.path is oldRealPath or \
                 file.path.indexOf("#{oldRealPath}/") is 0
             modifiedPath = file.path.replace oldRealPath, newRealPath
 
@@ -203,49 +202,44 @@ module.exports.modify = (req, res, next) ->
             public: isPublic
             tags: newTags
             lastModification: moment().toISOString()
-
         data.clearance = req.body.clearance if req.body.clearance
 
         # updateParentModifDate is called twice, because the parent can have
         # changed between the 2 calls (not a mistake).
         folder.updateParentModifDate (err) ->
             log.raw err if err
-
             folder.updateAttributes data, (err) ->
                 return next err if err
-
                 folder.updateParentModifDate (err) ->
                     log.raw err if err
-
+                    res.status(200).send success: 'File successfully modified'
                     folder.index ["name"], (err) ->
                         log.raw err if err
-                        res.status(200).send
-                            success: 'File successfully modified'
 
-    updateFoldersAndFiles = (folders)->
+    updateFoldersAndFiles = (folders, files) ->
         # update all folders
         async.each folders, updateIfIsSubFolder, (err) ->
             if err then next err
             else
-                # update all files
-                File.all (err, files) ->
+                async.each files, updateIfIsSubFolder, (err) ->
                     if err then next err
                     else
-                        async.each files, updateIfIsSubFolder, (err) ->
-                            if err then next err
-                            else
-                                updateTheFolder()
+                        updateTheFolder()
 
     Folder.byFullPath key: newRealPath, (err, sameFolders) ->
         return next err if err
-
         if sameFolders.length > 0 and \
                 sameFolders[0].id isnt req.body.id
             res.status(400).send error: true, msg: "The name already in use"
         else
-            Folder.all (err, folders) ->
+            params =
+                startkey: "#{oldRealPath}/"
+                endkey: "#{oldRealPath}0"   # 0 is the next character after /
+            Folder.byFullPath params, (err, folders) ->
                 return next err if err
-                updateFoldersAndFiles folders
+                File.byFullPath params, (err, files) ->
+                    return next err if err
+                    updateFoldersAndFiles folders, files
 
 
 # Prior to deleting target folder, it deletes its subfolders and the files
