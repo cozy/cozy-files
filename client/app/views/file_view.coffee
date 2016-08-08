@@ -314,6 +314,10 @@ module.exports = class FileView extends BaseView
         if name and name is @model.get('name')
             @onCancelClicked()
 
+        # Avoid saving twice the model when enter is pressed twice
+        else if @$('a.btn').hasClass('disabled')
+            # Do nothing
+
         # If the input is not empty, start the update process.
         else if name and name isnt ""
             @$el.removeClass 'edit-mode'
