@@ -148,6 +148,7 @@ module.exports = {
   "moving selected elements": "Moving selected elements",
   "move elements to": "Move elements to",
   "elements successfully moved to": "Elements successfully moved to",
-  "close": "Close"
+  "close": "Close",
+  "search placeholder": "Search"
 }
 ;

@@ -2672,7 +2672,8 @@ module.exports = {
   "moving selected elements": "Moving selected elements",
   "move elements to": "Move elements to",
   "elements successfully moved to": "Elements successfully moved to",
-  "close": "Close"
+  "close": "Close",
+  "search placeholder": "Search"
 }
 ;
 });
@@ -6558,7 +6559,7 @@ var locals_ = (locals || {}),isPublic = locals_.isPublic,hasPublicKey = locals_.
 buf.push("<div id=\"affixbar\" data-spy=\"affix\" data-offset-top=\"1\"><div class=\"container\"><header class=\"row\"><div class=\"col-lg-12\"><div id=\"crumbs\" class=\"pull-left\"></div><div class=\"pull-right\">");
 if ( !isPublic || hasPublicKey)
 {
-buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + " placeholder=\"Search\" class=\"pull-right\"/>");
+buf.push("<input id=\"search-box\" type=\"search\"" + (jade.attr("value", "" + (query) + "", true, false)) + (jade.attr("placeholder", "" + (t('search placeholder')) + "", true, false)) + " class=\"pull-right\"/>");
 }
 if ( model.type != 'search')
 {
