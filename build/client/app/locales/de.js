@@ -80,7 +80,7 @@ module.exports = {
     "no": "Nein",
     "ok": "Ok",
     "name": "Name",
-    "type": "Art",
+    "type": "Type",
     "size": "Größe",
     "date": "Letzte Aktualisierung",
     "download": "Alles Herunterladen",
@@ -147,5 +147,6 @@ module.exports = {
     "moving selected elements": "Ausgewählte Elemente verschieben",
     "move elements to": "Elemente verschieben zu",
     "elements successfully moved to": "Elemente erfolgreich verschoben zu",
-    "close": "Schließen"
+    "close": "Schließen",
+    "search placeholder": "Search"
 };
