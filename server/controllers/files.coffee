@@ -13,6 +13,7 @@ Folder = require '../models/folder'
 feed = require '../lib/feed'
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
+updateParents = require '../helpers/update_parents'
 {normalizePath, getFileClass} = require '../helpers/file'
 
 baseController = new cozydb.SimpleController
@@ -103,31 +104,12 @@ module.exports.downloadAttachment = (req, res, next) ->
 # given information and uploaded file metadata. Once done, it performs all
 # database operation and index the file name. Finally, it tags the file if the
 # parent folder is tagged.
-folderParent = {}
-timeout = null
 
 # Helpers functions of upload process
 
 # check if an error is storage related
 isStorageError = (err) ->
     return err.toString().indexOf('enough storage') isnt -1
-
-# After 1 minute of inactivity, update parents
-resetTimeout = ->
-    clearTimeout(timeout) if timeout?
-    timeout = setTimeout updateParents, 60 * 1000
-
-
-# Save in RAM lastModification date for parents
-# Update folder parent once all files are uploaded
-updateParents = ->
-    errors = {}
-    for name in Object.keys(folderParent)
-        folder = folderParent[name]
-        folder.save (err) ->
-            errors[folder.name] = err if err?
-    folderParent = {}
-
 
 confirmCanUpload = (data, req, next) ->
 
@@ -152,7 +134,7 @@ confirmCanUpload = (data, req, next) ->
 
 
 module.exports.create = (req, res, next) ->
-    clearTimeout(timeout) if timeout?
+    updateParents.resetTimeout()
 
     fields = {}
 
@@ -195,7 +177,7 @@ module.exports.create = (req, res, next) ->
             if upload
                 feed.publish 'usage.application', 'files'
                 setTimeout keepAlive, 60*1000
-                resetTimeout()
+                updateParents.resetTimeout()
 
         # if anything happens after the file is created
         # we need to destroy it
@@ -322,7 +304,7 @@ module.exports.create = (req, res, next) ->
                         parent = parents[0]
                         data.tags = parent.tags
                         parent.lastModification = now
-                        folderParent[parent.name] = parent
+                        updateParents.add parent
 
                     # Save file metadata
                     File.create data, (err, newFile) ->
