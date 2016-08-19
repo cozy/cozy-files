@@ -27,10 +27,11 @@ module.exports.resetTimeout = ->
 # Save in RAM lastModification date for parents
 # Update folder parent once all files are uploaded
 module.exports.flush = (callback) ->
-    async.forEachOfSeries parentFolders, (entry, fullpath, done) ->
+    folders = parentFolders
+    parentFolders = {}
+    async.forEachOfSeries folders, (entry, fullpath, done) ->
         data = lastModification: entry.lastModification
-        entry.folder.updateAttributes data, done
-    , (err) ->
-        log.error err if err?
-        parentFolders = {}
-        callback? err
+        entry.folder.updateAttributes data, (err) ->
+            log.error err if err?
+            done()
+    , callback
