@@ -11,10 +11,9 @@ client = helpers.getClient()
 
 describe "Folders management", ->
 
-    before helpers.startApp
-    before helpers.cleanDB
-    after helpers.stopApp
-    before helpers.cleanDB
+    before 'startApp', helpers.startApp
+    before 'cleanDB', helpers.cleanDB
+    after 'stopApp', helpers.stopApp
 
     describe "Create folder", ->
 

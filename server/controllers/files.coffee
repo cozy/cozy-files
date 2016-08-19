@@ -228,6 +228,11 @@ module.exports.create = (req, res, next) ->
                         # we ignore checksum storing errors
                         log.debug err if err
 
+                        # Retrieve binary metadata
+                        File.find file.id, (err, file) ->
+                            log.debug err if err
+                            res.status(200).send file
+
                         # index the file in cozy-indexer for fast search
                         file.index ["name"], (err) ->
                             # we ignore indexing errors
@@ -240,10 +245,6 @@ module.exports.create = (req, res, next) ->
                                 # we ignore notification errors
                                 log.debug err if err
 
-                                # Retrieve binary metadat
-                                File.find file.id, (err, file) ->
-                                    log.debug err if err
-                                    res.status(200).send file
 
         now = moment().toISOString()
 
@@ -303,8 +304,7 @@ module.exports.create = (req, res, next) ->
                     if parents.length > 0
                         parent = parents[0]
                         data.tags = parent.tags
-                        parent.lastModification = now
-                        updateParents.add parent
+                        updateParents.add parent, now
 
                     # Save file metadata
                     File.create data, (err, newFile) ->

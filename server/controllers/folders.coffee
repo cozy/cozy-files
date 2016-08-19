@@ -107,11 +107,8 @@ module.exports.create = (req, res, next) ->
                 # inherit its tags
                 if parents.length > 0
                     parent = parents[0]
-
                     folder.tags = parent.tags
-
-                    parent.lastModification = now
-                    updateParents.add parent
+                    updateParents.add parent, now
                     createFolder()
                 else
                     folder.tags = []

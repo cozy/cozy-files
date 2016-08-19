@@ -4,13 +4,17 @@ log = require('printit')
 
 # To avoid flooding CouchDB when doing a lot of updates in a folder,
 # we bulk the parent last modification update and do it asynchronously.
-parentFolders = []
+parentFolders = {}
 timeout = null
 
 
 # Keep a reference to a parent folder
-module.exports.add = (folder) ->
-    parentFolders.push folder
+module.exports.add = (folder, lastModification) ->
+    folder.lastModification = lastModification
+    fullpath = "#{folder.path}/#{folder.name}"
+    parentFolders[fullpath] =
+        folder: folder
+        lastModification: lastModification
     module.exports.resetTimeout()
 
 
@@ -23,9 +27,10 @@ module.exports.resetTimeout = ->
 # Save in RAM lastModification date for parents
 # Update folder parent once all files are uploaded
 module.exports.flush = (callback) ->
-    async.eachSeries parentFolders, (folder, done) ->
-        folder.save done
+    async.forEachOfSeries parentFolders, (entry, fullpath, done) ->
+        data = lastModification: entry.lastModification
+        entry.folder.updateAttributes data, done
     , (err) ->
         log.error err if err?
-        parentFolders = []
+        parentFolders = {}
         callback? err
