@@ -216,9 +216,9 @@ module.exports.modify = function(req, res, next) {
     });
   }
   previousName = folder.name;
-  newName = body.name != null ? body.name : previousName;
+  newName = body.name || previousName;
   previousPath = folder.path;
-  newPath = body.path != null ? body.path : previousPath;
+  newPath = body.path || previousPath;
   oldRealPath = previousPath + "/" + previousName;
   newRealPath = newPath + "/" + newName;
   newTags = req.body.tags || [];
@@ -227,8 +227,10 @@ module.exports.modify = function(req, res, next) {
   });
   isPublic = req.body["public"];
   updateIfIsSubFolder = function(file, cb) {
-    var data, i, len, modifiedPath, oldTags, ref, tag, tags;
-    if (((ref = file.path) != null ? ref.indexOf(oldRealPath) : void 0) === 0) {
+    var data, i, len, modifiedPath, oldTags, tag, tags;
+    if (file.path == null) {
+      return cb(null);
+    } else if (file.path === oldRealPath || file.path.indexOf(oldRealPath + "/") === 0) {
       modifiedPath = file.path.replace(oldRealPath, newRealPath);
       oldTags = file.tags;
       tags = [].concat(oldTags);
@@ -271,34 +273,28 @@ module.exports.modify = function(req, res, next) {
           if (err) {
             log.raw(err);
           }
+          res.status(200).send({
+            success: 'File successfully modified'
+          });
           return folder.index(["name"], function(err) {
             if (err) {
-              log.raw(err);
+              return log.raw(err);
             }
-            return res.status(200).send({
-              success: 'File succesfuly modified'
-            });
           });
         });
       });
     });
   };
-  updateFoldersAndFiles = function(folders) {
+  updateFoldersAndFiles = function(folders, files) {
     return async.each(folders, updateIfIsSubFolder, function(err) {
       if (err) {
         return next(err);
       } else {
-        return File.all(function(err, files) {
+        return async.each(files, updateIfIsSubFolder, function(err) {
           if (err) {
             return next(err);
           } else {
-            return async.each(files, updateIfIsSubFolder, function(err) {
-              if (err) {
-                return next(err);
-              } else {
-                return updateTheFolder();
-              }
-            });
+            return updateTheFolder();
           }
         });
       }
@@ -307,6 +303,7 @@ module.exports.modify = function(req, res, next) {
   return Folder.byFullPath({
     key: newRealPath
   }, function(err, sameFolders) {
+    var params;
     if (err) {
       return next(err);
     }
@@ -316,11 +313,20 @@ module.exports.modify = function(req, res, next) {
         msg: "The name already in use"
       });
     } else {
-      return Folder.all(function(err, folders) {
+      params = {
+        startkey: oldRealPath + "/",
+        endkey: oldRealPath + "0"
+      };
+      return Folder.byFullPath(params, function(err, folders) {
         if (err) {
           return next(err);
         }
-        return updateFoldersAndFiles(folders);
+        return File.byFullPath(params, function(err, files) {
+          if (err) {
+            return next(err);
+          }
+          return updateFoldersAndFiles(folders, files);
+        });
       });
     }
   });

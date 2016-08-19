@@ -133,20 +133,24 @@ Folder.prototype.getInheritedClearance = function(callback) {
 };
 
 Folder.prototype.updateParentModifDate = function(callback) {
-  return Folder.byFullPath({
-    key: this.path
-  }, function(err, parents) {
-    var parent;
-    if (err) {
-      return callback(err);
-    } else if (parents.length > 0) {
-      parent = parents[0];
-      parent.lastModification = moment().toISOString();
-      return parent.save(callback);
-    } else {
-      return callback();
-    }
-  });
+  if (this.path === '') {
+    return callback();
+  } else {
+    return Folder.byFullPath({
+      key: this.path
+    }, function(err, parents) {
+      var parent;
+      if (err) {
+        return callback(err);
+      } else if (parents.length > 0) {
+        parent = parents[0];
+        parent.lastModification = moment().toISOString();
+        return parent.save(callback);
+      } else {
+        return callback();
+      }
+    });
+  }
 };
 
 if (process.env.NODE_ENV === 'test') {

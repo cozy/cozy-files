@@ -4742,6 +4742,8 @@ module.exports = FileView = (function(superClass) {
     name = name != null ? name.trim() : void 0;
     if (name && name === this.model.get('name')) {
       return this.onCancelClicked();
+    } else if (this.$('a.btn').hasClass('disabled')) {
+
     } else if (name && name !== "") {
       this.$el.removeClass('edit-mode');
       this.showLoading();
