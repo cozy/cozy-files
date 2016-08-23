@@ -11,10 +11,9 @@ client = helpers.getClient()
 
 describe "Folders management", ->
 
-    before helpers.startApp
-    before helpers.cleanDB
-    after helpers.stopApp
-    before helpers.cleanDB
+    before 'startApp', helpers.startApp
+    before 'cleanDB', helpers.cleanDB
+    after 'stopApp', helpers.stopApp
 
     describe "Create folder", ->
 
@@ -65,7 +64,7 @@ describe "Folders management", ->
             it "Then 400 should be returned as response code", ->
                 @res.statusCode.should.be.equal 400
 
-    describe "Get folder", =>
+    describe "Get folder", ->
 
         it "When I send a request to create a folder", (done) ->
             folder =
@@ -95,7 +94,7 @@ describe "Folders management", ->
 
         it "And root folder lastModification should be updated", (done) ->
             @timeout(2 * 60 * 1000)
-            setTimeout () =>
+            setTimeout =>
                 client.get "folders/folders", (err, res, folders) =>
                     folder = folders.pop()
                     while folders.length > 0 and folder.name isnt 'root'
@@ -106,7 +105,7 @@ describe "Folders management", ->
             , 1.5 * 60 * 1000
 
 
-    describe "Rename folder", =>
+    describe "Rename folder", ->
 
         it "When I send a request to create a folder", (done) ->
             folder =
@@ -161,7 +160,7 @@ describe "Folders management", ->
                 done()
 
 
-    describe "Find folders in a specific folder", =>
+    describe "Find folders in a specific folder", ->
 
         it "When I send a request to get the root folder", (done) ->
             client.get "folders/folders", (err, res, folders) =>
@@ -186,7 +185,7 @@ describe "Folders management", ->
             @body.length.should.be.equal 3
 
 
-    describe "Change folder path", =>
+    describe "Change folder path", ->
 
         it "When I send a request to create folders", (done) ->
             @now = moment()
@@ -239,7 +238,7 @@ describe "Folders management", ->
             @body.path.should.be.equal "/test_folder_3"
 
         it "And subfolder path should be updated", (done) ->
-            client.get "folders/#{@idSubfolder}", (err, res, body) =>
+            client.get "folders/#{@idSubfolder}", (err, res, body) ->
                 body.path.should.be.equal "/test_folder_3/test_folder_2"
                 done()
 
@@ -254,7 +253,7 @@ describe "Folders management", ->
                 done()
 
 
-    describe "Find file in a specific folder", =>
+    describe "Find file in a specific folder", ->
 
         it "When I send a request to create a folder1", (done) ->
             folder =
@@ -290,12 +289,12 @@ describe "Folders management", ->
             @body.length.should.be.equal 1
 
 
-    describe "Download folder in zip format", =>
+    describe "Download folder in zip format", ->
         archivePath = path.join '.', 'test-archive.zip'
         archiveDest = path.join '.', 'test-archive'
 
-        before (done) =>
-            rimraf archivePath, =>
+        before (done) ->
+            rimraf archivePath, ->
                 rimraf archiveDest, done
 
         it "When I send a request to create folders", (done) ->
@@ -307,7 +306,7 @@ describe "Folders management", ->
                 folder =
                     name: "subfolder"
                     path: "/folder"
-                client.post "folders/", folder, (err, res, body) =>
+                client.post "folders/", folder, (err, res, body) ->
                     done()
 
         it "And I put files in this folders", (done) ->
@@ -315,12 +314,12 @@ describe "Folders management", ->
                 name: "test"
                 path: "/folder"
             filePath = './test/fixtures/files/test.txt'
-            client.sendFile 'files/', filePath, file, (err, res, body) =>
+            client.sendFile 'files/', filePath, file, (err, res, body) ->
                 file =
                     name: "test2"
                     path: "/folder/subfolder"
                 filePath = './test/fixtures/files/test.txt'
-                client.sendFile 'files/', filePath, file, (err, res, body) =>
+                client.sendFile 'files/', filePath, file, (err, res, body) ->
                     should.not.exist err
                     done()
 
@@ -337,8 +336,8 @@ describe "Folders management", ->
                 # Timeout is required to ensure the end of the upload. It looks
                 # like the files app send a responsed while the uploading is
                 # not fully finished.
-                setTimeout =>
-                    decompress.run (err, files) =>
+                setTimeout ->
+                    decompress.run (err, files) ->
                         should.not.exist err
 
                         isExist = fs.existsSync path.join archiveDest, 'test'
@@ -357,7 +356,7 @@ describe "Folders management", ->
             @res.statusCode.should.be.equal 200
 
 
-    describe "Delete folder", =>
+    describe "Delete folder", ->
 
         it "When I send a request to create a root folder", (done) ->
             folder =
@@ -393,7 +392,7 @@ describe "Folders management", ->
                 done()
 
 
-           it "And I send a request to remove a subfolder", (done) ->
+        it "And I send a request to remove a subfolder", (done) ->
             @now = moment()
             client.del "folders/#{@testSubId}/", (err, res, body) =>
                 @err = err
@@ -413,7 +412,7 @@ describe "Folders management", ->
                 done()
 
 
-           it "When I send a request to remove the root folder", (done) ->
+        it "When I send a request to remove the root folder", (done) ->
             client.del "folders/#{@rootId}/", (err, res, body) =>
                 @err = err
                 @res = res
@@ -442,28 +441,29 @@ describe "Folders management", ->
                 done()
 
 
-    describe "Change last modification date on file operations", =>
+    describe "Change last modification date on file operations", ->
 
         it "When I send a request to create a folder", (done) ->
 
             folder =
                 name: "rootfile"
                 path: ""
-            client.post "folders/", folder, (err, res, body) =>
+            client.post "folders/", folder, (err, res, body) ->
                 done()
 
         it "And I send a request to create a file in that folder", (done) ->
+            fixture = './test/fixtures/files/test.txt'
             file =
                 name: "test"
                 path: "/rootfile"
             @now = moment()
-            client.sendFile 'files/', './test/fixtures/files/test.txt', file, (err, res, body) =>
+            client.sendFile 'files/', fixture, file, (err, res, body) =>
                 @id = (JSON.parse body).id
                 done()
 
         it "Then root folder lastModification should be updated", (done) ->
             @timeout 2 * 60 * 1000
-            setTimeout () =>
+            setTimeout =>
                 client.get "folders/folders", (err, res, folders) =>
                     folder = folders.pop()
                     while folders.length > 0 and  folder.name isnt 'rootfile'
@@ -472,7 +472,7 @@ describe "Folders management", ->
                     lastModification = moment folder.lastModification
                     (lastModification > @now).should.be.ok
                     done()
-            , 1.5 * 60 * 1000
+            , 1.2 * 60 * 1000
 
         it "And I send a request to rename a file in that folder", (done) ->
             file =
@@ -499,7 +499,7 @@ describe "Folders management", ->
                 name: "new_test3"
                 path: "/rootfile"
             @now = moment()
-            client.del "files/#{@id}", (err, res, body) =>
+            client.del "files/#{@id}", (err, res, body) ->
                 done()
 
         it "Then root folder lastModification should be updated", (done) ->

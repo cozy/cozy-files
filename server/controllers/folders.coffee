@@ -8,6 +8,7 @@ log = require('printit')
 
 sharing = require '../helpers/sharing'
 pathHelpers = require '../helpers/path'
+updateParents = require '../helpers/update_parents'
 {folderContentComparatorFactory} = require '../helpers/file'
 Folder = require '../models/folder'
 File = require '../models/file'
@@ -68,10 +69,8 @@ normalizePath = (path) ->
 # * Tag folder with parent folder tags
 # * Create Folder and index its name
 # * Send notification if required
-folderParent = {}
-timeout = null
 module.exports.create = (req, res, next) ->
-    clearTimeout(timeout) if timeout?
+    updateParents.resetTimeout()
     folder = req.body
     folder.path = normalizePath folder.path
 
@@ -97,7 +96,7 @@ module.exports.create = (req, res, next) ->
                     folder.lastModification = now
 
                     Folder.createNewFolder folder, (err, newFolder) ->
-                        resetTimeout()
+                        updateParents.resetTimeout()
                         return next err if err
                         who = req.guestEmail or 'owner'
                         sharing.notifyChanges who, newFolder, (err) ->
@@ -108,29 +107,12 @@ module.exports.create = (req, res, next) ->
                 # inherit its tags
                 if parents.length > 0
                     parent = parents[0]
-
                     folder.tags = parent.tags
-
-                    parent.lastModification = now
-                    folderParent[parent.name] = parent
+                    updateParents.add parent, now
                     createFolder()
                 else
                     folder.tags = []
                     createFolder()
-
-# After 1 minute of inactivity, update parents
-resetTimeout = ->
-    clearTimeout(timeout) if timeout?
-    timeout = setTimeout updateParents, 60 * 1000
-
-
-# Save in RAM lastModification date for parents
-# Update folder parent once all files are uploaded
-updateParents = ->
-    for name, folder of folderParent
-        folder.save (err) ->
-            log.error err if err?
-    folderParent = {}
 
 module.exports.find = (req, res, next) ->
     Folder.injectInheritedClearance [req.folder], (err, folders) ->
@@ -217,14 +199,15 @@ module.exports.modify = (req, res, next) ->
                         log.raw err if err
 
     updateFoldersAndFiles = (folders, files) ->
-        # update all folders
-        async.each folders, updateIfIsSubFolder, (err) ->
-            if err then next err
-            else
-                async.each files, updateIfIsSubFolder, (err) ->
-                    if err then next err
-                    else
-                        updateTheFolder()
+        updateParents.flush ->
+            # update all folders
+            async.each folders, updateIfIsSubFolder, (err) ->
+                if err then next err
+                else
+                    async.each files, updateIfIsSubFolder, (err) ->
+                        if err then next err
+                        else
+                            updateTheFolder()
 
     Folder.byFullPath key: newRealPath, (err, sameFolders) ->
         return next err if err
