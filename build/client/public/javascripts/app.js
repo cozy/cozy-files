@@ -5326,7 +5326,7 @@ module.exports = FolderView = (function(superClass) {
 
   FolderView.prototype.destroy = function() {
     this.collection.forEach(function(element) {
-      return element.isSelected = false;
+      return element.viewSelected = false;
     });
     this.breadcrumbsView.destroy();
     this.breadcrumbsView = null;
@@ -5739,6 +5739,7 @@ module.exports = FolderView = (function(superClass) {
           window.pendingOperations.deletion += selectedElements.length;
           for (i = 0, len = selectedElements.length; i < len; i++) {
             model = selectedElements[i];
+            model.viewSelected = false;
             _this.baseCollection.remove(model);
           }
           return async.filter(selectedElements, function(model, next) {
@@ -6125,6 +6126,7 @@ module.exports = ModalBulkMoveView = (function(superClass) {
     window.pendingOperations.move++;
     return async.eachSeries(this.collection, function(model, cb) {
       var id, type;
+      model.viewSelected = false;
       id = model.get('id');
       type = model.get('type');
       return client.put(type + "s/" + id, {
