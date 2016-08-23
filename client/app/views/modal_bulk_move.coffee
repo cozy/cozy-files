@@ -102,6 +102,7 @@ module.exports = class ModalBulkMoveView extends Modal
         window.pendingOperations.move++
         # Process the update 1 by 1
         async.eachSeries @collection, (model, cb) ->
+            model.viewSelected = false
             id = model.get 'id'
             type = model.get 'type'
             client.put "#{type}s/#{id}", path: newPath, cb

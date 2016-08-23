@@ -101,7 +101,7 @@ module.exports = class FolderView extends BaseView
 
     destroy: ->
         # reset selection for each models
-        @collection.forEach (element) -> element.isSelected = false
+        @collection.forEach (element) -> element.viewSelected = false
 
         # properly destroy subviews
         @breadcrumbsView.destroy()
@@ -498,6 +498,7 @@ module.exports = class FolderView extends BaseView
                 # model.destroy, to prevent elements from disappearing in the
                 # meantime.
                 for model in selectedElements
+                    model.viewSelected = false
                     @baseCollection.remove(model)
 
                 # Filter the destroys' result to know which have failed so they
