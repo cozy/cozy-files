@@ -39,7 +39,9 @@ helpers =
             win.querySelector('.modal-dialog').classList.add 'modal-lg'
         if options.show isnt false
             document.body.appendChild win
-            window.jQuery(win).modal 'show'
+            $win = window.jQuery(win)
+            $win.modal 'show'
+            $win.on 'hidden.bs.modal', e -> $win.remove()
         return win
     getFiles: (extensions, node) ->
         selector = extensions.map (f) ->
