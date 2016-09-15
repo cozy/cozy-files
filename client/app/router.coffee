@@ -17,11 +17,14 @@ module.exports = class Router extends Backbone.Router
         'folders/:folderid' : 'folder'
         'search/:query' : 'search'
 
+
     main: ->
         rootID = app.root.get 'id'
         @_loadFolderView rootID
 
+
     folder: (id) -> @_loadFolderView id
+
 
     search: (query) ->
         folder = new File
@@ -43,21 +46,34 @@ module.exports = class Router extends Backbone.Router
 
     # get the data and render the view
     _loadFolderView: (folderID) ->
+        collection = window.app.baseCollection
+
         # add the spinner during folder change
         @folderView.spin() if @folderView?
 
-        # retrieve folder info and content from data source or cache
-        app.baseCollection.getByFolder folderID, (err, folder, collection) =>
-            if err? then console.log err
+        # Go Back home
+        # if current folder was removed
+        collection.on 'remove', (model) =>
+            @navigate '', true if folderID is model.get 'id'
+
+        # retrieve folder info and content
+        # from data source or cache
+        collection.getByFolder folderID, (err, folder, collection) =>
+            if err?
+                # Force redirect
+                # when folder doesnt exist
+                console.log err
+                @navigate '', true
             else
-                # sort by creation date the folder where phones photo are
-                # uploaded
+                # sort by creation date the folder
+                # where phones photo are uploaded
                 path = folder.getRepository()
-                if  path in ['/Appareils photo', '/Photos from devices']
+                if path in ['/Appareils photo', '/Photos from devices']
                     collection.type = 'lastModification'
                     collection.order = 'desc'
                     collection.sort()
                 @_renderFolderView folder, collection
+
 
     # process the actual render
     _renderFolderView: (folder, collection, query = '') ->
@@ -76,10 +92,10 @@ module.exports = class Router extends Backbone.Router
             query: query
         @folderView.render()
 
+
     # factory to get the proper folder object based on mode (shared or not)
     _getFolderView: (params) ->
         if app.isPublic
             return new PublicFolderView _.extend params, rootFolder: app.root
         else
             return new FolderView params
-
