@@ -457,7 +457,8 @@ An error occured while adding a file to archive. File: #{file.name}
 
         # Arbort archiving process when request is closed.
         req.on 'close', ->
-            archive.abort()
+            log.error """Archiving canceled by the user."""
+            res.status(206)
 
         # Set headers describing the final zip file.
         disposition = "attachment; filename=\"#{zipName}.zip\""
