@@ -11,8 +11,7 @@ module.exports = class UploadQueue
     # number of files actually loaded
     loaded: 0
 
-    # TODO: define a number
-    maxSize: 2,
+    maxSize: 1000,
 
     # list of paths where files are being uploaded
     uploadingPaths: {}
