@@ -23,7 +23,8 @@ module.exports = class Router extends Backbone.Router
         @_loadFolderView rootID
 
 
-    folder: (id) -> @_loadFolderView id
+    folder: (id) ->
+        @_loadFolderView id
 
 
     search: (query) ->
@@ -47,6 +48,12 @@ module.exports = class Router extends Backbone.Router
     # get the data and render the view
     _loadFolderView: (folderID) ->
         collection = window.app.baseCollection
+
+        # Can't upload too many files
+        # in one time
+        # TODO: add better performance on files uploading
+        window.app.uploadQueue.on 'size-exceed', ({msg}) ->
+            console.error msg
 
         # add the spinner during folder change
         @folderView.spin() if @folderView?

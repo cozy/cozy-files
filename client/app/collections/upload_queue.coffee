@@ -11,6 +11,9 @@ module.exports = class UploadQueue
     # number of files actually loaded
     loaded: 0
 
+    # TODO: define a number
+    maxSize: 2,
+
     # list of paths where files are being uploaded
     uploadingPaths: {}
 
@@ -212,6 +215,19 @@ module.exports = class UploadQueue
 
     addBlobs: (blobs, folder) ->
         @reset() if @completed
+
+        # Remove files that couldnt be handled
+        # properly
+        # and display a warning to alert
+        # user about this limitation
+        if (size = blobs.length) > @maxSize
+            msg = t 'updoad error size exceed', {maxSize: @maxSize}
+            @trigger 'size-exceed', {msg}
+
+            tmp = {}
+            tmp[key] = value for value, key in blobs when key < @maxSize
+            blobs = tmp
+
 
         i = 0
         existingPaths = app.baseCollection.existingPaths()
