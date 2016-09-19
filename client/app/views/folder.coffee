@@ -191,7 +191,6 @@ module.exports = class FolderView extends BaseView
     ###
 
     onNewFolderClicked: ->
-
         # There is already a new folder.
         if @newFolder
             # Look for the view into the pool.
@@ -267,11 +266,70 @@ module.exports = class FolderView extends BaseView
         input.replaceWith input.clone true
 
 
-    onFilesSelected: (event) =>
-        files = event.dataTransfer?.files or event.target.files
-        if files.length
-            @uploadQueue.addBlobs files, @model
+    onFilesSelected: (event={}) =>
+        files = []
+        errors = []
 
+        _saveEntry = (entry, path='', next) ->
+            entry.file (file) ->
+                relativePath = "#{path}/#{file.name}"
+                file.relativePath = relativePath
+                file.webkitRelativePath = relativePath
+                files.push file
+                next()
+
+            , (error) ->
+                errors.push entry.name
+                next()
+
+        _addDirectories = (items, path='/', callback) ->
+            async.eachSeries items, (entry, next) ->
+                # 1rst case : event data type
+                # otherwhise its a recursive call
+                if entry instanceof DataTransferItem
+                    entry = entry.webkitGetAsEntry()
+
+                # Save file
+                if entry.isFile
+                    _saveEntry entry, path, next
+
+                # Save directory
+                # and its subfiles and/or subdirectory
+                else if entry.isDirectory
+                    entry.createReader().readEntries (entries) ->
+                        path = entry.fullPath.substring 1
+                        _addDirectories entries, path, next
+
+            , (args...) ->
+                # Save all files or goto nextDirectory
+                # it depends on recursive or not call
+                callback() if callback?
+
+
+        if (items = event.dataTransfer?.items or event.target?.items)
+            _addDirectories items, null, () =>
+                _success = -> @uploadQueue.addFolderBlobs files, @model
+
+                # Show Upload Errors
+                if errors.length
+                    formattedErrors = errors
+                        .map (name) -> "\"#{name}\""
+                        .join ', '
+                    localeOptions =
+                        files: formattedErrors
+                        smart_count: errors.length
+
+                    new Modal t('chrome error dragdrop title'), \
+                        t('chrome error dragdrop content', localeOptions), \
+                        t('chrome error submit'), null, _success
+
+                # Show files uploaded
+                else
+                    _success()
+
+        else
+            files = event.dataTransfer?.files or event.target?.files
+            @uploadQueue.addBlobs files, @model if files.length
 
 
     ###
