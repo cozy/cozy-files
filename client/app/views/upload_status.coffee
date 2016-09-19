@@ -5,10 +5,13 @@ ProgressBar = require '../widgets/progressbar'
 module.exports = class UploadStatusView extends BaseView
 
     id: "upload-status"
+
     template: require './templates/upload_status'
+
 
     events: ->
         'click #dismiss': 'resetCollection'
+
 
     initialize: (options) ->
         super options
@@ -20,6 +23,7 @@ module.exports = class UploadStatusView extends BaseView
         @listenTo @uploadQueue, 'upload-progress', @progress
         @listenTo @uploadQueue, 'upload-complete', @complete
         @listenTo @uploadQueue, 'upload-max-size-exceed', @error
+
 
     getRenderData: ->
         if @collection.progress
@@ -64,6 +68,12 @@ module.exports = class UploadStatusView extends BaseView
 
     error: ({msg}) ->
         @$el.addClass 'warning'
+
+        # Keep trace for debugging
+        # because warning into view
+        # will be re-write after complete
+        console.error msg
+
         @$('span').text msg
 
 
@@ -75,6 +85,7 @@ module.exports = class UploadStatusView extends BaseView
         parts.push t 'already exists'
 
         return parts.join ' '
+
 
     # generate a sentence explaining error files
     makeErrorSentence: (errors) ->
