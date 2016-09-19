@@ -19,6 +19,7 @@ module.exports = class UploadStatusView extends BaseView
         @listenTo @uploadQueue, 'reset', @render
         @listenTo @uploadQueue, 'upload-progress', @progress
         @listenTo @uploadQueue, 'upload-complete', @complete
+        @listenTo @uploadQueue, 'upload-max-size-exceed', @error
 
     getRenderData: ->
         if @collection.progress
@@ -31,12 +32,14 @@ module.exports = class UploadStatusView extends BaseView
             value: value
             collection: @collection
 
+
     progress: (e) ->
         @$el.removeClass 'success danger warning'
         progress = parseInt(100 * e.loadedBytes / e.totalBytes)
         percentage =  "#{progress}%"
         @progressbar.width percentage
         @progressbarContent.text "#{t('total progress')} : #{percentage}"
+
 
     complete: ->
         @$('.progress').remove()
@@ -57,6 +60,12 @@ module.exports = class UploadStatusView extends BaseView
             ].join ' '
         else
             @resetCollection()
+
+
+    error: ({msg}) ->
+        @$el.addClass 'warning'
+        @$('span').text msg
+
 
     # generate a sentence explaining existing files
     makeExistingSentence: (existing) ->
@@ -109,4 +118,3 @@ module.exports = class UploadStatusView extends BaseView
             $('#content').addClass 'mt108'
 
         if @uploadQueue.completed then @complete()
-

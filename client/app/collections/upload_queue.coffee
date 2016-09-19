@@ -222,7 +222,7 @@ module.exports = class UploadQueue
         # user about this limitation
         if (size = blobs.length) > @maxSize
             msg = t 'updoad error size exceed', {maxSize: @maxSize}
-            @trigger 'size-exceed', {msg}
+            @trigger 'upload-max-size-exceed', {msg}
 
             tmp = {}
             tmp[key] = value for value, key in blobs when key < @maxSize

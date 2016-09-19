@@ -49,12 +49,6 @@ module.exports = class Router extends Backbone.Router
     _loadFolderView: (folderID) ->
         collection = window.app.baseCollection
 
-        # Can't upload too many files
-        # in one time
-        # TODO: add better performance on files uploading
-        window.app.uploadQueue.on 'size-exceed', ({msg}) ->
-            console.error msg
-
         # add the spinner during folder change
         @folderView.spin() if @folderView?
 
