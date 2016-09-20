@@ -5,10 +5,13 @@ ProgressBar = require '../widgets/progressbar'
 module.exports = class UploadStatusView extends BaseView
 
     id: "upload-status"
+
     template: require './templates/upload_status'
+
 
     events: ->
         'click #dismiss': 'resetCollection'
+
 
     initialize: (options) ->
         super options
@@ -19,6 +22,8 @@ module.exports = class UploadStatusView extends BaseView
         @listenTo @uploadQueue, 'reset', @render
         @listenTo @uploadQueue, 'upload-progress', @progress
         @listenTo @uploadQueue, 'upload-complete', @complete
+        @listenTo @uploadQueue, 'upload-max-size-exceed', @error
+
 
     getRenderData: ->
         if @collection.progress
@@ -31,12 +36,14 @@ module.exports = class UploadStatusView extends BaseView
             value: value
             collection: @collection
 
+
     progress: (e) ->
         @$el.removeClass 'success danger warning'
         progress = parseInt(100 * e.loadedBytes / e.totalBytes)
         percentage =  "#{progress}%"
         @progressbar.width percentage
         @progressbarContent.text "#{t('total progress')} : #{percentage}"
+
 
     complete: ->
         @$('.progress').remove()
@@ -58,6 +65,18 @@ module.exports = class UploadStatusView extends BaseView
         else
             @resetCollection()
 
+
+    error: ({msg}) ->
+        @$el.addClass 'warning'
+
+        # Keep trace for debugging
+        # because warning into view
+        # will be re-write after complete
+        console.error msg
+
+        @$('span').text msg
+
+
     # generate a sentence explaining existing files
     makeExistingSentence: (existing) ->
         parts = [existing[0].get('name')]
@@ -66,6 +85,7 @@ module.exports = class UploadStatusView extends BaseView
         parts.push t 'already exists'
 
         return parts.join ' '
+
 
     # generate a sentence explaining error files
     makeErrorSentence: (errors) ->
@@ -109,4 +129,3 @@ module.exports = class UploadStatusView extends BaseView
             $('#content').addClass 'mt108'
 
         if @uploadQueue.completed then @complete()
-

@@ -23,7 +23,8 @@ module.exports = class Router extends Backbone.Router
         @_loadFolderView rootID
 
 
-    folder: (id) -> @_loadFolderView id
+    folder: (id) ->
+        @_loadFolderView id
 
 
     search: (query) ->
