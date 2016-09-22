@@ -191,7 +191,6 @@ module.exports = class FolderView extends BaseView
     ###
 
     onNewFolderClicked: ->
-
         # There is already a new folder.
         if @newFolder
             # Look for the view into the pool.
@@ -219,12 +218,15 @@ module.exports = class FolderView extends BaseView
         new ModalShareView
             model: @model
 
+
+
     ###
         Drag and Drop and Upload
     ###
     onDragStart: (event) ->
         event.preventDefault()
         event.stopPropagation()
+
 
     onDragEnter: (event) ->
         event.preventDefault()
@@ -233,6 +235,7 @@ module.exports = class FolderView extends BaseView
             @uploadButton.addClass 'btn-cozy-contrast'
             @$('#files-drop-zone').show()
 
+
     onDragLeave: (event) ->
         event.preventDefault()
         event.stopPropagation()
@@ -240,100 +243,104 @@ module.exports = class FolderView extends BaseView
             @uploadButton.removeClass 'btn-cozy-contrast'
             @$('#files-drop-zone').hide()
 
+
     onDrop: (event) ->
         event.preventDefault()
         event.stopPropagation()
         return false if @isPublic and not @canUpload
 
-        # folder drag and drop is only supported in Chrome
-        if event.dataTransfer.items?
-            @onFilesSelectedInChrome event
-        else
-            @onFilesSelected event
+        @onFilesSelected event
 
         @uploadButton.removeClass 'btn-cozy-contrast'
         @$('#files-drop-zone').hide()
+
 
     onDirectorySelected: (event) ->
         input = @$ '#folder-uploader'
         files = input[0].files
         return unless files.length
+
         @uploadQueue.addFolderBlobs files, @model
+
         # reset the input
         input.replaceWith input.clone true
 
-    onFilesSelected: (event) =>
-        files = event.dataTransfer?.files or event.target.files
 
-        if files.length
-            @uploadQueue.addBlobs files, @model
-
-
-    onFilesSelectedInChrome: (e) ->
-        items = e.dataTransfer.items
-        return unless items.length
-
+    onFilesSelected: (event={}) =>
         files = []
         errors = []
 
-        # Once all entries have been parsed, they are added to the upload queue.
-        addAllToQueue = =>
+        _saveEntry = (entry, path='', next) ->
+            entry.file (file) ->
+                relativePath = "#{path}/#{file.name}"
+                file.relativePath = relativePath
+                file.webkitRelativePath = relativePath
+                files.push file
+                next()
 
-            processUpload = =>
-                @uploadQueue.addFolderBlobs files, @model
+            , (error) ->
+                errors.push entry.name
+                next()
 
-            if errors.length > 0
-                formattedErrors = errors
-                    .map (name) -> "\"#{name}\""
-                    .join ', '
-                localeOptions =
-                    files: formattedErrors
-                    smart_count: errors.length
+        _addDirectories = (items, path='/', callback) ->
+            async.eachSeries items, (entry, next) ->
+                # 1rst case : event data type
+                # otherwhise its a recursive call
+                if entry instanceof DataTransferItem
+                    entry = entry.webkitGetAsEntry()
 
-                new Modal t('chrome error dragdrop title'), \
-                    t('chrome error dragdrop content', localeOptions), \
-                    t('chrome error submit'), null, (confirm) -> processUpload()
-            else
-                processUpload()
+                # Save file
+                if entry.isFile
+                    _saveEntry entry, path, next
 
-
-        # An entry can be a folder or a file.
-        parseEntriesRecursively = (entry, path, done) =>
-            path = path or ""
-            path = "#{path}/" if path.length > 0
-
-            # If it's a file we add it to the file list with a proper
-            # relative path.
-            if entry.isFile
-                entry.file (file) ->
-                    file.relativePath = "#{path}#{file.name}"
-                    files.push file
-                    done()
-                , (error) ->
-                    errors.push entry.name
-                    done()
-
-            # If it's a directory, recursively call the function to reach
-            # the leaves of the file tree.
-            else if entry.isDirectory
-                reader = entry.createReader()
-
+                # Save directory
+                # and its subfiles and/or subdirectory
                 # .readEntries only return chunks of 100 elements, so it must
                 # be called multiple times, until there is no more entries.
-                do unshiftFolder = ->
-                    reader.readEntries (entries) ->
-                        if entries.length is 0
-                            done()
-                        else
-                            async.eachSeries entries, (subEntry, next) ->
-                                parseEntriesRecursively subEntry, "#{path}#{entry.name}", next
-                            , unshiftFolder
+                else if entry.isDirectory
+                    reader = entry.createReader()
 
-        # Start the parsing process.
-        async.eachSeries items, (item, next) ->
-            entry = item.webkitGetAsEntry()
-            parseEntriesRecursively entry, null, next
-        , addAllToQueue
+                    do unshiftFolder = ->
+                        reader.readEntries (entries) ->
+                            unless entries.length
+                                callback() if callback?
+                            else
+                                path = entry.fullPath.substring 1
+                                _addDirectories entries, path, next
+                        , unshiftFolder
+
+            , (args...) ->
+                # Save all files or goto nextDirectory
+                # it depends on recursive or not call
+                callback() if callback?
+
+
+        # Checking 'items' property is the only way
+        # to know if folder drop is supported by the browser
+        if (items = event.dataTransfer?.items or event.target?.items)
+            _addDirectories items, null, () =>
+                _success = -> @uploadQueue.addFolderBlobs files, @model
+
+                # Show Upload Errors
+                if errors.length
+                    formattedErrors = errors
+                        .map (name) -> "\"#{name}\""
+                        .join ', '
+                    localeOptions =
+                        files: formattedErrors
+                        smart_count: errors.length
+
+                    new Modal t('chrome error dragdrop title'), \
+                        t('chrome error dragdrop content', localeOptions), \
+                        t('chrome error submit'), null, _success
+
+                # Show files uploaded
+                else
+                    _success()
+
+        else
+            files = event.dataTransfer?.files or event.target?.files
+            @uploadQueue.addBlobs files, @model if files.length
 
 
     ###
@@ -618,5 +625,3 @@ module.exports = class FolderView extends BaseView
     # Display an error when the user tries to drag and drop an existing folder.
     onExistingFolderError: (model) ->
         Modal.error t('modal error existing folder', name: model.get('name'))
-
-
