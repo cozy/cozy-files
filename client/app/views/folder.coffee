@@ -295,10 +295,19 @@ module.exports = class FolderView extends BaseView
 
                 # Save directory
                 # and its subfiles and/or subdirectory
+                # .readEntries only return chunks of 100 elements, so it must
+                # be called multiple times, until there is no more entries.
                 else if entry.isDirectory
-                    entry.createReader().readEntries (entries) ->
-                        path = entry.fullPath.substring 1
-                        _addDirectories entries, path, next
+                    reader = entry.createReader()
+
+                    do unshiftFolder = ->
+                        reader.readEntries (entries) ->
+                            unless entries.length
+                                callback() if callback?
+                            else
+                                path = entry.fullPath.substring 1
+                                _addDirectories entries, path, next
+                        , unshiftFolder
 
             , (args...) ->
                 # Save all files or goto nextDirectory
@@ -306,6 +315,8 @@ module.exports = class FolderView extends BaseView
                 callback() if callback?
 
 
+        # Checking 'items' property is the only way
+        # to know if folder drop is supported by the browser
         if (items = event.dataTransfer?.items or event.target?.items)
             _addDirectories items, null, () =>
                 _success = -> @uploadQueue.addFolderBlobs files, @model
