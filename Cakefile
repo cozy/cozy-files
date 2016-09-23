@@ -162,7 +162,9 @@ task 'build', 'Build CoffeeScript to Javascript', ->
               "cp -R client/public build/client/ && " + \
               "rm -rf client/app/locales/*.coffee"
 
-    exec command, (err, stdout, stderr) ->
+    options =
+        maxBuffer: 1024 * 1024
+    exec command, options, (err, stdout, stderr) ->
         if err
             logger.error "An error has occurred while compiling:\n" + err
             process.exit 1
