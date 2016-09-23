@@ -457,6 +457,8 @@ An error occured while adding a file to archive. File: #{file.name}
 
         # Arbort archiving process when request is closed.
         req.on 'close', ->
+            if typeof archive?.abort is 'function'
+                archive.abort()
             log.error """Archiving canceled by the user."""
             res.status(206)
 
