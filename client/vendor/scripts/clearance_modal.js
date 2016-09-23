@@ -27,9 +27,9 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
           return items.push({
             id: contact.id,
             hasPicture: contact.get('hasPicture'),
-            display: "" + (contact.get('name')) + " &lt;" + email + "&gt;",
+            display: (contact.get('name')) + " &lt;" + email + "&gt;",
             toString: function() {
-              return "" + email + ";" + contact.id;
+              return email + ";" + contact.id;
             }
           });
         });
@@ -77,15 +77,15 @@ require.register("cozy-clearance/contact_autocomplete", function(exports, requir
 
 require.register("cozy-clearance/contact_collection", function(exports, require, module){
   var Contact, collection,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 collection = new Backbone.Collection();
 
 collection.url = 'clearance/contacts';
 
-collection.model = Contact = (function(_super) {
-  __extends(Contact, _super);
+collection.model = Contact = (function(superClass) {
+  extend(Contact, superClass);
 
   function Contact() {
     return Contact.__super__.constructor.apply(this, arguments);
@@ -137,15 +137,15 @@ module.exports = collection;
 
 require.register("cozy-clearance/modal", function(exports, require, module){
   var Modal,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
-Modal = (function(_super) {
-  __extends(Modal, _super);
+Modal = (function(superClass) {
+  extend(Modal, superClass);
 
   function Modal() {
-    this.closeOnEscape = __bind(this.closeOnEscape, this);
+    this.closeOnEscape = bind(this.closeOnEscape, this);
     return Modal.__super__.constructor.apply(this, arguments);
   }
 
@@ -200,8 +200,7 @@ Modal = (function(_super) {
   };
 
   Modal.prototype.onYes = function() {
-    this.close();
-    return this.cb(true);
+    return this.close();
   };
 
   Modal.prototype.close = function() {
@@ -241,7 +240,8 @@ Modal = (function(_super) {
     }
     container = $('<div class="modal-content">').append(head, body, foot);
     container = $('<div class="modal-dialog">').append(container);
-    return $("body").append(this.$el.append(container));
+    $("body").append(this.$el.append(container));
+    return this.cb(true);
   };
 
   Modal.prototype.renderContent = function() {
@@ -298,7 +298,7 @@ require.register("cozy-clearance/modal_share_template", function(exports, requir
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-;var locals_for_with = (locals || {});(function (t, type, model, JSON, clearance, makeURL, undefined, Object, possible_permissions) {
+;var locals_for_with = (locals || {});(function (JSON, Object, clearance, makeURL, model, possible_permissions, t, type, undefined) {
 buf.push("<div><div id=\"select-mode-section\"><p>" + (jade.escape(null == (jade_interp = t('modal question ' + type + ' shareable', {name: model.get('name')})) ? "" : jade_interp)) + "</p><p><button id=\"share-public\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('shared')) ? "" : jade_interp)) + "</button>&nbsp;<button id=\"share-private\" class=\"button btn-cozy\">" + (jade.escape(null == (jade_interp = t('private')) ? "" : jade_interp)) + "</button></p></div><p>&nbsp;</p></div><!-- If no clearance are set, we consider it's a private object.-->");
 if ( JSON.stringify(clearance) == '[]')
 {
@@ -315,7 +315,7 @@ else
 {
 buf.push("<input id=\"public-url\"" + (jade.attr("value", makeURL(), true, false)) + " class=\"form-control disabled\"/>");
 }
-buf.push("<p>&nbsp;</p></div><p><span class=\"public-url\">" + (jade.escape(null == (jade_interp = t('or')) ? "" : jade_interp)) + "</span>&nbsp;" + (jade.escape((jade_interp = t('modal shared with people msg')) == null ? '' : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">" + t("share add") + "</a></form><ul id=\"share-list\">");
+buf.push("<p>&nbsp;</p></div><p><span class=\"public-url\">" + (jade.escape(null == (jade_interp = t('or')) ? "" : jade_interp)) + "</span>&nbsp;" + (jade.escape((jade_interp = t('modal shared with people msg')) == null ? '' : jade_interp)) + "</p><form role=\"form\" class=\"input-group\"><input id=\"share-input\" type=\"text\"" + (jade.attr("placeholder", t('modal shared ' + type + ' custom msg'), true, false)) + " autocomplete=\"off\" class=\"form-control\"/><a id=\"add-contact\" class=\"btn btn-cozy\">Add</a></form><ul id=\"share-list\">");
 if ( clearance != 'public')
 {
 // iterate clearance
@@ -448,7 +448,7 @@ buf.push("<a" + (jade.attr("data-key", key, true, false)) + (jade.attr("title", 
 
 }
 buf.push("</ul>");
-}}("t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"JSON" in locals_for_with?locals_for_with.JSON:typeof JSON!=="undefined"?JSON:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined));;return buf.join("");
+}}.call(this,"JSON" in locals_for_with?locals_for_with.JSON:typeof JSON!=="undefined"?JSON:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"clearance" in locals_for_with?locals_for_with.clearance:typeof clearance!=="undefined"?clearance:undefined,"makeURL" in locals_for_with?locals_for_with.makeURL:typeof makeURL!=="undefined"?makeURL:undefined,"model" in locals_for_with?locals_for_with.model:typeof model!=="undefined"?model:undefined,"possible_permissions" in locals_for_with?locals_for_with.possible_permissions:typeof possible_permissions!=="undefined"?possible_permissions:undefined,"t" in locals_for_with?locals_for_with.t:typeof t!=="undefined"?t:undefined,"type" in locals_for_with?locals_for_with.type:typeof type!=="undefined"?type:undefined,"undefined" in locals_for_with?locals_for_with.undefined:typeof undefined!=="undefined"?undefined:undefined));;return buf.join("");
 }
 module.exports = template;
   
@@ -456,9 +456,9 @@ module.exports = template;
 
 require.register("cozy-clearance/modal_share_view", function(exports, require, module){
   var CozyClearanceModal, Modal, clearanceDiff, contactCollection, contactTypeahead, randomString, request,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 Modal = require("./modal");
 
@@ -504,20 +504,20 @@ request = function(method, url, data, options) {
   return $.ajax(_.extend(params, options));
 };
 
-module.exports = CozyClearanceModal = (function(_super) {
-  __extends(CozyClearanceModal, _super);
+module.exports = CozyClearanceModal = (function(superClass) {
+  extend(CozyClearanceModal, superClass);
 
   function CozyClearanceModal() {
-    this.onClose = __bind(this.onClose, this);
-    this.onYes = __bind(this.onYes, this);
-    this.onNo = __bind(this.onNo, this);
-    this.revoke = __bind(this.revoke, this);
-    this.onGuestAdded = __bind(this.onGuestAdded, this);
-    this.getClearanceWithContacts = __bind(this.getClearanceWithContacts, this);
-    this.existsEmail = __bind(this.existsEmail, this);
-    this.typeaheadFilter = __bind(this.typeaheadFilter, this);
-    this.makeURL = __bind(this.makeURL, this);
-    this.getRenderData = __bind(this.getRenderData, this);
+    this.onClose = bind(this.onClose, this);
+    this.onYes = bind(this.onYes, this);
+    this.onNo = bind(this.onNo, this);
+    this.revoke = bind(this.revoke, this);
+    this.onGuestAdded = bind(this.onGuestAdded, this);
+    this.getClearanceWithContacts = bind(this.getClearanceWithContacts, this);
+    this.existsEmail = bind(this.existsEmail, this);
+    this.typeaheadFilter = bind(this.typeaheadFilter, this);
+    this.makeURL = bind(this.makeURL, this);
+    this.getRenderData = bind(this.getRenderData, this);
     return CozyClearanceModal.__super__.constructor.apply(this, arguments);
   }
 
@@ -754,8 +754,8 @@ module.exports = CozyClearanceModal = (function(_super) {
   };
 
   CozyClearanceModal.prototype.onGuestAdded = function(result) {
-    var clearance, contactid, email, isEmailEmpty, key, perm, _ref;
-    _ref = result.split(';'), email = _ref[0], contactid = _ref[1];
+    var clearance, contactid, email, isEmailEmpty, key, perm, ref;
+    ref = result.split(';'), email = ref[0], contactid = ref[1];
     isEmailEmpty = email === '' || email.indexOf('@') < 1;
     if (!(this.existsEmail(email) || isEmailEmpty)) {
       key = randomString();
