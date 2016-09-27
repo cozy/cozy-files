@@ -21,6 +21,7 @@ module.exports = {
     "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
     "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
     "upload running": "Upload en cours. Ne fermez pas votre navigateur",
+    "updoad error size exceed": "Vous ne pouvez pas télécharger plus %{maxSize} fichiers à la fois",
     "modal are you sure": "Êtes-vous sûr(e) ?",
     "modal delete msg": "La suppression ne pourra pas être annulée",
     "modal delete ok": "Supprimer",
@@ -149,4 +150,5 @@ module.exports = {
     "elements successfully moved to": "Eléments déplacés avec succès vers",
     "close": "Fermer",
     "search placeholder": "Recherche"
-};
+}
+;

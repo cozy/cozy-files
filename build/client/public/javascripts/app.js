@@ -408,6 +408,8 @@ Helpers = require('../lib/folder_helpers');
 module.exports = UploadQueue = (function() {
   UploadQueue.prototype.loaded = 0;
 
+  UploadQueue.prototype.maxSize = 1000;
+
   UploadQueue.prototype.uploadingPaths = {};
 
   function UploadQueue(baseCollection) {
@@ -574,9 +576,25 @@ module.exports = UploadQueue = (function() {
   };
 
   UploadQueue.prototype.addBlobs = function(blobs, folder) {
-    var existingPaths, i, nonBlockingLoop;
+    var existingPaths, i, j, key, len, msg, nonBlockingLoop, size, tmp, value;
     if (this.completed) {
       this.reset();
+    }
+    if ((size = blobs.length) > this.maxSize) {
+      msg = t('updoad error size exceed', {
+        maxSize: this.maxSize
+      });
+      this.trigger('upload-max-size-exceed', {
+        msg: msg
+      });
+      tmp = {};
+      for (key = j = 0, len = blobs.length; j < len; key = ++j) {
+        value = blobs[key];
+        if (key < this.maxSize) {
+          tmp[key] = value;
+        }
+      }
+      blobs = tmp;
     }
     i = 0;
     existingPaths = app.baseCollection.existingPaths();
@@ -2546,6 +2564,7 @@ module.exports = {
   "modal error folder exists": "Sorry, a file or folder having this name already exists",
   "modal error zip empty folder": "You can't download an empty folder as a ZIP.",
   "upload running": "Upload is in progress. Do not close your browser",
+  "updoad error size exceed": "You can't upload more than %{maxSize} files once.",
   "modal are you sure": "Are you sure ?",
   "modal delete msg": "Deleting cannot be undone",
   "modal delete ok": "Delete",
@@ -2858,6 +2877,7 @@ module.exports = {
     "modal error folder exists": "Désolé, un fichier ou un dossier a déjà le même nom",
     "modal error zip empty folder": "Vous ne pouvez pas télécharger un dossier vide en tant que ZIP.",
     "upload running": "Upload en cours. Ne fermez pas votre navigateur",
+    "updoad error size exceed": "Vous ne pouvez pas télécharger plus %{maxSize} fichiers à la fois",
     "modal are you sure": "Êtes-vous sûr(e) ?",
     "modal delete msg": "La suppression ne pourra pas être annulée",
     "modal delete ok": "Supprimer",
@@ -2986,7 +3006,8 @@ module.exports = {
     "elements successfully moved to": "Eléments déplacés avec succès vers",
     "close": "Fermer",
     "search placeholder": "Recherche"
-};
+}
+;
 });
 
 require.register("locales/ro", function(exports, require, module) {
@@ -3784,14 +3805,24 @@ module.exports = Router = (function(superClass) {
   };
 
   Router.prototype._loadFolderView = function(folderID) {
+    var collection;
+    collection = window.app.baseCollection;
     if (this.folderView != null) {
       this.folderView.spin();
     }
-    return app.baseCollection.getByFolder(folderID, (function(_this) {
+    collection.on('remove', (function(_this) {
+      return function(model) {
+        if (folderID === model.get('id')) {
+          return _this.navigate('', true);
+        }
+      };
+    })(this));
+    return collection.getByFolder(folderID, (function(_this) {
       return function(err, folder, collection) {
         var path;
         if (err != null) {
-          return console.log(err);
+          console.log(err);
+          return _this.navigate('', true);
         } else {
           path = folder.getRepository();
           if (path === '/Appareils photo' || path === '/Photos from devices') {
@@ -3845,7 +3876,7 @@ var helpers,
 
 helpers = {
   modal: function(options) {
-    var win;
+    var $win, win;
     win = document.createElement('div');
     win.classList.add('modal');
     win.classList.add('fade');
@@ -3864,7 +3895,11 @@ helpers = {
     }
     if (options.show !== false) {
       document.body.appendChild(win);
-      window.jQuery(win).modal('show');
+      $win = window.jQuery(win);
+      $win.modal('show');
+      $win.on('hidden.bs.modal', e(function() {
+        return $win.remove();
+      }));
     }
     return win;
   },
@@ -5218,7 +5253,8 @@ module.exports = FilesView = (function(superClass) {
 var BACKSPACE_KEY, BaseView, BreadcrumbsView, File, FilesView, FolderView, Modal, ModalBulkMove, ModalConflict, ModalShareView, UploadStatusView,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+  hasProp = {}.hasOwnProperty,
+  slice = [].slice;
 
 BaseView = require('../lib/base_view');
 
@@ -5490,11 +5526,7 @@ module.exports = FolderView = (function(superClass) {
     if (this.isPublic && !this.canUpload) {
       return false;
     }
-    if (event.dataTransfer.items != null) {
-      this.onFilesSelectedInChrome(event);
-    } else {
-      this.onFilesSelected(event);
-    }
+    this.onFilesSelected(event);
     this.uploadButton.removeClass('btn-cozy-contrast');
     return this.$('#files-drop-zone').hide();
   };
@@ -5511,80 +5543,89 @@ module.exports = FolderView = (function(superClass) {
   };
 
   FolderView.prototype.onFilesSelected = function(event) {
-    var files, ref;
-    files = ((ref = event.dataTransfer) != null ? ref.files : void 0) || event.target.files;
-    if (files.length) {
-      return this.uploadQueue.addBlobs(files, this.model);
-    }
-  };
-
-  FolderView.prototype.onFilesSelectedInChrome = function(e) {
-    var addAllToQueue, errors, files, items, parseEntriesRecursively;
-    items = e.dataTransfer.items;
-    if (!items.length) {
-      return;
+    var _addDirectories, _saveEntry, errors, files, items, ref, ref1, ref2, ref3;
+    if (event == null) {
+      event = {};
     }
     files = [];
     errors = [];
-    addAllToQueue = (function(_this) {
-      return function() {
-        var formattedErrors, localeOptions, processUpload;
-        processUpload = function() {
-          return _this.uploadQueue.addFolderBlobs(files, _this.model);
-        };
-        if (errors.length > 0) {
-          formattedErrors = errors.map(function(name) {
-            return "\"" + name + "\"";
-          }).join(', ');
-          localeOptions = {
-            files: formattedErrors,
-            smart_count: errors.length
-          };
-          return new Modal(t('chrome error dragdrop title'), t('chrome error dragdrop content', localeOptions), t('chrome error submit'), null, function(confirm) {
-            return processUpload();
-          });
-        } else {
-          return processUpload();
-        }
-      };
-    })(this);
-    parseEntriesRecursively = (function(_this) {
-      return function(entry, path, done) {
+    _saveEntry = function(entry, path, next) {
+      if (path == null) {
+        path = '';
+      }
+      return entry.file(function(file) {
+        var relativePath;
+        relativePath = path + "/" + file.name;
+        file.relativePath = relativePath;
+        file.webkitRelativePath = relativePath;
+        files.push(file);
+        return next();
+      }, function(error) {
+        errors.push(entry.name);
+        return next();
+      });
+    };
+    _addDirectories = function(items, path, callback) {
+      if (path == null) {
+        path = '/';
+      }
+      return async.eachSeries(items, function(entry, next) {
         var reader, unshiftFolder;
-        path = path || "";
-        if (path.length > 0) {
-          path = path + "/";
+        if (entry instanceof DataTransferItem) {
+          entry = entry.webkitGetAsEntry();
         }
         if (entry.isFile) {
-          return entry.file(function(file) {
-            file.relativePath = "" + path + file.name;
-            files.push(file);
-            return done();
-          }, function(error) {
-            errors.push(entry.name);
-            return done();
-          });
+          return _saveEntry(entry, path, next);
         } else if (entry.isDirectory) {
           reader = entry.createReader();
           return (unshiftFolder = function() {
             return reader.readEntries(function(entries) {
-              if (entries.length === 0) {
-                return done();
+              if (!entries.length) {
+                if (callback != null) {
+                  return callback();
+                }
               } else {
-                return async.eachSeries(entries, function(subEntry, next) {
-                  return parseEntriesRecursively(subEntry, "" + path + entry.name, next);
-                }, unshiftFolder);
+                path = entry.fullPath.substring(1);
+                return _addDirectories(entries, path, next);
               }
-            });
+            }, unshiftFolder);
           })();
         }
-      };
-    })(this);
-    return async.eachSeries(items, function(item, next) {
-      var entry;
-      entry = item.webkitGetAsEntry();
-      return parseEntriesRecursively(entry, null, next);
-    }, addAllToQueue);
+      }, function() {
+        var args;
+        args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+        if (callback != null) {
+          return callback();
+        }
+      });
+    };
+    if ((items = ((ref = event.dataTransfer) != null ? ref.items : void 0) || ((ref1 = event.target) != null ? ref1.items : void 0))) {
+      return _addDirectories(items, null, (function(_this) {
+        return function() {
+          var _success, formattedErrors, localeOptions;
+          _success = function() {
+            return this.uploadQueue.addFolderBlobs(files, this.model);
+          };
+          if (errors.length) {
+            formattedErrors = errors.map(function(name) {
+              return "\"" + name + "\"";
+            }).join(', ');
+            localeOptions = {
+              files: formattedErrors,
+              smart_count: errors.length
+            };
+            return new Modal(t('chrome error dragdrop title'), t('chrome error dragdrop content', localeOptions), t('chrome error submit'), null, _success);
+          } else {
+            return _success();
+          }
+        };
+      })(this));
+    } else {
+      files = ((ref2 = event.dataTransfer) != null ? ref2.files : void 0) || ((ref3 = event.target) != null ? ref3.files : void 0);
+      if (files.length) {
+        return this.uploadQueue.addBlobs(files, this.model);
+      }
+    }
   };
 
 
@@ -6495,7 +6536,7 @@ var buf = [];
 var jade_mixins = {};
 var jade_interp;
 var locals_ = (locals || {}),model = locals_.model;
-if ( model.id == "root")
+if ( model.id == "root" && model.type !== "search")
 {
 buf.push("<li><a href=\"#\"><span>Files</span></a></li>");
 }
@@ -6790,7 +6831,8 @@ module.exports = UploadStatusView = (function(superClass) {
     this.listenTo(this.collection, 'remove', this.uploadCount);
     this.listenTo(this.uploadQueue, 'reset', this.render);
     this.listenTo(this.uploadQueue, 'upload-progress', this.progress);
-    return this.listenTo(this.uploadQueue, 'upload-complete', this.complete);
+    this.listenTo(this.uploadQueue, 'upload-complete', this.complete);
+    return this.listenTo(this.uploadQueue, 'upload-max-size-exceed', this.error);
   };
 
   UploadStatusView.prototype.getRenderData = function() {
@@ -6831,6 +6873,14 @@ module.exports = UploadStatusView = (function(superClass) {
     } else {
       return this.resetCollection();
     }
+  };
+
+  UploadStatusView.prototype.error = function(arg) {
+    var msg;
+    msg = arg.msg;
+    this.$el.addClass('warning');
+    console.error(msg);
+    return this.$('span').text(msg);
   };
 
   UploadStatusView.prototype.makeExistingSentence = function(existing) {
