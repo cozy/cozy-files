@@ -270,20 +270,19 @@ module.exports = class FolderView extends BaseView
         files = []
         errors = []
 
-        _saveEntry = (entry, path='', next) ->
+        _saveFile = (entry, path='', next) ->
             entry.file (file) ->
                 relativePath = "#{path}/#{file.name}"
                 file.relativePath = relativePath
                 file.webkitRelativePath = relativePath
                 files.push file
                 next()
-
             , (error) ->
                 errors.push entry.name
                 next()
 
-        _addDirectories = (items, path='/', callback) ->
-            async.eachSeries items, (entry, next) ->
+        _addDirectories = (items, path='', callback) ->
+            async.each items, (entry, next) ->
                 # 1rst case : event data type
                 # otherwhise its a recursive call
                 if entry instanceof DataTransferItem
@@ -291,7 +290,7 @@ module.exports = class FolderView extends BaseView
 
                 # Save file
                 if entry.isFile
-                    _saveEntry entry, path, next
+                    _saveFile entry, path, next
 
                 # Save directory
                 # and its subfiles and/or subdirectory
@@ -299,7 +298,6 @@ module.exports = class FolderView extends BaseView
                 # be called multiple times, until there is no more entries.
                 else if entry.isDirectory
                     reader = entry.createReader()
-
                     do unshiftFolder = ->
                         reader.readEntries (entries) ->
                             unless entries.length
@@ -309,7 +307,7 @@ module.exports = class FolderView extends BaseView
                                 _addDirectories entries, path, next
                         , unshiftFolder
 
-            , (args...) ->
+            , () ->
                 # Save all files or goto nextDirectory
                 # it depends on recursive or not call
                 callback() if callback?
@@ -319,7 +317,14 @@ module.exports = class FolderView extends BaseView
         # to know if folder drop is supported by the browser
         if (items = event.dataTransfer?.items or event.target?.items)
             _addDirectories items, null, () =>
-                _success = -> @uploadQueue.addFolderBlobs files, @model
+                _success = () =>
+                    # This callback is called several times
+                    # because files are saved asynchronously
+                    # Make sure files are not saved twice!
+                    input = files
+                    files = []
+
+                    @uploadQueue.addFolderBlobs input, @model
 
                 # Show Upload Errors
                 if errors.length
