@@ -11,6 +11,13 @@ File             = require '../models/file'
 
 BACKSPACE_KEY = 8
 
+Errors = {
+    folderError: 'modal error firefox dragdrop folder'
+    existingFolderError: 'modal error existing folder'
+    maxSizeExceeded: 'modal error updoad size exceed'
+}
+
+
 ###
 Handles the display logic for a folder.
 Main entry point of the interface: handles breadcrumb, buttons and files list
@@ -75,8 +82,7 @@ module.exports = class FolderView extends BaseView
         # adding the model to the queue when a conflict is detected by the
         # upload queue
         @listenTo @uploadQueue, 'conflict', @conflictQueue.push
-        @listenTo @uploadQueue, 'folderError', @onMozFolderError
-        @listenTo @uploadQueue, 'existingFolderError', @onExistingFolderError
+        @listenTo @uploadQueue, 'uploadError', @onUploadError
 
         return this
 
@@ -316,36 +322,40 @@ module.exports = class FolderView extends BaseView
         # Checking 'items' property is the only way
         # to know if folder drop is supported by the browser
         if (items = event.dataTransfer?.items or event.target?.items)
-            _addDirectories items, null, () =>
-                _success = () =>
-                    # This callback is called several times
-                    # because files are saved asynchronously
-                    # Make sure files are not saved twice!
-                    input = files
-                    files = []
 
-                    @uploadQueue.addFolderBlobs input, @model
+            unless @uploadQueue.handleError items
 
-                # Show Upload Errors
-                if errors.length
-                    formattedErrors = errors
-                        .map (name) -> "\"#{name}\""
-                        .join ', '
-                    localeOptions =
-                        files: formattedErrors
-                        smart_count: errors.length
+                _addDirectories items, null, () =>
+                    _success = () =>
+                        # This callback is called several times
+                        # because files are saved asynchronously
+                        # Make sure files are not saved twice!
+                        input = files
+                        files = []
 
-                    new Modal t('chrome error dragdrop title'), \
-                        t('chrome error dragdrop content', localeOptions), \
-                        t('chrome error submit'), null, _success
+                        @uploadQueue.addFolderBlobs input, @model
 
-                # Show files uploaded
-                else
-                    _success()
+                    # Show Upload Errors
+                    if errors.length
+                        formattedErrors = errors
+                            .map (name) -> "\"#{name}\""
+                            .join ', '
+                        localeOptions =
+                            files: formattedErrors
+                            smart_count: errors.length
+
+                        new Modal t('chrome error dragdrop title'), \
+                            t('chrome error dragdrop content', localeOptions), \
+                            t('chrome error submit'), null, _success
+
+                    # Show files uploaded
+                    else
+                        _success()
 
         else
             files = event.dataTransfer?.files or event.target?.files
-            @uploadQueue.addBlobs files, @model if files.length
+            if files.length and not @uploadQueue.handleError files
+                @uploadQueue.addBlobs files, @model
 
 
     ###
@@ -622,11 +632,13 @@ module.exports = class FolderView extends BaseView
         @$('#folder-state').html shareStateContent
         @filesList.updateInheritedClearance [clearance: clearance]
 
-    # Display an error when the user tries to upload a folder in Firefox.
-    onMozFolderError: ->
-        Modal.error t('modal error firefox dragdrop folder')
+    # Display Upload Error
+    # get specific message if its not specified
+    # message my be dynamic, use data for this case
+    onUploadError: (event={}) ->
+        { type, data, msg } = event
 
+        data ?= {}
+        msg ?= t Errors[type], data
 
-    # Display an error when the user tries to drag and drop an existing folder.
-    onExistingFolderError: (model) ->
-        Modal.error t('modal error existing folder', name: model.get('name'))
+        Modal.error msg

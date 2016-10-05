@@ -212,21 +212,17 @@ module.exports = class UploadQueue
             done()
 
 
+    handleError: (items) ->
+        if (size = items.length) > @maxSize
+            @trigger 'uploadError',
+                type: 'maxSizeExceeded'
+                data: {maxSize: @maxSize}
+            return true
+        return false
+
+
     addBlobs: (blobs, folder) ->
         @reset() if @completed
-
-        # Remove files that couldnt be handled
-        # properly
-        # and display a warning to alert
-        # user about this limitation
-        if (size = blobs.length) > @maxSize
-            msg = t 'updoad error size exceed', {maxSize: @maxSize}
-            @trigger 'upload-max-size-exceed', {msg}
-
-            tmp = {}
-            tmp[key] = value for value, key in blobs when key < @maxSize
-            blobs = tmp
-
 
         i = 0
         existingPaths = app.baseCollection.existingPaths()
@@ -267,7 +263,7 @@ module.exports = class UploadQueue
                 model = null
 
                 # Let the view know something went wrong.
-                @trigger 'folderError'
+                @trigger 'uploadError', { type: 'folderError' }
 
             # mark as in conflict with existing file
             else if (existingModel = @isFileStored(model))?
@@ -306,12 +302,12 @@ module.exports = class UploadQueue
         dirs = Helpers.nestedDirs blobs
         i = 0
         isConflict = false
+
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop
             dir = dirs[i++]
             unless dir
-
                 # Only add the files if there are no conflict.
                 unless isConflict
                     # Folders will be created, files can safely be added at the
@@ -340,7 +336,9 @@ module.exports = class UploadQueue
                     # This will end the nonBlockingLoop.
                     i = dirs.length
                     isConflict = true
-                    @trigger 'existingFolderError', existingModel
+                    @trigger 'uploadError',
+                        type: 'existingFolderError'
+                        data: existingModel.attributes
                 else
                     # Add folder to be saved to the queue.
                     @add folder
