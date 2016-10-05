@@ -215,16 +215,6 @@ module.exports = class UploadQueue
     addBlobs: (blobs, folder) ->
         @reset() if @completed
 
-        # Remove files that couldnt be handled
-        # properly
-        # and display a warning to alert
-        # user about this limitation
-        if (size = blobs.length) > @maxSize
-            msg = t 'updoad error size exceed', {maxSize: @maxSize}
-            @trigger 'upload-max-size-exceed', {msg}
-            return false
-
-
         i = 0
         existingPaths = app.baseCollection.existingPaths()
         # we do a non blocking loop, handling one file every 2ms so the
@@ -303,12 +293,22 @@ module.exports = class UploadQueue
         dirs = Helpers.nestedDirs blobs
         i = 0
         isConflict = false
+
+        # Remove files that couldnt be handled
+        # properly
+        # and display a warning to alert
+        # user about this limitation
+        if (size = blobs.length) > @maxSize
+            @trigger 'uploadError',
+                type: 'maxSizeExceeded'
+                data: {maxSize: @maxSize}
+            return false
+
         do nonBlockingLoop = =>
 
             # if no more folders to add, leave the loop
             dir = dirs[i++]
             unless dir
-
                 # Only add the files if there are no conflict.
                 unless isConflict
                     # Folders will be created, files can safely be added at the
