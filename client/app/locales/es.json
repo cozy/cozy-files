@@ -20,7 +20,6 @@
     "modal error folder create": "No se ha podido crear la carpeta",
     "modal error folder exists": "Lo siento, un archivo o una carpeta tiene ya el mismo nombre",
     "modal error zip empty folder": "Usted no puede descargar una carpeta vacía como ZIP.",
-    "modal error updoad size exceed": "For performance reasons, you cannot upload more than %{maxSize} files at the same time. Please try again with fewer files.",
     "upload running": "La carga está en curso. No cierre su navegador",
     "modal are you sure": "¿Está usted seguro(a)?",
     "modal delete msg": "Suprimir es definitivo",

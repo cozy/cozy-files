@@ -11,7 +11,12 @@ File             = require '../models/file'
 
 BACKSPACE_KEY = 8
 
-Errors = require '../config/errors'
+Errors = {
+    folderError: 'modal error firefox dragdrop folder'
+    existingFolderError: 'modal error existing folder'
+    maxSizeExceeded: 'modal error updoad size exceed'
+}
+
 
 ###
 Handles the display logic for a folder.
@@ -350,7 +355,7 @@ module.exports = class FolderView extends BaseView
         else
             files = event.dataTransfer?.files or event.target?.files
             if files.length and not @uploadQueue.handleError files
-                @uploadQueue.addBlobs files, @model 
+                @uploadQueue.addBlobs files, @model
 
 
     ###
