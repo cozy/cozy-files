@@ -317,36 +317,40 @@ module.exports = class FolderView extends BaseView
         # Checking 'items' property is the only way
         # to know if folder drop is supported by the browser
         if (items = event.dataTransfer?.items or event.target?.items)
-            _addDirectories items, null, () =>
-                _success = () =>
-                    # This callback is called several times
-                    # because files are saved asynchronously
-                    # Make sure files are not saved twice!
-                    input = files
-                    files = []
 
-                    @uploadQueue.addFolderBlobs input, @model
+            unless @uploadQueue.handleError items
 
-                # Show Upload Errors
-                if errors.length
-                    formattedErrors = errors
-                        .map (name) -> "\"#{name}\""
-                        .join ', '
-                    localeOptions =
-                        files: formattedErrors
-                        smart_count: errors.length
+                _addDirectories items, null, () =>
+                    _success = () =>
+                        # This callback is called several times
+                        # because files are saved asynchronously
+                        # Make sure files are not saved twice!
+                        input = files
+                        files = []
 
-                    new Modal t('chrome error dragdrop title'), \
-                        t('chrome error dragdrop content', localeOptions), \
-                        t('chrome error submit'), null, _success
+                        @uploadQueue.addFolderBlobs input, @model
 
-                # Show files uploaded
-                else
-                    _success()
+                    # Show Upload Errors
+                    if errors.length
+                        formattedErrors = errors
+                            .map (name) -> "\"#{name}\""
+                            .join ', '
+                        localeOptions =
+                            files: formattedErrors
+                            smart_count: errors.length
+
+                        new Modal t('chrome error dragdrop title'), \
+                            t('chrome error dragdrop content', localeOptions), \
+                            t('chrome error submit'), null, _success
+
+                    # Show files uploaded
+                    else
+                        _success()
 
         else
             files = event.dataTransfer?.files or event.target?.files
-            @uploadQueue.addBlobs files, @model if files.length
+            if files.length and not @uploadQueue.handleError files
+                @uploadQueue.addBlobs files, @model 
 
 
     ###

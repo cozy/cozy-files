@@ -212,6 +212,15 @@ module.exports = class UploadQueue
             done()
 
 
+    handleError: (items) ->
+        if (size = items.length) > @maxSize
+            @trigger 'uploadError',
+                type: 'maxSizeExceeded'
+                data: {maxSize: @maxSize}
+            return true
+        return false
+
+
     addBlobs: (blobs, folder) ->
         @reset() if @completed
 
@@ -293,16 +302,6 @@ module.exports = class UploadQueue
         dirs = Helpers.nestedDirs blobs
         i = 0
         isConflict = false
-
-        # Remove files that couldnt be handled
-        # properly
-        # and display a warning to alert
-        # user about this limitation
-        if (size = blobs.length) > @maxSize
-            @trigger 'uploadError',
-                type: 'maxSizeExceeded'
-                data: {maxSize: @maxSize}
-            return false
 
         do nonBlockingLoop = =>
 
