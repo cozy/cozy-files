@@ -11,11 +11,7 @@ File             = require '../models/file'
 
 BACKSPACE_KEY = 8
 
-ERRORS = {
-    folderError: 'modal error firefox dragdrop folder'
-    existingFolderError: 'modal error existing folder'
-    maxSizeExceeded: 'updoad error size exceed'
-}
+Errors = require '../config/errors'
 
 ###
 Handles the display logic for a folder.
@@ -634,6 +630,6 @@ module.exports = class FolderView extends BaseView
         { type, data, msg } = event
 
         data ?= {}
-        msg ?= t ERRORS[type], data
+        msg ?= t Errors[type], data
 
         Modal.error msg
