@@ -267,7 +267,7 @@ module.exports = class UploadQueue
                 model = null
 
                 # Let the view know something went wrong.
-                @trigger 'folderError'
+                @trigger 'uploadError', { type: 'folderError' }
 
             # mark as in conflict with existing file
             else if (existingModel = @isFileStored(model))?
@@ -340,7 +340,9 @@ module.exports = class UploadQueue
                     # This will end the nonBlockingLoop.
                     i = dirs.length
                     isConflict = true
-                    @trigger 'existingFolderError', existingModel
+                    @trigger 'uploadError',
+                        type: 'existingFolderError'
+                        data: existingModel.attributes
                 else
                     # Add folder to be saved to the queue.
                     @add folder
