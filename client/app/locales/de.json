@@ -20,6 +20,7 @@
     "modal error folder create": "Ordner konnte nicht erstellt werden",
     "modal error folder exists": "Entschuldigung, eine Datei oder ein Ordner mit diesem Namen existiert bereits",
     "modal error zip empty folder": "Ein leerer Ordner kann nicht als ZIP herunter geladen werden.",
+    "modal error updoad size exceed": "You can't upload more than %{maxSize} files once.",
     "upload running": "Upload ist aktiv. Bitte schließen Sie den Browser nicht.",
     "modal are you sure": "Sind Sie sicher?",
     "modal delete msg": "Löschen kann nicht rückgänig gemacht werden",
