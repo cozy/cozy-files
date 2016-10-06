@@ -282,6 +282,9 @@ module.exports = class FolderView extends BaseView
         files = []
         errors = []
 
+        _getUploadError = =>
+            @uploadQueue.getUploadError files
+
         _error = () ->
             formattedErrors = errors
                 .map (name) -> "\"#{name}\""
@@ -292,17 +295,16 @@ module.exports = class FolderView extends BaseView
 
             new Modal t('chrome error dragdrop title'), \
                 t('chrome error dragdrop content', localeOptions), \
-                t('chrome error submit'), null, _success
+                t('chrome error submit'), null
 
 
         # !!! This callback is called several times
         # because files are saved asynchronously
         # Make sure files are not saved twice!
         _success = () =>
-            unless @uploadQueue.handleError files
-                input = files
-                files = []
-                @uploadQueue.addFolderBlobs input, @model
+            input = files
+            files = []
+            @uploadQueue.addFolderBlobs input, @model
 
 
         _saveFile = (entry, path='', next) ->
@@ -318,14 +320,18 @@ module.exports = class FolderView extends BaseView
 
 
         _addFiles = =>
-            unless @uploadQueue.handleError files
+            unless @uploadQueue.getUploadError files
                 @uploadQueue.addBlobs files, @model
 
 
         _addDirectories = (items, path='', callback) ->
-            maxEntries = items.length
+            totalEntries = items.length
             counter = 0
             async.each items, (entry, next) ->
+                # Do not handle data
+                # if errors appears
+                return if errors.length
+
                 # 1rst case : event data type
                 # otherwhise its a recursive call
                 if entry instanceof DataTransferItem
@@ -347,7 +353,19 @@ module.exports = class FolderView extends BaseView
                             _addDirectories entries, path, next
                         , unshiftFolder
 
-            , () ->
+            , () =>
+                return if errors.length
+
+                # Dispach Error :
+                # files size exceed
+                # Prevent files upload
+                if (error = _getUploadError())
+                    errors.push error.type
+
+                if errors.length
+                    _error errors
+                    return
+
                 # Save all files or goto nextDirectory
                 # it depends on recursive or not call
                 if callback?
@@ -356,11 +374,8 @@ module.exports = class FolderView extends BaseView
                 # Upload is completed
                 # Display errors or
                 # Show files uploaded
-                else if (isComplete = ++counter >= maxEntries)
-                    if errors.length
-                        _error errors
-                    else
-                        _success()
+                else if (isSuccess = ++counter >= totalEntries)
+                    _success()
 
 
         # Checking 'items' property is the only way

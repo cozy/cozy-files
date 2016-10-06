@@ -60,6 +60,7 @@ module.exports = class UploadQueue
 
         @trigger 'reset'
 
+
     # Handle request's abort
     abort: (model) =>
         model.uploadXhrRequest.abort()
@@ -212,12 +213,12 @@ module.exports = class UploadQueue
             done()
 
 
-    handleError: (items) ->
+    getUploadError: (items) ->
         if (size = items.length) > @maxSize
-            @trigger 'uploadError',
+            return {
                 type: 'maxSizeExceeded'
                 data: {maxSize: @maxSize}
-            return true
+            }
         return false
 
 
