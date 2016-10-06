@@ -222,6 +222,7 @@ module.exports = class UploadQueue
 
 
     addBlobs: (blobs, folder) ->
+        return unless blobs.length
         @reset() if @completed
 
         i = 0
