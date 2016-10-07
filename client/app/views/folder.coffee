@@ -151,6 +151,7 @@ module.exports = class FolderView extends BaseView
             @model.isContentRendered = true
             @$("#loading-indicator").hide()
 
+
     renderBreadcrumb: ->
         @$('#crumbs').empty()
         @breadcrumbsView = new BreadcrumbsView
@@ -158,8 +159,8 @@ module.exports = class FolderView extends BaseView
             model: @model
         @$("#crumbs").append @breadcrumbsView.render().$el
 
-    renderFileList: ->
 
+    renderFileList: ->
         @filesList = new FilesView
             model: @model
             collection: @collection
@@ -169,10 +170,12 @@ module.exports = class FolderView extends BaseView
 
         @filesList.render()
 
+
     renderUploadStatus: ->
         @uploadStatus = new UploadStatusView
             collection: @uploadQueue.uploadCollection
             uploadQueue: @uploadQueue
+
 
         @uploadStatus.render().$el.appendTo @$('#upload-status-container')
 
@@ -181,6 +184,7 @@ module.exports = class FolderView extends BaseView
             @$("#loading-indicator").show()
         else
             @$("#loading-indicator").hide()
+
 
     # Refresh folder's content and manage spinner
     refreshData: ->
@@ -191,6 +195,7 @@ module.exports = class FolderView extends BaseView
             # if the inherited clearance has changed, we need to refresh
             # the share button's icon
             @onFolderSync()
+
 
     ###
         Button handlers
@@ -219,6 +224,7 @@ module.exports = class FolderView extends BaseView
             view.onEditClicked ''
 
             @newFolder.once 'sync destroy', => @newFolder = null
+
 
     onShareClicked: ->
         new ModalShareView
@@ -276,6 +282,31 @@ module.exports = class FolderView extends BaseView
         files = []
         errors = []
 
+        _getUploadError = =>
+            @uploadQueue.getUploadError files
+
+        _error = () ->
+            formattedErrors = errors
+                .map (name) -> "\"#{name}\""
+                .join ', '
+            localeOptions =
+                files: formattedErrors
+                smart_count: errors.length
+
+            new Modal t('chrome error dragdrop title'), \
+                t('chrome error dragdrop content', localeOptions), \
+                t('chrome error submit'), null
+
+
+        # !!! This callback is called several times
+        # because files are saved asynchronously
+        # Make sure files are not saved twice!
+        _success = () =>
+            input = files
+            files = []
+            @uploadQueue.addFolderBlobs input, @model
+
+
         _saveFile = (entry, path='', next) ->
             entry.file (file) ->
                 relativePath = "#{path}/#{file.name}"
@@ -287,8 +318,20 @@ module.exports = class FolderView extends BaseView
                 errors.push entry.name
                 next()
 
+
+        _addFiles = =>
+            unless @uploadQueue.getUploadError files
+                @uploadQueue.addBlobs files, @model
+
+
         _addDirectories = (items, path='', callback) ->
+            totalEntries = items.length
+            counter = 0
             async.each items, (entry, next) ->
+                # Do not handle data
+                # if errors appears
+                return if errors.length
+
                 # 1rst case : event data type
                 # otherwhise its a recursive call
                 if entry instanceof DataTransferItem
@@ -303,59 +346,46 @@ module.exports = class FolderView extends BaseView
                 # .readEntries only return chunks of 100 elements, so it must
                 # be called multiple times, until there is no more entries.
                 else if entry.isDirectory
+                    path = entry.fullPath.substring 1
                     reader = entry.createReader()
                     do unshiftFolder = ->
                         reader.readEntries (entries) ->
-                            unless entries.length
-                                callback() if callback?
-                            else
-                                path = entry.fullPath.substring 1
-                                _addDirectories entries, path, next
+                            _addDirectories entries, path, next
                         , unshiftFolder
 
-            , () ->
+            , () =>
+                return if errors.length
+
+                # Dispach Error :
+                # files size exceed
+                # Prevent files upload
+                if (error = _getUploadError())
+                    errors.push error.type
+
+                if errors.length
+                    _error errors
+                    return
+
                 # Save all files or goto nextDirectory
                 # it depends on recursive or not call
-                callback() if callback?
+                if callback?
+                    callback()
+
+                # Upload is completed
+                # Display errors or
+                # Show files uploaded
+                else if (isSuccess = ++counter >= totalEntries)
+                    _success()
 
 
         # Checking 'items' property is the only way
         # to know if folder drop is supported by the browser
         if (items = event.dataTransfer?.items or event.target?.items)
-
-            unless @uploadQueue.handleError items
-
-                _addDirectories items, null, () =>
-                    _success = () =>
-                        # This callback is called several times
-                        # because files are saved asynchronously
-                        # Make sure files are not saved twice!
-                        input = files
-                        files = []
-
-                        @uploadQueue.addFolderBlobs input, @model
-
-                    # Show Upload Errors
-                    if errors.length
-                        formattedErrors = errors
-                            .map (name) -> "\"#{name}\""
-                            .join ', '
-                        localeOptions =
-                            files: formattedErrors
-                            smart_count: errors.length
-
-                        new Modal t('chrome error dragdrop title'), \
-                            t('chrome error dragdrop content', localeOptions), \
-                            t('chrome error submit'), null, _success
-
-                    # Show files uploaded
-                    else
-                        _success()
+            _addDirectories items
 
         else
             files = event.dataTransfer?.files or event.target?.files
-            if files.length and not @uploadQueue.handleError files
-                @uploadQueue.addBlobs files, @model
+            _addFiles files
 
 
     ###
