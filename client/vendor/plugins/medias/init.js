@@ -22,7 +22,7 @@ window.plugins.medias = {
               window.plugins.helpers.modal({body: '<div style="text-align: center"><audio src="' + elmt.dataset.fileUrl + '" autoplay="true" controls="true" ></audio></div>', size: 'large'});
               break;
             case 'video':
-              window.plugins.helpers.modal({body: '<div style="text-align: center"><video src="' + elmt.dataset.fileUrl + '" autoplay="true" controls="true"></video></div>', size: 'large'});
+              window.plugins.helpers.modal({body: '<div style="text-align: center"><video src="' + elmt.dataset.fileUrl + '" autoplay="true" controls="true" style="max-height: 100%; max-width: 100%;"></video></div>', size: 'large'});
               break;
           }
         });
