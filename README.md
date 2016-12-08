@@ -1,3 +1,6 @@
+__This repository is no longer maintained. It's the Files application for Cozy V2. We are actively developping a new Files application for Cozy V3. You can follow the development [here], to test it and report bugs. We will only fix major security or safety issues on this repository.__
+
+
 # [Cozy](https://cozy.io) Files
 
 Cozy Files makes your file management easy. Main features are:
